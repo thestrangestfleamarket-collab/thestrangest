@@ -72,7 +72,7 @@ import {ROOMK} from './150a-bedroom.js';
     for(const k in R.loftK)R.loftSet(k,R.loftK[k]);
 
     /* ---------- the flat laid out (owner, 12 Nov 2026: "space things out better use the empty space, decorate with rugs, hanging photos, frames", "move these things to upstars"): the study and the bookcase upstairs, the den under the deck, a sitting corner in the tall room; rugs and pictures of the game's own; nothing hangs from the ceiling ---------- */
-    R.LOFTV=4; R.loftDress=A2=>{ if((A2.R.loftV||0)<2)for(const un of A2.units())if(un.mount!=='ceil'){ const t=A2.getT(un); if(t.h>=3.4&&t.h<7)A2.setT(un,{...t,h:t.h+MH-3.5}); }   // what stood on the upper floor when it was lower comes up with it
+    R.LOFTV=5; R.loftDress=A2=>{ if((A2.R.loftV||0)<2)for(const un of A2.units())if(un.mount!=='ceil'){ const t=A2.getT(un); if(t.h>=3.4&&t.h<7)A2.setT(un,{...t,h:t.h+MH-3.5}); }   // what stood on the upper floor when it was lower comes up with it
       const U=k=>A2.units().filter(u=>u.kind===k&&!u.added), set=(k,t,i=0)=>{ const un=U(k)[i]; if(!un)return; if(un.gone)A2.restore(un); A2.setT(un,{...A2.getT(un),...t}); };
       // upstairs: the library and study on the long floor, the stargazer's corner on the glass deck
       set('BOOKSHELF',{v:5.3,h:MH}); set('WRITING DESK',{u:9.1,h:MH}); set('FLOWERING PLANT',{u:8.7,h:MH+.72}); set('HERB POT',{u:9.6,h:MH+.72}); set('LAB DESK',{u:10.9,h:MH}); set('LAB STOOL',{u:10.7,v:9.1,h:MH});
@@ -107,28 +107,27 @@ import {ROOMK} from './150a-bedroom.js';
       lamp(put('loft-flamp','pf:b:floorlamp',{u:5.85,h:0,v:5.15}));
       put('loft-tiplant','pf:ti-plant-a7ad06',{u:1.7,h:0,v:.45});
       /* the dining table mid-room, four chairs round it, a candle lantern on it */
-      const dt=put('loft-dtable','pf:dining-table-7af83a',{u:4.4,h:0,v:8.2,ry:0});
-      for(const [i,du,dv,ry] of [[1,-.42,-.62,0],[2,.42,-.62,0],[3,-.42,.62,Math.PI],[4,.42,.62,Math.PI]])put('loft-dchair-'+i,'pf:dining-chair-530532',{u:4.4+du,h:0,v:8.2+dv,ry});
-      if(dt)put('loft-dlantern','pf:table-candle-lantern-a7b5af',{u:4.4,h:.75,v:8.2});
+      const DU=2.9, DV=10.55, dt=put('loft-dtable','pf:dining-table-7af83a',{u:DU,h:0,v:DV,ry:0});   // the dining corner at the back left, before the kitchen and by the window (owner, 16 Nov 2026: of mockups/flat-layout.html, "Build the proposed")
+      for(const [i,du,dv,ry] of [[1,-.42,-.62,0],[2,.42,-.62,0],[3,-.42,.62,Math.PI],[4,.42,.62,Math.PI]])put('loft-dchair-'+i,'pf:dining-chair-530532',{u:DU+du,h:0,v:DV+dv,ry});
+      if(dt)put('loft-dlantern','pf:table-candle-lantern-a7b5af',{u:DU,h:.75,v:DV});
       set('OLIVE TREE',{u:.75,v:8.45,h:0});
       put('loft-rad1','pf:b:radiator',{u:.12,h:0,v:10.37,ry:Math.PI/2});
       /* the kitchen along the back wall, left of your door: the fridge in the corner, the sink's counter, the stove; shelves of jars over it, a stool, the basil on the counter */
-      { let u=.15; const row=[['loft-fridge','g:fridge'],['loft-sink','g:sink and counter'],['loft-stove','g:stove']], got=[];
-        for(const [id,kind] of row){ const un=put(id,kind,{u:u+.4,h:0,v:Ly-.45,ry:Math.PI}); if(!un)continue; const b=box(un); if(b.isEmpty())continue; const w=b.max.x-b.min.x, d=b.max.z-b.min.z, t=A2.getT(un);
-          A2.setT(un,{...t,u:t.u+(u-b.min.x),v:t.v+(Ly-.02-b.max.z)}); u+=w+.02; got.push(un); }
-        const sk=ById('loft-sink'); const bp=U('BASIL POT')[0]; if(bp&&sk){ if(bp.gone)A2.restore(bp); onTop(bp,sk,.2,0); }
-        put('loft-kstool','pf:bar-stool-0de3c8',{u:u+.35,h:0,v:Ly-.9,ry:Math.PI}); put('loft-ktray','g:tea tray',{u:2.4,h:0,v:Ly-.6}); if(sk)onTop(ById('loft-ktray'),sk,-.25,0); }
+      /* the kitchen along the back wall is the room's own (150c); the stand-ins that stood there go, the basil to the dining table */
+      for(const id of ['loft-fridge','loft-sink','loft-stove','loft-kstool','loft-ktray'])away(id);
+      { const bp=U('BASIL POT')[0]; if(bp){ if(bp.gone)A2.restore(bp); A2.setT(bp,{...A2.getT(bp),u:DU+.35,v:DV-.1,h:.76}); } }
       /* by your door: a plant, the mirror, the coat pegs */
       set('FLOOR PLANT',{u:7.35,v:Ly-.45,h:0});
       /* under the deck: the aquarium nook (two tub chairs before the tank on the round rug), the PC under the front window, a listening corner with the radio at the back */
       set('FISH TANK',{u:Lx-.66,v:5.6,h:0,ry:Math.PI/2}); set('ROUND RUG',{u:9.35,v:5.6,h:0});
       put('loft-tub1','pf:velvet-tub-chair-b0b5f8',{u:9.0,h:0,v:4.85,ry:Math.PI/2-.5}); put('loft-tub2','pf:velvet-tub-chair-b0b5f8',{u:9.0,h:0,v:6.35,ry:Math.PI/2+.5});
       put('loft-drum','pf:lounge-drum-table-13d029',{u:8.75,h:0,v:5.6});
-      set('TABLE RADIO',{u:Lx-.45,v:9.6,h:0,ry:Math.PI}); put('loft-larm','pf:lounge-armchair-5a72ca',{u:Lx-1.35,h:0,v:10.6,ry:2.6});
-      lamp(put('loft-flamp2','pf:b:floorlamp',{u:Lx-.4,h:0,v:11.3}));
+      set('TABLE RADIO',{u:Lx-1.0,v:9.9,h:0,ry:Math.PI}); put('loft-larm','pf:lounge-armchair-5a72ca',{u:Lx-2.1,h:0,v:10.7,ry:2.4});
+      lamp(put('loft-flamp2','pf:b:floorlamp',{u:Lx-.5,h:0,v:10.6}));
       put('loft-tplant','pf:b:plant',{u:Lx-.5,h:0,v:Ly-.5});
       /* upstairs: the stargazer's deck at the front, the library, the bedroom, a desk at the back */
-      set('TELESCOPE',{u:5.6,v:1.2,h:MH}); set('EARTH GLOBE',{u:9.0,v:.9,h:MH}); set('GLOBE TABLE',{u:Lx-.5,v:1.6,h:MH,ry:Math.PI});
+      set('TELESCOPE',{u:5.6,v:1.2,h:MH}); set('EARTH GLOBE',{u:8.7,v:1.0,h:MH}); const gt=set('GLOBE TABLE',{u:9.6,v:1.0,h:MH,ry:Math.PI});
+      if(gt)for(const [k,du] of [['MOON GLOBE',-.13],['MARS GLOBE',.12]]){ const g=U(k)[0]||put('loft-'+k.split(' ')[0].toLowerCase(),k,{u:9.6,h:MH,v:1.0}); onTop(g,gt,du,0); }
       set('BOOKSHELF',{v:5.3,h:MH}); put('loft-rug-2','g:red rug',{u:9.9,h:MH,v:5.5});
       put('loft-rchair','pf:velvet-tub-chair-b0b5f8',{u:9.4,h:MH,v:6.6,ry:2.2}); put('loft-rtable','pf:side-table-2ea5c0',{u:9.0,h:MH,v:7.25}); lamp(put('loft-rlamp','pf:b:tablelamp',{u:9.0,h:MH+.51,v:7.25}));
       set('FERN STAND',{u:Lx-.45,v:7.75,h:MH});
@@ -141,8 +140,8 @@ import {ROOMK} from './150a-bedroom.js';
       const fp=U('FLOWERING PLANT')[0], hp=U('HERB POT')[0]; if(fp){ if(fp.gone)A2.restore(fp); A2.setT(fp,{...A2.getT(fp),u:8.75,v:5.6,h:.56}); } if(hp){ if(hp.gone)A2.restore(hp); A2.setT(hp,{...A2.getT(hp),u:4.0,v:8.2,h:.76}); }   // the flowers on the nook's drum table, the herbs on the dining table
       put('loft-rug-3','MAUVE RUG',{u:6.2,h:MH,v:1.3});
       /* the pictures, their middles at eye height (1.6 m over their floor) */
-      for(const [id,kind,t,cy] of [['loft-art-1','g:portrait in a red frame',{u:W.We[0],v:3.0,ry:W.We[1]},.15],['loft-art-2','g:framed flower print',{u:W.We[0],v:8.0,ry:W.We[1]},0],['loft-art-3','g:poster: night painting',{u:2.6,v:W.Wb[0],ry:W.Wb[1]},0],
-        ['loft-art-4','g:round mirror',{u:7.25,v:W.Wb[0],ry:W.Wb[1]},0],['loft-art-5','g:poster: koi night',{u:W.We[0],v:3.4,ry:W.We[1]},MH],['loft-art-6','g:framed flower print',{u:W.We[0],v:7.0,ry:W.We[1]},MH],['loft-art-7','g:wall clock',{u:9.0,v:W.Wb[0],ry:W.Wb[1]},MH]]){
+      for(const [id,kind,t,cy] of [['loft-art-1','g:portrait in a red frame',{u:W.We[0],v:3.0,ry:Math.PI},.15],['loft-art-2','g:framed flower print',{u:W.We[0],v:8.0,ry:W.We[1]},0],['loft-art-3','g:poster: night painting',{u:9.4,v:W.Wb[0],ry:Math.PI/2},0],
+        ['loft-art-4','g:round mirror',{u:7.25,v:W.Wb[0],ry:Math.PI/2},0],['loft-art-5','g:poster: koi night',{u:W.We[0],v:3.4,ry:Math.PI},MH],['loft-art-6','g:framed flower print',{u:W.We[0],v:7.0,ry:W.We[1]},MH],['loft-art-7','g:wall clock',{u:9.0,v:W.Wb[0],ry:W.Wb[1]},MH]]){
         const un=put(id,kind,{...t,h:cy+1.6}); hang(un,cy+(id==='loft-art-7'?2.1:1.6)); }
       if(A2.R.loftPC)A2.R.loftPC(A2); };
     R.loftPC=A2=>{ const K=A2.kinds(); if(!K['g:desk']||!K['HOME COMPUTER']||A2.units().some(u=>u.id==='loft-pc'))return; const d=A2.spawn('g:desk',{s:1,ry:Math.PI,u:8.86,h:0,v:.5},'loft-pcdesk'); if(!d)return; d.paid=0; d.obj.updateMatrixWorld(true);

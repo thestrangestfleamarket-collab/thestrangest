@@ -99,7 +99,7 @@ function stepHand(h, dt) {
     const cand = h.xr ? findCand(h) : h.aim?.cand; h.cand = cand || null;
     if (cand) { h.marker.visible = true; if (cand.take) h.marker.position.copy(cand.pos); else cand.worldCenter(h.marker.position); const s = (cand.take ? cand.r : cand.radius) * 3.2; h.marker.scale.set(s, s, 1); h.marker.material.opacity = 0.28 + Math.sin(G.t * 6) * 0.08; }
     else h.marker.visible = false;
-    if (h.supp && !h.grip) { if (h.supp.supp === h) h.supp.supp = null; h.supp = null; }
+    if (h.supp && !h.grip) { h.supp.onUnsupp?.(h); if (h.supp.supp === h) h.supp.supp = null; h.supp = null; }   // (a bowstring let go looses the arrow)
     if (h.gripDown && cand) { if (h.xr && cand.weapon && cand.held && cand.held !== h) { h.supp = cand; cand.supp = h; } else grab(h, cand); }   // (a second hand on a held weapon steadies it)
   } else {
     h.marker.visible = false;

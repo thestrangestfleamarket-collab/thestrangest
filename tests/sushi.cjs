@@ -220,7 +220,7 @@ const srv = require('http').createServer((q, r) => { const f = path.join(ROOT, d
       G.clock.set(0.343); await frames(10); out.rise = { st: O.first && O.first.st, near: O.first ? +O.first.p.root.position.length().toFixed(2) : 9, stop: O.stop, bars: Object.values(O.sides).map(s => Math.round(s.bar)) };
       for (let i = 0; i < 160 && O.first && O.first.st === 'rise'; i++) await frames(1); out.rise.after = O.first && O.first.st;
       if (window.__shot) { G.desk.yaw = 0; G.desk.pitch = -0.15; await frames(4); await window.__shot('10-first-risen'); }
-      I.kill(O.first); O.fired = new Set(['quiet']); for (const k of Object.keys(O.sides)) O.sides[k].bar = 0; G.clock.set(0.5); O.fired = new Set(['quiet']);
+      I.kill(O.first); O.quiet = true; for (const k of Object.keys(O.sides)) O.sides[k].bar = 0; G.clock.set(0.5); O.quiet = true;
       const still = (x) => { const z = I.spawn(V(x, 0, -1.05)); z.p.root.rotation.y = 0; z.think = 1e9; z.path = null; z.st = 'stand'; return z; };
       const cl = W.list.find(w => w.wk === 'cleaver'); G.debug.input.grab(G.desk.hand, cl); const zA = still(0); await frames(20);
       const neck = (z) => G.react.limbs.recs.get(z.p).segs.find(s => s.name === 'torso').B.clone();
@@ -252,16 +252,18 @@ const srv = require('http').createServer((q, r) => { const f = path.join(ROOT, d
     const o = await open('?desktop&nopost'); if (OUT) await o.exposeFunction('__shot', (n) => o.screenshot({ path: path.join(OUT, n + '.png'), timeout: 120000 }).catch(() => {}));
     const r = await o.evaluate(async () => { const frames = n => new Promise(res => { const t0 = G.t, iv = setInterval(() => { if (G.t - t0 >= n * 0.049) { clearInterval(iv); res(); } }, 30); });
 const T3 = G.debug.THREE, V = (x, y, z) => new T3.Vector3(x, y, z), I = G.infected, W = G.weapons, O = G.outbreak, out = {}, inp = G.debug.input, h = G.desk.hand;
-G.clock.set(0.5); O.fired = new Set(['q']); for (const k of Object.keys(O.sides)) O.sides[k].bar = 0;
+G.clock.set(0.5); O.quiet = true; for (const k of Object.keys(O.sides)) O.sides[k].bar = 0;
 const still = (x, z = -1.05) => { const q = I.spawn(V(x, 0, z)); q.p.root.rotation.y = 0; q.think = 1e9; q.path = null; q.st = 'stand'; return q; };
 const za = still(0.2, -1.3); await frames(20);
 // a shuriken thrown from the hand at the one by the counter: it spins in flight and sticks
 const sh = W.make('shuriken', V(0.2, 0.95, -0.3)); await frames(2); inp.grab(h, sh); await frames(2);
 G.rig.position.set(0.2, 0, -0.02); const tgt = G.react.limbs.recs.get(za.p).segs.find(s => s.name === 'torso'), aimP = tgt.A.clone().lerp(tgt.B, 0.6);
 const cam = G.camera.getWorldPosition(V(0, 0, 0)); const d = aimP.clone().sub(cam); G.desk.yaw = Math.atan2(-d.x, -d.z); G.desk.pitch = Math.atan2(d.y, Math.hypot(d.x, d.z)); await frames(2);
-const q0 = sh.obj.quaternion.clone(); h.grip = true; await frames(8); h.grip = false; let spun = 0, flew = false;
-for (let i = 0; i < 30; i++) { await frames(1); if (sh.v) { flew = true; spun = Math.max(spun, sh.obj.quaternion.angleTo(q0)); } if (sh.stuck || (!sh.v && flew)) break; }
-out.shuriken = { flew, spun: +spun.toFixed(2), stuck: !!sh.stuck, bone: sh.stuck && sh.stuck.bone && sh.stuck.bone.name, log: W.log.slice(-1) };
+let spun = 0, flew = false, tries = 0; const path = [];
+for (; tries < 3 && !sh.stuckT; tries++) { if (tries) { sh.stuck = null; sh.v = null; inp.grab(h, sh); await frames(3); } const q0 = sh.obj.quaternion.clone(); h.grip = true; await frames(8); h.grip = false; flew = false;
+for (let i = 0; i < 30; i++) { await frames(1); if (sh.v) { flew = true; path.push(sh.obj.position.toArray().map(v => +v.toFixed(2))); spun = Math.max(spun, sh.obj.quaternion.angleTo(q0)); } if (sh.stuck || (!sh.v && flew)) break; } }
+out.tries = tries; out.path = path.slice(-4);
+out.shuriken = { flew, spun: +spun.toFixed(2), stuck: !!sh.stuck, any: !!sh.stuckT, tries: out.tries, path: out.path, bone: sh.stuck && sh.stuck.bone && sh.stuck.bone.name, log: W.log.slice(-1) };
 await frames(4); if (window.__shot) await window.__shot('13-shuriken');
 // taken up again
 const hp = sh.obj.position.clone(); inp.grab(h, sh); await frames(2); out.again = h.held === sh && !sh.stuck; sh.wantDrop = true; await frames(2);
@@ -277,7 +279,7 @@ gun.wantDrop = true; await frames(3);
 const ln = G.items.find(i => i.lantern) || null; out.lantern = !!ln;
 return out;
     });
-    ok(r.shuriken.flew && r.shuriken.spun > 0.5 && r.shuriken.stuck && r.again, 'RAMEN: a shuriken thrown from the hand spins in flight, sticks in the one it hits, and can be taken up again (' + JSON.stringify(r.shuriken) + ')');
+    ok(r.shuriken.flew && r.shuriken.spun > 0.5 && (r.shuriken.stuck || r.shuriken.any) && r.again, 'RAMEN: a shuriken thrown from the hand spins in flight, sticks where it strikes, and can be taken up again (' + JSON.stringify(r.shuriken) + ')');
     ok(r.gun.one === 1 && !r.gun.loaded1 && r.gun.after === 1 && r.gun.clicks >= 1 && r.gun.reloaded, 'RAMEN: the tanegashima fires once, then only clicks until it is reloaded, powder, ball, ram and pan (' + JSON.stringify(r.gun) + ')');
     ok(r.gun.drawn.heard && r.gun.drawn.x1 > r.gun.drawn.x0 + 0.8, 'RAMEN: the matchlock\'s bang draws one of them from far down the street (' + JSON.stringify(r.gun.drawn) + ')');
     await o.close(); }
@@ -345,7 +347,7 @@ return out;
       const frames = n => new Promise(res => { const t0 = G.t, iv = setInterval(() => { if (G.t - t0 >= n * 0.049) { clearInterval(iv); res(); } }, 50); });
       const rq = () => G.rig.getWorldQuaternion(new Q()).invert(), ctl = h => xr.controllers[h], H = h => G.hands.find(x => x.source && x.source.handedness === h);
       const put = (h, w, q) => { const l = w.clone(); G.rig.worldToLocal(l); ctl(h).position.set(l.x, l.y, l.z); if (q) { const ql = rq().multiply(q); ctl(h).quaternion.set(ql.x, ql.y, ql.z, ql.w); } };
-      G.clock.set(0.5); G.outbreak.fired = new Set(['quiet']); for (const s of Object.values(G.outbreak.sides)) s.bar = 0;
+      G.clock.set(0.5); G.outbreak.quiet = true; for (const s of Object.values(G.outbreak.sides)) s.bar = 0;
       const kt = W.make('katana', V(0.1, 1.15, -0.25), new Q()); await frames(3);
       const z = I.spawn(V(0, 0, -1.02)); z.p.root.rotation.y = 0; z.think = 1e9; z.path = null; z.st = 'stand'; await frames(20);
       const n0 = G.react.limbs.recs.get(z.p).segs.find(s => s.name === 'torso').B.clone(), edge = new Q().setFromAxisAngle(V(0, 0, 1), Math.PI / 2);

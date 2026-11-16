@@ -100,7 +100,14 @@ export function buildBar(scene, room) {
   // ---- bottles: the working row on the back counter (opened, part used), the stock on the shelves (corked, full)
   ['whiskey', 'rye', 'gin', 'brandy', 'sarsaparilla'].forEach((t, i) => bar.bottles.push(put(new Bottle(t, 0.45 + (i * 37 % 50) / 100), -1.95 + i * 0.15, cy, bz + 0.2 + (i % 2) * 0.05, 2.6 + i)));
   const ROW = [['whiskey', 'whiskey', 'whiskey', 'rye', 'rye', 'whiskey', 'brandy', 'whiskey'], ['rye', 'whiskey', 'gin', 'gin', 'whiskey', 'brandy', 'rye'], ['brandy', 'gin', 'sarsaparilla', 'sarsaparilla', 'whiskey', 'rye']];
-  room.shelves.forEach((s, si) => { const row = ROW[[1.42, 1.86, 2.3].indexOf(s.y)] || ROW[0], n = row.length, sp = (s.x1 - s.x0) / n; row.forEach((t, k) => { if ((k + si) % 7 === 6) return; bar.bottles.push(put(new Bottle(t), s.x0 + sp * (k + 0.5) + ((k * 13 + si * 7) % 5 - 2) * 0.006, s.y, s.z + ((k + si) % 3 - 1) * 0.02, Math.PI + ((k * 31 + si * 17) % 9 - 4) * 0.12)); }); });
+  // the shelves' stock is drawn as one thing (a draw for the glass, one for the corks, one a label kind) and a bottle becomes a real one only when you take it down
+  { const slots = []; room.shelves.forEach((s, si) => { const row = ROW[[1.42, 1.86, 2.3].indexOf(s.y)] || ROW[0], n = row.length, sp = (s.x1 - s.x0) / n; row.forEach((t, k) => { if ((k + si) % 7 === 6) return; slots.push({ t, x: s.x0 + sp * (k + 0.5) + ((k * 13 + si * 7) % 5 - 2) * 0.006, y: s.y, z: s.z + ((k + si) % 3 - 1) * 0.02, ry: Math.PI + ((k * 31 + si * 17) % 9 - 4) * 0.12, on: true }); }); });
+    const M4 = new THREE.Matrix4(), Q4 = new THREE.Quaternion(), S1 = new THREE.Vector3(1, 1, 1), S0 = new THREE.Vector3(0, 0, 0), P4 = new V3(), UPY = new V3(0, 1, 0), col = new THREE.Color();
+    const inst = (g0, m, list, dy = 0) => { const im = new THREE.InstancedMesh(g0, m, list.length); list.forEach((sl, i) => { im.setMatrixAt(i, M4.compose(P4.set(sl.x, sl.y + dy, sl.z), Q4.setFromAxisAngle(UPY, sl.ry), S1)); (sl.im ||= []).push([im, i, dy]); }); im.castShadow = false; im.frustumCulled = false; G.pickRoot.add(im); return im; };
+    const body = inst(GEO.bottle, new THREE.MeshLambertMaterial({ color: 0xffffff }), slots); slots.forEach((sl, i) => body.setColorAt(i, col.set(BODY[sl.t][0]).multiplyScalar(1.6))); inst(GEO.cork, MAT.cork, slots);
+    for (const t of Object.keys(LABEL)) { const L = slots.filter((sl) => sl.t === t); if (L.length) inst(GEO.label, labelT(t), L, 0.1); }
+    for (const sl of slots) { const pos = new V3(sl.x, sl.y + 0.14, sl.z); G.sources.push({ pos, r: 0.06, name: DRINKS[sl.t][0], can: () => sl.on, take: () => { sl.on = false; for (const [im, i, dy] of sl.im) { im.setMatrixAt(i, M4.compose(P4.set(sl.x, sl.y + dy, sl.z), Q4.identity(), S0)); im.instanceMatrix.needsUpdate = true; } const b = new Bottle(sl.t); bar.bottles.push(b); return b; } }); }
+    bar.shelf = slots; }
 
   // ---- glasses: a fixed stock, stood mouth-down on a cloth; a used one must be washed before it goes out again
   { const cloth = new THREE.Mesh(new THREE.PlaneGeometry(0.62, 0.36).rotateX(-Math.PI / 2), plain(0x8a8272, { rough: 1 })); cloth.position.set(-0.55, cy + 0.003, bz + 0.36); cloth.receiveShadow = true; scene.add(cloth);
@@ -160,6 +167,6 @@ export function buildBar(scene, room) {
   bar.sweep = () => { let n = 0; for (const it of [...G.items]) if (it.kind === 'coin' && !it.dead && !it.held) { if (it.paid) { n += it.cents; bar.taken += it.cents; } bar.till += it.cents; const w = bar.drawer.wells[it.cents]; w.n++; w.redraw(); it.remove(); } return n; };   // the night's end: what lies on the bar goes in the drawer
   bar.restock = () => { for (const gl of bar.glasses) if (!gl.dead && !gl.held) { gl.owner = null; gl.locked = false; if (gl.vol > 0 || gl.dirty) gl.empty(true); } bar.wet = 0; };
   bar.update = (dt) => { for (let i = bar.glasses.length - 1; i >= 0; i--) if (bar.glasses[i].dead) bar.glasses.splice(i, 1); for (let i = bar.bottles.length - 1; i >= 0; i--) if (bar.bottles[i].dead) bar.bottles.splice(i, 1); bar.wet = Math.max(0, bar.wet - dt * 0.002); };
-  bar.stock = () => { const o = {}; for (const b of bar.bottles) o[b.drink] = (o[b.drink] || 0) + b.level; o.beer = bar.keg.tapped ? bar.keg.level / 60 : 0; o.shots = bar.glasses.filter((g) => g.shape === 'shot').length; o.mugs = bar.glasses.filter((g) => g.shape === 'mug').length; return o; };
+  bar.stock = () => { const o = {}; for (const b of bar.bottles) o[b.drink] = (o[b.drink] || 0) + b.level; for (const sl of bar.shelf) if (sl.on) o[sl.t] = (o[sl.t] || 0) + 1; o.beer = bar.keg.tapped ? bar.keg.level / 60 : 0; o.shots = bar.glasses.filter((g) => g.shape === 'shot').length; o.mugs = bar.glasses.filter((g) => g.shape === 'mug').length; return o; };
   return bar;
 }

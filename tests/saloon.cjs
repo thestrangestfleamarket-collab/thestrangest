@@ -24,6 +24,8 @@ const srv = require('http').createServer((q, r) => { const f = path.join(ROOT, d
     const dg = G.debug.darts.play({ you: 0.8, them: 0.4, stake: 100, who: 'doc' }); o.darts = dg && (dg.you === 0 || dg.them === 0);
     const ruby = G.folk.enter('ruby', [['sit', 'middle', 9999]]); step(30 * 18); o.ruby = ruby.state + ' ' + ruby.P.pose;
     { const I = G.inspect; I.open(); I.L.exposure = 1.4; I.L.sat = 1; I.apply(); const c = I.changed(); I.take({ exposure: 0.6, bogus: 1 }); o.inspect = I.shown && c.exposure === 1.4 && c.sat === 1 && Object.keys(c).length === 2 && G.renderer.toneMappingExposure === 0.6 && G.look.grade.sat.value === 1; Object.assign(I.L, I.LOOK); I.apply(); }
+    { const n0 = G.bar.bottles.length, src = G.sources.find((q) => q.name === 'whiskey' && q.can()), b = src.take(); o.shelf = !src.can() && G.bar.bottles.length === n0 + 1 && b.drink === 'whiskey' && b.corked; }
+    { const z0 = G.rig.position.z; G.rig.position.set(0, 0, -9); G.desk.yaw = 0; G.desk.keys.KeyS = false; G.desk.keys.KeyW = true; G.desk.yaw = Math.PI; for (let i = 0; i < 120; i++) { G.scene.updateMatrixWorld(); G.debug.tick(1 / 30); } G.desk.keys.KeyW = false; o.doorZ = +G.rig.position.z.toFixed(2); G.look.town.backdrop(); o.baked = G.look.town.baked && !!G.scene.background; G.rig.position.set(0, 0, z0); }
     o.crowd = G.folk.crowd(); o.calls = G.renderer.info.render.calls;
   } catch (e) { o.err = e.stack.slice(0, 500); } return o; });
   ok(!r.err, 'the play ran' + (r.err ? ': ' + r.err : ''));
@@ -36,6 +38,8 @@ const srv = require('http').createServer((q, r) => { const f = path.join(ROOT, d
   ok(r.pool, 'a game of pool plays to eight'); ok(r.darts, 'a game of 301 plays out');
   ok(r.ruby === 'sit sit', 'a townswoman walks round the furniture and sits at a table (' + r.ruby + ')');
   ok(r.inspect, 'the render inspector opens, moves the look, exports only what changed and takes a saved look');
+  ok(r.shelf, 'a bottle taken down from the shelf becomes a real corked bottle');
+  ok(r.doorZ > -10 && r.baked, 'the doors are as far as you walk (z ' + r.doorZ + ') and the town outside is one baked picture');
   ok(!errs.length, 'no page errors' + (errs.length ? ': ' + errs[0] : '')); ok(!miss.length, 'nothing missing' + (miss.length ? ': ' + [...new Set(miss)].join(', ') : ''));
   await b.close(); srv.close(); console.log(fails.length ? fails.length + ' failed' : 'all passed'); process.exit(fails.length ? 1 : 0);
 })();

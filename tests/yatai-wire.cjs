@@ -18,19 +18,20 @@ const shot = (j, name) => { if (out && j) fs.writeFileSync(path.join(out, name),
     ok(/\/holo\?g=sushi&as=guest/.test(m.url()), 'THE DARK ALLEY leaves THE MARKET for the cart\'s own alley as a guest: ' + m.url());
     let g = null; for (let i = 0; i < 600 && !g; i++) { g = m.frames().find((f) => /\/sushi\?guest=1/.test(f.url())) || null; if (!g) await m.waitForTimeout(200); }
     await g.waitForFunction('window.G && G.guestRole && G.live && G.live.share', null, { timeout: 300000 }); await g.evaluate(() => { G.debug.startDesktop(); G.muteVoices = true; });
+    await until(g, () => !!G.live.me, 120000); const GID = await g.evaluate(() => G.live.me), CID = GID + '~cart';   // (who the login is on this server: the guest, and the cook in the other window)
     // the cook sees the guest as their own figure, and the guest the cook and the cook's things
-    const fig = await until(a, () => { const w = G.live.watchers.get('wire-check'); return w && w.av && w.av.posed() && w.real; }, 180000);
+    const fig = await until(a, (gid) => { const w = G.live.watchers.get(gid); return w && w.av && w.av.posed() && w.real; }, 180000, GID);
     ok(fig, 'the cook sees the guest as their own MARKET figure, moved by its own bones' + (fig ? '' : ': ' + JSON.stringify(await a.evaluate(() => [...G.live.watchers.entries()].map(([id, w]) => ({ id, av: !!w.av, real: !!w.real }))))));
     const st = await a.evaluate(() => G.live.status()); ok(/^LINKED · [1-9]/.test(st), '/sushi says it is linked and counts who is in its alley: ' + st);
-    const sees = await until(g, () => { const N = [...G.live.cooks.values()][0]; return N && N.id === 'wire-check~cart' && N.things.size > 20 && N.P && G.items.every((i) => !i.obj.visible); }, 180000);
+    const sees = await until(g, (cid) => { const N = [...G.live.cooks.values()][0]; return N && N.id === cid && N.things.size > 20 && N.P && G.items.every((i) => !i.obj.visible); }, 180000, CID);
     ok(sees, 'the guest sees the cook (the carving chef) at the cart and the cook\'s own things on it: ' + JSON.stringify(await g.evaluate(() => ({ cooks: [...G.live.cooks.values()].map((N) => [N.id, N.x, N.things.size, !!N.P]), status: G.live.status() }))));
-    const ld = await until(g, () => !G.live.share.lead && G.live.share.by === 'wire-check~cart', 60000), la = await a.evaluate(() => G.live.share.lead);
+    const ld = await until(g, (cid) => !G.live.share.lead && G.live.share.by === cid, 60000, CID), la = await a.evaluate(() => G.live.share.lead);
     ok(ld && la, 'the cook\'s page runs the alley\'s people and the guest\'s page follows it');
     // the same people in the same places
     const cmp = []; for (let i = 0; i < 12; i++) { await m.waitForTimeout(5000); const [A, B] = await Promise.all([a.evaluate(() => G.live.share.list()), g.evaluate(() => G.live.share.list())]); const keys = Object.keys(A); cmp.push({ n: keys.length, miss: keys.filter((k) => !B[k]).length + Object.keys(B).filter((k) => !A[k]).length, far: keys.filter((k) => B[k] && Math.hypot(A[k][0] - B[k][0], A[k][1] - B[k][1]) > 0.8).length }); }
     const n = cmp.reduce((s, c) => s + c.n, 0), off = cmp.reduce((s, c) => s + c.miss + c.far, 0);
     ok(n >= 6 && off <= Math.max(2, n * 0.1), 'the cook\'s page and the guest\'s show the same passers-by and customers in the same places (' + n + ' seen, ' + off + ' out by more than 0.8 m): ' + JSON.stringify(cmp));
-    if (out) { const gj = await g.evaluate(() => { const me = G.guestRole; me.view = 'third'; G.desk.yaw = Math.atan2(me.at.x, me.at.z - 0.3); G.desk.pitch = -0.12; return new Promise((r) => { G.afterRender = () => r(G.renderer.domElement.toDataURL('image/jpeg', 0.9)); }); }); const cj = await a.evaluate(() => { const w = G.live.watchers.get('wire-check'), p = (w.av || w.p).root.position, c = G.camera.getWorldPosition(new G.debug.THREE.Vector3()); G.desk.yaw = Math.atan2(-(p.x - c.x), -(p.z - c.z)); G.desk.pitch = -0.2; return new Promise((r) => { G.afterRender = () => r(G.renderer.domElement.toDataURL('image/jpeg', 0.9)); }); }); shot(gj, 'wire-guest-view.jpg'); shot(cj, 'wire-cook-view.jpg'); }
+    if (out) { const gj = await g.evaluate(() => { const me = G.guestRole; me.view = 'third'; G.desk.yaw = Math.atan2(me.at.x, me.at.z - 0.3); G.desk.pitch = -0.12; return new Promise((r) => { G.afterRender = () => r(G.renderer.domElement.toDataURL('image/jpeg', 0.9)); }); }); const cj = await a.evaluate((gid) => { const w = G.live.watchers.get(gid), p = (w.av || w.p).root.position, c = G.camera.getWorldPosition(new G.debug.THREE.Vector3()); G.desk.yaw = Math.atan2(-(p.x - c.x), -(p.z - c.z)); G.desk.pitch = -0.2; return new Promise((r) => { G.afterRender = () => r(G.renderer.domElement.toDataURL('image/jpeg', 0.9)); }); }, GID); shot(gj, 'wire-guest-view.jpg'); shot(cj, 'wire-cook-view.jpg'); }
     // their voice reaches the cook from where their figure is
     await a.evaluate(() => G.audio.init());
     const vo = await until(a, () => [...G.live.voices.values()].some((v) => v.src && v.at), 90000);
@@ -40,15 +41,15 @@ const shot = (j, name) => { if (out && j) fs.writeFileSync(path.join(out, name),
     const sat = await until(g, () => G.guestRole.sat && G.guestRole.menu, 90000);
     ok(sat, 'the guest takes a stool, sits on it and is shown the cart\'s menu: ' + JSON.stringify(await g.evaluate(() => G.guestRole.state())));
     await g.evaluate(() => { const b = G.buttons.find((x) => x.guestMenu && /MISO|SHOYU/.test(x.name)); if (b) b.press(); });
-    const ord = await until(a, () => G.game.customers.some((c) => c.guest === 'wire-check' && c.order), 120000), told = await until(g, () => /ORDER/.test(G.guestRole.state().said), 30000);
+    const ord = await until(a, (gid) => G.game.customers.some((c) => c.guest === gid && c.order), 120000, GID), told = await until(g, () => /ORDER/.test(G.guestRole.state().said), 30000);
     ok(ord && told, 'their choice is the order the cook gets, and they are told it: ' + JSON.stringify(await a.evaluate(() => G.game.customers.map((c) => [c.guest, c.state, c.order && c.order.key]))));
-    const seenSit = await until(a, () => { const w = G.live.watchers.get('wire-check'); return w && w.seated && w.real && Math.abs(w.av.root.position.z + 1.16) < 0.15; }, 90000);
+    const seenSit = await until(a, (gid) => { const w = G.live.watchers.get(gid); return w && w.seated && w.real && Math.abs(w.av.root.position.z + 1.16) < 0.15; }, 90000, GID);
     ok(seenSit, 'the cook sees the seated guest on the stool as their own figure');
-    if (out) { const sj = await a.evaluate(() => { const w = G.live.watchers.get('wire-check'), T3 = G.debug.THREE, c = new T3.PerspectiveCamera(55, innerWidth / innerHeight, 0.05, 80), p = w.av.root.position; c.position.set(p.x + 1.3, 1.4, p.z - 1.5); c.lookAt(p.x, 0.85, p.z); G.scene.updateMatrixWorld(true); G.renderer.render(G.scene, c); return G.renderer.domElement.toDataURL('image/jpeg', 0.9); }); shot(sj, 'wire-cook-sees-seated-guest.jpg'); }
-    await a.evaluate(() => G.live.tell({ r: { to: 'wire-check', score: 88, pay: 450, verdict: 'Good', issues: [] } }));
+    if (out) { const sj = await a.evaluate((gid) => { const w = G.live.watchers.get(gid), T3 = G.debug.THREE, c = new T3.PerspectiveCamera(55, innerWidth / innerHeight, 0.05, 80), p = w.av.root.position; c.position.set(p.x + 1.3, 1.4, p.z - 1.5); c.lookAt(p.x, 0.85, p.z); G.scene.updateMatrixWorld(true); G.renderer.render(G.scene, c); return G.renderer.domElement.toDataURL('image/jpeg', 0.9); }, GID); shot(sj, 'wire-cook-sees-seated-guest.jpg'); }
+    await a.evaluate((gid) => G.live.tell({ r: { to: gid, score: 88, pay: 450, verdict: 'Good', issues: [] } }), GID);
     const paid = await until(g, () => G.guestRole.paid > 0, 60000), pd = await g.evaluate(() => ({ paid: G.guestRole.paid, kept: JSON.parse(sessionStorage.getItem('holo')).yatai.paid, cash: G.guestRole.cash }));
     ok(paid ? pd.paid === 5 && pd.kept === 5 : pd.cash < 5, 'the bowl is paid for from the guest\'s own money, kept for THE MARKET: ' + JSON.stringify(pd));
-    await g.evaluate(() => G.guestRole.sit()); const freed = await until(a, () => !G.game.customers.some((c) => c.guest === 'wire-check' && c.state !== 'leaving'), 60000);
+    await g.evaluate(() => G.guestRole.sit()); const freed = await until(a, (gid) => !G.game.customers.some((c) => c.guest === gid && c.state !== 'leaving'), 60000, GID);
     ok(freed, 'getting up frees the stool at the cart');
     // a second cook: a cart of their own beside the first, seen by the guest too
     const cx2 = await b.newContext({ viewport: { width: 700, height: 450 } }); await cx2.addCookies([{ name: 'tsfm-pass', value: 'dev:wire-check-two', url: BASE }]);

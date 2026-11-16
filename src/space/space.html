@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+<meta name="robots" content="noindex">
+<link rel="icon" href="data:,">
+<title>Space Fleet</title>
+<style>
+  :root { color-scheme: dark; }
+  html, body { margin: 0; height: 100%; overflow: hidden; background: #03050a; color: #eef1f6; font-family: system-ui, -apple-system, "Segoe UI", sans-serif; }
+  canvas { display: block; }
+  #lobby { position: fixed; inset: 0; display: flex; align-items: center; justify-content: center; padding: 16px; z-index: 10;
+    background: radial-gradient(circle at 25% 20%, #0b2a52 0, transparent 45%), radial-gradient(circle at 75% 85%, #4a1c08 0, transparent 45%), #03050a; }
+  #lobby.hidden { display: none; }
+  .card { width: min(500px, 100%); }
+  h1 { font-size: 46px; margin: 0 0 6px; letter-spacing: 4px; }
+  h1 span { color: #3aa0ff; }
+  p { color: #a7b0c0; line-height: 1.45; margin: 6px 0 14px; }
+  ul { color: #a7b0c0; line-height: 1.5; padding-left: 20px; margin: 0 0 16px; }
+  button { display: block; width: 100%; padding: 16px; margin: 0 0 10px; font-size: 19px; font-weight: 800; border: 0; border-radius: 12px; background: #2f7fe0; color: #fff; cursor: pointer; }
+  #bot { background: #24303f; }
+  #navy { display: flex; gap: 10px; margin: 0 0 12px; }
+  #navy button { flex: 1; margin: 0; padding: 12px 10px; font-size: 17px; background: #121a26; color: #9fb0c8; border: 2px solid #24303f; }
+  #navy button.on { border-color: #3aa0ff; color: #fff; background: #15263f; }
+  #navy span { display: block; font-size: 13px; font-weight: 400; color: #8a97ab; margin-top: 4px; }
+  button:disabled { background: #1a202b; color: #6f7a8c; cursor: default; }
+  #status { min-height: 22px; color: #ffcc66; margin-top: 12px; }
+</style>
+</head>
+<body>
+<div id="lobby">
+  <div class="card">
+    <h1>SPACE <span>FLEET</span></h1>
+    <p>A fleet battle that floats in your own room, or in open space. For a Meta Quest headset, in its browser.</p>
+    <ul>
+      <li>Your ships fly and fight on their own. You give the orders.</li>
+      <li>Trigger on a ship, drag it where it should go, or onto a target. Trigger on empty space drags a bubble that picks many.</li>
+      <li>Grip moves the field; both grips turn and size it.</li>
+      <li>Your left wrist is the shipyard. Hold the relays for more income. Destroy their mothership.</li>
+    </ul>
+    <div id="navy"><button id="navy0" class="on"><b>ADMIRALTY</b><span>grey line warships, strong force fields</span></button><button id="navy1"><b>CORSAIRS</b><span>lighter, faster, cheaper ships</span></button></div>
+    <button id="two" disabled>TWO PLAYERS</button>
+    <button id="bot" disabled>PLAY THE BOT</button>
+    <div id="status">Loading the fleet...</div>
+  </div>
+</div>
+<script type="module">__SPACE__</script>
+</body>
+</html>

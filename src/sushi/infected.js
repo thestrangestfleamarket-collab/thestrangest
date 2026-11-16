@@ -7,8 +7,21 @@ import { makePerson } from './avatars.js';
 export const CART = { x0: -1.22, x1: 1.22, z0: -0.66, z1: 1.86 }, REACH = 1.05, INREACH = 0.72;
 const ROUND = 0.3; // how far round the cart's corners they keep
 const _a = new V3(), _b = new V3(), _c = new V3(), _d = new V3();
-let INF = null; // one material for every turned body: their own colours, drained grey-green
-const infMat = (m) => { if (INF) return INF; INF = m.clone(); INF.onBeforeCompile = (s) => { s.fragmentShader = s.fragmentShader.replace('#include <color_fragment>', '#include <color_fragment>\n diffuseColor.rgb = mix(diffuseColor.rgb, vec3(dot(diffuseColor.rgb, vec3(0.3, 0.59, 0.11))), 0.72) * vec3(0.78, 0.86, 0.78);'); }; INF.customProgramCacheKey = () => 'turned'; return INF; };
+let INF = null; // one material for every turned body: their own colours drained, what skin shows grey-green, old blood round the mouth and down the front of whatever they wear (in the shader: no extra draw, no texture)
+const infMat = (m) => { if (INF) return INF; INF = m.clone(); INF.onBeforeCompile = (s) => {
+  s.vertexShader = s.vertexShader.replace('#include <common>', '#include <common>\nvarying vec3 vBindP;').replace('#include <begin_vertex>', '#include <begin_vertex>\n vBindP = position;');
+  s.fragmentShader = s.fragmentShader.replace('#include <common>', '#include <common>\nvarying vec3 vBindP;').replace('#include <color_fragment>', `#include <color_fragment>
+  { vec3 c = diffuseColor.rgb; float lum = dot(c, vec3(0.3, 0.59, 0.11));
+    float skin = smoothstep(0.05, 0.14, c.r - c.b) * smoothstep(0.1, 0.26, c.r) * (1.0 - smoothstep(0.3, 0.5, c.r - c.g));
+    vec3 flesh = vec3(0.26, 0.33, 0.24) * (0.6 + lum * 1.4), cloth = mix(c, vec3(lum), 0.6) * vec3(0.78, 0.85, 0.76);
+    c = mix(cloth, flesh, skin);
+    vec3 P = vBindP; float front = smoothstep(-0.02, 0.06, P.z);
+    float mouth = (1.0 - smoothstep(0.03, 0.08, abs(P.x))) * smoothstep(1.36, 1.44, P.y) * (1.0 - smoothstep(1.52, 1.58, P.y));
+    float run = smoothstep(0.35, 0.9, 0.5 + 0.5 * sin(P.x * 41.0 + sin(P.y * 11.0) * 1.6)) * smoothstep(0.98, 1.2, P.y) * (1.0 - smoothstep(1.4, 1.5, P.y)) * (1.0 - smoothstep(0.08, 0.2, abs(P.x)));
+    float blot = smoothstep(0.62, 0.95, 0.5 + 0.5 * sin(P.x * 23.0 + P.y * 17.0) * sin(P.y * 13.0 - P.z * 29.0));
+    float blood = clamp(max(mouth, run * 0.85) * front + blot * 0.55, 0.0, 0.9);
+    diffuseColor.rgb = mix(c, vec3(0.05, 0.004, 0.004), blood); }`); };
+  INF.customProgramCacheKey = () => 'turned2'; return INF; };
 const inCart = (x, z, m = 0) => x > CART.x0 - m && x < CART.x1 + m && z > CART.z0 - m && z < CART.z1 + m;
 // a way to a point that keeps off the cart: round its nearest corners
 function route(from, to) {
@@ -26,6 +39,7 @@ export function buildInfected() {
     if (!p || p.turned) return null; p.turned = true; if (p.mesh && p.mesh.material) p.mesh.material = infMat(p.mesh.material);
     if (!p.root.parent) (G.peopleRoot || G.scene).add(p.root); if (o.at) p.root.position.copy(o.at); p.pose = 'stand'; p.look = null; p.talkT = 0; p.root.traverse((x) => { x.userData.nopick = true; });
     p.root.updateMatrixWorld(true); for (const k of [0.25, 0.55, 0.9]) { const b = pick(p.bones || []); if (b && G.gore) G.gore.wound(p, b.getWorldPosition(new V3()).add(new V3(rand(-0.05, 0.05), rand(-0.05, 0.05), 0.08)), 0.03 + k * 0.02); }
+    for (const st of p.stains || []) if (st.m.userData.wound) st.life = 1e9;   // (theirs stay)
     const z = { id: ++I.seq, p, style: p.style || '', st: o.rise != null ? 'rise' : 'walk', t: 0, riseAt: o.rise ?? 0, hp: 100, head: 40, legs: 1, arm: { L: 1, R: 1 }, prey: null, side: null, inside: false, lunge: 0, cool: 0, wait: 0, heard: null, groan: rand(2, 7), wob: rand(6), think: 0, path: null, goal: new V3(), from: o.from || 'street', hands: { L: new V3(), R: new V3() } };
     if (z.st === 'rise') { p.stay = true; p.fall?.(o.dir || new V3(rand(-1, 1), 0, rand(-1, 1))); }
     I.list.push(z); O()?.note?.(o.from === 'counter' ? 'the first of them rose at the counter' : null); return z;

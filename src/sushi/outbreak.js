@@ -4,6 +4,7 @@ import { G, V3, Q, clamp, rand, pick, mat } from './ctx.js';
 import { Prop } from './items.js';
 import { makePerson } from './avatars.js';
 import * as T from './tex.js';
+import { mon } from './till.js';
 import { buildInfected, CART } from './infected.js';
 import { buildWeapons } from './weapons.js';
 import { buildGore } from './gore.js';
@@ -28,8 +29,9 @@ export function buildOutbreak(scene) {
   const camAt = () => (G.camera ? G.camera.getWorldPosition(cam) : cam.set(0, 1.6, 0.3));
   const at = (x, y, z) => new V3(x, y, z);
   // what happened tonight, for the score
+  O.hinted = {}; O.tipT = 0; O.tip = (text, sec = 8) => { G.outHint = text; O.tipT = text ? sec : 0; };
   O.found = (w) => { if (!w.foundT) { w.foundT = G.t; if (O.f >= 0.3) O.note(`you took up the ${w.def.name}`); } };
-  O.note = (what, kind) => { if (what) O.events.push({ f: +(clk().frac || 0).toFixed(3), what }); if (kind === 'kill') O.kills = (O.kills || 0) + 1; };
+  O.note = (what, kind) => { if (what) { O.events.push({ f: +(clk().frac || 0).toFixed(3), what }); if (/ on the counter| on the woodpile|bow and quiver|at the back|over the back|matchlock|leaned against/.test(what) && !O.won) O.tip(what.toUpperCase(), 7); } if (kind === 'kill') O.kills = (O.kills || 0) + 1; };
 
   // ---------- sounds of the night, from where they happen; each is also a noise they hear
   const S = (p, fn, wet) => { const A = G.audio; if (!A || !A.ready) return; const e = A.spatial('voice', p.clone ? p.clone() : p, { wet }); setTimeout(e.free, 9000); fn(A, e.input); };
@@ -60,22 +62,31 @@ export function buildOutbreak(scene) {
   // ---------- you: hurt by grabs and bites, shown softly (the edges darken, a heartbeat, the world dims), never a flash
   const me = O.me = { me: true, cart: true, hp: 100, dead: false, hurtT: -99, x: () => camAt().x, z: () => cam.z, y: () => cam.y,
     harm(n) { if (me.dead || O.won) return; me.hp -= n; me.hurtT = G.t; if (me.hp <= 0) { me.hp = 0; die(); } },
-    grabbed(z, dt) { me.harm(5 * dt); }, bite() { me.harm(26); O.note('you were bitten'); } };
+    grabbed(z, dt) { me.harm(5 * dt); }, bite() { me.harm(26); O.bitten = (O.bitten || 0) + 1; O.note('you were bitten'); } };
   const dark = document.createElement('div'); dark.style.cssText = 'position:fixed;inset:0;pointer-events:none;z-index:4;opacity:0;background:radial-gradient(ellipse at center, rgba(0,0,0,0) 38%, rgba(18,0,0,0.92) 100%)'; document.body.appendChild(dark);
   const vg = new THREE.Mesh(new THREE.PlaneGeometry(0.5, 0.5), new THREE.MeshBasicMaterial({ map: T.canvasTex(128, 128, (g, w, h) => { const r = g.createRadialGradient(w / 2, h / 2, w * 0.18, w / 2, h / 2, w * 0.5); r.addColorStop(0, 'rgba(0,0,0,0)'); r.addColorStop(1, 'rgba(14,0,0,1)'); g.fillStyle = r; g.fillRect(0, 0, w, h); }), transparent: true, opacity: 0, depthTest: false, depthWrite: false, toneMapped: false }));
   vg.position.set(0, 0, -0.12); vg.renderOrder = 999; vg.userData.nopick = true; vg.frustumCulled = false; G.camera.add(vg);
   let shown = 0, beat = 0;
   const panel = document.createElement('div'); panel.style.cssText = 'position:fixed;inset:0;display:none;z-index:20;background:rgba(4,3,3,0);color:#e8dcc8;font:16px Georgia,serif;align-items:center;justify-content:center;flex-direction:column;text-align:center;transition:background 2.5s'; document.body.appendChild(panel);
   const again = () => { location.href = location.pathname + location.search; };
-  const card = (title, lines) => { panel.innerHTML = ''; const h = document.createElement('div'); h.style.cssText = 'font-size:34px;letter-spacing:4px;margin-bottom:18px'; h.textContent = title; panel.appendChild(h); for (const l of lines) { const p = document.createElement('div'); p.style.cssText = 'margin:4px;opacity:.85'; p.textContent = l; panel.appendChild(p); } const b = document.createElement('button'); b.textContent = 'BEGIN AGAIN'; b.style.cssText = 'margin-top:26px;font:600 18px Georgia,serif;letter-spacing:3px;padding:12px 30px;background:#1a1410;color:#e8dcc8;border:1px solid #6a5a48;cursor:pointer'; b.onclick = again; panel.appendChild(b); panel.style.display = 'flex'; requestAnimationFrame(() => (panel.style.background = 'rgba(4,3,3,0.9)')); document.exitPointerLock?.();
-    // in the headset: the same words on a board before you, the button under them
+  // the run's score: the stall's day (bowls, takings, rating) and the night (who lived, how many put down); on a screen a card over the scene, in the headset a board before you
+  const score = () => { const g = G.game || {}, kept = O.shelter.filter((s) => !s.dead && !s.bitten).length, rate = g.rating ? g.rating() : 0;
+    return [['Bowls served', g.served || 0], ['Walked out', g.lost || 0], ['Taken in', mon((g.money || 0) + (g.tips || 0))], ['Rating', g.scores && g.scores.length ? '★'.repeat(Math.round(rate)) + ' ' + rate.toFixed(1) : 'none'], ['Sheltered and lived', `${kept} of ${O.shelter.length}`], ['Of them put down', O.kills || 0], ['Cut apart', gore.cuts], ['Bites taken', O.bitten || 0]]; };
+  const card = (title, intro, rows, events) => { panel.innerHTML = ''; const box = document.createElement('div'); box.style.cssText = 'background:rgba(10,8,7,0.84);border:1px solid #6a5a48;padding:26px 40px;min-width:420px;max-width:80vw'; panel.appendChild(box);
+    const h = document.createElement('div'); h.style.cssText = 'font-size:34px;letter-spacing:4px;margin-bottom:10px'; h.textContent = title; box.appendChild(h); const it = document.createElement('div'); it.style.cssText = 'margin-bottom:14px;opacity:.9'; it.textContent = intro; box.appendChild(it);
+    const tb = document.createElement('table'); tb.style.cssText = 'margin:0 auto;border-spacing:18px 3px;font-size:17px'; for (const [k, v] of rows) { const r = tb.insertRow(); r.insertCell().textContent = k; const c = r.insertCell(); c.textContent = String(v); c.style.textAlign = 'right'; } box.appendChild(tb);
+    for (const l of events) { const e = document.createElement('div'); e.style.cssText = 'margin:3px;font-size:14px;opacity:.7'; e.textContent = l; box.appendChild(e); }
+    const b = document.createElement('button'); b.textContent = 'BEGIN AGAIN'; b.style.cssText = 'margin-top:20px;font:600 18px Georgia,serif;letter-spacing:3px;padding:12px 30px;background:#1a1410;color:#e8dcc8;border:1px solid #6a5a48;cursor:pointer'; b.onclick = again; box.appendChild(b);
+    panel.style.display = 'flex'; requestAnimationFrame(() => (panel.style.background = O.won ? 'rgba(4,3,3,0.25)' : 'rgba(4,3,3,0.9)')); document.exitPointerLock?.(); O.card = { title, rows };
+    // in the headset: the same on a board before you, the button under it
     if (!G.renderer.xr.isPresenting) return;
-    const tex = T.canvasTex(1024, 640, (g, w, hh) => { g.fillStyle = 'rgba(8,6,6,0.94)'; g.fillRect(0, 0, w, hh); g.fillStyle = '#e8dcc8'; g.textAlign = 'center'; g.font = '56px Georgia'; g.fillText(title, w / 2, 110); g.font = '30px Georgia'; lines.slice(0, 9).forEach((l, i) => g.fillText(l, w / 2, 190 + i * 44, w - 60)); g.strokeStyle = '#8a7a68'; g.lineWidth = 3; g.strokeRect(w / 2 - 170, hh - 110, 340, 74); g.font = '36px Georgia'; g.fillText('BEGIN AGAIN', w / 2, hh - 60); });
-    const bd = new THREE.Mesh(new THREE.PlaneGeometry(0.8, 0.5), new THREE.MeshBasicMaterial({ map: tex, toneMapped: false })); camAt(); const fw = G.camera.getWorldDirection(new V3()).setY(0).normalize(); bd.position.copy(cam).addScaledVector(fw, 0.75); bd.lookAt(cam.x, bd.position.y, cam.z); scene.add(bd); O.board = bd;
-    const btn = { name: 'BEGIN AGAIN', r: 0.09, getPos: () => bd.localToWorld(new V3(0, -0.17, 0.01)), press: again }; bd.userData.button = btn; G.buttons.push(btn); };
+    const lines = [intro, ...rows.map(([k, v]) => `${k}: ${v}`)];
+    const tex = T.canvasTex(1024, 760, (g, w, hh) => { g.fillStyle = 'rgba(8,6,6,0.94)'; g.fillRect(0, 0, w, hh); g.fillStyle = '#e8dcc8'; g.textAlign = 'center'; g.font = '56px Georgia'; g.fillText(title, w / 2, 90); g.font = '30px Georgia'; lines.forEach((l, i) => g.fillText(l, w / 2, 160 + i * 44, w - 60)); g.strokeStyle = '#8a7a68'; g.lineWidth = 3; g.strokeRect(w / 2 - 170, hh - 100, 340, 70); g.font = '36px Georgia'; g.fillText('BEGIN AGAIN', w / 2, hh - 52); });
+    const bd = new THREE.Mesh(new THREE.PlaneGeometry(0.8, 0.6), new THREE.MeshBasicMaterial({ map: tex, toneMapped: false })); camAt(); const fw = G.camera.getWorldDirection(new V3()).setY(0).normalize(); bd.position.copy(cam).addScaledVector(fw, 0.75); bd.lookAt(cam.x, bd.position.y, cam.z); scene.add(bd); O.board = bd;
+    const btn = { name: 'BEGIN AGAIN', r: 0.09, getPos: () => bd.localToWorld(new V3(0, -0.23, 0.01)), press: again }; bd.userData.button = btn; G.buttons.push(btn); };
   const die = () => { if (me.dead) return; me.dead = true; O.dead = true; O.note('you died'); for (const h of G.hands || []) if (h.held) { h.held.held = null; h.held = null; }
     if (G.guest) { const b = document.createElement('div'); b.style.cssText = 'position:fixed;left:0;right:0;top:40%;text-align:center;z-index:20;color:#e8dcc8;font:28px Georgia,serif;letter-spacing:3px;pointer-events:none;text-shadow:0 0 12px #000'; b.textContent = 'YOU FELL. YOU WATCH THE REST OF THE NIGHT.'; document.body.appendChild(b); return; }   // (a guest who dies stays, and watches)
-    setTimeout(() => card('THE NIGHT TOOK YOU', [`You held out till ${clockWords()}.`, `${O.kills || 0} of them put down. ${O.shelter.filter((s) => !s.dead && !s.bitten).length} still sheltering at the cart.`, ...O.events.slice(-4).map((e) => e.what)]), 2600); };
+    setTimeout(() => card('THE NIGHT TOOK YOU', `You held out till ${clockWords()}.`, score(), O.events.slice(-3).map((e) => e.what)), 2600); };
   const clockWords = () => { const f = clk().frac; return f < 0.3 ? 'the afternoon' : f < 0.4 ? 'dusk' : f < 0.6 ? 'the middle of the night' : f < 0.9 ? 'the small hours' : 'first light'; };
 
   // ---------- the cart's defences: its shutters, and what is stacked at its sides
@@ -96,10 +107,10 @@ export function buildOutbreak(scene) {
   { const cord = new THREE.Mesh(new THREE.CylinderGeometry(0.006, 0.006, 0.5, 5), mat({ color: 0xc8b890 })), knot = new THREE.Mesh(new THREE.SphereGeometry(0.025, 8, 6), mat({ color: 0x7a2a1a })); cord.position.set(0.98, 1.7, CART.z0 + 0.12); knot.position.set(0.98, 1.44, CART.z0 + 0.12); scene.add(cord, knot);
     const btn = { name: 'the shutters\' cord', r: 0.05, getPos: () => knot.position, press: () => O.shutters() }; knot.userData.button = btn; cord.userData.button = btn; G.buttons.push(btn); }
   O.wear = (side, n, z) => { const s = sides[side]; if (!s) return;
-    if (side === 'front') { s.bar -= n * (1 - helpers() * 0.2); if (Math.random() < n * 0.4) { G.audio?.play('set', z.p.root.position); O.noise(z.p.root.position, 0.4); } if (s.bar <= 0 && !s.broke) { s.broke = true; s.bar = 0; O.sound('crash', at(0, 1.4, CART.z0)); O.note('the shutters gave way'); } return; }
+    if (side === 'front') { s.bar -= n * (1 - helpers() * 0.2); if (Math.random() < n * 0.4) { G.audio?.play('set', z.p.root.position); O.noise(z.p.root.position, 0.4); } if (s.bar <= 0 && !s.broke) { s.broke = true; s.bar = 0; O.sound('crash', at(0, 1.4, CART.z0)); O.note('the shutters gave way'); O.tip('THE SHUTTERS GAVE WAY: KEEP BACK FROM THE COUNTER', 10); } return; }
     let best = null, bd = 9; for (const it of props) if (it.side === side && it.bar > 0) { const d = it.obj.position.distanceTo(z.p.root.position); if (d < bd) { bd = d; best = it; } }
     if (!best) return; best.bar -= n * (1 - helpers() * 0.2); if (Math.random() < n * 0.5) G.audio?.play('set', best.obj.position);
-    if (best.bar <= 0) { const P = best.obj.position, out = side === 'left' ? -1 : side === 'right' ? 1 : 0; best.drop(new V3(out ? -out * 0.6 : rand(-0.4, 0.4), 1.2, side === 'back' ? -0.6 : rand(-0.3, 0.3)), new V3(rand(-2, 2), rand(-1, 1), rand(-2, 2))); O.sound('crash', P); O.note(`the ${best.stack} at the ${side} went over`); } };
+    if (best.bar <= 0) { const P = best.obj.position, out = side === 'left' ? -1 : side === 'right' ? 1 : 0; best.drop(new V3(out ? -out * 0.6 : rand(-0.4, 0.4), 1.2, side === 'back' ? -0.6 : rand(-0.3, 0.3)), new V3(rand(-2, 2), rand(-1, 1), rand(-2, 2))); O.sound('crash', P); O.note(`the ${best.stack} at the ${side} went over`); if (!O.hinted[side]) { O.hinted[side] = true; O.tip(`THE ${side.toUpperCase()} SIDE IS OPEN: STACK IT AGAIN`, 10); } } };
   const zoneOf = (p) => { for (const k in ZONE) { const [x0, z0, x1, z1] = ZONE[k]; if (p.x > x0 && p.x < x1 && p.z > z0 && p.z < z1) return k; } return null; };
   O.barricade = () => { if (props.length) return; for (const [k, p, r] of [['crate', at(-1.5, 0, 0.0), Math.PI / 2], ['crate', at(-1.5, 0.33, 0.0), Math.PI / 2], ['door', at(-1.5, 0, 1.15), 0], ['crate', at(1.5, 0, 0.1), Math.PI / 2], ['barrel', at(1.5, 0, 1.0), 0], ['crate', at(-0.45, 0, 2.15), 0], ['crate', at(0.45, 0, 2.15), 0], ['crate', at(0, 0.33, 2.15), 0]]) stackable(k, p, r); O.note(null); };
 
@@ -159,8 +170,7 @@ export function buildOutbreak(scene) {
     yari: () => { W.make('yari', at(0, 0.93, 1.62), new Q().setFromEuler(new THREE.Euler(0, Math.PI / 2, Math.PI / 2))); O.note('a yari leaned against the back of the cart'); },
     gather: () => { for (const s of O.shelter) s.calm = Math.max(s.calm, 0.7); const h = free()[0]; if (h) shelter(h); },
     rescue: () => { column(); O.note('the domain\'s samurai came with torches'); },
-    won: () => { if (me.dead) return; O.won = true; const alive = O.shelter.filter((s) => !s.dead && !s.bitten).length;
-      card('DAWN', ['You lived to see the dawn.', `${alive} of those who sheltered with you lived.`, `${O.kills || 0} of them put down, ${gore.cuts} cut apart.`, ...O.events.filter((e) => !/came to shelter/.test(e.what)).slice(-5).map((e) => e.what)]); },
+    won: () => { if (me.dead) return; O.won = true; O.tip(''); card('DAWN', 'You lived to see the dawn.', score(), O.events.filter((e) => !/came to shelter|you were bitten/.test(e.what)).slice(-3).map((e) => e.what)); },
   };
   const mark = (p) => { p.cough = true; G.gore?.wound(p, p.bones?.find((b) => b.name === 'forearmL')?.getWorldPosition(new V3()) || p.root.position.clone().setY(1.1), 0.03);
     cry(p, 'You have a bad cough tonight and a bandage on your arm where a stray dog bit you on the road. Mention it briefly to the cook, then cough.', ['Forgive me... this cough. A dog bit me on the road, it will not stop aching.', 'Excuse me. I have not been well since that bite.']); O.note('a customer with a cough and a bandaged arm'); };
@@ -203,7 +213,10 @@ export function buildOutbreak(scene) {
     dark.style.opacity = (shown * 0.95).toFixed(3); vg.material.opacity = shown * 0.9; vg.visible = shown > 0.01; if (G.mode === 'desktop') G.renderer.domElement.style.filter = shown > 0.02 ? `brightness(${(1 - shown * 0.35).toFixed(3)}) saturate(${(1 - shown * 0.5).toFixed(3)})` : '';
     if (!me.dead && me.hp < 55 && (beat -= dt) <= 0) { beat = 0.55 + me.hp / 100; O.sound('heart', camAt()); }
     for (let i = O.noises.length - 1; i >= 0; i--) if (G.t - O.noises[i].t > 10) O.noises.splice(i, 1);
-    if (O.stage !== 'normal' && O.stage !== 'signs' && G.hint !== undefined && !me.dead) G.outHint = !sides.front.down && I.alive().length ? 'PULL THE SHUTTERS\' CORD (RIGHT OF THE COUNTER)' : '';
+    // what to do now, a line at a time and not for long: the shutters when they first come, a fallen side, a weapon come to hand; nothing once help is here
+    if (O.stage === 'end' || me.dead || O.won) O.tip(''); else if (!O.hinted.shut && I.alive().length && !sides.front.down) { O.hinted.shut = true; O.tip('PULL THE SHUTTERS\' CORD (RIGHT OF THE COUNTER)', 25); }
+    if (sides.front.down && /SHUTTERS/.test(G.outHint || '')) O.tip('');
+    if (O.tipT > 0 && (O.tipT -= dt) <= 0) G.outHint = '';
   };
   // ---------- in a shared alley: the page that leads says where the turned are and what they do; the rest draw them
   const ST = ['walk', 'push', 'grab', 'climb', 'rise', 'dead'];

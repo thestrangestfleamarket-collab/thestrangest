@@ -49,7 +49,7 @@ function grab(h, cand) {
 }
 
 function release(h) {
-  const it = h.held; h.held = null; if (!it || it.dead) return; it.held = null;
+  const it = h.held; h.held = null; if (!it || it.dead) return; it.held = null; it.letT = G.t;   // (react.js: only what the cook let go of lately can be a blow from the cook)
   if (PH.ready) PH.unhold(it);
   if (h.xr) { throwOf(h, _tv, _tw); _tv.add(_v.copy(_tw).cross(it.worldCenter(_v2).sub(h.pos))).clampLength(0, 12); h.vs.copy(_tv); h.pulse(0.2, 15); } // the hand's own swing and the turn of the wrist
   if (it.onRelease(h)) return;

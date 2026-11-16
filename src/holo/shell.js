@@ -1,7 +1,7 @@
 // THE HOLODECK'S SHELL (/holo?g=<game>): a holodeck game that is a page of its own, shown alone (no market behind it), LEAVE THE HOLODECK over it, you kept in your section's room
 import {NET} from './net.js';
 import {cartLink} from './cartlink.js';
-const PAGES={vr:'/vr',wave:'/wave',golf:'/golf',scare:'/scare',shoot:'/shoot',duel:'/duel',cantina:'/cantina',ramen:'/ramen',sushi:'/ramen'}, q=new URLSearchParams(location.search), g=q.get('g'), url=PAGES[g], cart=g==='ramen'||g==='sushi', guest=cart&&q.get('as')==='guest';   // (a guest of the ramen cart's alley walks it as themselves: 146bg sends them here)
+const PAGES={vr:'/vr',wave:'/wave',golf:'/golf',scare:'/scare',shoot:'/shoot',duel:'/duel',cantina:'/cantina',crumbs:'/crumbs',ramen:'/ramen',sushi:'/ramen'}, q=new URLSearchParams(location.search), g=q.get('g'), url=PAGES[g], cart=g==='ramen'||g==='sushi', guest=cart&&q.get('as')==='guest';   // (a guest of the ramen cart's alley walks it as themselves: 146bg sends them here)
 if(!url)NET.back();
 else{ const fr=document.createElement('iframe'); fr.src=(location.protocol==='file:'?'.'+(g==='vr'?'/asylum':url)+'.html':url)+(guest?'?guest=1':''); fr.allow='xr-spatial-tracking; fullscreen; autoplay; gamepad; microphone'; document.body.prepend(fr); fr.focus(); NET.connect(); }
 if(cart){ NET.query=guest?{}:{cart:'1'}; if(guest)document.getElementById('leave').textContent='LEAVE THE VILLAGE';

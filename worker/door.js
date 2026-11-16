@@ -13,6 +13,7 @@ import { BOWLS } from "./lanes.js";
 import { FLYBOT } from "./flybot.js";
 import { HOLMES } from "./holmes.js";
 import { CANTINA } from "./cantina.js";
+import { CRUMBS } from "./crumbs.js";
 import { SUSHI } from "./sushi.js";
 import { SALOON } from "./saloon.js";
 import { HIDE } from "./hide.js";
@@ -142,6 +143,9 @@ export default {
     if ((request.method === "GET" || request.method === "HEAD") && (p === "/wild" || p === "/saloon")) return page(env, url, "/saloon", request, "no-cache");
     if (request.method === "GET" && p === "/saloon/look") { const f = await postOf(env).getFile("saloon-look.json"); return f ? new Response(f.data, { headers: { "content-type": "application/json", "cache-control": "no-store" } }) : new Response(null, { status: 204 }); }   // the look the owner saved from the render inspector (POST /shared/saloon-look.json, his alone), to anyone who plays
     if (p === "/wild/" || p === "/saloon/") return Response.redirect(url.origin + "/wild" + url.search, 301);
+    // MIDNIGHT CRUMBS (src/crumbs/): its own page at /crumbs, to anyone with the link; its regulars talk to a login through POST /crumbs/talk
+    if ((request.method === "GET" || request.method === "HEAD") && p === "/crumbs") return page(env, url, "/crumbs", request, "no-cache");
+    if (p === "/crumbs/") return Response.redirect(url.origin + "/crumbs" + url.search, 301);
     // THE CANTINA (src/cantina/): its own page at /cantina, to anyone with the link; its models and pictures under /cantina-assets/
     if ((request.method === "GET" || request.method === "HEAD") && p === "/cantina") return page(env, url, "/cantina", request, "no-cache");
     if ((request.method === "GET" || request.method === "HEAD") && GOLFA.test(p)) {
@@ -226,7 +230,7 @@ export default {
       const id = await who(env, request, dev); if (!id) return json({ why: "login" }, 401); if (!env.AI) return json({ why: "the website has no AI binding yet" }); if (tooMany("hear:" + id, 12)) return json({ why: "too much at once, wait a minute" }, 429);
       const buf = await request.arrayBuffer(); if (!buf.byteLength || buf.byteLength > 2 << 20) return json({ why: "too long, say it shorter" }, 400);
       try { const r = await env.AI.run("@cf/openai/whisper", { audio: [...new Uint8Array(buf)] }); return json({ text: String((r && r.text) || "").trim().slice(0, 400) }); } catch (e) { return json({ why: "it could not be made out" }); } }
-    if (request.method === "POST" && (p === "/post" || p === "/admin" || p === "/home" || p === "/owned" || p === "/name" || p === "/scores" || p === "/art" || p === "/orchard" || p === "/bot" || p === "/holmes" || p === "/cantina/talk" || p === "/sushi/talk" || p === "/sushi/say" || p === "/sushi/report" || p === "/sushi/log" || p === "/zombie/mind" || p === "/zombie/save" || p === "/saloon/talk" || p === "/saloon/save")) {
+    if (request.method === "POST" && (p === "/post" || p === "/admin" || p === "/home" || p === "/owned" || p === "/name" || p === "/scores" || p === "/art" || p === "/orchard" || p === "/bot" || p === "/holmes" || p === "/cantina/talk" || p === "/crumbs/talk" || p === "/sushi/talk" || p === "/sushi/say" || p === "/sushi/report" || p === "/sushi/log" || p === "/zombie/mind" || p === "/zombie/save" || p === "/saloon/talk" || p === "/saloon/save")) {
       if (request.headers.get("Origin") !== url.origin && !(dev && !request.headers.get("Origin"))) return json({ why: "not from the game's page" }, 403);
       const id = await who(env, request, dev); if (!id) return json({ why: "login" }, 401);
       let body; try { body = await request.json(); } catch (e) { body = {}; } if (!body || typeof body !== "object") body = {};
@@ -270,6 +274,15 @@ export default {
         const H = homeOf(env), k = id + "~cantina", day = new Date().toISOString().slice(0, 10), D = (await H.botGet(k)) || {}, max = +env.BOT_DAILY || FLYBOT.DAY;
         if (D.day === day && D.n >= max) return json({ why: "the bar has talked enough for one day; come back tomorrow" });
         const out = await CANTINA.MINDS[c].ask(env, { get: () => H.botGet(k + "~" + c), put: v => H.botPut(k + "~" + c, v) }, { say: body.say, state: body.state, name: await H.nameGet(id) });
+        if (out.say) await H.botPut(k, { day, n: D.day === day ? D.n + 1 : 1 });
+        return json(out); }
+      // a regular of MIDNIGHT CRUMBS answers the cook (worker/crumbs.js); what the two have said is the player's, kept beside their bot's; the day's count is one for the whole counter
+      if (p === "/crumbs/talk") { if (!env.ANTHROPIC_API_KEY) return json({ why: "the website has no ANTHROPIC_API_KEY secret yet" });
+        const c = word(body.who, 24); if (!CRUMBS.has(c)) return json({ why: "nobody by that name here" }, 400);
+        if (tooMany("bot:" + id, 12)) return json({ why: "too much at once, wait a minute" }, 429);
+        const H = homeOf(env), k = id + "~crumbs", day = new Date().toISOString().slice(0, 10), D = (await H.botGet(k)) || {}, max = +env.BOT_DAILY || FLYBOT.DAY;
+        if (D.day === day && D.n >= max) return json({ why: "the counter has talked enough for one night; come back tomorrow" });
+        const out = await CRUMBS.MINDS[c].ask(env, { get: () => H.botGet(k + "~" + c), put: v => H.botPut(k + "~" + c, v) }, { say: body.say, state: body.state, name: await H.nameGet(id) });
         if (out.say) await H.botPut(k, { day, n: D.day === day ? D.n + 1 : 1 });
         return json(out); }
       if (p === "/bot") { if (!env.ANTHROPIC_API_KEY) return json({ why: "the website has no ANTHROPIC_API_KEY secret yet" });

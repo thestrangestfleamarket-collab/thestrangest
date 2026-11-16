@@ -1,0 +1,82 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Midnight Crumbs</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bree+Serif&family=Caveat:wght@500;700&family=Courier+Prime:wght@400;700&family=Kalam:wght@400;700&display=swap">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<canvas id="c"></canvas>
+<div id="hud" hidden>
+  <div class="row"><span id="h-clock" class="big"></span><span id="h-served"></span><span>tips <b id="h-tips"></b></span></div>
+  <div class="row"><span class="lbl">🕯 noise</span><div id="noisebar"><div id="noisefill"></div></div></div>
+  <div id="h-hands"></div>
+</div>
+<div id="vig"></div>
+<div id="eye" hidden></div>
+<div id="cross" hidden></div>
+<div id="hint" hidden></div>
+<div id="tip" hidden></div>
+<div id="cue" hidden></div>
+<div id="arrow" hidden></div>
+<div id="orders" hidden></div>
+<div id="toast"></div>
+
+<div id="menu" class="panel"><div class="menu-wrap">
+  <img id="logo" alt="Midnight Crumbs">
+  <p class="tag">A mouse, a secret diner on the kitchen counter, and a whole night of hungry critters.</p>
+  <div class="card recipe" id="menu-card"><i class="pin"></i><i class="pin r"></i><div id="menu-body"></div></div>
+</div></div>
+
+<div id="pause" class="panel" hidden><div class="card recipe"><i class="pin"></i>
+  <h2>Paused</h2>
+  <div id="pause-body"></div>
+  <button id="b-resume">Resume</button><button id="b-quit" class="alt">Quit to menu</button>
+</div></div>
+
+<div id="end" class="panel" hidden><div class="card receipt center"><div class="rc-head">MIDNIGHT CRUMBS<br><small>diner · behind the bread box</small></div>
+  <div id="e-stars"></div>
+  <h2 id="e-title"></h2>
+  <div id="e-sum"></div>
+  <div id="e-extra"></div>
+  <button id="b-next" hidden>Next night</button><button id="b-again" class="alt">Play again (R)</button><button id="b-menu" class="alt">Menu</button>
+</div></div>
+
+<script src="vendor.js"></script>
+<script src="core.js"></script>
+<script src="tex.js"></script>
+<script src="audio.js"></script>
+<script src="physics.js"></script>
+<script src="ripple.js"></script>
+<script src="world.js"></script>
+<script src="creature.js"></script>
+<script src="cook.js"></script>
+<script src="player.js"></script>
+<script src="pf/beetle"></script>
+<script src="pf/butterfly"></script>
+<script src="pf/snail"></script>
+<script src="pf/ant"></script>
+<script src="pf/tarantula"></script>
+<script src="pf/ladybird"></script>
+<script src="pf/hopper"></script>
+<script src="pf/wasp"></script>
+<script src="pf/woodlouse"></script>
+<script src="pf/firefly"></script>
+<script src="pf/cat"></script>
+<script src="pf.js"></script>
+<script src="bugs.js"></script>
+<script src="game.js"></script>
+<script src="events.js"></script>
+<script src="career.js"></script>
+<script src="ui.js"></script>
+<script src="main.js"></script>
+<script src="touch.js"></script>
+<script src="menuart.js"></script>
+<script src="menu.js"></script>
+<script src="bot.js"></script>
+<script src="talk.js"></script>
+</body>
+</html>

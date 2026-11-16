@@ -67,6 +67,7 @@ const grit = buildGrit(scene, city, cart);
 const guide = buildGuide(scene, cart);
 T.metreUV(cart.group);
 G.baked = mergeStatic(cart.group) + mergeStatic(city.group);
+for (const g of [cart.group, city.group]) g.traverse((o) => { if (o.isMesh && !o.userData.dyn && !o.userData.item) o.layers.enable(2); });   // the still village and stall cast the sun's shadows
 const tank = buildTank(scene), live = buildLive(), cook = buildCook(), story = buildStory(scene);
 if (G.guest) G.buttons.length = 0;   // (the cart's knobs, switch and boards are the cook's)
 const share = buildShare(live), guest = G.guest ? buildGuest(live) : null;

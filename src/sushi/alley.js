@@ -112,6 +112,7 @@ export function buildAlley(scene) {
   // ---- the light: the sun across the sky, the moon at night, the hemisphere's fill, the sky dome and its stars; and the village's lanterns
   const fill = new THREE.HemisphereLight(0xbcd0ec, 0x6a5a40, 1.05); scene.add(fill);
   const sun = new THREE.DirectionalLight(0xfff2dc, 2.4); sun.castShadow = true; sun.shadow.mapSize.set(1024, 1024); Object.assign(sun.shadow.camera, { left: -9, right: 9, top: 9, bottom: -9, near: 1, far: 80 }); sun.shadow.bias = -0.0015; scene.add(sun, sun.target);
+  sun.shadow.camera.layers.set(2); sun.shadow.autoUpdate = false; sun.shadow.needsUpdate = true; let shT = 0; ups.push((dt) => { if ((shT -= dt) <= 0) { shT = 1; sun.shadow.needsUpdate = true; } });   // the sun's (and the moon's) shadows are the still village's (layer 2), laid again once a second as the light creeps; what moves takes its shadows from the lanterns near the stall
   const moon = sun;
   const skyG = new THREE.SphereGeometry(400, 24, 12), skyC = new Float32Array(skyG.attributes.position.count * 3); skyG.setAttribute('color', new THREE.BufferAttribute(skyC, 3));
   const sky = new THREE.Mesh(skyG, new THREE.MeshBasicMaterial({ vertexColors: true, side: THREE.BackSide, fog: false, depthWrite: false })); sky.renderOrder = -10; sky.userData.nopick = true; sky.userData.dyn = true; sky.frustumCulled = false; scene.add(sky);

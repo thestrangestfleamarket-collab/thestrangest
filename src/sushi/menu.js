@@ -11,9 +11,6 @@ export function buildMenu(scene, cart, guide, talk, shadowLights, report) {
     ['EASY ON THE EYES', () => (S.easy ? 'ON' : 'OFF'), () => { S.easy = !S.easy; try { localStorage.setItem('yatai-easy', S.easy ? '1' : '0'); } catch (e) { /* not kept */ } G.eyes?.(S.easy); }],
     ['THE MARKET', () => (G.live ? G.live.status() : 'NOT LINKED'), () => { }],
     ['GUIDE MODE', () => (guide.on ? 'ON' : 'OFF'), () => guide.set(!guide.on)],
-    ['RADIO', () => (G.audio.radioOn ? 'ON' : 'OFF'), () => G.audio.setRadio(!G.audio.radioOn)],
-    ['STATION', () => G.audio.label().toUpperCase(), () => { if (!G.audio.radioOn) G.audio.setRadio(true); else G.audio.tune(); }],
-    ['TELEVISION', () => (G.tv?.on ? 'CH ' + G.tv.ch.ch + ' ' + G.tv.ch.name : 'OFF'), () => (G.tv.on ? G.tv.next() : G.tv.power(true))],
     ['VOLUME', () => Math.round(S.volume * 100) + '%', () => { S.volume = S.volume >= 1.5 ? 0.25 : S.volume + 0.25; if (G.audio.master) G.audio.master.gain.value = S.volume; }],
     ['SPOKEN VOICES', () => (S.tts ? 'ON' : 'OFF'), () => { S.tts = !S.tts; G.muteVoices = !S.tts; if (!S.tts) window.speechSynthesis?.cancel(); }],
     ['MICROPHONE', () => (S.mic ? (talk.mic || 'ON').toUpperCase() : 'OFF'), () => { S.mic = !S.mic; talk.listen(S.mic); }],
@@ -24,7 +21,7 @@ export function buildMenu(scene, cart, guide, talk, shadowLights, report) {
     ['OPEN / CLOSE CART', () => G.game.state.toUpperCase(), () => G.game.toggleOpen()],
     ['REPORT A BUG (X / A)', () => (report.busy ? 'RECORDING' : 'PICTURE + VOICE'), () => { m.toggle(false); setTimeout(() => report.press(), 400); }],
     ['LEAVE VR', () => '', () => G.renderer.xr.getSession()?.end()],
-    ...(G.guest ? [['LEAVE THE ALLEY', () => 'TO THE MARKET', () => G.guestRole?.leave()]] : []),
+    ...(G.guest ? [['LEAVE THE VILLAGE', () => 'TO THE MARKET', () => G.guestRole?.leave()]] : []),
   ];
   const rh = H / (rows.length + 1.4), far = new V3(0, -99, 0), tmp = new V3();
   rows.forEach((r, i) => { const local = new V3(W * 0.22, H / 2 - rh * (i + 1.75), 0.004); const b = { getPos: () => (m.open ? board.localToWorld(tmp.copy(local)).clone() : far), r: 0.028, name: r[0], press: () => { r[2](); G.audio.play('click'); draw(); } }; G.buttons.push(b); });

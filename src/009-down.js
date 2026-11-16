@@ -274,7 +274,7 @@ const SSUB=(()=>{ const W={};
   SL.BENCH.forEach((y,i)=>{ put(benchBoxes(MID,y,3.2,i+1),'bench'); solid(MID-.75,y,MID+.75,y+3.2,36); blobAt(MID-.75,y,MID+.75,y+3.2); });
   SL.BINS.forEach(y=>solid(MID-.28,y-.28,MID+.28,y+.28,32));
   const MX=SL.EX0-.95, MY=.06; put(W.mach(MX,MY),'passport machine'); solid(MX,MY,MX+.56,MY+.7,46); blobAt(MX,MY,MX+.56,MY+.7);
-  STORE.places.push(['THE DARK ALLEY',0,0,'up','off']);   // on the map's list from the start; the alley itself is off the map (146bg)
+  STORE.places.push(['RAMEN',0,0,'up','off']);   // on the map's list from the start; the alley itself is off the map (146bg)
   put(W.signal(XW-.35,-1.4,1),'signal',SZ-32); put(W.signal(XW-.35,LEN+1.4,0),'signal',SZ-32); put(W.signal(.35,LEN+1.4,0),'signal',SZ-32);
   BATCH.build((k,map,emap)=>k==='B'?new THREE.MeshBasicMaterial({map,alphaTest:.5,side:THREE.DoubleSide}):new THREE.MeshLambertMaterial({map,alphaTest:.5,side:THREE.DoubleSide,...(emap?{emissiveMap:emap,emissive:0xffffff,emissiveIntensity:1.6}:{})}));
   BATCH.cast=false;

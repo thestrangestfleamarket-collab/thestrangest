@@ -43,6 +43,8 @@ export class SaloonAudio {
       case 'card': this.hiss(0.05, 3200, 1.5, 0.07); break;
       case 'cork': this.tone(520, 0.07, { v: 0.22, to: 180, type: 'triangle' }); this.hiss(0.05, 1400, 1, 0.1); break;
       case 'slide': this.hiss(0.1, 2400, 2, 0.03 * k); break;
+      case 'crack': this.hiss(0.09, 900, 0.8, 0.5 * k, { type: 'lowpass', to: 300 }); this.tone(210 * r, 0.12, { v: 0.35 * k, type: 'sawtooth', to: 70 }); this.tone(520 * r, 0.05, { v: 0.2 * k, type: 'square', at: 0.03 }); this.hiss(0.3, 2600, 1, 0.07 * k, { at: 0.06 }); break;
+      case 'creak': this.tone(180 * r, 0.35, { v: 0.07, type: 'sawtooth', to: 130 }); break;
       case 'match': this.hiss(0.3, 4200, 1, 0.08, { to: 1500 }); break;
     }
   }

@@ -29,7 +29,7 @@ export function buildFolk(scene, room) {
   const head = (p, out) => out.copy(p.root.position).setY(p.root.position.y + (p.state === 'sit' ? 1.3 : 1.62));
 
   // ---- seats and standing places
-  const freeSeat = (at) => { const L = room.seats.filter((s) => !s.who && (at === 'bar' ? s.kind === 'stool' : s.at === at)); return L.length ? (at === 'bar' ? L.sort((a, b) => Math.abs(a.x) - Math.abs(b.x))[(Math.random() * Math.min(3, L.length)) | 0] : L[0]) : null; };
+  const freeSeat = (at) => { const L = room.seats.filter((s) => !s.who && !s.gone && (at === 'bar' ? s.kind === 'stool' : s.at === at)); return L.length ? (at === 'bar' ? L.sort((a, b) => Math.abs(a.x) - Math.abs(b.x))[(Math.random() * Math.min(3, L.length)) | 0] : L[0]) : null; };
   const leaveSeat = (p) => { if (p.seat) { p.seat.who = null; p.seat = null; } if (p.spot) { p.spot.who = null; p.spot = null; } p.P.pose = 'stand'; p.root.position.y = 0; };
   const barSpot = () => { const L = room.spots.bar.filter((s) => !s.who); return L.length ? pick(L) : null; };
 
@@ -121,6 +121,7 @@ export function buildFolk(scene, room) {
       if (!p.here) continue;
       if (!p.alive) { if (p.dead < 1.5) { p.dead += dt; p.P.update(dt); } continue; }   // the dead lie where they fell
       p.t += dt;
+      if (p.seat && p.seat.gone && p.state === 'sit') { leaveSeat(p); p.state = 'stand'; p.act = null; ev('unseated', { id: p.id }); }
       if (p.state === 'walk' && p.tgt && !p.P.reeling()) {
         const pos = p.root.position; _d.set(p.tgt.x - pos.x, 0, p.tgt.z - pos.z); const d = _d.length();
         if (d < 0.12) arrived(p);

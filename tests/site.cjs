@@ -22,6 +22,7 @@ let bad=0; const ok=(c,m)=>{ console.log((c?'ok   ':'FAIL ')+m); if(!c)bad++; };
   { const r=await fetch(BASE+'/wave'); ok(r.status===200&&/Shardwave/.test(await r.text()),'/wave (SHARDWAVE) is handed to anyone, no login'); }
   { const r=await fetch(BASE+'/holmes'); ok(r.status===200&&/The Speckled Band/.test(await r.text()),'/holmes (THE SPECKLED BAND) is handed to anyone, no login');
     const t=await fetch(BASE+'/holmes',{method:'POST',headers:{'content-type':'application/json',origin:BASE},body:'{}'}); ok(t.status===401,'but the others answer only a login ('+t.status+')'); }
+  { const r=await fetch(BASE+'/drums'), k=await fetch(BASE+'/drums-assets/kit.json'), m=await fetch(BASE+'/drums-assets/m/boombox.glb'); ok(r.status===200&&/The Garage/.test(await r.text())&&k.status===200&&m.status===200&&/gltf/.test(m.headers.get('content-type')||''),'/drums (THE GARAGE) is handed to anyone, no login, with its kit and models under /drums-assets/'); }
   for(const u of ['/jam','/rock']){ const r=await fetch(BASE+u); ok(r.status===200&&/Stadium Jam/.test(await r.text()),u+' (STADIUM JAM) is handed to anyone, no login'); }
   {
     const a=await fetch(BASE+'/jam-assets/left.glb'), d=await fetch(BASE+'/jam-assets/drums.json'); ok(a.status===200&&/gltf/.test(a.headers.get('content-type')||'')&&d.status===200,'and its hands and samples under /jam-assets/'); }

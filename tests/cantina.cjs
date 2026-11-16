@@ -1,10 +1,12 @@
-// THE CANTINA CHECK: node tests/cantina.cjs [dist/cantina.html] [folder for screenshots]. The hall loads with every model and picture, you walk in, sit at the long table, the deal reaches every seat, a card comes into your hand and goes back down, the look changes, a regular answers, the band keeps the bar, and in an emulated headset you sit and draw; no page errors.
+// THE CANTINA CHECK: node tests/cantina.cjs [dist/cantina.html] [folder for screenshots]. The hall loads with every model and picture, you walk in, sit at the long table, the deal reaches every seat, a card comes into your hand and goes back down, the look changes, a regular answers, the jukebox plays the record you choose, and in an emulated headset you sit and draw; no page errors.
 const { chromium } = require('playwright'), path = require('path'), fs = require('fs');
 const fails = [], ok = (c, m) => { if (!c) { fails.push(m); console.log((process.env.GITHUB_ACTIONS ? '::error title=cantina::' : 'FAIL ') + m); } else console.log('ok   ' + m); };
 const PAGE = path.resolve(process.argv[2] || 'dist/cantina.html'), ROOT = path.dirname(PAGE), OUT = process.argv[3]; if (OUT) fs.mkdirSync(OUT, { recursive: true });
 const TYPES = { '.html': 'text/html', '.js': 'text/javascript', '.json': 'application/json', '.jpg': 'image/jpeg', '.glb': 'model/gltf-binary', '.mp3': 'audio/mpeg' };
 const srv = require('http').createServer((q, r) => { const f = path.join(ROOT, decodeURIComponent(q.url.split('?')[0])); if (!f.startsWith(ROOT)) { r.writeHead(403); return r.end(); }
-  fs.readFile(f, (e, d) => { if (e) { r.writeHead(404); return r.end(); } r.writeHead(200, { 'content-type': TYPES[path.extname(f)] || 'application/octet-stream' }); r.end(d); }); });
+  fs.readFile(f, (e, d) => { if (e) { r.writeHead(404); return r.end(); } const ty = TYPES[path.extname(f)] || 'application/octet-stream', m = /^bytes=(\d+)-(\d*)$/.exec(q.headers.range || '');
+    if (m) { const a = +m[1], z = m[2] ? Math.min(+m[2], d.length - 1) : d.length - 1; r.writeHead(206, { 'content-type': ty, 'accept-ranges': 'bytes', 'content-range': `bytes ${a}-${z}/${d.length}`, 'content-length': z - a + 1 }); return r.end(d.subarray(a, z + 1)); }
+    r.writeHead(200, { 'content-type': ty, 'accept-ranges': 'bytes', 'content-length': d.length }); r.end(d); }); });
 (async () => {
   await new Promise(res => srv.listen(0, '127.0.0.1', res)); const FILE = 'http://127.0.0.1:' + srv.address().port + '/' + path.basename(PAGE);
   const b = await chromium.launch({ ...(process.env.PWCHROME ? { executablePath: process.env.PWCHROME } : {}), args: ['--use-gl=angle', '--use-angle=swiftshader', '--enable-unsafe-swiftshader', '--ignore-gpu-blocklist', '--autoplay-policy=no-user-gesture-required'] });
@@ -19,8 +21,8 @@ const srv = require('http').createServer((q, r) => { const f = path.join(ROOT, d
   if (!up) { console.log(errs.join(' | ')); await b.close(); srv.close(); process.exit(1); }
   ok(miss.length === 0, 'every model, picture and the track is found' + (miss.length ? ': ' + [...new Set(miss)].join(', ') : ''));
   ok(await ev(() => __game.world.key === 'A'), 'at seven in the evening it is the Onyx Room');
-  const st = await ev(() => { let lights = 0, skinned = 0; __game.world.root.traverse(o => { if (o.isLight) lights++; if (o.isSkinnedMesh) skinned++; }); return { lights, skinned, npcs: __game.world.npcs.length, calls: __game.renderer.info.render.calls, tris: __game.renderer.info.render.triangles }; });
-  ok(st.lights <= 24, 'the room keeps to its budget of lights (' + st.lights + ')'); ok(st.npcs >= 14, st.npcs + ' regulars can be talked to; ' + st.skinned + ' bodies in the room; ' + st.calls + ' draws');
+  const st = await ev(() => { let lights = 0, skinned = 0; __game.world.root.traverse(o => { if (o.isLight) lights++; if (o.isSkinnedMesh) skinned++; }); return { lights, skinned, stage: !!(__game.world.stage || __game.world.band), npcs: __game.world.npcs.length, calls: __game.renderer.info.render.calls, tris: __game.renderer.info.render.triangles }; });
+  ok(st.lights <= 24, 'the room keeps to its budget of lights (' + st.lights + ')'); ok(st.npcs >= 14 && !st.stage, st.npcs + ' regulars can be talked to, no stage and no band; ' + st.skinned + ' bodies in the room; ' + st.calls + ' draws');
   await shot('menu');
   await pg.click('#play'); await wait(600);
   ok(await ev(() => __game.started && __game.cards.decks[0].length === 52), 'walking in shuffles a deck onto each table'); await shot('door');
@@ -36,7 +38,12 @@ const srv = require('http').createServer((q, r) => { const f = path.join(ROOT, d
   ok(played.fan === 1 && played.onFelt, 'one is played back onto the felt'); await shot('played');
   const said = await ev(async () => { const c = __game.talk.cast.occultist; __game.talk.start(c); await __game.talk.say('hello'); return document.getElementById('talkLog').textContent; });
   ok(/Madame Ink/.test(said) && said.length > 30, 'Madame Ink answers (her own line without the website)'); await shot('talk'); await ev(() => __game.talk.close());
-  const ph = await ev(() => [0.5, 2.5, 3.2, 20].map(t => +__band.phase(t).toFixed(2))); ok(ph[0] === -1 && ph[1] >= 0 && ph[1] < 0.1 && ph[2] > 0.4, 'the band finds its place in the bar (' + ph.join(', ') + ')');
+  const jk = await ev(async () => { const j = __juke, first = j.playing(); j.panel(); const rows = document.querySelectorAll('#jukeList button').length, i = j.songs.findIndex(s => s.shelf === 'RAGTIME') + 1; document.querySelectorAll('#jukeList button')[i].click();
+    await new Promise(r => { const t0 = Date.now(), k = setInterval(() => { j.update(); if ((!j.el.paused && !j.el.muted && j.el.currentTime >= j.songs[i].at - 0.5) || Date.now() - t0 > 40000) { clearInterval(k); r(); } }, 200); });
+    const o = { first: !!first, rows, songs: j.songs.length, shelves: new Set(j.songs.map(s => s.shelf)).size, now: document.getElementById('jukeNow').textContent, at: +j.el.currentTime.toFixed(1), want: j.songs[i].at, paused: j.el.paused, src: j.el.src.split('/').pop() };
+    j.el.currentTime = j.songs[i].at + j.songs[i].len - 0.2; await new Promise(r => setTimeout(r, 1500)); j.update(); o.next = j.cur === (i + 1) % j.songs.length; j.close(); return o; });
+  ok(jk.first && jk.rows === jk.songs && jk.songs >= 30 && jk.shelves === 4, 'a record is on when you walk in; the jukebox lists ' + jk.songs + ' records on ' + jk.shelves + ' shelves');
+  ok(/Playing:/.test(jk.now) && jk.src === 'rag.mp3' && !jk.paused && jk.at >= jk.want - 0.5 && jk.next, 'the record you choose plays from its start, and the next drops when it ends: ' + JSON.stringify(jk));
   await ev(() => __game.stand()); await pg.waitForFunction(() => __desk.seatKey === -1, null, { timeout: 60000 }).catch(() => {});
   await ev(() => { __desk.pos.set(-6.5, 0, 6.5); }); await pg.waitForFunction(() => __desk.pos.y > 3, null, { timeout: 60000 }).catch(() => {});
   await ev(() => { __desk.pos.x = -8.5; __desk.yaw = -1.9; __desk.pitch = -0.25; }); await pg.waitForFunction(() => __desk.pos.y > 3.55, null, { timeout: 60000 }).catch(() => {});

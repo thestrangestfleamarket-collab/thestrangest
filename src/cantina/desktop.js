@@ -34,7 +34,7 @@ export class DesktopControls {
     this.yawQ = new THREE.Quaternion();
 
     const canvas = game.renderer.domElement;
-    const active = () => game.started && !game.renderer.xr.isPresenting && !game.talk.open;
+    const active = () => game.started && !game.renderer.xr.isPresenting && !game.talk.open && !game.juke.open;
     canvas.addEventListener('click', () => { if (active() && !this.locked) canvas.requestPointerLock?.(); });
     document.addEventListener('pointerlockchange', () => { this.locked = document.pointerLockElement === canvas; this.keys.clear(); });
     document.addEventListener('mousemove', (e) => {
@@ -86,6 +86,7 @@ export class DesktopControls {
       g.net.send({ op: 'take', card: h.id, side: 'L', mode: 'fan', index });
       this.sel = index;
     } else if (h.type === 'button') { this.reachTo(h.point); g.pressButton(h.t, h.which); }
+    else if (h.type === 'jukebox') { this.reachTo(h.point); g.juke.panel(); }
   }
 
   aimPoint() {
@@ -220,6 +221,7 @@ export class DesktopControls {
       g.cards.highlight(0, this.hover.id);
       hint = c.loc === 'deck' ? (fan.length ? 'Click: draw · Right click: put card back on deck' : 'Click: draw a card') : 'Click: pick up · R: flip';
     } else if (this.hover?.type === 'button') hint = this.hover.which ? 'Click: deal one card to each seated player' : 'Click: collect all cards and shuffle';
+    else if (this.hover?.type === 'jukebox') hint = 'Click: choose a record';
     else if (!seated) { if (g.nearestFreeSeat(this.pos.x, this.pos.z, 1.9, this.pos.y)) hint = 'E: sit down'; else { const n = g.talk.near(); if (n) hint = 'T: talk to ' + n.name; } }
     else if (fan.length && this.aimPoint()) hint = 'Right click: play · F: face down · Q: toss';
     g.hint(hint);

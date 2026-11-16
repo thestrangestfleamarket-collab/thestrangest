@@ -1,9 +1,8 @@
-// THE CANTINA's hall: Polyfork models and Poly Haven textures (data/cantina/); the bar under the loft, the card tables, the stage and its band, the regulars. Three looks (THEMES).
+// THE CANTINA's hall: Polyfork models and Poly Haven textures (data/cantina/); the bar under the loft, the card tables, the jukebox corner, the regulars. Three looks (THEMES).
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
 import * as SkeletonUtils from 'three/addons/utils/SkeletonUtils.js';
-import { makeOctopus, OCTD, UNITS } from './octopus.js';
 import { ROOM, LOFT, TABLES, seatInfo, tableY, buttonPos, inLoft, onStair } from './layout.js';
 
 export const THEMES = {
@@ -151,7 +150,7 @@ let envTex = null;
 export async function buildBar(real, renderer, themeKey = 'A', Q = {}) {
   const T = THEMES[themeKey], { w: W, d: D, h: H, loft: LY } = ROOM, neon = themeKey === 'C';
   const scene = new THREE.Group(); real.add(scene);
-  const bar = { theme: T, key: themeKey, root: scene, npcs: [], band: {}, buttonMeshes: [], seatMarkers: [], pressT: new Map() };
+  const bar = { theme: T, key: themeKey, root: scene, npcs: [], buttonMeshes: [], seatMarkers: [], pressT: new Map() };
   envTex = envTex || new THREE.PMREMGenerator(renderer).fromScene(new RoomEnvironment(), 0.04).texture;
   real.environment = envTex;
   real.environmentIntensity = 0.06;
@@ -268,44 +267,16 @@ export async function buildBar(real, renderer, themeKey = 'A', Q = {}) {
     for (let k = 0; k < 3; k++) { const cx = px + ez * (0.1 + k * 0.05), cz = pz - ex * (0.1 + k * 0.05); await put('chip', cx, cz, Math.random() * 6, { y: topOf(table, cx, cz), sx: 1, sy: 4 + Math.floor(Math.random() * 14) }); } }
   await onto('shoe', table, TX + 0.3, TZ - 0.3, Math.PI * 0.9); await onto('chipRack', table, TX - 0.3, TZ - 0.32, 0);
 
-  // --- the stage, in the double-height corner: the octopus at his kit ---
-  const SX = 7.6, SZ = -5.4, SH = 0.4;
-  for (let i = 0; i < 3; i++) for (let j = 0; j < 2; j++) await put('deck', SX - 1.9 + i * 1.9, SZ - 0.95 + j * 1.9, 0, { sx: 0.95, sy: 1, dress: { tag: 'dk', rough: 0.5 } });
-  await put('curtain', SX, -D / 2 + 0.32, 0, { y: SH, sx: 1.45, sy: 2.0, sz: 1 });
-  const ox = SX, oz = SZ - 0.85, u = 1 / UNITS, kit = new THREE.Group();
-  kit.position.set(ox, SH, oz); scene.add(kit);
-  const at = (i) => V(OCTD[i][1] * u, OCTD[i][2] * u, OCTD[i][0] * u);
-  const shell = new THREE.MeshPhysicalMaterial({ color: neon ? 0x14141c : 0x7a1018, roughness: 0.25, metalness: 0.3, clearcoat: 1 });
-  const head = new THREE.MeshStandardMaterial({ color: 0xe8e2d4, roughness: 0.6 }), chrome = new THREE.MeshStandardMaterial({ color: 0xcfd3d8, metalness: 1, roughness: 0.18, envMapIntensity: 2.4 });
-  const drum = (p, r, depth, tilt = 0, legs = 0) => {
-    const g = new THREE.Group(); g.position.copy(p); g.position.y -= depth / 2; g.rotation.x = tilt;
-    const s = new THREE.Mesh(new THREE.CylinderGeometry(r, r, depth, 28), shell), t = new THREE.Mesh(new THREE.CylinderGeometry(r * 0.97, r * 0.97, 0.006, 28), head); t.position.y = depth / 2 + 0.002;
-    for (const y of [depth / 2, -depth / 2]) { const hoop = new THREE.Mesh(new THREE.TorusGeometry(r + 0.004, 0.008, 8, 32), chrome); hoop.rotation.x = Math.PI / 2; hoop.position.y = y; g.add(hoop); }
-    g.add(s, t);
-    for (let i = 0; i < legs; i++) { const a = (i / legs) * Math.PI * 2 + 0.5, l = new THREE.Mesh(new THREE.CylinderGeometry(0.008, 0.008, p.y), chrome); l.position.set(Math.cos(a) * r * 1.02, -p.y / 2 + depth / 2, Math.sin(a) * r * 1.02); g.add(l); }
-    g.traverse((o) => { if (o.isMesh) o.castShadow = true; }); kit.add(g);
-  };
-  const cymbal = (p, r, tilt, pair) => {
-    const stand = new THREE.Mesh(new THREE.CylinderGeometry(0.011, 0.014, p.y), chrome); stand.position.set(p.x, p.y / 2, p.z); stand.castShadow = true; kit.add(stand);
-    for (let k = 0; k < (pair ? 2 : 1); k++) { const c = new THREE.Mesh(new THREE.ConeGeometry(r, r * 0.13, 40, 1, true), brassM.clone()); c.material.side = THREE.DoubleSide; c.position.set(p.x, p.y + (k ? -0.02 : 0.01), p.z); c.rotation.set(tilt + (k ? Math.PI : 0), 0, tilt * 0.4); c.castShadow = true; kit.add(c); }
-  };
-  { const k = at(0), g = new THREE.Group(); g.position.set(0, 0.29, k.z + 0.02); g.rotation.x = Math.PI / 2;
-    g.add(new THREE.Mesh(new THREE.CylinderGeometry(0.29, 0.29, 0.4, 36), shell));
-    const front = new THREE.Mesh(new THREE.CylinderGeometry(0.28, 0.28, 0.006, 36), head); front.position.y = 0.203; g.add(front);
-    for (const y of [0.2, -0.2]) { const hoop = new THREE.Mesh(new THREE.TorusGeometry(0.295, 0.012, 8, 40), chrome); hoop.rotation.x = Math.PI / 2; hoop.position.y = y; g.add(hoop); }
-    g.traverse((o) => { if (o.isMesh) o.castShadow = true; }); kit.add(g); }
-  { const s = at(1), sn = (await proto('snare', { tag: 'sn', chrome: true })).root.clone(true); sn.position.set(s.x, 0, s.z); sn.scale.setScalar(s.y / 0.798); kit.add(sn); }
-  drum(at(2), 0.13, 0.2, 0.35); drum(at(3), 0.15, 0.22, 0.35); drum(at(4), 0.2, 0.36, 0, 3);
-  cymbal(at(5), 0.17, 0.05, true); cymbal(at(6), 0.21, 0.28); cymbal(at(7), 0.25, -0.22);
-  { const st = new THREE.Mesh(new THREE.CylinderGeometry(0.17, 0.17, 0.07, 24), felt(0x15100e)); st.position.y = 0.46; kit.add(st); const p = new THREE.Mesh(new THREE.CylinderGeometry(0.02, 0.02, 0.44), chrome); p.position.y = 0.22; kit.add(p); }
-  bar.band.octopus = makeOctopus(); kit.add(bar.band.octopus); bar.stage = { x: SX, y: SH, z: SZ };
-  await put('mic', SX - 0.2, SZ + 1.45, 0, { y: SH, s: 0.82, dress: { tag: 'mic', chrome: true } });
-  await put('speaker', SX + 2.5, SZ + 1.5, -0.4, { y: SH }); await put('speaker', SX - 2.55, SZ + 1.5, 0.4, { y: SH });
-  for (const dx of [-1, 1]) await put('truss', SX + dx, SZ + 1.9, Math.PI, { y: 1.5, dress: { tag: 'tr', glow: (h, s, v) => s > 0.3 && v > 0.75, glowTint: T.stage[0], glowGain: 2 } });
-  spot(V(SX - 1.4, 4.85, SZ + 1.9), V(ox, SH + 1.25, oz + 0.25), T.stage[0], 40, 0.46, { haze: 0.5, shadow: true });
-  spot(V(SX + 1.4, 4.85, SZ + 1.9), V(ox + 0.1, SH + 0.8, oz + 0.6), T.stage[1], 36, 0.5, { haze: 0.5 });
-  spot(V(SX - 0.4, 6.4, -D / 2 + 0.8), V(SX - 0.2, SH + 1.4, SZ + 1.0), T.stage[0], 22, 0.3, { haze: 0.3 });
-  spot(V(SX - 2.6, 4.9, SZ + 2.2), V(SX - 1.7, SH + 1, SZ + 0.7), T.stage[1], 16, 0.3, { haze: 0.3, light: false }); spot(V(SX + 2.6, 4.9, SZ + 2.2), V(SX + 1.7, SH + 1, SZ + 0.7), T.stage[0], 16, 0.3, { haze: 0.3, light: false });
+  // --- the jukebox corner, under the high ceiling: sofas round a rug, the jukebox against the back wall ---
+  const SX = 7.6, SZ = -5.4, JZ = -D / 2 + 0.55;
+  { const jk = await put('jukebox', SX, JZ, 0, { s: 1.15, dress: { tag: 'jk', glow: (h, s, v) => s > 0.25 && v > 0.8, glowGain: 1.7 } });
+    bar.jukebox = { obj: jk, x: SX, y: 1.1, z: JZ };
+    bulb(SX, 1.3, JZ + 0.9, neon ? 0xff40c0 : 0xff9040, 7, 7, true);
+    spot(V(SX, 5.2, JZ + 1.6), V(SX, 0.8, JZ + 0.2), T.stage[0], 22, 0.42, { haze: 0.3 });
+    await put('rug', SX, SZ + 0.6, 0, { sx: 1.9, sy: 0.4, sz: 1.9 });
+    await put('sofa', SX - 2.0, SZ + 0.6, Math.PI / 2, {}); await put('sofa', SX + 2.0, SZ + 0.6, -Math.PI / 2, {});
+    const dt = await put('drumTable', SX, SZ + 0.9, 0, { dress: { tag: 'dt', rough: 0.4 } }); await onto('whiskey', dt, SX + 0.08, SZ + 0.95, 0.7); await onto('goblet', dt, SX - 0.12, SZ + 0.8, 0, { dress: { tag: 'gb' } });
+    await put('floorLamp', SX + 2.7, JZ + 0.1, 0, { dress: lampGlow }); await put('palm', SX - 2.7, JZ + 0.2, 0, { dress: { tag: 'pm' } }); }
 
   // --- booths under the left loft ---
   const boothX = -W / 2 + 0.72, boothZ = [-2.3, 0.5, 3.3];
@@ -321,7 +292,7 @@ export async function buildBar(real, renderer, themeKey = 'A', Q = {}) {
   spot(V(8.0, 3.2, 2.2), V(8.0, 0, 2.2), neon ? 0xff4fb0 : T.key, 26, 0.7, { haze: 0.18 });
   const cant = [await put('cantina', 6.0, 5.9, 0.4, {}), await put('cantina', 9.3, 5.6, -0.7, {})];
   bulb(7.6, 2.2, 5.8, T.key, 7, 8, true);
-  await put('jukebox', W / 2 - 0.5, -0.6, -Math.PI / 2, { dress: { tag: 'jk', glow: (h, s, v) => s > 0.25 && v > 0.8, glowGain: 1.5 } }); bulb(W / 2 - 1.3, 1.2, -0.6, neon ? 0xff40c0 : 0xff9040, 4, 5, true);
+  await put('ashtray', W / 2 - 0.5, -0.6, 0, {});
   await put('door', 3.4, D / 2 - 0.1, Math.PI, {}); await put('ashtray', 4.4, D / 2 - 0.4, 0, {});
   await put('palm', W / 2 - 0.8, D / 2 - 0.8, 0, { dress: { tag: 'pm' } }); await put('palm', LX + 0.7, LZ + 0.6, 0, { dress: { tag: 'pm' } });
   // --- up in the loft: a second card table, sofas, drum tables ---
@@ -354,7 +325,7 @@ export async function buildBar(real, renderer, themeKey = 'A', Q = {}) {
     tube(heart, 0xff2f8f, 0.03, true); tube(spade, 0x30d8ff, 0.026, true);
     tube([V(LX, LY - 0.3, LZ + 0.2), V(LX, LY - 0.3, STZ - 1.4)], 0x7a3cff, 0.014); tube([V(LX, LY - 0.3, LZ), V(LE, LY - 0.3, LZ)], 0xff2f8f, 0.014);
     tube([V(BX - 5, 0.12, counterZ + 0.42), V(BX + 5, 0.12, counterZ + 0.42)], 0x30d8ff, 0.012);
-    tube([V(SX - 2.3, 6.6, -D / 2 + 0.07), V(SX - 2.3, SH, -D / 2 + 0.07)], 0xff2f8f, 0.016); tube([V(SX + 2.3, 6.6, -D / 2 + 0.07), V(SX + 2.3, SH, -D / 2 + 0.07)], 0x30d8ff, 0.016);
+    tube([V(SX - 2.3, 6.6, -D / 2 + 0.07), V(SX - 2.3, 0.4, -D / 2 + 0.07)], 0xff2f8f, 0.016); tube([V(SX + 2.3, 6.6, -D / 2 + 0.07), V(SX + 2.3, 0.4, -D / 2 + 0.07)], 0x30d8ff, 0.016);
     bulb(0, 6.5, 0, 0x6050ff, 16, 16, true);
   }
 
@@ -403,7 +374,6 @@ export async function buildBar(real, renderer, themeKey = 'A', Q = {}) {
     if (P_.includes('tray')) { const tr = await hand('LeftHand', 'tray', 1.1, 0.06); if (tr) for (const [dx, dz] of [[-0.12, 0], [0.1, 0.06], [0.02, -0.08]]) await put('goblet', tr.position.x + dx, tr.position.z + dz, 0, { y: tr.position.y + 0.04, dress: { tag: 'gb' } }); }
     if (P_.includes('cards') && B.LeftHand) { B.LeftHand.getWorldPosition(_v); for (let i = 0; i < 4; i++) { const c = new THREE.Mesh(cardG, backM); c.position.set(_v.x + f.x * 0.08 + right.x * (i - 1.5) * 0.028, _v.y + 0.06, _v.z + f.z * 0.08 + right.z * (i - 1.5) * 0.028); c.rotation.set(-1.25, rot + Math.PI + (i - 1.5) * 0.16, 0, 'YXZ'); scene.add(c); } }
     if (o.id) { const c = hb.getCenter(new THREE.Vector3()); bar.npcs.push({ id: o.id, x: c.x, y: hb.max.y, z: c.z }); }
-    if (o.band) (bar.band.members ||= []).push({ G, y: G.position.y, rot, kind: o.band });
     return { G, hb };
   };
 
@@ -429,15 +399,11 @@ export async function buildBar(real, renderer, themeKey = 'A', Q = {}) {
   // working the floor, and the door
   await patron('robot', 4.6, 0, 4.3, -2.2, { pose: ['tray'], tie: true, tieD: 0.3, hat: ['bowler', 0.9], id: 'robot' });
   await patron('bear', 2.2, 0, D / 2 - 1.5, Math.PI - 0.5, { s: 1.15, hat: ['bowler', 0.55, -0.12], tie: 0x111111, tieS: 0.6, tieD: 0.0, id: 'bear' });
-  // on stage with the octopus
-  await patron('mariachi', SX - 0.2, SH, SZ + 1.0, 0.1, { pose: ['sing'], id: 'mariachi', band: 'sing' });
-  bar.npcs.push({ id: 'octopus', x: ox, y: SH + 2.0, z: oz });
-  { const b = await patron('berserker', SX - 1.7, SH, SZ + 0.7, 0.5, { s: 0.9, pose: ['cards'], hat: ['cowboy', 0.9, -0.1], id: 'berserker' }); const p = b.G.position, f = fwd(0.5);
-    const gt = await put('guitar', p.x + f.x * 0.3, p.z + f.z * 0.3, 0.5, { y: SH + 0.95, s: 1.1 }); gt.rotation.z = 1.0; }
-  { const b = await patron('diver', SX + 1.75, SH, SZ + 0.6, -0.5, { s: 0.92, pose: ['lean'], id: 'diver' }); await put('doubleBass', SX + 1.45, SZ + 1.0, -0.5, { y: SH, s: 0.95 }); }
-  { const b = await patron('gnome', SX + 0.9, SH, SZ + 1.35, -0.2, { pose: ['sip'], hat: ['fez', 0.8], id: 'gnome' }); const hd = b.hb.getCenter(new THREE.Vector3()); const sx = await put('sax', hd.x + 0.05, hd.z + 0.22, -0.2, { y: hd.y - 0.62, s: 1.0 }); }
-  for (const [dx, r] of [[-2.3, 0.7], [2.45, -0.7]]) { await patron('penguin', SX + dx, SH, SZ - 0.5, r, { s: 1.2, tie: true, tieS: 0.8, tieD: 0.1, band: 'stomp' }); }
-  await put('tambourine', SX - 2.3, SZ - 0.15, 0.7, { y: SH + 0.5, s: 1.2 });
+  // round the jukebox
+  await patron('mariachi', SX - 0.75, 0, JZ + 0.55, 0.7, { pose: ['drink'], drink: ['goblet', 1.1], id: 'mariachi' });
+  await patron('berserker', SX - 1.95, 0, SZ + 0.25, Math.PI / 2, { s: 0.9, pose: ['sit', 'drink'], seat: 0.42, drink: ['goblet', 1.2], hat: ['cowboy', 0.9, -0.1], id: 'berserker' });
+  await patron('gnome', SX + 1.9, 0, SZ + 0.9, -Math.PI / 2, { pose: ['sit', 'sip'], seat: 0.42, drink: ['martini', 1], hat: ['fez', 0.8], id: 'gnome' });
+  await patron('diver', SX + 0.95, 0, JZ + 0.7, -0.6, { s: 0.92, pose: ['lean'], id: 'diver' });
   // the big ones
   await patron('colossus', -2.4, 0, 4.9, 2.6, { s: 1.0, pose: ['drink'], drink: ['barrel', 0.9, -0.2], hat: ['top', 0.5, -0.1], id: 'colossus' });
   await patron('whisperer', 10.1, 0, -0.9, -2.2, { s: 0.95, hat: ['fez', 0.6, -0.1] });
@@ -464,21 +430,10 @@ export async function buildBar(real, renderer, themeKey = 'A', Q = {}) {
       puff((Math.random() - 0.5) * (W - 2), y, (Math.random() - 0.5) * (D - 2), 3 + Math.random() * 4, 0.05 + Math.random() * 0.07); }
     for (let i = 0; i < (Q.low ? 6 : 18); i++) puff(BX + (Math.random() - 0.5) * 10, 1.6 + Math.random() * 1.3, counterZ + 0.4 + Math.random() * 1.6, 2 + Math.random() * 2, 0.09);
     for (let i = 0; i < (Q.low ? 5 : 14); i++) puff(TX + (Math.random() - 0.5) * 4, 1.5 + Math.random() * 2.2, TZ + (Math.random() - 0.5) * 3, 2 + Math.random() * 2.5, 0.08);
-    for (let i = 0; i < (Q.low ? 5 : 14); i++) puff(SX + (Math.random() - 0.5) * 4, 1.4 + Math.random() * 3.5, SZ + Math.random() * 2.5, 2.5 + Math.random() * 2.5, 0.1);
+    for (let i = 0; i < (Q.low ? 4 : 10); i++) puff(SX + (Math.random() - 0.5) * 4, 1.4 + Math.random() * 2.5, SZ + Math.random() * 2.5, 2.5 + Math.random() * 2.5, 0.1);
     const n = Q.low ? 500 : 1400, p = new Float32Array(n * 3); for (let i = 0; i < n; i++) { p[i * 3] = (Math.random() - 0.5) * W; p[i * 3 + 1] = 0.3 + Math.random() * (H - 0.6); p[i * 3 + 2] = (Math.random() - 0.5) * D; }
     const g = new THREE.BufferGeometry(); g.setAttribute('position', new THREE.BufferAttribute(p, 3));
     scene.add(new THREE.Points(g, new THREE.PointsMaterial({ color: T.haze, size: 0.016, transparent: true, opacity: 0.45, blending: THREE.AdditiveBlending, depthWrite: false }))); }
-
-  // --- the words of the song, over the stage ---
-  { const c = document.createElement('canvas'); c.width = 1024; c.height = 256; const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace;
-    const m = new THREE.Mesh(new THREE.PlaneGeometry(5.2, 1.3), new THREE.MeshBasicMaterial({ map: t, transparent: true, fog: false })); m.position.set(SX, 5.85, -D / 2 + 0.75); m.rotation.x = 0.12; scene.add(m);
-    box(5.4, 1.46, 0.06, iron, SX, 5.85, -D / 2 + 0.68);
-    const x = c.getContext('2d'); let shown = null;
-    bar.words = (text) => { if (text === shown) return; shown = text; x.clearRect(0, 0, 1024, 256); x.fillStyle = 'rgba(8,5,4,.9)'; x.fillRect(0, 0, 1024, 256);
-      x.fillStyle = neon ? '#7fe8ff' : '#ffd58a'; x.textAlign = 'center'; x.textBaseline = 'middle'; const lines = String(text || '').split('\n').slice(0, 2);
-      lines.forEach((l, i) => { let px = 62; x.font = `600 ${px}px Georgia, serif`; while (x.measureText(l).width > 960 && px > 26) { px -= 4; x.font = `600 ${px}px Georgia, serif`; } x.fillText(l, 512, 128 + (i - (lines.length - 1) / 2) * 92); });
-      t.needsUpdate = true; };
-    bar.words(''); }
 
   // --- what the cards and the controls use: table buttons, seat markers ---
   const label = (text, bg, fg) => { const c = document.createElement('canvas'); c.width = c.height = 128; const x = c.getContext('2d'); x.fillStyle = bg; x.fillRect(0, 0, 128, 128); x.fillStyle = fg; x.textAlign = 'center'; x.textBaseline = 'middle'; x.font = 'bold 26px system-ui, sans-serif'; x.fillText(text, 64, 66); const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; return t; };
@@ -500,8 +455,8 @@ export async function buildBar(real, renderer, themeKey = 'A', Q = {}) {
   // names over the regulars you can talk to
   for (const n of bar.npcs) { n.name = (Q.names && Q.names[n.id]) || n.id; n.tag = sprite(n.name, '#ffe9c0', 0.42); n.tag.position.set(n.x, n.y + 0.28, n.z); n.tag.visible = false; scene.add(n.tag); }
 
-  // keep a walker of radius r out of the walls, the tables, the bar, the stage and off the loft's edge; changes p (x, z), reads p.y
-  const solid = [[BX - 5.2, counterZ - 0.45, BX + 5.2, counterZ + 0.45], [SX - 2.95, -D / 2, SX + 2.95, SZ + 2.0], [-W / 2, boothZ[0] - 1.3, boothX + 0.75, boothZ[2] + 1.3], [7.6, 1.2, 9.2, 3.2], [BX - 5.2, -D / 2, BX + 7.2, backZ + 0.4]];
+  // keep a walker of radius r out of the walls, the tables, the bar, the jukebox and off the loft's edge; changes p (x, z), reads p.y
+  const solid = [[BX - 5.2, counterZ - 0.45, BX + 5.2, counterZ + 0.45], [SX - 0.65, -D / 2, SX + 0.65, JZ + 0.5], [SX - 2.5, SZ + 0.1, SX - 1.5, SZ + 1.6], [SX + 1.5, SZ + 0.1, SX + 2.5, SZ + 1.6], [-W / 2, boothZ[0] - 1.3, boothX + 0.75, boothZ[2] + 1.3], [7.6, 1.2, 9.2, 3.2], [BX - 5.2, -D / 2, BX + 7.2, backZ + 0.4]];
   bar.collide = (p, r) => {
     const up = (p.y || 0) > LY - 0.7 && !onStair(p.x, p.z);
     p.x = Math.max(-W / 2 + r + 0.1, Math.min(W / 2 - r - 0.1, p.x)); p.z = Math.max(-D / 2 + r + 0.1, Math.min(D / 2 - r - 0.1, p.z));

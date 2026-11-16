@@ -18,6 +18,7 @@ import { buildGuide } from './guide.js';
 import { buildMenu } from './menu.js';
 import { buildReport } from './report.js';
 import { buildTV } from './tv.js';
+import { buildTank } from './tank.js';
 import { buildLive } from './live.js';
 import { buildCook } from './cook.js';
 import { NET } from '../holo/net.js';
@@ -61,7 +62,7 @@ const grit = buildGrit(scene, city, cart);
 const guide = buildGuide(scene, cart);
 T.metreUV(cart.group);
 G.baked = mergeStatic(cart.group) + mergeStatic(city.group);
-const tv = buildTV(scene, city.shops), live = buildLive(), cook = buildCook();
+const tank = buildTank(scene), tv = buildTV(scene, city.shops), live = buildLive(), cook = buildCook();
 
 // on a screen: the scene is drawn small, then enlarged with ordered dither and a short palette, as that console's output looked
 const LOWH = 540; let lowRT = null;
@@ -111,7 +112,7 @@ function tick(dt) {
   game.update(dt, G.t);
   city.update(dt, G.t);
   life.update(dt, G.t);
-  talk.update(dt); tv.update(dt); live.update(dt); cook.update(dt);
+  talk.update(dt); tv.update(dt); tank.update(dt); live.update(dt); cook.update(dt);
   grit.update(dt, G.t);
   guide.update(dt, G.t); gameMenu.update(dt); report.update(dt);
   G.fx.update(dt);

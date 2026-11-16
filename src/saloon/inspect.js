@@ -4,8 +4,8 @@ import { Pane } from 'tweakpane';
 import { G } from '../sushi/ctx.js';
 
 // the look as built; a saved look holds only what was changed
-export const LOOK = { exposure: 1.0, fog: 0.05, fogColor: '#0e0c0a', room: 0.26, wheels: 130, lanterns: 13, stove: 4, moon: 1, moonIn: 1, lampColor: '#ffc896', reflect: 1, shadows: true, soft: 4,
-  smoke: 0.085, dust: 0.5, bright: 0.7, sat: 0.5, warm: 0.07, vig: 0.38, grain: 0.018, contrast: 0.3, rough: 0, fov: 68 };
+export const LOOK = { exposure: 1.0, fog: 0.05, fogColor: '#0e0c0a', room: 0.09, wheels: 300, lanterns: 13, stove: 8, moon: 1, moonIn: 1, lampColor: '#ffc896', reflect: 1, shadows: true, soft: 4,
+  smoke: 0.085, dust: 0.22, bright: 1, sat: 0.8, warm: 0.05, vig: 0.3, grain: 0.012, contrast: 0.25, rough: 0, fov: 68 };
 const FILE = '/shared/saloon-look.json';
 
 export function buildInspect(scene, room, look, renderer, camera) {
@@ -13,8 +13,8 @@ export function buildInspect(scene, room, look, renderer, camera) {
   scene.traverse((o) => { if (o.isDirectionalLight) lights.moon.push(o); if (o.isLight) base.set(o, o.intensity); });
   const mats = new Set(); scene.traverse((o) => { if (o.isMesh && o.material && o.material.isMeshStandardMaterial && !o.isSkinnedMesh) mats.add(o.material); }); for (const m of mats) base.set(m, m.roughness);
   const apply = () => {
-    renderer.toneMappingExposure = L.exposure; scene.fog.density = L.fog; scene.fog.color.set(L.fogColor); room.hemi.intensity = L.room; 
-    for (const o of room.lamps) { if (o.lv !== undefined) continue; if (o.wheel) { o.k = L.wheels; o.l.color.set(L.lampColor); o.l.shadow.radius = L.soft; } else if (o === room.fire) o.k = L.stove; else { o.k = L.lanterns; o.l.color.set(L.lampColor); } if (o.on) o.l.intensity = o.k; }
+    renderer.toneMappingExposure = L.exposure; scene.fog.density = L.fog; scene.fog.color.set(L.fogColor); room.hemi.intensity = L.room; scene.environmentIntensity = L.reflect; 
+    for (const o of room.lamps) { if (o.lv !== undefined) continue; if (o.wheel) { o.k = L.wheels; o.l.color.set(L.lampColor); o.l.shadow.radius = L.soft; } else if (o === room.fire) o.k = L.stove; else { o.k = L.lanterns; o.l.color.set(L.lampColor); } if (o.on) o.l.intensity = o.k; } if (G.look) G.look.relight = true;
     for (const l of lights.moon) l.intensity = base.get(l) * L.moon; for (const l of lights.moonIn) l.intensity = base.get(l) * L.moonIn;
     renderer.shadowMap.enabled = L.shadows; scene.traverse((o) => { if (o.material && L.shadows !== apply.sh) (Array.isArray(o.material) ? o.material : [o.material]).forEach((m) => { m.needsUpdate = true; }); }); apply.sh = L.shadows;
     for (const s of look.smoke) s.m.material.opacity = L.smoke; look.motes.material.opacity = L.dust;

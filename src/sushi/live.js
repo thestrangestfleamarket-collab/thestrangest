@@ -57,7 +57,7 @@ export function buildLive() {
   live.stood = (id) => { const w = live.watchers.get(id); if (w) w.seated = null; };
   live.evt = (e) => { const id = e && String(e.from || ''); if (!id) return;
     if (e.sit) { let w = live.watchers.get(id); if (w && w.seated) return; if (!w) { const p = makePerson((Math.random() * 1e6) | 0, 'suburban_resident'); p.root.traverse((q) => { q.userData.nopick = true; }); p.root.add(tag(e.name)); p.root.position.set(-3, 0, -2.6); w = { p, to: new THREE.Vector3(-3, 0, -2.6), name: e.name, yaw: 0 }; live.watchers.set(id, w); }
-      const c = G.game.guest({ id, name: String(e.name || 'TENANT').slice(0, 20), p: w.p }); if (c) { w.seated = c; live.tell({ ok: { to: id, seat: c.seat, menu: live.menu() } }); } else live.tell({ no: { to: id, why: G.game.state === 'open' ? 'every stool is taken' : 'the cart is not open' } }); }
+      const c = G.game.guest({ id, name: String(e.name || 'TENANT').slice(0, 20), p: w.p, seat: e.seat >= 0 ? e.seat | 0 : -1 }); if (c) { w.seated = c; live.tell({ ok: { to: id, seat: c.seat, menu: live.menu() } }); } else live.tell({ no: { to: id, why: G.game.state === 'open' ? 'every stool is taken' : 'the cart is not open' } }); }
     else if (e.pick) { const c = G.game.customers.find((x) => x.guest === id && !x.order && x.state !== 'leaving'), p = e.pick; if (!c || !p || typeof p !== 'object') return; const cfg = G.game.cfg(), key = cfg.menu.includes(p.k) ? p.k : null, d = cfg.drinks && DRINKS.some((q) => q[0] === p.d) ? p.d : null; c.want = key ? { key, drink: d } : null; }
     else if (e.stand) G.game.guestLeaves(id);
     else if (e.want && G.guest && String(e.want) === live.me && G.guestRole) G.guestRole.want(); };   // (a guest's own figure, asked for by whoever has not got it)

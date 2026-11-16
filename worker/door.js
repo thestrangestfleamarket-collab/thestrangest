@@ -30,7 +30,7 @@ const EDMAP = /^\/edmap\/t\d{1,2}_\d{1,2}\.jpg$/;
 const SCAREA = /^\/scare-assets\/[a-z0-9_-]+\.glb$/;   // VESPER WARD's models: to anyone
 const SNIPA = /^\/sniper-assets\/(sky|tex|m|snd|p)\/[A-Za-z0-9_-]+\.(glb|json|mp3|jpg|webp)$/, SNIPT = { glb: "model/gltf-binary", json: "application/json", mp3: "audio/mpeg", jpg: "image/jpeg", webp: "image/webp" };   // COLD BORE's skies, surfaces, models and sounds: to anyone
 const JAMA = /^\/jam-assets\/[a-z0-9_-]+\.(glb|json|mp3)$/, JAMT = { glb: "model/gltf-binary", json: "application/json", mp3: "audio/mpeg" };   // STADIUM JAM's avatars, hands and samples: to anyone
-const GOLFA = /^\/(golf|duel|cantina|hide|zombie|sushi|tank)-assets\/(?!.*\.\.)[A-Za-z0-9_.\/-]+\.(jpg|json|txt|glb|mp3|hdr|fbx|webp)$/;   // HALCYON GREENS' pictures and models, AR DUEL's pictures, THE CANTINA's models and pictures, DEAD END's pictures, models and sounds, EYES DOWN's pictures and models, HULL DOWN's sky, surfaces, models and sounds: to anyone
+const GOLFA = /^\/(golf|duel|cantina|hide|zombie|sushi|tank)-assets\/(?!.*\.\.)[A-Za-z0-9_.\/-]+\.(jpg|json|txt|glb|mp3|hdr|fbx|webp|mp4)$/;   // HALCYON GREENS' pictures and models, AR DUEL's pictures, THE CANTINA's models and pictures, DEAD END's pictures, models and sounds, EYES DOWN's pictures and models, HULL DOWN's sky, surfaces, models and sounds, YATAI '86's late movie: to anyone
 const BOOK = /^\/book\/(\d{1,6})\.txt$/, FILM = /^\/film\/([A-Za-z0-9_.-]{1,80})\/([A-Za-z0-9_.-]{1,120}\.mp4)$/, IA = /^\/ia\/([A-Za-z0-9_.-]{1,80})\.jpg$/, YT = /^\/yt\/([A-Za-z0-9_-]{11})\.jpg$/, BLANK = "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYGD4DwABBAEAHnOcQAAAAABJRU5ErkJggg==";
 const SKYJD = () => { const d = new Date(); return Date.UTC(1985, d.getUTCMonth(), d.getUTCDate()) / 864e5 + 2440587.5; },   // the sky's year is 1985 (src/134b DN.YEAR): that year's comets
    SBDB = "https://ssd-api.jpl.nasa.gov/sbdb_query.api?", SWPC = "https://services.swpc.noaa.gov/";
@@ -138,7 +138,9 @@ export default {
     // THE CANTINA (src/cantina/): its own page at /cantina, to anyone with the link; its models and pictures under /cantina-assets/
     if ((request.method === "GET" || request.method === "HEAD") && p === "/cantina") return page(env, url, "/cantina", request, "no-cache");
     if ((request.method === "GET" || request.method === "HEAD") && GOLFA.test(p)) {
-      const r = await env.ASSETS.fetch(new Request(url.origin + p)); if (!r.ok) return new Response("not found", { status: 404 });
+      const r = await env.ASSETS.fetch(new Request(url.origin + p, request.headers.has("range") ? { headers: { range: request.headers.get("range") } } : {})); if (!r.ok) return new Response("not found", { status: 404 });
+      const rg = /^bytes=(\d*)-(\d*)$/.exec(request.headers.get("range") || ""), size = +r.headers.get("content-length");
+      if (rg && r.status === 200 && p.endsWith(".mp4")) return ranged(r, rg, size > 0 ? size : null);   // a video seeks: the part asked for, cut from the whole
       const out = new Response(r.body, r); out.headers.set("cache-control", "public, max-age=86400"); out.headers.set("x-robots-tag", "noindex"); return out; }
     if (request.method === "GET" && p === "/sw.js") {
       if (!(await inside(env, request, dev))) return new Response("not found", { status: 404 });
@@ -351,6 +353,14 @@ async function bookText(id) {
     "https://mirror.cs.odu.edu/gutenberg/" + d + "/" + id + "-0.txt", "https://mirror.cs.odu.edu/gutenberg/" + d + "/" + id + ".txt"]) {
     try { const r = await fetch(u, { cf: { cacheTtl: 2592000, cacheEverything: true } }); if (r.ok) return { ok: true, body: r.body }; why.push(new URL(u).host + " " + r.status); } catch (e) { why.push(new URL(u).host + " failed"); } }
   return { ok: false, why: why.join(", ") };
+}
+// the bytes a=..b of a whole response, as a 206
+async function ranged(r, rg, size) {
+  let body = r.body; if (!size) { const buf = await r.arrayBuffer(); size = buf.byteLength; body = new Blob([buf]).stream(); }
+  let a = rg[1] === "" ? size - +rg[2] : +rg[1], b = rg[1] === "" || rg[2] === "" ? size - 1 : Math.min(+rg[2], size - 1); a = Math.max(0, a);
+  if (a > b || a >= size) { body && body.cancel(); return new Response(null, { status: 416, headers: { "content-range": "bytes */" + size } }); }
+  let at = 0; const cut = new TransformStream({ transform(ch, c) { const s = at, e = at + ch.byteLength; at = e; if (e <= a || s > b) return; c.enqueue(ch.subarray(Math.max(0, a - s), Math.min(ch.byteLength, b + 1 - s))); } });
+  return new Response(body.pipeThrough(cut), { status: 206, headers: { "content-type": "video/mp4", "content-range": "bytes " + a + "-" + b + "/" + size, "content-length": String(b - a + 1), "accept-ranges": "bytes", "cache-control": "public, max-age=86400", "x-robots-tag": "noindex" } });
 }
 // the films kept in R2: served with ranges (a video seeks); null when there is no bucket or no copy, and the Internet Archive serves it
 async function filmR2(env, key, request) {

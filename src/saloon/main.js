@@ -12,6 +12,7 @@ import { BODIES } from './cast.js';
 import { loadKit, BASE } from './kit.js';
 import { buildRoom } from './room.js';
 import { buildLook } from './look.js';
+import { buildInspect } from './inspect.js';
 import { buildBar } from './bar.js';
 import { buildFolk } from './folk.js';
 import { buildStory } from './story.js';
@@ -55,6 +56,7 @@ const pool = (G.pool = buildPool(scene, room));
 const darts = (G.darts = buildDarts(scene, room));
 const posters = (G.posters = buildPosters(scene, room));
 const look = (G.look = buildLook(scene, room, renderer, camera));
+const inspect = (G.inspect = buildInspect(scene, room, look, renderer, camera));
 const shadowLights = []; scene.traverse((o) => { if (o.isLight && o.castShadow) shadowLights.push(o); });
 
 addEventListener('resize', () => { if (renderer.xr.isPresenting) return; camera.aspect = innerWidth / innerHeight; camera.updateProjectionMatrix(); renderer.setSize(innerWidth, innerHeight); });
@@ -95,7 +97,7 @@ function frame(now) {
   if (G.mode === 'menu' && !renderer.xr.isPresenting && !G.manualCam) { const a = G.t * 0.04; rig.position.set(0, 0, 0); camera.position.set(7.5 + Math.sin(a) * 1.2, 1.7, -3.6 + Math.cos(a) * 0.8); camera.lookAt(-1, 1.3, -0.4); }
   if (!G.frozen) tick(dt);
   if (frames++ > 120 && (G.quality || 0) < shadowLights.length && !G.frozen) { ema += (dt * 1000 - ema) * 0.05; const ses = renderer.xr.isPresenting && renderer.xr.getSession(), hz = (ses && ses.frameRate) || 72; slow = ema > (ses ? 1150 / hz : 34) ? slow + dt : 0; if (slow > 3) { slow = 0; shadowLights[shadowLights.length - 1 - (G.quality || 0)].castShadow = false; G.quality = (G.quality || 0) + 1; } }   // frames running long: the lamps stop throwing shadows one at a time, the moon's first
-  look.render();
+  look.render(); inspect.update();
   if (G.afterRender) { const f = G.afterRender; G.afterRender = null; f(); }
   if (G.mode === 'desktop') { $('hover').textContent = G.hoverText || ''; statT -= dt; if (statT <= 0) { statT = 0.5; $('stat').textContent = G.hint || ''; } }
 }
@@ -105,5 +107,6 @@ G.debug = { PH, PF, room, bar, folk, story, talk, guns, pool, darts, posters, lo
 window.G = G;
 { const box = $('say'); // on a screen: T to type what you say if you would rather not speak it
   addEventListener('keydown', (e) => { if (G.mode !== 'desktop' || e.repeat) return; if (e.target === box) { if (e.code === 'Enter') { const t = box.value.trim(); box.value = ''; box.style.display = 'none'; box.blur(); if (t) talk.youSay(t); } else if (e.code === 'Escape') { box.value = ''; box.style.display = 'none'; box.blur(); } return; }
-    if (e.code === 'KeyT') { e.preventDefault(); document.exitPointerLock?.(); box.style.display = 'block'; box.focus(); } }); }
+    if (e.code === 'KeyI') inspect.open(); else if (e.code === 'KeyT') { e.preventDefault(); document.exitPointerLock?.(); box.style.display = 'block'; box.focus(); } }); }
 if (params.has('desktop')) startDesktop();
+if (params.has('inspect')) inspect.open();

@@ -1,4 +1,4 @@
-// THE LAST CHANCE CHECK: node tests/saloon.cjs [dist/saloon.html]. The saloon loads on a screen with its people on the physics engine; the bell opens the night and the first customer comes in, sits and orders; a beer is drawn from the keg, left to settle, served, paid for with change made; a secret told to the right person changes the week; a game of pool and a game of darts play to an end; a drunk walks round the furniture to a chair; no page errors.
+// THE LAST CHANCE CHECK: node tests/saloon.cjs [dist/saloon.html]. The saloon loads on a screen with its people on the physics engine; the bell opens the night and the first customer comes in, sits and orders; a beer is drawn from the keg, left to settle, served, paid for with change made; a secret told to the right person changes the week; a game of pool and a game of darts play to an end; a townswoman walks round the furniture to a chair; the render inspector moves the look and exports it; no page errors.
 const { chromium } = require('playwright'), path = require('path'), fs = require('fs');
 const fails = [], ok = (c, m) => { if (!c) { fails.push(m); console.log((process.env.GITHUB_ACTIONS ? '::error title=saloon::' : 'FAIL ') + m); } else console.log('ok   ' + m); };
 const PAGE = path.resolve(process.argv[2] || 'dist/saloon.html'), ROOT = path.dirname(PAGE);
@@ -23,6 +23,7 @@ const srv = require('http').createServer((q, r) => { const f = path.join(ROOT, d
     G.debug.pool.seed(3); G.debug.pool.challenge('doc', 100, 0.5); const pg = G.debug.pool.playOut(0.6); o.pool = pg && pg.on === false && (pg.you === 8 || pg.them === 8);
     const dg = G.debug.darts.play({ you: 0.8, them: 0.4, stake: 100, who: 'doc' }); o.darts = dg && (dg.you === 0 || dg.them === 0);
     const ruby = G.folk.enter('ruby', [['sit', 'middle', 9999]]); step(30 * 18); o.ruby = ruby.state + ' ' + ruby.P.pose;
+    { const I = G.inspect; I.open(); I.L.exposure = 1.4; I.L.sat = 1; I.apply(); const c = I.changed(); I.take({ exposure: 0.6, bogus: 1 }); o.inspect = I.shown && c.exposure === 1.4 && c.sat === 1 && Object.keys(c).length === 2 && G.renderer.toneMappingExposure === 0.6 && G.look.grade.sat.value === 1; Object.assign(I.L, I.LOOK); I.apply(); }
     o.crowd = G.folk.crowd(); o.calls = G.renderer.info.render.calls;
   } catch (e) { o.err = e.stack.slice(0, 500); } return o; });
   ok(!r.err, 'the play ran' + (r.err ? ': ' + r.err : ''));
@@ -34,6 +35,7 @@ const srv = require('http').createServer((q, r) => { const f = path.join(ROOT, d
   ok(r.adaKnows, 'a secret told to the widow changes what she means to do');
   ok(r.pool, 'a game of pool plays to eight'); ok(r.darts, 'a game of 301 plays out');
   ok(r.ruby === 'sit sit', 'a townswoman walks round the furniture and sits at a table (' + r.ruby + ')');
+  ok(r.inspect, 'the render inspector opens, moves the look, exports only what changed and takes a saved look');
   ok(!errs.length, 'no page errors' + (errs.length ? ': ' + errs[0] : '')); ok(!miss.length, 'nothing missing' + (miss.length ? ': ' + [...new Set(miss)].join(', ') : ''));
   await b.close(); srv.close(); console.log(fails.length ? fails.length + ' failed' : 'all passed'); process.exit(fails.length ? 1 : 0);
 })();

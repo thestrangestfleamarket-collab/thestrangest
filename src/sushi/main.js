@@ -1,10 +1,12 @@
-// YATAI '86, the night ramen cart at /sushi (a headset game): the renderer in a PlayStation 2 look, the loop, the way in
+// RAMEN, a village ramen stall in the 1860s at /ramen (a headset game), one day and one night: the renderer in a PlayStation 2 look, the loop, the way in
 import * as THREE from 'three';
 import { G, clamp, mergeStatic } from './ctx.js';
 import { buildAlley, FOG } from './alley.js';
 import { buildCart } from './cart.js';
 import { buildFx } from './fx.js';
 import { buildGame } from './game.js';
+import { buildClock } from './clock.js';
+import { buildStory } from './story.js';
 import { buildInput } from './input.js';
 import { updateItems } from './items.js';
 import * as Items from './items.js';
@@ -17,7 +19,6 @@ import { buildGrit } from './grit.js';
 import { buildGuide } from './guide.js';
 import { buildMenu } from './menu.js';
 import { buildReport } from './report.js';
-import { buildTV } from './tv.js';
 import { buildTank } from './tank.js';
 import { buildLive } from './live.js';
 import { buildCook } from './cook.js';
@@ -57,6 +58,7 @@ buildFx(scene);
 const city = buildAlley(scene);
 const cart = buildCart(scene, city);
 if (PH.ready) PH.statics(cart);
+buildClock(params);
 const game = buildGame(scene);
 const input = buildInput(renderer, rig, camera, canvas);
 const life = buildLife(scene, city, cart);
@@ -65,7 +67,7 @@ const grit = buildGrit(scene, city, cart);
 const guide = buildGuide(scene, cart);
 T.metreUV(cart.group);
 G.baked = mergeStatic(cart.group) + mergeStatic(city.group);
-const tank = buildTank(scene), tv = buildTV(scene, city.shops), live = buildLive(), cook = buildCook();
+const tank = buildTank(scene), live = buildLive(), cook = buildCook(), story = buildStory(scene);
 if (G.guest) G.buttons.length = 0;   // (the cart's knobs, switch and boards are the cook's)
 const share = buildShare(live), guest = G.guest ? buildGuest(live) : null;
 
@@ -90,7 +92,7 @@ function render() {
 addEventListener('resize', () => { if (renderer.xr.isPresenting) return; camera.aspect = innerWidth / innerHeight; camera.updateProjectionMatrix(); renderer.setSize(innerWidth, innerHeight); sizeLow(); });
 
 // ---------- the way in ----------
-function begin() { G.audio.init(); if (!G.audio.radioOn) G.audio.setRadio(true); if (G.guest) { if (guide.on) guide.set(false); } else talk.listen(true); }
+function begin() { G.audio.init(); if (G.guest) { if (guide.on) guide.set(false); } else talk.listen(true); }
 function startDesktop() { begin(); G.mode = 'desktop'; menu.style.display = 'none'; hud.style.display = 'block'; rig.position.set(0, 0, 0.3); if (guest) guest.start(); }
 deskBtn.onclick = startDesktop;
 async function startVR() {
@@ -112,12 +114,13 @@ else vrBtn.textContent = location.protocol === 'https:' || location.hostname ===
 function tick(dt) {
   G.t += dt;
   input.update(dt); if (guest) guest.update(dt);
+  G.clock.update(dt);
   updateItems(dt);
   const boil = cart.update(dt, G.t);
   game.update(dt, G.t);
   city.update(dt, G.t);
   life.update(dt, G.t);
-  talk.update(dt); tv.update(dt); tank.update(dt); live.update(dt); share.update(dt); if (!guest) cook.update(dt);
+  talk.update(dt); tank.update(dt); story.update(dt); live.update(dt); share.update(dt); if (!guest) cook.update(dt);
   grit.update(dt, G.t);
   guide.update(dt, G.t); gameMenu.update(dt); report.update(dt);
   G.fx.update(dt);
@@ -137,15 +140,12 @@ const gameMenu = buildMenu(scene, cart, guide, talk, shadowLights, report);
 { const tag = document.createElement('div'); tag.style.cssText = 'position:fixed;top:10px;right:12px;font:600 13px ui-monospace,monospace;color:#ffd9a0;background:rgba(10,10,14,.7);padding:6px 10px;border-radius:6px;pointer-events:none;z-index:5'; document.body.appendChild(tag);
   setInterval(() => { const s = live.status(); tag.textContent = 'THE MARKET: ' + s; tag.style.display = G.mode === 'desktop' ? 'block' : 'none'; }, 1000); }
 // easy on the eyes (the settings board, on unless turned off): more fill light, the bright points and their halos lower, thin rain, a dim television, less edge blur in the headset
-G.eyes = (on) => { const e = on ? 0.6 : 1; city.fill.intensity = on ? 1.6 : 1.15; city.glow.traverse((s) => { if (s.isSprite) { s.userData.op ??= s.material.opacity; s.material.opacity = s.userData.op * (on ? 0.55 : 1); } }); if (city.rain) city.rain.material.opacity = on ? 0.05 : 0.12;
-  if (cart.open) { cart.signM.color.setScalar(1.7 * e); cart.signHalo.material.opacity = 0.45 * e; cart.lanternM.emissiveIntensity = 2.4 * e; cart.lanternHalos.forEach((h) => (h.material.opacity = 0.55 * e)); }
-  if (renderer.xr.isPresenting) renderer.xr.setFoveation?.(on ? 0.25 : 0.5); };
+G.eyes = (on) => { city.setEasy(on); G.cart.lamps?.(G.cart.lampK || 0); if (renderer.xr.isPresenting) renderer.xr.setFoveation?.(on ? 0.25 : 0.5); };   // easy on the eyes (the settings board, on unless turned off): more fill light, the lanterns and their halos lower, less edge blur in the headset
 G.eyes(G.set.easy);
 function frame(now) {
   const dt = clamp((now - last) / 1000, 0, 0.05); last = now;
   if (G.mode === 'menu' && !renderer.xr.isPresenting && !G.manualCam) { const a = G.t * 0.05; camera.position.set(2.9 + Math.sin(a) * 0.9, 1.75, -5.4 + Math.cos(a) * 0.4); rig.position.set(0, 0, 0); camera.lookAt(0, 1.6, -0.4); }
   if (!G.frozen) tick(dt);
-  if (frames === 2) { city.bakeFar(renderer); city.reflect(renderer, scene); }
   govern(dt); frames++;
   render();
   if (G.afterRender) { const f = G.afterRender; G.afterRender = null; f(); }
@@ -153,8 +153,8 @@ function frame(now) {
 }
 renderer.setAnimationLoop(frame);
 
-G.debug = { Items, PH, person: makePerson, PF, city, guide, menu: gameMenu, report, tick, frame, render, input, startDesktop, startVR, THREE, share, guest };
-if (G.guest) { menu.querySelector('h2').textContent = 'THE DARK ALLEY, as yourself: walk up to the ramen cart, take a stool, order a bowl and pay for it. The cook, the customers and everyone passing are the same people every page in the alley sees.'; $('help').innerHTML = '<div><b>Browser</b> WASD walk · mouse look · V first / third person · E sit at a stool or get up · click the menu to order · M settings</div><div><b>VR</b> left stick walk · right stick turn · trigger by a stool to sit · step away to get up · poke the menu to order</div><div><b>Back</b> walk out at the street end, or LEAVE, to THE MARKET</div>'; $('keys').textContent = 'WASD walk · V view · E sit / get up · click: order · M settings · Esc: free mouse'; deskBtn.textContent = 'Walk the alley in this browser'; }
+G.debug = { Items, PH, person: makePerson, PF, city, guide, menu: gameMenu, report, tick, frame, render, input, startDesktop, startVR, THREE, share, guest, tank };
+if (G.guest) { menu.querySelector('h2').textContent = 'RAMEN, as yourself: walk the village street up to the ramen stall, take a stool, order a bowl and pay for it. The cook, the customers and everyone passing are the same people every page in the village sees.'; $('help').innerHTML = '<div><b>Browser</b> WASD walk · mouse look · V first / third person · E sit at a stool or get up · click the menu to order · M settings</div><div><b>VR</b> left stick walk · right stick turn · trigger by a stool to sit · step away to get up · poke the menu to order</div><div><b>Back</b> walk out at the end of the street, or LEAVE, to THE MARKET</div>'; $('keys').textContent = 'WASD walk · V view · E sit / get up · click: order · M settings · Esc: free mouse'; deskBtn.textContent = 'Walk the village in this browser'; }
 window.G = G;
 { const box = $('say'); // on a screen: M the settings board, G the guide, T to type what you say if you would rather not speak it
   addEventListener('keydown', (e) => { if (G.mode !== 'desktop' || e.repeat) return; if (e.target === box) { if (e.code === 'Enter') { const t = box.value.trim(); box.value = ''; box.style.display = 'none'; box.blur(); if (t) talk.cookSays(t); } else if (e.code === 'Escape') { box.value = ''; box.style.display = 'none'; box.blur(); } return; }

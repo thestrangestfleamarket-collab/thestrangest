@@ -1,4 +1,4 @@
-// THE DARK ALLEY OVER THE REAL SERVER: node tests/yatai-wire.cjs [folder for pictures] (after a full build). One login, two windows on the website's own worker (wrangler dev): a cook working the cart at /sushi, and THE MARKET, where going to THE DARK ALLEY leaves for the same alley as a guest. Through the section's room (worker/door.js, t 'yt'): the cook sees the guest as their MARKET figure and hears them; the guest sees the cook and the cook's things on the cart; both see the same passers-by and customers in the same places; the guest sits, orders and pays; a second cook brings a cart of their own; and LEAVE takes the guest back to THE MARKET. Without a Cloudflare token, WIRE_CONFIG=<a copy of wrangler.jsonc without its "ai" line>.
+// RAMEN OVER THE REAL SERVER: node tests/yatai-wire.cjs [folder for pictures] (after a full build). One login, two windows on the website's own worker (wrangler dev): a cook working the cart at /sushi, and THE MARKET, where going to RAMEN leaves for the same alley as a guest. Through the section's room (worker/door.js, t 'yt'): the cook sees the guest as their MARKET figure and hears them; the guest sees the cook and the cook's things on the cart; both see the same passers-by and customers in the same places; the guest sits, orders and pays; a second cook brings a cart of their own; and LEAVE takes the guest back to THE MARKET. Without a Cloudflare token, WIRE_CONFIG=<a copy of wrangler.jsonc without its "ai" line>.
 const { chromium } = require('playwright'), { spawn } = require('child_process'), fs = require('fs'), path = require('path');
 const PORT = +process.env.WIRE_PORT || 8797, BASE = 'http://127.0.0.1:' + PORT, out = process.argv[2] || ''; let bad = 0; const ok = (c, m) => { console.log((c ? 'ok   ' : 'FAIL ') + m); if (!c) bad++; };
 const shot = (j, name) => { if (out && j) fs.writeFileSync(path.join(out, name), Buffer.from(j.split(',')[1], 'base64')); };
@@ -10,19 +10,19 @@ const shot = (j, name) => { if (out && j) fs.writeFileSync(path.join(out, name),
   const cx = await b.newContext({ viewport: { width: 900, height: 600 }, permissions: ['microphone'] }); await cx.addCookies([{ name: 'tsfm-pass', value: 'dev:wire-check', url: BASE }]); const errs = [];
   const until = (p, f, ms, arg) => p.waitForFunction(f, arg, { timeout: ms, polling: 500 }).then(() => true, () => false);
   try {
-    const a = await cx.newPage(); a.on('pageerror', (e) => errs.push('cook: ' + e.message.slice(0, 200))); await a.goto(BASE + '/sushi?desktop'); await a.waitForFunction('window.G && G.live && G.mirror && G.items && G.items.length > 10', null, { timeout: 300000 });
-    await a.evaluate(() => { G.muteVoices = true; G.cart.pots.forEach((p) => p.setOn(true)); G.game.night = 2; if (G.game.state !== 'open') G.game.toggleOpen(); });
-    // THE MARKET: GO TO THE DARK ALLEY leaves it for the alley as a guest
+    const a = await cx.newPage(); a.on('pageerror', (e) => errs.push('cook: ' + e.message.slice(0, 200))); await a.goto(BASE + '/ramen?desktop'); await a.waitForFunction('window.G && G.live && G.mirror && G.items && G.items.length > 10', null, { timeout: 300000 });
+    await a.evaluate(() => { G.muteVoices = true; G.cart.pots.forEach((p) => p.setOn(true)); if (G.game.state !== 'open') G.game.toggleOpen(); G.clock.follow(0.1); });
+    // THE MARKET: GO TO RAMEN leaves it for the alley as a guest
     const m = await cx.newPage(); m.on('pageerror', (e) => errs.push('market: ' + e.message.slice(0, 200))); await m.goto(BASE + '/?fresh=1&hour=21'); await m.waitForFunction(() => window.__started, null, { timeout: 600000 }); await m.waitForTimeout(3000);
-    await m.evaluate(() => { __dbg.UI.goPlace('THE DARK ALLEY'); }); await m.waitForURL(/\/holo\?g=sushi&as=guest/, { timeout: 120000 }).catch(() => {});
-    ok(/\/holo\?g=sushi&as=guest/.test(m.url()), 'THE DARK ALLEY leaves THE MARKET for the cart\'s own alley as a guest: ' + m.url());
-    let g = null; for (let i = 0; i < 600 && !g; i++) { g = m.frames().find((f) => /\/sushi\?guest=1/.test(f.url())) || null; if (!g) await m.waitForTimeout(200); }
+    await m.evaluate(() => { __dbg.UI.goPlace('RAMEN'); }); await m.waitForURL(/\/holo\?g=ramen&as=guest/, { timeout: 120000 }).catch(() => {});
+    ok(/\/holo\?g=ramen&as=guest/.test(m.url()), 'RAMEN leaves THE MARKET for the cart\'s own alley as a guest: ' + m.url());
+    let g = null; for (let i = 0; i < 600 && !g; i++) { g = m.frames().find((f) => /\/ramen\?guest=1/.test(f.url())) || null; if (!g) await m.waitForTimeout(200); }
     await g.waitForFunction('window.G && G.guestRole && G.live && G.live.share', null, { timeout: 300000 }); await g.evaluate(() => { G.debug.startDesktop(); G.muteVoices = true; });
     await until(g, () => !!G.live.me, 120000); const GID = await g.evaluate(() => G.live.me), CID = GID + '~cart';   // (who the login is on this server: the guest, and the cook in the other window)
     // the cook sees the guest as their own figure, and the guest the cook and the cook's things
     const fig = await until(a, (gid) => { const w = G.live.watchers.get(gid); return w && w.av && w.av.posed() && w.real; }, 180000, GID);
     ok(fig, 'the cook sees the guest as their own MARKET figure, moved by its own bones' + (fig ? '' : ': ' + JSON.stringify(await a.evaluate(() => [...G.live.watchers.entries()].map(([id, w]) => ({ id, av: !!w.av, real: !!w.real }))))));
-    const st = await a.evaluate(() => G.live.status()); ok(/^LINKED · [1-9]/.test(st), '/sushi says it is linked and counts who is in its alley: ' + st);
+    const st = await a.evaluate(() => G.live.status()); ok(/^LINKED · [1-9]/.test(st), '/ramen says it is linked and counts who is in its alley: ' + st);
     const sees = await until(g, (cid) => { const N = [...G.live.cooks.values()][0]; return N && N.id === cid && N.things.size > 20 && N.P && G.items.every((i) => !i.obj.visible); }, 180000, CID);
     ok(sees, 'the guest sees the cook (the carving chef) at the cart and the cook\'s own things on it: ' + JSON.stringify(await g.evaluate(() => ({ cooks: [...G.live.cooks.values()].map((N) => [N.id, N.x, N.things.size, !!N.P]), status: G.live.status() }))));
     const ld = await until(g, (cid) => !G.live.share.lead && G.live.share.by === cid, 60000, CID), la = await a.evaluate(() => G.live.share.lead);
@@ -53,7 +53,7 @@ const shot = (j, name) => { if (out && j) fs.writeFileSync(path.join(out, name),
     ok(freed, 'getting up frees the stool at the cart');
     // a second cook: a cart of their own beside the first, seen by the guest too
     const cx2 = await b.newContext({ viewport: { width: 700, height: 450 } }); await cx2.addCookies([{ name: 'tsfm-pass', value: 'dev:wire-check-two', url: BASE }]);
-    const a2 = await cx2.newPage(); a2.on('pageerror', (e) => errs.push('cook 2: ' + e.message.slice(0, 200))); await a2.goto(BASE + '/sushi?desktop', { timeout: 300000 }); await a2.waitForFunction('window.G && G.live && G.mirror && G.items && G.items.length > 10', null, { timeout: 300000 });
+    const a2 = await cx2.newPage(); a2.on('pageerror', (e) => errs.push('cook 2: ' + e.message.slice(0, 200))); await a2.goto(BASE + '/ramen?desktop', { timeout: 300000 }); await a2.waitForFunction('window.G && G.live && G.mirror && G.items && G.items.length > 10', null, { timeout: 300000 });
     const sl = await until(a2, () => G.live.net().slot >= 1, 120000);
     ok(sl, 'the second cook takes the next cart along');
     const two = await until(g, () => { const L = [...G.live.cooks.values()]; return L.length === 2 && L.some((N) => N.x !== 0 && N.copy && N.things.size > 20); }, 180000);
@@ -65,4 +65,4 @@ const shot = (j, name) => { if (out && j) fs.writeFileSync(path.join(out, name),
     ok(back && /\/\?fresh=1&hour=21$/.test(m.url()) && (!pd.paid || (settled && settled.settled)), 'LEAVE takes the guest back to THE MARKET, where their bowl is paid for: ' + JSON.stringify({ url: m.url(), paid: settled && settled.paid, settled: settled && settled.settled }));
     ok(!errs.length, 'no page errors' + (errs.length ? ': ' + errs.slice(0, 3).join(' | ') : ''));
   } catch (e) { ok(false, 'the check ran: ' + String(e.message || e).slice(0, 300)); }
-  await b.close(); stop(); console.log(bad ? bad + ' FAILED' : 'THE DARK ALLEY is one game over the real server'); process.exit(bad ? 1 : 0); })();
+  await b.close(); stop(); console.log(bad ? bad + ' FAILED' : 'RAMEN is one game over the real server'); process.exit(bad ? 1 : 0); })();

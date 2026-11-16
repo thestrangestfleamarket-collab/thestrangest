@@ -381,3 +381,12 @@ Last (owner, 7 Nov 2026: "we will do VR checks last"): every check and look line
 - **P2 · L · code** Cards with other players at THE CANTINA's tables: a room on the website (a Durable Object as the `Block` is), seats, the deck and who holds which card decided there (13 Nov 2026; one player's for now).
 - **P2 · M · code** Talking to the regulars in the headset: speak, and the answer on a panel by their head (13 Nov 2026; the keyboard panel is built).
 - **P3 · M · code** The other regulars' lives (about twenty more bodies in the room have none yet), and the regulars moving: the waiter's rounds, the dealer's hands (13 Nov 2026).
+
+## The Last Chance
+
+- [ ] **P1 · S (him) · look** Try `/saloon` in the Quest 3: only run on a screen and in software rendering so far (16 Nov 2026).
+- [ ] **P2 · pick** The people are Polyfork's low-poly frontier bodies, as he chose for YATAI '86; no free realistic bodies in western dress were found. His call whether that stands here.
+- [ ] **P2 · L · code** The next pieces, one at a time: the piano (playable), the poker and faro table (cards dealt and played), the stove and lamps (lit and trimmed by hand), the cellar, your own body and arms.
+- [ ] **P2 · M · find** Recorded sound in place of the made ones (shots, glass, the room, a real piano), and voices pre-recorded with ElevenLabs for the written lines.
+- [ ] **P3 · M · code** A check of whole nights at speed, and of the hands in an emulated Quest 3.
+

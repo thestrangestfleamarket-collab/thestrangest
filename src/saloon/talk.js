@@ -1,0 +1,35 @@
+// the townspeople's voices: each speaks through Claude Haiku as themself (POST /saloon/talk, a login's; the line the story wrote otherwise), said aloud from where they stand (POST /sushi/say, else the browser's voice); your own voice is always on, and what you say goes to whoever you are looking at
+import { G, V3, pick } from '../sushi/ctx.js';
+import { BODIES, PEOPLE, TOWN } from './cast.js';
+import { SECRETS } from './story.js';
+
+export function buildTalk() {
+  const talk = { ai: null, tts: null, mic: 'off', said: [], lastBy: {} }, lane = []; let now = null; const _m = new V3();
+  const post = (url, body) => fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+  const facts = (p) => { const W = G.story.W, F = G.folk, h = [...(W.heard[p.id] || [])].map((k) => SECRETS[k][0]), dead = W.deaths.map((d) => PEOPLE[d].name);
+    return [`It is night ${W.night + 1} of this week in ${TOWN}, 1881. You are in THE LAST CHANCE saloon.`, `In the room: ${F.people.filter((q) => q.here && q.alive && q !== p).map((q) => q.S.short).join(', ') || 'nobody else'}.`, p.drunk >= p.S.holds ? 'You are drunk and it shows in how you talk.' : p.drunk >= p.S.holds * 0.5 ? 'You have had a few.' : '', p.trust >= 3 ? 'You trust this barkeep.' : p.trust <= -2 ? 'You do not like or trust this barkeep.' : 'You are still making up your mind about this barkeep.',
+      h.length ? `The barkeep has told you: ${h.join('; ')}.` : '', dead.length ? `Dead this week: ${dead.join(', ')}.` : '', W.facts.has('fight') ? 'There is a gunfight in the room right now.' : ''].filter(Boolean).join(' '); };
+  // one line from them: about says what is happening; fallback is said as written when Claude is not to be had
+  talk.voice = (p, fallback, about, o = {}) => { if (!p || !p.alive) return; talk.lastBy[p.id] = G.t; const it = { p, text: fallback, kind: o.kind || 'line' }; lane.push(it); if (lane.length > 5) lane.splice(0, lane.length - 5);
+    if (talk.ai && about && about !== fallback) { it.wait = true; const hist = (p.hist ||= []); post('/saloon/talk', { who: p.id, persona: { name: p.S.name, age: p.S.age, job: p.S.job, style: p.S.style, who: p.S.who, hides: p.S.hides }, facts: facts(p), about, gist: fallback, say: o.say || '', history: hist.slice(-8) }).then((r) => r.json()).then((j) => { if (j && j.say) it.text = j.say; }).catch(() => { }).finally(() => { it.wait = false; hist.push({ who: 'you', text: o.say || '' }, { who: 'me', text: it.text }); if (hist.length > 16) hist.splice(0, 2); }); setTimeout(() => { it.wait = false; }, 6000); } };
+  const speak = async (it) => { const p = it.p, sp = BODIES[p.S.body][1]; talk.said.push({ who: p.id, text: it.text, t: G.t }); if (talk.said.length > 40) talk.said.shift(); now = it; p.heed = G.t + 6;
+    const done = () => { if (now === it) now = null; };
+    if (talk.tts !== false && G.audio.ctx) { try { const r = await post('/sushi/say', { text: it.text, speaker: sp }); if (r.ok && /audio/.test(r.headers.get('content-type') || '')) { const buf = await G.audio.ctx.decodeAudioData(await r.arrayBuffer()), ac = G.audio.ctx, src = ac.createBufferSource(), pan = ac.createPanner(), g = ac.createGain(); talk.tts = true;
+          src.buffer = buf; pan.panningModel = 'HRTF'; pan.distanceModel = 'inverse'; pan.refDistance = 1.2; pan.rolloffFactor = 1.1; _m.copy(p.root.position); pan.positionX.value = _m.x; pan.positionY.value = 1.55; pan.positionZ.value = _m.z; g.gain.value = 2.2; src.connect(g).connect(pan).connect(G.audio.out); p.P.talkT = buf.duration; src.onended = done; src.start(); setTimeout(done, buf.duration * 1000 + 500); return; } if (r.status === 401 || r.status === 501) talk.tts = false; } catch (e) { /* the browser's voice then */ } }
+    p.P.talkT = 1 + it.text.length * 0.055;
+    try { const u = new SpeechSynthesisUtterance(it.text), f = p.P.sex === 'f', vs = speechSynthesis.getVoices().filter((x) => /^en/i.test(x.lang)); u.voice = vs.find((x) => (f ? /female|woman|samantha|victoria|karen|zira|aria|jenny/i : /\bmale|\bman\b|daniel|alex|david|mark|fred|guy/i).test(x.name)) || null; u.pitch = f ? 1.1 : 0.7; u.rate = 0.98; u.onend = done; u.onerror = done; speechSynthesis.speak(u); } catch (e) { /* silent */ } setTimeout(done, 1200 + it.text.length * 60); };
+  // your ears follow your head
+  const ears = () => { const ac = G.audio.ctx; if (!ac || !ac.listener) return; const c = G.camera.getWorldPosition(_m), L = ac.listener, d = G.camera.getWorldDirection(new V3()); if (L.positionX) { L.positionX.value = c.x; L.positionY.value = c.y; L.positionZ.value = c.z; L.forwardX.value = d.x; L.forwardY.value = d.y; L.forwardZ.value = d.z; L.upX.value = 0; L.upY.value = 1; L.upZ.value = 0; } };
+  talk.update = () => { ears(); if (now || !lane.length || lane[0].wait) return; const it = lane.shift(); if (!it.p.here || !it.p.alive || !it.text) return; speak(it); };
+
+  // what you say: to whoever you are looking at, or whoever is nearest; the story hears what is in it, and if it has nothing of its own to answer with, they answer as themselves
+  talk.youSay = (text) => { text = String(text || '').trim().slice(0, 240); if (text.length < 2) return null; const p = G.folk.lookedAt() || G.folk.nearYou(2.6)[0]; talk.heard = { text, to: p && p.id, t: G.t }; if (!p) return null; p.heed = G.t + 8; const t0 = G.t; talk.lastBy[p.id] = -1; const out = G.story.told(p, text);
+    if (talk.lastBy[p.id] !== t0 && !(talk.lastBy[p.id] >= t0)) talk.voice(p, pick(['Is that so.', 'Hm.', 'If you say so, barkeep.', 'Well now.']), `the barkeep says to you: "${text}". Answer as yourself.`, { say: text, kind: 'reply' }); return { to: p.id, out }; };
+  let rec = null, want = false;
+  talk.listen = (on) => { want = on; const SR = window.SpeechRecognition || window.webkitSpeechRecognition; if (!SR || G.params?.has('nomic')) { talk.mic = 'none'; return; } if (!on) { try { rec && rec.stop(); } catch (e) { } return; } if (rec) return;
+    rec = new SR(); rec.continuous = true; rec.interimResults = false; rec.lang = 'en-US'; rec.onresult = (e) => { for (let i = e.resultIndex; i < e.results.length; i++) if (e.results[i].isFinal) talk.youSay(e.results[i][0].transcript); }; rec.onstart = () => { talk.mic = 'on'; }; rec.onerror = (e) => { if (e.error === 'not-allowed' || e.error === 'service-not-allowed') { talk.mic = 'denied'; want = false; } }; rec.onend = () => { if (want) setTimeout(() => { try { rec.start(); } catch (e) { } }, 400); }; try { rec.start(); } catch (e) { } };
+  talk.needPrime = async () => { try { const s = await navigator.permissions.query({ name: 'microphone' }); return s.state === 'prompt'; } catch (e) { return false; } };
+  talk.prime = async () => { try { const s = await navigator.mediaDevices.getUserMedia({ audio: true }); s.getTracks().forEach((t) => t.stop()); return true; } catch (e) { return false; } };
+  post('/saloon/talk', {}).then((r) => { talk.ai = r.status !== 401 && r.status !== 404 && r.status !== 501; return r.json(); }).then((j) => { if (j && j.why && /secret|key/.test(j.why)) talk.ai = false; }).catch(() => { talk.ai = false; });
+  return talk;
+}

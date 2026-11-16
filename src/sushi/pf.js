@@ -133,14 +133,14 @@ export function pfPerson(key, sticks) {
       m.scale.set(r * (0.8 + Math.random() * 0.5), r * (0.7 + Math.random() * 0.4), r * 0.22); m.position.copy(on); m.quaternion.setFromUnitVectors(_t.set(0, 0, 1), n); m.userData.nopick = true; m.updateMatrix(); bn.attach(m);
       stains.push({ m, life: 150 }); if (stains.length > 8) { const o = stains.shift(); o.m.removeFromParent(); o.m.material.dispose(); } return m; },
     stains,
-    gesture(name) { const c = clips[GEST[name]]; if (c && this.pose !== 'walk') st.over = { c, t: 0, w: 0, end: Math.min(c.dur, name === 'laugh' ? 3.2 : c.dur) }; if (name === 'wave') this.waveT = 1.6; },
+    gesture(name) { const c = clips[GEST[name] || name]; if (c && this.pose !== 'walk') st.over = { c, t: 0, w: 0, end: Math.min(c.dur, name === 'laugh' ? 3.2 : c.dur) }; if (name === 'wave') this.waveT = 1.6; },
     update(dt) {
       const seated = this.pose === 'sit' || this.pose === 'eat';
       this.talkT = Math.max(0, this.talkT - dt); if (st.fold > 0) st.fold -= dt;
       for (let i = stains.length - 1; i >= 0; i--) { const s = stains[i]; s.life -= dt; s.m.material.opacity = 0.85 * Math.min(1, s.life / 25); if (s.life <= 0) { s.m.removeFromParent(); s.m.material.dispose(); stains.splice(i, 1); } }
       if (st.push) { st.push.t -= dt; root.position.addScaledVector(st.push.v, dt * 2 * Math.max(0, st.push.t / 0.7)); if (st.push.t <= 0) st.push = null; }   // a stagger: steps back the way the blow went
       if (!seated && this.pose === 'stand' && this.talkT <= 0 && (this.habitT -= dt) <= 0) { this.habitT = 9 + Math.random() * 14; st.fold = 4 + Math.random() * 4; }
-      const want = this.pose === 'walk' || st.push ? 'Walk' : seated ? (this.talkT > 0 ? 'Sitting talking' : 'Sitting') : this.talkT > 0 ? 'Talking' : st.fold > 0 ? 'Arms folded' : 'Idle'; play(want);
+      const want = this.pose === 'walk' || st.push ? 'Walk' : this.act && clips[this.act] && this.talkT <= 0 ? this.act : seated ? (this.talkT > 0 ? 'Sitting talking' : 'Sitting') : this.talkT > 0 ? 'Talking' : st.fold > 0 ? 'Arms folded' : 'Idle'; play(want);
       const rate = st.push ? -0.9 : this.pose === 'walk' && st.cur.c.speed ? this.speed / st.cur.c.speed : 1; st.cur.t += dt * rate; if (st.prev) { st.prev.t += dt; st.fade -= dt; if (st.fade <= 0) st.prev = null; }
       const w = st.prev ? 1 - st.fade / st.fade0 : 1;
       for (let i = 0; i < NB; i++) { sample(st.cur.c, st.cur.t, st.cur.loop, i, R[i], i ? null : hp); if (st.prev) { sample(st.prev.c, st.prev.t, st.prev.loop, i, qa, i ? null : hq); qa.slerp(R[i], w); R[i].copy(qa); if (!i) hp.lerpVectors(hq, hp, w); } R[i].multiply(RI[i]); }

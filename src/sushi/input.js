@@ -99,13 +99,15 @@ function stepHand(h, dt) {
     const cand = h.xr ? findCand(h) : h.aim?.cand; h.cand = cand || null;
     if (cand) { h.marker.visible = true; if (cand.take) h.marker.position.copy(cand.pos); else cand.worldCenter(h.marker.position); const s = (cand.take ? cand.r : cand.radius) * 3.2; h.marker.scale.set(s, s, 1); h.marker.material.opacity = 0.28 + Math.sin(G.t * 6) * 0.08; }
     else h.marker.visible = false;
-    if (h.gripDown && cand) grab(h, cand);
+    if (h.supp && !h.grip) { if (h.supp.supp === h) h.supp.supp = null; h.supp = null; }
+    if (h.gripDown && cand) { if (h.xr && cand.weapon && cand.held && cand.held !== h) { h.supp = cand; cand.supp = h; } else grab(h, cand); }   // (a second hand on a held weapon steadies it)
   } else {
     h.marker.visible = false;
     const it = h.held;
     if (it.dead || it.held !== h) { h.held = null; return; }
     if (h.xr) {
       if (it.tool) { _q.copy(h.quat); _v.copy(h.pos); } else { _q.copy(h.quat).multiply(h.relQ); _v.copy(h.relPos).applyQuaternion(h.quat).add(h.pos); }
+      if (it.aimXR) it.aimXR(h, _v, _q, dt);   // (a weapon's weight, and a second hand on it: weapons.js)
       if (!PH.aim(it, _v, _q)) { it.obj.quaternion.copy(_q); it.obj.position.copy(_v); }
       const g = PH.grip.get(it); if (g && g.bump) { g.bump = 0; if (G.t - (h.bt || -9) > 0.12) { h.bt = G.t; h.pulse(0.3, 18); } } // it knocks into something: the hand feels it
     } else {
@@ -118,7 +120,7 @@ function stepHand(h, dt) {
     }
     it.onHeld(dt, h);
     if (it.dead || it.held !== h) { h.held = null; return; }
-    if (h.xr ? !h.grip : h.gripDown) release(h);
+    if (h.xr ? !h.grip : it.weapon && it.desk ? it.wantDrop : h.gripDown) release(h);
   }
 }
 
@@ -146,7 +148,7 @@ export function buildInput(renderer, rig, camera, dom) {
   G.hands = [...xrHands, desk.hand];
 
   // ---- desktop controls
-  dom.addEventListener('mousemove', (e) => { if (document.pointerLockElement === dom || desk.drag) { desk.yaw -= e.movementX * 0.0023; desk.pitch = clamp(desk.pitch - e.movementY * 0.0023, -1.45, 1.2); } });
+  dom.addEventListener('mousemove', (e) => { if (desk.swingAim && desk.swingAim(e.movementX, e.movementY)) return; if (document.pointerLockElement === dom || desk.drag) { desk.yaw -= e.movementX * 0.0023; desk.pitch = clamp(desk.pitch - e.movementY * 0.0023, -1.45, 1.2); } });
   dom.addEventListener('mousedown', (e) => {
     if (G.mode !== 'desktop') return;
     if (document.pointerLockElement !== dom) { try { dom.requestPointerLock?.(); } catch (err) { /* sandboxed */ } desk.drag = true; if (!desk.lockTried) { desk.lockTried = true; return; } }
@@ -190,7 +192,7 @@ export function buildInput(renderer, rig, camera, dom) {
     desk.focus += (aim.dist - desk.focus) * Math.min(1, dt * 5);
     stepHand(h, dt);
     const it = h.held;
-    G.hoverText = it ? `${it.name} — ${it.hint()}  [LMB release${it.tool ? ' · hold RMB/E to ' + (it.useMode === 'chop' ? 'chop' : 'pour') : ''}]` : aim.button ? `[LMB] ${aim.button.name}` : aim.cand ? `[LMB] grab ${aim.cand.name}` : '';
+    G.hoverText = it && it.weapon && it.desk ? `${it.name} — hold click to wind up, move the mouse the way to cut, let go to swing · right click or E: guard · Q: put down` : it ? `${it.name} — ${it.hint()}  [LMB release${it.tool ? ' · hold RMB/E to ' + (it.useMode === 'chop' ? 'chop' : 'pour') : ''}]` : aim.button ? `[LMB] ${aim.button.name}` : aim.cand ? `[LMB] grab ${aim.cand.name}` : '';
   }
 
   function updateXR(dt) {

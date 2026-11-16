@@ -23,6 +23,7 @@ import { buildLive } from './live.js';
 import { buildCook } from './cook.js';
 import { buildShare } from './share.js';
 import { buildGuest } from './guest.js';
+import { buildOutbreak } from './outbreak.js';
 import { NET } from '../holo/net.js';
 import { PH } from './physics.js';
 import * as T from './tex.js';
@@ -68,6 +69,7 @@ G.baked = mergeStatic(cart.group) + mergeStatic(city.group);
 const tank = buildTank(scene), tv = buildTV(scene, city.shops), live = buildLive(), cook = buildCook();
 if (G.guest) G.buttons.length = 0;   // (the cart's knobs, switch and boards are the cook's)
 const share = buildShare(live), guest = G.guest ? buildGuest(live) : null;
+const outbreak = buildOutbreak(scene);   // the night it turns: the director, the turned, what you fight with, blood
 
 // on a screen: the scene is drawn small, then enlarged with ordered dither and a short palette, as that console's output looked
 const LOWH = 540; let lowRT = null;
@@ -117,7 +119,7 @@ function tick(dt) {
   game.update(dt, G.t);
   city.update(dt, G.t);
   life.update(dt, G.t);
-  talk.update(dt); tv.update(dt); tank.update(dt); live.update(dt); share.update(dt); if (!guest) cook.update(dt);
+  talk.update(dt); tv.update(dt); tank.update(dt); live.update(dt); share.update(dt); outbreak.update(dt); if (!guest) cook.update(dt);
   grit.update(dt, G.t);
   guide.update(dt, G.t); gameMenu.update(dt); report.update(dt);
   G.fx.update(dt);
@@ -149,11 +151,11 @@ function frame(now) {
   govern(dt); frames++;
   render();
   if (G.afterRender) { const f = G.afterRender; G.afterRender = null; f(); }
-  if (G.mode === 'desktop') { $('hover').textContent = G.hoverText || ''; statT -= dt; if (statT <= 0) { statT = 0.5; $('stat').textContent = G.guideText || G.hint; } }
+  if (G.mode === 'desktop') { $('hover').textContent = G.hoverText || ''; statT -= dt; if (statT <= 0) { statT = 0.5; $('stat').textContent = G.outHint || G.guideText || G.hint; } }
 }
 renderer.setAnimationLoop(frame);
 
-G.debug = { Items, PH, person: makePerson, PF, city, guide, menu: gameMenu, report, tick, frame, render, input, startDesktop, startVR, THREE, share, guest };
+G.debug = { outbreak, Items, PH, person: makePerson, PF, city, guide, menu: gameMenu, report, tick, frame, render, input, startDesktop, startVR, THREE, share, guest };
 if (G.guest) { menu.querySelector('h2').textContent = 'THE DARK ALLEY, as yourself: walk up to the ramen cart, take a stool, order a bowl and pay for it. The cook, the customers and everyone passing are the same people every page in the alley sees.'; $('help').innerHTML = '<div><b>Browser</b> WASD walk · mouse look · V first / third person · E sit at a stool or get up · click the menu to order · M settings</div><div><b>VR</b> left stick walk · right stick turn · trigger by a stool to sit · step away to get up · poke the menu to order</div><div><b>Back</b> walk out at the street end, or LEAVE, to THE MARKET</div>'; $('keys').textContent = 'WASD walk · V view · E sit / get up · click: order · M settings · Esc: free mouse'; deskBtn.textContent = 'Walk the alley in this browser'; }
 window.G = G;
 { const box = $('say'); // on a screen: M the settings board, G the guide, T to type what you say if you would rather not speak it

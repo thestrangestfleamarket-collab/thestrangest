@@ -120,7 +120,23 @@ export function pfPerson(key, sticks) {
       else if (!seated && !st.down && jh >= STEP_J) st.push = { v: new THREE.Vector3(imp.x, 0, imp.z).normalize().multiplyScalar(Math.min(0.8, jh / 12)), t: 0.7 };
       return head ? 'head' : 'body'; },
     hit(dir, at, f = 0.6) { return this.push(at.y > bones[HEAD].getWorldPosition(_w).y - 0.08 ? 'head' : 'torso', dir.clone().setLength(f * FALL_J), at); },
-    rest: O,
+    rest: O, mesh, lost: new Set(),
+    // cut off at a bone (gore.js): that bone and all it carries leave the body by bone weight; the piece as it is posed now, in the world, to fall on its own
+    sever(name) {
+      const i = BONES.indexOf(name); if (i < 0 || this.lost.has(name) || !CH[i]) return null; const sub = new Set(CH[i].set), g = mesh.geometry, si = g.attributes.skinIndex, sw = g.attributes.skinWeight, ix = g.index.array, keep = [], cut = [];
+      const dom = (v) => (sw.getX(v) >= 0.5 ? si.getX(v) : si.getY(v));
+      for (let t = 0; t < ix.length; t += 3) (sub.has(dom(ix[t])) || sub.has(dom(ix[t + 1])) || sub.has(dom(ix[t + 2])) ? cut : keep).push(ix[t], ix[t + 1], ix[t + 2]);
+      if (!cut.length) return null; root.updateMatrixWorld(true); mesh.skeleton.update();
+      const map = new Map(), pos = [], colr = [], idx = [], C = g.attributes.color, v = new THREE.Vector3(), c = new THREE.Vector3();
+      for (const o of cut) { let k = map.get(o); if (k == null) { map.set(o, k = map.size); mesh.getVertexPosition(o, v).applyMatrix4(mesh.matrixWorld); pos.push(v.x, v.y, v.z); c.add(v); colr.push(C.getX(o), C.getY(o), C.getZ(o)); } idx.push(k); }
+      c.divideScalar(map.size); for (let k = 0; k < pos.length; k += 3) { pos[k] -= c.x; pos[k + 1] -= c.y; pos[k + 2] -= c.z; }
+      const pg = new THREE.BufferGeometry(); pg.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3)); pg.setAttribute('color', new THREE.Float32BufferAttribute(colr, 3)); pg.setIndex(idx); pg.computeVertexNormals(); pg.computeBoundingBox();
+      const ng = new THREE.BufferGeometry(); for (const k in g.attributes) ng.setAttribute(k, g.attributes[k]); ng.setIndex(keep); mesh.geometry = ng;   // (the body's own copy of its triangles; the points stay shared)
+      for (const b of sub) { this.lost.add(BONES[b]); for (const o of bones[b].children) o.visible = false; }
+      return { geo: pg, center: c, joint: bones[i].getWorldPosition(new THREE.Vector3()), parent: bones[PI[i]] }; },
+    // down for good, or down now whoever pushed (a turning, a death)
+    fall(d) { if (!st.down) st.down = { t: 0, d: new THREE.Vector3(d.x, 0, d.z).normalize() }; st.duck = null; },
+    stay: false,
     duck() { if (!st.duck && !st.down) st.duck = { t: 0 }; },
     down() { return !!st.down; },
     reeling() { return !!(st.down || st.push); },
@@ -154,7 +170,7 @@ export function pfPerson(key, sticks) {
       // a duck folds forward; a blow past what the feet hold floors them and they get up again
       const H = st.hit; if (H) { H.t += dt; if (H.t > 3.2) st.hit = null; }
       const D = st.duck; let de = 0; if (D) { D.t += dt; de = D.t < 0.16 ? sm(D.t / 0.16) : D.t < 0.8 ? 1 : 1 - sm((D.t - 0.8) / 0.5); if (D.t > 1.3) st.duck = null; else lean(0, 1, de * 0.7, de * 0.35); }
-      const F = st.down; let fa = 0, fl = 0; if (F) { F.t += dt; const t = F.t; if (t < 0.55) fa = 1.45 * (t / 0.55) ** 2; else if (t < 2.7) fa = 1.45 - 0.07 * Math.max(0, Math.sin((t - 0.55) * 8)) * Math.max(0, 1 - (t - 0.55) * 2.5); else if (t < 4.3) fa = 1.45 * (1 - sm((t - 2.7) / 1.6)); else st.down = null; fl = Math.sin(Math.PI * Math.min(1, t / 0.9)); }
+      const F = st.down; let fa = 0, fl = 0; if (F) { F.t += dt; if (this.stay) F.t = Math.min(F.t, 2.6); const t = F.t; if (t < 0.55) fa = 1.45 * (t / 0.55) ** 2; else if (t < 2.7) fa = 1.45 - 0.07 * Math.max(0, Math.sin((t - 0.55) * 8)) * Math.max(0, 1 - (t - 0.55) * 2.5); else if (t < 4.3) fa = 1.45 * (1 - sm((t - 2.7) / 1.6)); else st.down = null; fl = Math.sin(Math.PI * Math.min(1, t / 0.9)); }
       if (st.down) { body.quaternion.setFromAxisAngle(ax.set(F.d.z, 0, -F.d.x), fa); body.position.y = Math.sin(fa) * 0.11; } else if (body.position.y || body.quaternion.w < 1) { body.quaternion.identity(); body.position.y = 0; }
       J[0].copy(hp).multiplyScalar(ks).add(O[0]); for (let i = 1; i < NB; i++) { const p = PI[i]; J[i].copy(O[i]).sub(O[p]).applyQuaternion(R[p]).add(J[p]); }
       // seated at the counter: hands on it, the right one to the mouth with the chopsticks while eating; a wave is the right hand up by the head

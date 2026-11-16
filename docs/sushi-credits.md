@@ -51,5 +51,6 @@ The cart's television also plays THE LATE MOVIE and CLASSIC TV (`data/sushi/film
 
 - The till's money (`data/sushi/money/`): United States government pictures, public domain. The $5, $10 and $20 (their 1985 designs) and the $1's back: the Bureau of Engraving and Printing's, https://www.uscurrency.gov (`tools/sushi-assets.py money`; its specimen pictures, faintly overprinted SPECIMEN). The $1's front and the quarter, dime and penny: Bureau of Engraving and Printing and United States Mint pictures from Wikimedia Commons.
 
+- RAMEN's night (`tools/ramen-arms.py`): Poly Haven, CC0: the katana (`antique_katana_01`), the woodcutter's axe (`wooden_axe`), the barricade's crates (`wooden_crate_01`) and barrel (`wine_barrel_01`). The other period arms (cleaver, sickle, tanto, wakizashi, naginata, yari, bamboo spear, staff, kunai, shuriken, yumi and arrows, tanegashima, kusarigama), the paper lantern, the brazier and the fire-watch tower are made in `src/sushi/weapons.js` and `arsenal.js` from the photographed woods and steel.
 - The recorded sounds (`data/sushi/snd/`): OpenGameArt, CC0, listed in `docs/sushi-sounds.md`.
 - Everything else (the cart's and the street's shapes, the food, the signs, the other sounds) is made in the page's own code.

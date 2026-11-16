@@ -1,4 +1,4 @@
-// the people: Polyfork's (polyfork.dev) bodies on their 15 bones and their recorded motion (data/sushi/cast.json, from tools/sushi-cast.cjs), as THE SPECKLED BAND's are, with what the cart asks of them: walking, standing, sitting on a stool, hands that talk, a nod, a head shake, a laugh, a wave from the shoulder, a blow taken (a flinch, a stagger, a fall and getting up, a hand to where it hurts, a duck), marks on their clothes, chopsticks to the mouth, a head that turns to what it looks at, eyes that blink
+// the people: Polyfork's (polyfork.dev) bodies on their 15 bones and their recorded motion (data/sushi/cast.json, from tools/sushi-cast.cjs), as THE SPECKLED BAND's are, with what the cart asks of them: walking, standing, sitting on a stool, hands that talk, a nod, a head shake, a laugh, a wave from the shoulder, a blow taken as it really lands (the struck limb and what it hangs from knocked about their joints and sprung back, a step back or a fall past what the feet can hold, a hand to where it hurts, a duck), marks on their clothes, chopsticks to the mouth, a head that turns to what it looks at, eyes that blink
 import * as THREE from 'three';
 import { mat } from './ctx.js';
 
@@ -79,9 +79,12 @@ const eyeball = () => { EYE ||= { white: mat({ color: 0xf2efe6 }), iris: mat({ c
   const g = new THREE.Group(); g.add(new THREE.Mesh(EYE.wg, EYE.white)); const ir = new THREE.Mesh(EYE.ig, EYE.iris); ir.position.z = ER * 0.86; g.add(ir); const pu = new THREE.Mesh(EYE.pg, EYE.pupil); pu.position.z = ER * 0.875; g.add(pu); return g; };
 const GEST = { nod: 'Agree', no: 'Head shake', laugh: 'Laughing', shrug: 'Arms folded', think: 'Arms folded' }, UPPER = ['torso', 'head', 'upperArmL', 'forearmL', 'handL', 'upperArmR', 'forearmR', 'handR'];
 const SEAT = 0.79; // where a hip sits on the cart's stools
+// each limb about its own joint, with all it carries: moment of inertia (kg m²), how hard muscle pulls it back, how far it can go
+const LIMBS = { head: [0.06, 70, 0.7], torso: [3, 28, 0.5], upperArm: [0.35, 35, 1], forearm: [0.07, 45, 1], hand: [0.006, 80, 0.6], thigh: [2, 90, 0.35], shin: [0.25, 90, 0.4] };
+const STEP_J = 0.8, FALL_J = 4, FALL_HEAD_J = 3; // a push (N s) the feet answer with a step back; one they cannot hold
 const sm = (x) => (x <= 0 ? 0 : x >= 1 ? 1 : x * x * (3 - 2 * x)); let SPOT = null; const ray = new THREE.Raycaster();
 
-// a person: P.root to place and turn; P.pose 'walk' | 'stand' | 'sit' | 'eat'; P.look a point to look at or null; P.talkT seconds of talking hands; P.gesture(name); P.waveT > 0 waves; P.hit(dir, at, f) a blow; P.duck(); P.down() while knocked down; P.stain(at, color, r)
+// a person: P.root to place and turn; P.pose 'walk' | 'stand' | 'sit' | 'eat'; P.look a point to look at or null; P.talkT seconds of talking hands; P.gesture(name); P.waveT > 0 waves; P.push(bone, impulse, at) a blow on a limb (P.hit(dir, at, f) the same by strength); P.duck(); P.down() while knocked down; P.stain(at, color, r)
 export function pfPerson(key, sticks) {
   const b = D.bodies[key], [sex] = PF[key] || ['m'], clips = CL[sex], SK = D.skel[sex], ks = b.hipY / SK.hipY, { g: geo, face } = geoOf(key);
   const root = new THREE.Group(), inner = new THREE.Group(), body = new THREE.Group(); root.add(inner); inner.add(body);
@@ -92,7 +95,8 @@ export function pfPerson(key, sticks) {
   const DIR = (a, c) => O[c].clone().sub(O[a]).normalize(), LEN = (a, c) => O[c].distanceTo(O[a]);
   let eyes = null; if (face) { const [ex, ey, ez] = face; eyes = [-1, 1].map((sx) => { const e = eyeball(); e.position.set(sx * ex, ey, ez).sub(O[HEAD]); bones[HEAD].add(e); const lid = new THREE.Mesh(EYE.lg, EYE.lid); lid.rotation.x = -1.5; lid.position.copy(e.position); bones[HEAD].add(lid); e.userData.lid = lid; return e; }); }
   const sitHip = O[0].y + (clips.Sitting ? clips.Sitting.P[1] : -0.34) * ks;
-  const st = { cur: { c: clips.Idle, t: Math.random() * 5, loop: true }, prev: null, fade: 0, fade0: 1, over: null, yaw: 0, pitch: 0, ey: 0, ep: 0, blink: 1 + Math.random() * 3, lid: 0, sac: 0, sx: 0, sy: 0, base: 'Idle', fold: 0, hit: null, down: null, duck: null, push: null, wd: 0, wl: 0 };
+  const st = { cur: { c: clips.Idle, t: Math.random() * 5, loop: true }, prev: null, fade: 0, fade0: 1, over: null, yaw: 0, pitch: 0, ey: 0, ep: 0, blink: 1 + Math.random() * 3, lid: 0, sac: 0, sx: 0, sy: 0, base: 'Idle', fold: 0, hit: null, down: null, duck: null, push: null, wd: 0, wl: 0, phys: 0 };
+  const CH = BONES.map((n, i) => { const L = LIMBS[n.replace(/[LR]$/, '')]; if (!L) return null; const set = []; for (let k = 0; k < NB; k++) { let a = k; while (a > 0 && a !== i) a = PI[a]; if (a === i) set.push(k); } return { set, I: L[0], K: L[1], C: 2 * 0.65 * Math.sqrt(L[1]), max: L[2], a: new THREE.Vector3(), w: new THREE.Vector3() }; });
   const J = BONES.map(() => new THREE.Vector3()), R = BONES.map(() => new THREE.Quaternion()), hp = new THREE.Vector3(), hq = new THREE.Vector3(), tgt = new THREE.Vector3(), inv = new THREE.Matrix4();
   const ax = new THREE.Vector3(), qh = new THREE.Quaternion(), spot = new THREE.Vector3(), sv = [0, 1, 2].map(() => new THREE.Quaternion()), stains = [];
   const play = (name) => { const c = clips[name]; if (!c || st.cur.c === c) return; st.prev = st.cur; st.cur = { c, t: Math.random() * c.dur, loop: true }; st.fade = st.fade0 = 0.4; };
@@ -105,14 +109,18 @@ export function pfPerson(key, sticks) {
   const lean = (x, z, a, head) => { qh.setFromAxisAngle(ax.set(z, 0, -x).normalize(), a); for (const i of UP) R[i].premultiply(qh); if (head) R[HEAD].premultiply(qh.setFromAxisAngle(ax, head)); };   // the trunk, head and arms tipped as one toward (x, z)
   const P = {
     root, sticks, style: key, sex, pose: 'stand', speed: 1.3, look: null, lookW: 0, lookAt: new THREE.Vector3(), waveT: 0, eatT: Math.random() * 3, talkT: 0, habitT: 4 + Math.random() * 8, mood: 0, polyfork: true, bones,
-    // a blow travelling along dir (world) that lands at at: f 0.2 a tap, 1 a hard hit that floors someone standing; seated, they lurch on the stool
-    hit(dir, at, f = 0.6) {
-      body.updateWorldMatrix(true, false); inv.copy(body.matrixWorld).invert(); const d = dir.clone().transformDirection(inv).setY(0); if (d.lengthSq() < 1e-6) d.set(0, 0, -1); d.normalize();
-      const a = at.clone().applyMatrix4(inv), head = a.y > J[HEAD].y - 0.08, seated = this.pose === 'sit' || this.pose === 'eat';
-      st.hit = { t: 0, d, f, head, side: a.x > 0 ? 'L' : 'R' }; st.duck = null;
-      if (!seated && !st.down && f >= 1) st.down = { t: 0, d: d.clone() };
-      else if (!seated && !st.down) st.push = { v: new THREE.Vector3(dir.x, 0, dir.z).normalize().multiplyScalar(0.25 + f * 0.45), t: 0.7 };
+    // an impulse imp (world, N s) landing at at on the named bone: it and each limb it hangs from turn about their joints by r × imp / I and spring back; the feet answer what reaches the hips
+    push(name, imp, at) {
+      body.updateWorldMatrix(true, false); inv.copy(body.matrixWorld).invert(); body.getWorldQuaternion(qh).invert();
+      const j = imp.clone().applyQuaternion(qh), a = at.clone().applyMatrix4(inv), seated = this.pose === 'sit' || this.pose === 'eat', r = new THREE.Vector3(); let i = BONES.indexOf(name); if (i < 0) i = TORSO;
+      for (let k = i; k > 0; k = PI[k]) { const c = CH[k]; if (!c) continue; c.w.addScaledVector(r.copy(a).sub(J[k]).cross(j), 1 / c.I); st.phys = 3; }
+      const jh = Math.hypot(imp.x, imp.z), head = i === HEAD; st.duck = null;
+      if (jh > 0.3) st.hit = { t: 0, d: new THREE.Vector3(j.x, 0, j.z).normalize(), f: jh / FALL_J, head, side: a.x > 0 ? 'L' : 'R' };
+      if (!seated && !st.down && jh >= (head ? FALL_HEAD_J : FALL_J)) st.down = { t: 0, d: new THREE.Vector3(j.x, 0, j.z).normalize() };
+      else if (!seated && !st.down && jh >= STEP_J) st.push = { v: new THREE.Vector3(imp.x, 0, imp.z).normalize().multiplyScalar(Math.min(0.8, jh / 12)), t: 0.7 };
       return head ? 'head' : 'body'; },
+    hit(dir, at, f = 0.6) { return this.push(at.y > bones[HEAD].getWorldPosition(_w).y - 0.08 ? 'head' : 'torso', dir.clone().setLength(f * FALL_J), at); },
+    rest: O,
     duck() { if (!st.duck && !st.down) st.duck = { t: 0 }; },
     down() { return !!st.down; },
     reeling() { return !!(st.down || st.push); },
@@ -143,8 +151,8 @@ export function pfPerson(key, sticks) {
       let ty = 0, tp = 0; if (this.lookW > 0.02 && !st.down) { body.updateWorldMatrix(true, false); inv.copy(body.matrixWorld).invert(); tgt.copy(this.lookAt).applyMatrix4(inv).sub(va.copy(O[HEAD]).setY(O[HEAD].y + 0.12)); ty = Math.atan2(tgt.x, tgt.z) * this.lookW; tp = Math.atan2(tgt.y, Math.hypot(tgt.x, tgt.z)) * this.lookW; }
       const hy = Math.max(-1.1, Math.min(1.1, ty)), hpi = Math.max(-0.45, Math.min(0.5, tp)), k = Math.min(1, dt * 3.2); st.yaw += (hy * 0.75 - st.yaw) * k; st.pitch += (hpi * 0.7 - st.pitch) * k;
       R[TORSO].premultiply(qa.setFromEuler(e1.set(0, st.yaw * 0.22, 0))); R[HEAD].premultiply(qa.setFromEuler(e1.set(-st.pitch, st.yaw, 0, 'YXZ')));
-      // the blow: the trunk and head snap the way it went and ease back; a duck folds forward; a hard one floors them and they get up again
-      const H = st.hit, seatK = seated ? 1.5 : 1; let he = 0; if (H) { H.t += dt; const t = H.t; he = t < 0.07 ? t / 0.07 : Math.max(0, 1 - (t - 0.07) / 1.1) ** 2; if (t > 3.2) st.hit = null; else if (!st.down) lean(H.d.x, H.d.z, he * (0.22 + 0.2 * Math.min(1.2, H.f)) * seatK, H.head ? he * 0.4 : 0); }
+      // a duck folds forward; a blow past what the feet hold floors them and they get up again
+      const H = st.hit; if (H) { H.t += dt; if (H.t > 3.2) st.hit = null; }
       const D = st.duck; let de = 0; if (D) { D.t += dt; de = D.t < 0.16 ? sm(D.t / 0.16) : D.t < 0.8 ? 1 : 1 - sm((D.t - 0.8) / 0.5); if (D.t > 1.3) st.duck = null; else lean(0, 1, de * 0.7, de * 0.35); }
       const F = st.down; let fa = 0, fl = 0; if (F) { F.t += dt; const t = F.t; if (t < 0.55) fa = 1.45 * (t / 0.55) ** 2; else if (t < 2.7) fa = 1.45 - 0.07 * Math.max(0, Math.sin((t - 0.55) * 8)) * Math.max(0, 1 - (t - 0.55) * 2.5); else if (t < 4.3) fa = 1.45 * (1 - sm((t - 2.7) / 1.6)); else st.down = null; fl = Math.sin(Math.PI * Math.min(1, t / 0.9)); }
       if (st.down) { body.quaternion.setFromAxisAngle(ax.set(F.d.z, 0, -F.d.x), fa); body.position.y = Math.sin(fa) * 0.11; } else if (body.position.y || body.quaternion.w < 1) { body.quaternion.identity(); body.position.y = 0; }
@@ -166,6 +174,10 @@ export function pfPerson(key, sticks) {
         R[u].slerp(sv[0], w); R[f].slerp(sv[1], w); R[h].slerp(sv[2], w); }
       if (this.hands) for (const s of ['L', 'R']) if (this.hands[s]) { body.updateWorldMatrix(true, false); reach(s, body.worldToLocal(_t.copy(this.hands[s]))); }   // hands held where someone's real ones are (the cook: cook.js)
       for (const s of ['L', 'R']) { const [u, f, h] = ARM[s]; J[f].copy(O[f]).sub(O[u]).applyQuaternion(R[u]).add(J[u]); J[h].copy(O[h]).sub(O[f]).applyQuaternion(R[f]).add(J[f]); }
+      if (st.phys > 0) { st.phys -= dt; const h = Math.min(dt, 1 / 30);   // the limbs knocked about, springing back to where the motion has them
+        for (let k = NB - 1; k > 0; k--) { const c = CH[k]; if (!c) continue; c.w.addScaledVector(c.a, -c.K * h).multiplyScalar(Math.max(0, 1 - c.C * h)); c.a.addScaledVector(c.w, h); const l = c.a.length(); if (l > c.max) { c.a.multiplyScalar(c.max / l); c.w.multiplyScalar(0.5); }
+          if (l > 1e-4) { qh.setFromAxisAngle(ax.copy(c.a).normalize(), Math.min(l, c.max)); for (const i of c.set) R[i].premultiply(qh); } if (st.phys <= 0) { c.a.set(0, 0, 0); c.w.set(0, 0, 0); } }
+        for (let i = 1; i < NB; i++) { const p = PI[i]; J[i].copy(O[i]).sub(O[p]).applyQuaternion(R[p]).add(J[p]); } }
       for (let i = 0; i < NB; i++) { bones[i].position.copy(J[i]); bones[i].quaternion.copy(R[i]); }
       if (this.pose === 'eat' && seated && !st.over) { root.updateMatrixWorld(true); const c = Math.pow((Math.sin(this.eatT * 2.4) + 1) / 2, 1.3), H = bones[ARM.R[2]].getWorldPosition(_w), M = bones[HEAD].getWorldPosition(new THREE.Vector3()); M.y += 0.06; const T = new THREE.Vector3(0.05, 1.0, 0.5).applyMatrix4(root.matrixWorld).lerp(M, c);
         sticks.visible = true; root.worldToLocal(sticks.position.copy(H).addScaledVector(va.copy(T).sub(H).normalize(), 0.05)); sticks.lookAt(T); }

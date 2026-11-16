@@ -118,6 +118,7 @@ subprocess.run(['node', 'tools/sniper.cjs'], check=True)   # COLD BORE (src/snip
 subprocess.run(['node', 'tools/edge.cjs'], check=True)   # EDGE OF 88 (src/edge/) and HULL DOWN (src/tank/): their own pages, dist/edge.html, dist/tank.html
 subprocess.run(['node', 'tools/shoot.cjs'], check=True)   # BREACHLINE (src/shoot/): its own page, dist/shoot.html
 subprocess.run(['node', 'tools/golf.cjs'], check=True)   # HALCYON GREENS (src/golf/): its own page, dist/golf.html, and its pictures, dist/golf-assets/
+subprocess.run(['node', 'tools/crumbs.cjs'], check=True)   # MIDNIGHT CRUMBS (src/crumbs/): its own page, dist/crumbs.html, its creatures from data/pets/
 subprocess.run(['node', 'tools/duel.cjs'], check=True)   # AR DUEL (src/duel/): its own page, dist/duel.html, and its pictures, dist/duel-assets/
 subprocess.run(['node', 'tools/laser.cjs'], check=True)   # LASER TAG (src/laser/): its own page, dist/laser.html
 for f in sorted(set(re.findall(r'__FILE__\("([^"]+)"\)', body))):

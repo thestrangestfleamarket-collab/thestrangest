@@ -30,6 +30,7 @@ Risk is noted only when it isn't low.
 - [x] **The real clock and sky back** (owner, 14 Nov 2026: "lets remoev the 8 times ot day, do a real click go back to the blue, clouds, real nigth") · P1 · S · code + look. [done: worktree-agent-a3dd808517cecfa90, 14 Nov]
 - **P2 · pick** THE CANTINA (13 Nov 2026): its name (THE CANTINA is a working name); whether the old lounge (still reached by GO TO) goes to the archive now that THE BAR's door opens THE CANTINA; anyone to cut from or add to the regulars.
 - **P2 · look** THE CANTINA in a headset on the live site: how the hands sit on the controllers, how dark each look is, the frame rate with every regular in the room.
+- **P2 · look** MIDNIGHT CRUMBS (/crumbs, a holodeck program, 16 Nov 2026) in a headset on the live site: the frame rate on a Quest with the cat in, tracked hands, how the regulars' talk and voices land.
 
 **To try on the live site** (one sitting; each line is in its area below):
 HOLLOW PINES at `/asylum` (12 Nov: play it through on the screen and in the Quest 3; it has only been run in an emulated headset) · everything merged since 7 Nov that "waits for his look and yes" (the new layout and fronts, the bar, the gym, the pets and pet shops, the

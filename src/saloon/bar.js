@@ -49,7 +49,7 @@ export class Glass extends Prop {
   }
   // what is poured in: a beer that falls straight down a mug's middle foams; one run down a tilted side does not
   receive(pay, q) { if (!pay || !pay.type) return; if (this.vol + this.head >= 1) { if (Math.random() < 0.3) { G.fx.drops(this.worldCenter(_v).setY(this.obj.position.y + this.S.h), DRINKS[pay.type] ? DRINKS[pay.type][3] : 0x8a6a3a, 1); G.bar.wet += 0.004; } return; } const a = Math.min(1 - this.vol - this.head, q * this.S.fill);
-    if (pay.type === 'beer') { const f = clamp(0.46 - this.tilt() * 1.1, 0.08, 0.46); this.head += a * f; this.vol += a * (1 - f); this.mix.beer = (this.mix.beer || 0) + a * (1 - f); } else { this.vol += a; this.mix[pay.type] = (this.mix[pay.type] || 0) + a; } this.refresh(); }
+    if (pay.type === 'beer') { const f = clamp(0.5 - this.tilt() * 1.1, 0.08, 0.5); this.head += a * f; this.vol += a * (1 - f); this.mix.beer = (this.mix.beer || 0) + a * (1 - f); } else { this.vol += a; this.mix[pay.type] = (this.mix[pay.type] || 0) + a; } this.refresh(); }
   what() { let best = null, bv = 0; for (const k in this.mix) if (this.mix[k] > bv) { bv = this.mix[k]; best = k; } return best; }
   pure() { const w = this.what(); return w ? this.mix[w] / Math.max(1e-6, this.vol) : 0; }
   refresh() { const w = this.what(), v = this.vol, H = this.S.h - this.S.pts[5][1] - 0.004; this.liq.visible = v > 0.02; if (this.foam) this.foam.visible = false; if (!this.liq.visible) return; this.liq.scale.y = H * v; this.liq.material = Glass.liqM(w); if (this.foam && this.head > 0.01) { this.foam.visible = true; this.foam.position.y = this.S.pts[5][1] + H * v; this.foam.scale.y = H * this.head; } }

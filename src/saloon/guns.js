@@ -181,7 +181,7 @@ export function buildGuns(scene, room) {
       if (this.rounds <= 0) { G.audio?.play('click'); h?.pulse?.(0.3, 20); return 'click'; }
       if (this.type === 'shotgun') this.hamV[this.cap - this.rounds] = 0;
       this.rounds--; this.sight(shot.from, shot.dir); shot.kind = this.type; shot.gun = this; fire(shot);
-      this.rec = 1; h?.pulse?.(1, 80); if (h && !h.xr && G.desk) G.desk.pitch = Math.min(1.2, G.desk.pitch + this.kickK * 0.09);
+      this.rec = 1; h?.pulse?.(1, 80); if (h && !h.xr && G.desk) G.desk.pitch = Math.min(1.2, G.desk.pitch + this.kickK * 0.025);
       return 'shot';
     }
     onHeld(dt, h) {
@@ -205,7 +205,7 @@ export function buildGuns(scene, room) {
       for (let i = 0; i < this.hams.length; i++) { const want = this.armed && (this.type === 'revolver' || i >= this.cap - this.rounds) ? 1 : 0; this.hamV[i] = want ? Math.min(1, this.hamV[i] + dt * 12) : 0; this.hams[i].rotation.x = this.hamV[i] * this.cockA; }
       if (this.cyl && this.cylA !== this.cylT) { this.cylA = Math.min(this.cylT, this.cylA + dt * 9); this.cyl.rotation.z = this.cylA; }
       if (this.brl) { const w = this.loading ? 1 : 0; if (this.open !== w) { this.open += Math.sign(w - this.open) * Math.min(Math.abs(w - this.open), dt * 7); this.brl.rotation.x = -this.open * 0.5; } }
-      if (this.rec > 0) { this.rec = Math.max(0, this.rec - dt * (this.rec > 0.6 ? 14 : 4.5)); const k = this.rec * this.rec * this.kickK; this.kickG.rotation.x = k * 0.42; this.kickG.position.copy(this.grip); this.kickG.position.z += k * 0.035; }
+      if (this.rec > 0) { this.rec = Math.max(0, this.rec - dt * (this.rec > 0.6 ? 14 : 4.5)); const k = this.rec * this.rec * this.kickK; this.kickG.rotation.x = k * 0.3; this.kickG.position.copy(this.grip); this.kickG.position.z += k * 0.035; }
     }
   }
 

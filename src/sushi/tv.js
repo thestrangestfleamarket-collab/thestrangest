@@ -29,16 +29,16 @@ export function buildTV(scene, shops) {
     g.position.set(x, y, z); g.rotation.y = ry; root.add(g); return { g, body, k, M }; };
   const tubes = [], tv = { root, tubes, channels: CH };
   // the cart's own set: a wood-cased portable on a shelf at the front right post, below the ticket rail and turned to the cook
-  const mine = tube(0, true); tubes.push(mine); mine.vol = 0.3;
-  const S = set('television_01', 0.456, mine, 0.9, 1.625, -0.38, -0.75), shelf = mat({ color: 0x1a1a1c, roughness: 0.6 });
-  box(0.5, 0.02, 0.4, shelf, 0, -0.01, -0.02, S.g); const arm = box(0.3, 0.02, 0.03, shelf, 1.03, 1.615, -0.47, root); arm.rotation.y = 0.6;
-  const glow = new THREE.PointLight(0x9ab8ff, 0.45, 1.7, 2); glow.position.set(-0.03, 0.2, 0.3); S.g.add(glow);
+  const mine = tube(Math.max(0, CH.findIndex((c) => c.name === 'CREATURE FEATURE')), true); tubes.push(mine); mine.vol = 0.3;   // it comes on to the creature feature
+  const S = set('television_01', 0.912, mine, 1.1, 1.625, -0.38, -0.75), shelf = mat({ color: 0x1a1a1c, roughness: 0.6 });
+  box(1, 0.02, 0.8, shelf, 0, -0.01, -0.04, S.g); const arm = box(0.5, 0.02, 0.03, shelf, 1.3, 1.615, -0.52, root); arm.rotation.y = 0.6;
+  const glow = new THREE.PointLight(0x9ab8ff, 0.45, 2.4, 2); glow.position.set(-0.06, 0.4, 0.6); S.g.add(glow);
   const knob = (x, y, r, name, press) => { const k = cyl(r, r, 0.012, mat({ color: 0x1c1c1e, roughness: 0.5 }), x, y, 0.218, S.body, 16); k.rotation.x = Math.PI / 2; box(r * 0.25, 0.004, r * 0.9, mat({ color: 0xd8d8d0 }), 0, 0.007, -r * 0.45, k); k.userData.dyn = true;
     const wp = new THREE.Vector3(), b = { getPos: () => k.getWorldPosition(wp), r: 0.04, name, press: () => { press(); k.rotation.y += 0.9; G.audio.play('click'); } }; k.userData.button = b; G.buttons.push(b); return k; };
   Object.assign(tv, { mine }); Object.defineProperties(tv, { on: { get: () => mine.on }, ch: { get: () => CH[mine.ch % CH.length] } });
   tv.power = (on = !mine.on) => { mine.on = on; glow.visible = on; if (on) tune(mine); else mine.v.pause(); G.talk?.seen?.(on ? 'switch the little television on' : 'switch the television off'); };
   tv.next = () => { if (!mine.on) tv.power(true); mine.ch = (mine.ch + 1) % CH.length; mine.flash = 0.6; tune(mine); };
-  tv.louder = () => { mine.vol = mine.vol >= 0.9 ? 0 : mine.vol + 0.3; if (mine.gain) mine.gain.gain.value = mine.vol; };
+  tv.louder = () => { mine.vol = mine.vol >= 0.85 ? 0 : Math.round(mine.vol * 10 + 3) / 10; if (mine.gain) mine.gain.gain.value = mine.vol; };   // 0.3, 0.6, 0.9, then off
   knob(0.247, 0.204, 0.012, 'TV power', () => tv.power()); knob(0.212, 0.345, 0.034, 'TV channel', () => tv.next()); knob(0.212, 0.265, 0.034, 'TV volume', () => tv.louder());
   // the shop across the street: its window sets, every one of them playing
   const shop = (shops || []).filter((s) => s.type === 'tv').sort((a, b) => Math.abs(a.p.x) - Math.abs(b.p.x))[0];
@@ -48,7 +48,7 @@ export function buildTV(scene, shops) {
   let started = false, snowT = 0;
   tv.update = (dt) => {
     if (!started) { if (!G.audio?.ctx || !G.mode) return; started = true; // sound from the set itself, once the page may make sound
-      try { const ac = G.audio.ctx, src = ac.createMediaElementSource(mine.v), g = (mine.gain = ac.createGain()), pan = ac.createPanner(); g.gain.value = mine.vol; pan.panningModel = 'HRTF'; pan.refDistance = 0.8; pan.rolloffFactor = 1.2; pan.positionX.value = 0.9; pan.positionY.value = 1.8; pan.positionZ.value = -0.36; src.connect(g); g.connect(pan); pan.connect(G.audio.master); } catch (e) { /* silent set */ }
+      try { const ac = G.audio.ctx, src = ac.createMediaElementSource(mine.v), g = (mine.gain = ac.createGain()), pan = ac.createPanner(); g.gain.value = mine.vol; pan.panningModel = 'HRTF'; pan.refDistance = 0.8; pan.rolloffFactor = 1.2; S.g.updateMatrixWorld(true); const sp = S.body.localToWorld(new THREE.Vector3(S.M.sx, S.M.sy, S.M.sz)); pan.positionX.value = sp.x; pan.positionY.value = sp.y; pan.positionZ.value = sp.z; src.connect(g); g.connect(pan); pan.connect(G.audio.master); } catch (e) { /* silent set */ }
       tubes.forEach(tune); }
     if ((snowT -= dt) <= 0) { snowT = 1.5; drawSnow(); }   // a still, dim snow that changes slowly: nothing flashes
     for (const t of tubes) { t.flash = Math.max(0, (t.flash || 0) - dt); const live = t.on && !t.dead && t.v.readyState >= 2 && t.flash <= 0, want = !t.on ? null : live ? t.tex : snow; if (t.m.map !== want) { t.m.map = want; t.m.needsUpdate = true; } { const easy = G.set && G.set.easy, k = !want ? 0.02 : want === snow ? (easy ? 0.05 : 0.45) : easy ? 0.95 : 1.35; t.m.color.setRGB(k, k, k * 1.07); }   // easy on the eyes: no static to speak of, a picture no brighter than the room

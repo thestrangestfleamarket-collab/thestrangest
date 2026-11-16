@@ -60,7 +60,7 @@ const IWER = fs.readFileSync(require.resolve('iwer/build/iwer.min.js'), 'utf8');
     ok(await guest.evaluate(() => __space.G.me === 1 && !__space.G.sim), 'the second player commands the other fleet from the host\'s pictures');
     const gid = await guest.evaluate(() => { const u = [...__space.G.view.units.values()].find(u => u.side === 1 && u.type === 2); __space.cmd.order([u.id], 0, { x: -0.4, y: 0, z: -0.5 }); __space.cmd.build(1); return u.id; });
     ok(await until(() => host.evaluate((id) => { const u = __space.G.sim.byId.get(id); return u && u.k === 1 && __space.G.sim.queue[1].length === 1; }, gid)), 'the second player\'s order and build reach the host\'s battle');
-    await host.close(); await guest.bringToFront(); ok(await guest.waitForFunction(() => !!__space.G.sim && __space.G.bots.length === 1 && __space.G.view.units.size >= 10, null, { timeout: 60000 }).then(() => true, () => false), 'when the host leaves, the battle carries on where it was with the bot in their place');
+    await host.evaluate(() => __space.G.net.close()); await host.close(); await guest.bringToFront(); ok(await guest.waitForFunction(() => !!__space.G.sim && __space.G.bots.length === 1 && __space.G.view.units.size >= 10, null, { timeout: 60000 }).then(() => true, () => false), 'when the host leaves, the battle carries on where it was with the bot in their place');
     await guest.close(); }
 
   // ---- an emulated Quest 3 ----

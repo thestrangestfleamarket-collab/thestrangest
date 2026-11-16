@@ -148,7 +148,7 @@ export default {
       const r = await env.ASSETS.fetch(new Request(url.origin + p, request.headers.has("range") ? { headers: { range: request.headers.get("range") } } : {})); if (!r.ok) return new Response("not found", { status: 404 });
       const rg = /^bytes=(\d*)-(\d*)$/.exec(request.headers.get("range") || ""), size = +r.headers.get("content-length");
       if (rg && r.status === 200 && p.endsWith(".mp4")) return ranged(r, rg, size > 0 ? size : null);   // a video seeks: the part asked for, cut from the whole
-      const out = new Response(r.body, r); out.headers.set("cache-control", "public, max-age=86400"); out.headers.set("x-robots-tag", "noindex"); return out; }
+      const out = new Response(r.body, r); out.headers.set("cache-control", "no-cache"); out.headers.set("x-robots-tag", "noindex"); return out; }   // asked again each time (a 304 when unchanged): the names stay the same across builds, so a day's keep served last build's files to the new page
     if (request.method === "GET" && p === "/sw.js") {
       if (!(await inside(env, request, dev))) return new Response("not found", { status: 404 });
       const out = await page(env, url, "/sw.js", request, "private, no-cache"); out.headers.set("content-type", "text/javascript; charset=utf-8"); return out; }

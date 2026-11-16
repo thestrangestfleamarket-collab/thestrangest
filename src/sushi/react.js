@@ -59,6 +59,7 @@ export function buildReact(block) {
     // what really met them, and how hard
     for (const s of hits) { const b = s.rec.x, it = s.it, head = s.seg.name === 'head' || (s.seg.mid && s.at.y > b.neck.y), part = head ? 'head' : 'body', bone = s.seg.mid ? (head ? 'head' : 'torso') : s.seg.name;
       if (b.z) { if (!(it && it.weapon && s.src === 'held')) G.infected?.blow(b.z, s); continue; }   // (a blade's cut is judged by weapons.js)
+      if (s.src === 'thrown' && !(G.t - (it.letT ?? -99) < 4)) continue;   // a thing the cook did not just let go of (a cup a customer's elbow knocked) is no blow from the cook
       let kind;
       if (s.src === 'hand') kind = s.J < TAP_J ? 'tap' : 'punch';
       else if (s.src === 'held') kind = it.useMode === 'chop' && s.sp >= 0.5 ? 'cut' : s.J < TAP_J ? 'tap' : 'thing';

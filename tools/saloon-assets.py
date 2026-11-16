@@ -11,7 +11,7 @@ TEX = {'floor': ('old_wood_floor', 1024), 'wall': ('wood_plank_wall', 1024), 'pl
 MODELS = {'round_wooden_table_01': (512, 1400), 'WoodenTable_02': (512, 1500), 'WoodenChair_01': (512, 1100), 'wooden_stool_01': (512, 800), 'lantern_chandelier_01': (512, 2600), 'vintage_oil_lamp': (512, 1300),
           'Lantern_01': (512, 1500), 'wine_barrel_01': (512, 1100), 'wooden_crate_01': (512, 700), 'dartboard': (1024, 1200), 'ornate_mirror_01': (512, 2400), 'fancy_picture_frame_01': (512, 938),
           'hanging_picture_frame_01': (512, 800), 'vintage_grandfather_clock_01': (512, 3000), 'CashRegister_01': (512, 4000), 'wooden_bucket_01': (512, 700), 'brass_candleholders': (512, 1500), 'jug_01': (512, 800),
-          'barrel_stove': (512, 2000), 'Rockingchair_01': (512, 2000), 'painted_wooden_bench': (512, 630), 'brass_pot_01': (256, 700), 'mantel_clock_01': (512, 1500), 'wooden_display_shelves_01': (512, 1500), 'hatchet': (256, 600)}
+          'barrel_stove': (512, 2000), 'Rockingchair_01': (512, 2000), 'painted_wooden_bench': (512, 630), 'brass_pot_01': (256, 700), 'mantel_clock_01': (512, 1500), 'wooden_display_shelves_01': (512, 1500), 'hatchet': (256, 600), 'painted_wooden_chair_02': (512, 1246), 'painted_wooden_table': (512, 600), 'wooden_candlestick': (256, 500), 'wooden_lantern_01': (512, 1200), 'hanging_picture_frame_02': (512, 900), 'wooden_barrels_01': (512, 2500), 'vintage_cabinet_01': (512, 3500), 'jug_01': (512, 800), 'brass_vase_03': (256, 600), 'wooden_broom': (256, 600), 'vintage_suitcase': (512, 900), 'wooden_ladder': (256, 500)}
 
 def small(data, size, grey=False):
     im = Image.open(io.BytesIO(data)).convert('L' if grey else 'RGB')
@@ -61,6 +61,4 @@ for name, (s, z) in TEX.items():
 for s, (z, t) in MODELS.items():
     if only and s not in only and 'm' not in only: continue
     model(s, z)
-if not only or 'hdr' in only:
-    d = get(json.loads(get(API + 'cowboy_town_saloon'))['hdri']['1k']['hdr']['url']); open(OUT + 'saloon.hdr', 'wb').write(d); print('saloon.hdr', len(d) // 1024, 'KB')
 print("then: node tools/hide-slim.cjs data/saloon/m '" + json.dumps({k.lower(): v[1] for k, v in MODELS.items()}) + "'")

@@ -60,7 +60,7 @@ export function buildRoom(scene) {
   const shelves = []; for (const sx of [-1, 1]) for (const y of [1.42, 1.86, 2.3]) { slab(1.9, 0.035, 0.24, walnut, sx * 2.15, y - 0.018, B - 0.14, g); top(sx * 2.15 - 0.95, sx * 2.15 + 0.95, B - 0.26, B - 0.02, y, 0.018); shelves.push({ x0: sx * 2.15 - 0.85, x1: sx * 2.15 + 0.85, y, z: B - 0.14 }); }
   for (const x of [-3.15, -1.15, 1.15, 3.15]) slab(0.09, 2.5, 0.26, walnut, x, R.backY + 1.25, B - 0.14, g);
   slab(2 * X + 0.3, 0.2, 0.34, walnut, 0, R.backY + 2.6, B - 0.16, g);
-  { const mir = new THREE.Mesh(new THREE.PlaneGeometry(2.1, 1.5), new THREE.MeshStandardMaterial({ color: 0xc8c4b8, metalness: 1, roughness: 0.06, envMapIntensity: 1.5 })); mir.position.set(0, 2.05, B - 0.03); mir.rotation.y = Math.PI; g.add(mir);
+  { const mir = new THREE.Mesh(new THREE.PlaneGeometry(2.1, 1.5), new THREE.MeshStandardMaterial({ color: 0xc8c4b8, metalness: 1, roughness: 0.06, envMapIntensity: 1.5 })); mir.position.set(0, 2.05, B - 0.03); mir.rotation.y = Math.PI; g.add(mir); mir.userData.keep = true; g.userData.mirror = mir;
     const fr = model('ornate_mirror_01', 0, 1.22, B - 0.06, Math.PI, { w: 2.3 }, g); fr.visible = false; slab(2.3, 0.1, 0.06, brass(), 0, 2.85, B - 0.05, g); slab(2.3, 0.1, 0.06, brass(), 0, 1.25, B - 0.05, g); for (const s of [-1, 1]) slab(0.1, 1.7, 0.06, brass(), s * 1.1, 2.05, B - 0.05, g); }
   model('cashregister_01', 1.55, R.backY, bz + 0.3, Math.PI, { h: 0.42 }, g);
   model('mantel_clock_01', -1.5, R.backY, bz + 0.34, Math.PI, { h: 0.3 }, g);
@@ -71,7 +71,7 @@ export function buildRoom(scene) {
   // ---- tables and chairs down the room
   const tables = [];
   const table = (x, z, name, n = 4) => { model('round_wooden_table_01', x, 0, z, 0, { h: 0.76 }, g); top(x - 0.38, x + 0.38, z - 0.38, z + 0.38, 0.76); if (PH.ready) PH.cyl(x, 0.38, z, 0.36, 0.1); solids.push({ x0: x - 0.42, x1: x + 0.42, z0: z - 0.42, z1: z + 0.42 }); const t = { x, z, name, seats: [] }; tables.push(t);
-    for (let k = 0; k < n; k++) { const a = k * Math.PI * 2 / n + 0.6, cx = x + Math.sin(a) * 0.78, cz = z + Math.cos(a) * 0.78; model('woodenchair_01', cx, 0, cz, a + Math.PI, { h: 0.92 }, g); const s = { x: cx, z: cz, ry: a + Math.PI, y: -0.33, kind: 'chair', at: name, who: null }; seats.push(s); t.seats.push(s); } return t; };
+    for (let k = 0; k < n; k++) { const a = k * Math.PI * 2 / n + 0.6, cx = x + Math.sin(a) * 0.78, cz = z + Math.cos(a) * 0.78; model('painted_wooden_chair_02', cx, 0, cz, a + Math.PI + (k * 0.37 % 0.5 - 0.25), { h: 0.88 }, g).traverse((o) => { if (o.isMesh) o.material.color.set(0x8a6444); }); const s = { x: cx, z: cz, ry: a + Math.PI, y: -0.33, kind: 'chair', at: name, who: null }; seats.push(s); t.seats.push(s); } return t; };
   table(-3.6, -4.3, 'left'); table(-0.7, -5.2, 'middle'); table(R.poker.x, R.poker.z, 'poker'); table(-3.3, -8.3, 'stage', 3);
   { const felt = new THREE.Mesh(new THREE.CircleGeometry(0.46, 28).rotateX(-Math.PI / 2), pbr('velvet', { tile: 0.5, color: 0x1f5a34 })); felt.position.set(R.poker.x, 0.765, R.poker.z); g.add(felt); }
 
@@ -98,13 +98,20 @@ export function buildRoom(scene) {
   for (const [x, z] of [[-2.9, -1.75], [2.9, -1.75], [R.poker.x + 0.9, R.poker.z + 0.9]]) model('brass_pot_01', x, 0, z, 0, { h: 0.2 }, g);
   for (const [x, y, z, ry, w] of [[-6.96, 2.2, -7.4, Math.PI / 2, 1.0], [6.96, 2.3, -8.6, -Math.PI / 2, 1.1], [-6.96, 2.25, 0.6, Math.PI / 2, 0.8]]) model('fancy_picture_frame_01', x, y - 0.4, z, ry, { w }, g);
 
-  // ---- light: a photographed saloon lights everything a little; the lamps do the rest
-  const hemi = new THREE.HemisphereLight(0xffd9a8, 0x2a1a10, 0.55); scene.add(hemi);
-  const lamp = (x, y, z, k, d, c = 0xffb060) => { const l = new THREE.PointLight(c, k, d, 1.6); l.position.set(x, y, z); scene.add(l); const s = new THREE.Sprite(new THREE.SpriteMaterial({ map: glow(), color: c, transparent: true, opacity: 0.8, depthWrite: false, blending: THREE.AdditiveBlending })); s.scale.setScalar(0.5); s.position.set(x, y, z); s.userData.nopick = true; dyn.add(s); const o = { l, s, k, on: true, x, y, z }; lamps.push(o); return o; };
-  for (const [x, z] of [[-2.2, -4.6], [2.6, -6.2], [-1.5, -9.0]]) { model('lantern_chandelier_01', x, H - 1.25, z, 0, { h: 0.8 }, g); tube(0.012, 0.012, 0.5, plain(0x16130f, { metal: 0.8 }), x, H - 0.25, z, g, 5); lamp(x, H - 1.15, z, 26, 11); }
-  for (const x of [-2.6, 2.6]) { model('vintage_oil_lamp', x, R.backY, bz + 0.25, 0, { h: 0.38 }, g); lamp(x, R.backY + 0.32, bz + 0.25, 7, 5.5); }
-  lamp(0, 2.9, -0.2, 9, 7, 0xffc080).s.visible = false;
-  const fire = lamp(R.stove.x + 0.25, 0.45, R.stove.z + 0.2, 5, 4, 0xff6a20);
+  // ---- light: nothing shines but the lamps: three wagon-wheel chandeliers that throw real shadows, two oil lamps on the back bar, the stove's mouth, the moon through the street windows (look.js)
+  const hemi = new THREE.HemisphereLight(0xffc890, 0x1a0e08, 0.16); scene.add(hemi);
+  const halo = (x, y, z, c, sc = 0.5) => { const s = new THREE.Sprite(new THREE.SpriteMaterial({ map: glow(), color: c, transparent: true, opacity: 0.75, depthWrite: false, blending: THREE.AdditiveBlending })); s.scale.setScalar(sc); s.position.set(x, y, z); s.userData.nopick = true; dyn.add(s); return s; };
+  const lamp = (x, y, z, k, d, c = 0xffa850) => { const l = new THREE.PointLight(c, k, d, 2); l.position.set(x, y, z); scene.add(l); const o = { l, s: halo(x, y, z, c), k, on: true, x, y, z }; lamps.push(o); return o; };
+  const iron = plain(0x14110e, { metal: 0.7, rough: 0.6 }), chim = new THREE.MeshStandardMaterial({ color: 0xffe2b0, emissive: 0xffa040, emissiveIntensity: 2.2, transparent: true, opacity: 0.85, roughness: 0.2 });
+  for (const [x, z] of [[-2.2, -4.6], [2.6, -6.2], [-1.5, -9.0]]) { const y = H - 1.35, w = new THREE.Group(); w.position.set(x, y, z); g.add(w);
+    const rim = new THREE.Mesh(new THREE.TorusGeometry(0.62, 0.035, 8, 28).rotateX(Math.PI / 2), walnut); rim.castShadow = true; w.add(rim); tube(0.07, 0.07, 0.12, walnut, 0, 0, 0, w, 10);
+    for (let k = 0; k < 6; k++) { const a = k * Math.PI / 3, sp = slab(0.6, 0.03, 0.035, walnut, Math.cos(a) * 0.31, 0, Math.sin(a) * 0.31, w); sp.rotation.y = -a; const lx = Math.cos(a + 0.5) * 0.62, lz = Math.sin(a + 0.5) * 0.62; tube(0.03, 0.04, 0.05, brass(), lx, 0.06, lz, w, 8); const c = tube(0.022, 0.03, 0.11, chim, lx, 0.14, lz, w, 8); c.castShadow = false; c.userData.keep = true; }
+    for (let k = 0; k < 3; k++) { const a = k * Math.PI * 2 / 3, ch = tube(0.006, 0.006, 1.42, iron, Math.cos(a) * 0.3, 0.66, Math.sin(a) * 0.3, w, 4); ch.rotation.z = -Math.cos(a) * 0.44; ch.rotation.x = Math.sin(a) * 0.44; ch.castShadow = false; }
+    const l = new THREE.SpotLight(0xffb070, 150, 11, 1.25, 0.9, 1.6); l.position.set(x, y + 0.1, z); l.target.position.set(x, 0, z); l.castShadow = true; l.shadow.mapSize.set(1024, 1024); l.shadow.bias = -0.0015; l.shadow.radius = 4; l.shadow.camera.near = 0.6; l.shadow.camera.far = 8; scene.add(l, l.target);
+    lamps.push({ l, s: halo(x, y + 0.14, z, 0xffb060, 1.5), k: 120, on: true, x, y: y + 0.14, z, wheel: true }); }
+  for (const x of [-2.6, 2.6]) { model('vintage_oil_lamp', x, R.backY, bz + 0.25, 0, { h: 0.38 }, g); halo(x, R.backY + 0.3, bz + 0.25, 0xffb060, 0.4); }
+  for (const x of [-1.7, 1.7]) { model('lantern_01', x, 2.25, 0.25, 0, { h: 0.42 }, g); tube(0.006, 0.006, H - 2.67, iron, x, 2.67 + (H - 2.67) / 2, 0.25, g, 4); lamp(x, 2.4, 0.25, 16, 7, 0xffb878); }
+  const fire = lamp(R.stove.x + 0.25, 0.45, R.stove.z + 0.2, 4, 3.5, 0xff5a18);
 
   // ---- where people stand: at the doors, at the bar between stools, by the stove, the piano, the pool table, the dartboard
   const spots = { door: { x: 0, z: -L + 0.7 }, street: { x: 0, z: -L - 2.5 }, bar: [-2.98, -2.13, -1.28, -0.43, 0.42, 1.27, 2.12, 2.9].map((x) => ({ x, z: -1.4 })), stove: { x: -4.9, z: -5.3 }, piano: { x: R.piano.x + 0.45, z: R.piano.z - 0.6 }, stage: { x: R.piano.x + 1.4, z: R.piano.z - 0.9 }, pool: { x: R.pool.x - 1.5, z: R.pool.z }, darts: { x: R.darts.x + 2.4, z: R.darts.z }, board: { x: R.board.x - 1.0, z: R.board.z }, flap: { x: X + 0.7, z: -0.6 } };
@@ -112,11 +119,11 @@ export function buildRoom(scene) {
   Object.assign(BOUNDS, { minX: -W + 0.3, maxX: W - 0.3, minZ: -L + 0.3, maxZ: bz - 0.22 });
   G.baked = mergeStatic(g);
   let t0 = 0;
-  return { group: g, dyn, solids, seats, tables, lamps, spots, shelves, hemi, fire,
+  return { group: g, mirror: g.userData.mirror, dyn, solids, seats, tables, lamps, spots, shelves, hemi, fire,
     // you are kept out of what is solid (a circle against boxes), as input.js keeps you in the room
     keepOut(rig, camera) { const p = camera.getWorldPosition(new THREE.Vector3()), r = 0.22; for (const s of solids) { if (s.step) continue; const cx = Math.max(s.x0, Math.min(p.x, s.x1)), cz = Math.max(s.z0, Math.min(p.z, s.z1)), dx = p.x - cx, dz = p.z - cz, d = Math.hypot(dx, dz);
         if (d < r && d > 1e-5) { const k = (r - d) / d; rig.position.x += dx * k; rig.position.z += dz * k; p.x += dx * k; p.z += dz * k; } else if (d <= 1e-5) { const ex = Math.min(p.x - s.x0, s.x1 - p.x), ez = Math.min(p.z - s.z0, s.z1 - p.z); if (ex < ez) { const m = p.x - s.x0 < s.x1 - p.x ? s.x0 - r - p.x : s.x1 + r - p.x; rig.position.x += m; p.x += m; } else { const m = p.z - s.z0 < s.z1 - p.z ? s.z0 - r - p.z : s.z1 + r - p.z; rig.position.z += m; p.z += m; } } } },
-    update(dt, t) { t0 = t; fire.l.intensity = 5 + Math.sin(t * 9) * 0.8 + Math.sin(t * 23) * 0.5; for (const o of lamps) if (o !== fire && o.on) o.l.intensity = o.k * (1 + Math.sin(t * 7 + o.x) * 0.015); },
-    lampOut(o) { o.on = false; o.l.intensity = 0; o.s.visible = false; },
+    update() { },
+    lampOut(o) { o.on = false; o.l.intensity = 0; if (o.up) o.up.intensity = 0; o.s.visible = false; },
   };
 }

@@ -11,6 +11,7 @@ import { SaloonAudio } from './audio.js';
 import { BODIES } from './cast.js';
 import { loadKit, BASE } from './kit.js';
 import { buildRoom } from './room.js';
+import { buildLook } from './look.js';
 import { buildBar } from './bar.js';
 import { buildFolk } from './folk.js';
 import { buildStory } from './story.js';
@@ -24,11 +25,11 @@ const params = new URLSearchParams(location.search), $ = (id) => document.getEle
 const canvas = $('c'), menu = $('menu'), hud = $('hud'), vrBtn = $('vr'), deskBtn = $('desk');
 const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, powerPreference: 'high-performance' });
 renderer.setPixelRatio(Math.min(devicePixelRatio || 1, 2)); renderer.setSize(innerWidth, innerHeight);
-renderer.outputColorSpace = THREE.SRGBColorSpace; renderer.toneMapping = THREE.ACESFilmicToneMapping; renderer.toneMappingExposure = 1.05;
-renderer.shadowMap.enabled = true; renderer.shadowMap.type = THREE.PCFShadowMap;
+renderer.outputColorSpace = THREE.SRGBColorSpace; renderer.toneMapping = THREE.ACESFilmicToneMapping; renderer.toneMappingExposure = 0.9;
+renderer.shadowMap.enabled = true; renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 renderer.xr.enabled = true; renderer.xr.setReferenceSpaceType('local-floor'); renderer.xr.setFoveation?.(0.4);
 
-const scene = new THREE.Scene(); scene.background = new THREE.Color(0x05060a); scene.fog = new THREE.FogExp2(0x1a120c, 0.018);
+const scene = new THREE.Scene(); scene.background = new THREE.Color(0x05060a); scene.fog = new THREE.FogExp2(0x140c07, 0.045);
 const camera = new THREE.PerspectiveCamera(68, innerWidth / innerHeight, 0.03, 120);
 const rig = new THREE.Group(); rig.position.set(0, 0, 0.3); rig.add(camera); scene.add(rig);
 Object.assign(G, { scene, camera, rig, renderer, params });
@@ -53,8 +54,8 @@ const guns = (G.guns = buildGuns(scene, room));
 const pool = (G.pool = buildPool(scene, room));
 const darts = (G.darts = buildDarts(scene, room));
 const posters = (G.posters = buildPosters(scene, room));
-// one lamp throws real shadows down the room; if frames run long it stops
-const sun = new THREE.SpotLight(0xffb870, 60, 16, 1.05, 0.6, 1.4); sun.position.set(0.5, 4.1, -5.2); sun.target.position.set(0.3, 0, -5.4); sun.castShadow = true; sun.shadow.mapSize.set(1024, 1024); sun.shadow.bias = -0.002; sun.shadow.camera.near = 1; sun.shadow.camera.far = 9; scene.add(sun, sun.target);
+const look = (G.look = buildLook(scene, room, renderer, camera));
+const shadowLights = []; scene.traverse((o) => { if (o.isLight && o.castShadow) shadowLights.push(o); });
 
 addEventListener('resize', () => { if (renderer.xr.isPresenting) return; camera.aspect = innerWidth / innerHeight; camera.updateProjectionMatrix(); renderer.setSize(innerWidth, innerHeight); });
 
@@ -82,7 +83,7 @@ function tick(dt) {
   G.t += dt;
   input.update(dt); room.keepOut(rig, camera);
   updateItems(dt);
-  room.update(dt, G.t); bar.update(dt, G.t); folk.update(dt, G.t); story.update(dt, G.t); talk.update(dt);
+  room.update(dt, G.t); look.update(dt, G.t); bar.update(dt, G.t); folk.update(dt, G.t); story.update(dt, G.t); talk.update(dt);
   guns.update(dt, G.t); pool.update(dt, G.t); darts.update(dt, G.t); posters.update(dt, G.t);
   for (const f of G.updaters) f(dt, G.t);
   G.fx.update(dt);
@@ -93,14 +94,14 @@ function frame(now) {
   const dt = clamp((now - last) / 1000, 0, 0.05); last = now;
   if (G.mode === 'menu' && !renderer.xr.isPresenting && !G.manualCam) { const a = G.t * 0.04; rig.position.set(0, 0, 0); camera.position.set(Math.sin(a) * 2.2, 1.9, -6.4 + Math.cos(a) * 1.2); camera.lookAt(0, 1.4, 0.6); }
   if (!G.frozen) tick(dt);
-  if (frames++ > 120 && sun.castShadow && !G.frozen) { ema += (dt * 1000 - ema) * 0.05; const ses = renderer.xr.isPresenting && renderer.xr.getSession(), hz = (ses && ses.frameRate) || 72; slow = ema > (ses ? 1150 / hz : 34) ? slow + dt : 0; if (slow > 3) { sun.castShadow = false; G.quality = 1; } }
-  renderer.render(scene, camera);
+  if (frames++ > 120 && (G.quality || 0) < shadowLights.length && !G.frozen) { ema += (dt * 1000 - ema) * 0.05; const ses = renderer.xr.isPresenting && renderer.xr.getSession(), hz = (ses && ses.frameRate) || 72; slow = ema > (ses ? 1150 / hz : 34) ? slow + dt : 0; if (slow > 3) { slow = 0; shadowLights[shadowLights.length - 1 - (G.quality || 0)].castShadow = false; G.quality = (G.quality || 0) + 1; } }   // frames running long: the lamps stop throwing shadows one at a time, the moon's first
+  look.render();
   if (G.afterRender) { const f = G.afterRender; G.afterRender = null; f(); }
   if (G.mode === 'desktop') { $('hover').textContent = G.hoverText || ''; statT -= dt; if (statT <= 0) { statT = 0.5; $('stat').textContent = G.hint || ''; } }
 }
 renderer.setAnimationLoop(frame);
 
-G.debug = { PH, PF, room, bar, folk, story, talk, guns, pool, darts, posters, tick, frame, input, startDesktop, startVR, THREE, sun };
+G.debug = { PH, PF, room, bar, folk, story, talk, guns, pool, darts, posters, look, tick, frame, input, startDesktop, startVR, THREE };
 window.G = G;
 { const box = $('say'); // on a screen: T to type what you say if you would rather not speak it
   addEventListener('keydown', (e) => { if (G.mode !== 'desktop' || e.repeat) return; if (e.target === box) { if (e.code === 'Enter') { const t = box.value.trim(); box.value = ''; box.style.display = 'none'; box.blur(); if (t) talk.youSay(t); } else if (e.code === 'Escape') { box.value = ''; box.style.display = 'none'; box.blur(); } return; }

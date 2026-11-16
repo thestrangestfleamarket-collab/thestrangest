@@ -1,23 +1,20 @@
-// THE LAST CHANCE's makers: photographed surfaces with their relief and sheen (data/saloon/tex), Poly Haven's furniture (data/saloon/m), boxes laid by the metre, the room's light from a photographed saloon
+// THE LAST CHANCE's makers: photographed surfaces with their relief and sheen (data/saloon/tex), Poly Haven's furniture (data/saloon/m), boxes laid by the metre, 
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
-import { HDRLoader } from 'three/addons/loaders/HDRLoader.js';
 import { G } from '../sushi/ctx.js';
 
 export const BASE = '/saloon-assets/';
 const TL = new THREE.TextureLoader(), GL = new GLTFLoader(), sets = {}, models = {};
 export const TEX = ['floor', 'wall', 'planks', 'dark', 'walnut', 'paper', 'velvet', 'leather', 'dirt', 'rust', 'plate', 'plaster', 'siding'];
 export const MODELS = ['round_wooden_table_01', 'woodentable_02', 'woodenchair_01', 'wooden_stool_01', 'lantern_chandelier_01', 'vintage_oil_lamp', 'lantern_01', 'wine_barrel_01', 'wooden_crate_01', 'dartboard', 'ornate_mirror_01', 'fancy_picture_frame_01',
-  'hanging_picture_frame_01', 'vintage_grandfather_clock_01', 'cashregister_01', 'wooden_bucket_01', 'brass_candleholders', 'jug_01', 'barrel_stove', 'rockingchair_01', 'painted_wooden_bench', 'brass_pot_01', 'mantel_clock_01', 'wooden_display_shelves_01', 'hatchet'];
+  'hanging_picture_frame_01', 'vintage_grandfather_clock_01', 'cashregister_01', 'wooden_bucket_01', 'brass_candleholders', 'jug_01', 'barrel_stove', 'rockingchair_01', 'painted_wooden_bench', 'brass_pot_01', 'mantel_clock_01', 'wooden_display_shelves_01', 'hatchet', 'painted_wooden_chair_02', 'painted_wooden_table', 'wooden_candlestick', 'wooden_lantern_01', 'hanging_picture_frame_02', 'wooden_barrels_01', 'vintage_cabinet_01', 'brass_vase_03', 'wooden_broom', 'vintage_suitcase', 'wooden_ladder'];
 
 const one = (url, srgb) => TL.loadAsync(url).then((t) => { t.wrapS = t.wrapT = THREE.RepeatWrapping; t.colorSpace = srgb ? THREE.SRGBColorSpace : THREE.NoColorSpace; t.anisotropy = 4; return t; }).catch(() => null);
 export async function loadKit(onProgress = () => { }) {
-  let n = 0; const all = TEX.length + MODELS.length + 1, tick = (v) => { onProgress(++n / all); return v; };
+  let n = 0; const all = TEX.length + MODELS.length, tick = (v) => { onProgress(++n / all); return v; };
   await Promise.all([
     ...TEX.map((k) => Promise.all([one(`${BASE}tex/${k}_c.jpg`, true), one(`${BASE}tex/${k}_n.jpg`), one(`${BASE}tex/${k}_r.jpg`)]).then((s) => { sets[k] = s; }).then(tick)),
     ...MODELS.map((k) => GL.loadAsync(`${BASE}m/${k}.glb`).then((d) => { d.scene.traverse((o) => { if (o.isMesh) { o.castShadow = true; o.receiveShadow = true; o.material.envMapIntensity = 0.7; } }); models[k] = d.scene; }).catch((e) => console.warn('no model', k, e)).then(tick)),
-    fetch(`${BASE}saloon.hdr`).then((r) => r.arrayBuffer()).then((b) => { const d = new HDRLoader().parse(b), t = new THREE.DataTexture(d.data, d.width, d.height, THREE.RGBAFormat, d.type); t.mapping = THREE.EquirectangularReflectionMapping; t.colorSpace = THREE.LinearSRGBColorSpace; t.minFilter = t.magFilter = THREE.LinearFilter; t.flipY = true; t.needsUpdate = true;
-      const pm = new THREE.PMREMGenerator(G.renderer); G.scene.environment = pm.fromEquirectangular(t).texture; G.scene.environmentIntensity = 0.5; t.dispose(); pm.dispose(); }).catch((e) => console.warn('no light picture', e)).then(tick),
   ]);
 }
 

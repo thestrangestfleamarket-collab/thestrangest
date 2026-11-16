@@ -1,0 +1,82 @@
+// the town of Perdition, Arizona Territory, 1881: who drinks at THE LAST CHANCE, what each wants, loves, owes and hides (no screen: story.js and the worker read it too)
+// Polyfork's body: [sex, voice, height, age from, age to, what they are]
+export const BODIES = {
+  saloon_keeper: ['m', 'zeus', 1, 30, 50, 'the barkeep'],
+  sheriff: ['m', 'zeus', 1.02, 50, 55, 'the sheriff'],
+  outlaw: ['m', 'orpheus', 1.03, 32, 36, 'a wanted man'],
+  showgirl: ['f', 'asteria', 1, 25, 29, 'the singer'],
+  high_roller: ['m', 'arcas', 0.99, 55, 60, 'the cattle and mine baron'],
+  poker_pro: ['m', 'perseus', 1.01, 38, 44, 'a gambler and a hired gun'],
+  preacher: ['m', 'orion', 1, 43, 47, 'the reverend'],
+  prospector: ['m', 'angus', 0.95, 60, 66, 'an old prospector'],
+  townswoman_frontier_town: ['f', 'athena', 0.98, 36, 40, 'a widow who keeps the boarding house'],
+  blackjack_dealer: ['m', 'helios', 1, 28, 32, 'the house faro dealer'],
+  professor: ['m', 'arcas', 0.97, 58, 62, 'the town doctor'],
+  huaso: ['m', 'orpheus', 1, 27, 31, 'a vaquero'],
+  china_cueca_dancer: ['f', 'luna', 0.97, 22, 26, 'the laundress'],
+  railway_carter: ['m', 'angus', 1.06, 34, 38, 'a freight teamster'],
+  farmer_cozy_farm: ['m', 'perseus', 0.99, 48, 52, 'a homesteader'],
+  trader: ['m', 'helios', 0.98, 40, 46, 'a travelling tonic salesman'],
+  grandmother_in_a_rebozo: ['f', 'hera', 0.93, 68, 74, 'an old woman who reads the cards'],
+};
+
+export const TOWN = 'Perdition, Arizona Territory', YEAR = 1881, HOUSE = 'THE LAST CHANCE';
+
+// what there is to pour: [name, what a glass costs in cents, the glass it goes in, its colour]
+export const DRINKS = {
+  whiskey: ['whiskey', 25, 'shot', 0x9a4a12], rye: ['rye', 25, 'shot', 0xb86a1c], gin: ['gin', 25, 'shot', 0xdfe8e6], brandy: ['brandy', 50, 'shot', 0x7a2c0c],
+  beer: ['beer', 10, 'mug', 0xd69a2a], sarsaparilla: ['sarsaparilla', 5, 'mug', 0x3a1a0c],
+};
+
+// id: body, name, age, trade, the drink they ask for, how much they hold before it shows (glasses), how they talk, who they are, what they hide (told only when the facts allow), love, hate
+export const PEOPLE = {
+  hale: { body: 'sheriff', name: 'Sheriff Amos Hale', short: 'Hale', age: 52, job: 'sheriff of Perdition these eleven years', drink: 'rye', holds: 6, style: 'slow, dry, few words, a tired lawman; calls you barkeep',
+    who: 'An honest lawman once. He is worn down and drinks more than he should. He was fond of old Eli Garrett, who kept this saloon until he was shot in the alley a month ago.',
+    hides: 'The night Eli Garrett was shot, Silas Crowe paid him two hundred dollars to stay in his office. He did. He knows Jack Pike did the shooting and it is eating him alive.', love: 'ada', hate: 'pike' },
+  cole: { body: 'outlaw', name: 'Cole Maddox', short: 'Cole', age: 34, job: 'a drifter with five hundred dollars on his head for the Tucson stage robbery', drink: 'whiskey', holds: 7, style: 'low, wary, wry; watches the door',
+    who: 'He robbed the Tucson stage, and says so to those he trusts. He did not kill the guard. He came back to Perdition for Ruby Vale and means to take her to California.',
+    hides: 'The guard, Tom Bell, was shot by Jack Pike, who rode with the gang as Crowe\'s inside man and took the strongbox to Crowe. The Reverend is his older brother.', love: 'ruby', hate: 'pike' },
+  ruby: { body: 'showgirl', name: 'Ruby Vale', short: 'Ruby', age: 27, job: 'the singer at THE LAST CHANCE', drink: 'gin', holds: 5, style: 'warm, quick, teasing, a little sad under it; calls you sugar',
+    who: 'She sings here every night and has since Eli\'s day. She is clever and kind and tired of this town.',
+    hides: 'She loves Cole Maddox and has his share of the stage money, eight hundred dollars, hidden inside the piano. She owes Silas Crowe three hundred dollars and he wants more than the money.', love: 'cole', hate: 'crowe' },
+  crowe: { body: 'high_roller', name: 'Silas Crowe', short: 'Crowe', age: 58, job: 'owner of the Crowe Cattle Company, the bank\'s paper and half the town', drink: 'brandy', holds: 8, style: 'soft, courteous, patient, never raises his voice; calls you friend',
+    who: 'The richest man in the county. Polite as a deacon. He wants to buy THE LAST CHANCE and will make an offer, then a better one, then no offer at all.',
+    hides: 'Dutch Henry\'s silver seam runs under this saloon, and the saloon\'s deed carries the mineral right. He had Eli Garrett killed for refusing to sell. Pike works for him.', love: null, hate: null },
+  pike: { body: 'poker_pro', name: 'Gentleman Jack Pike', short: 'Pike', age: 41, job: 'a gambler', drink: 'whiskey', holds: 9, style: 'smooth, amused, a little cruel; smiles when he should not',
+    who: 'He plays poker here most nights and wins too often. He wears a Colt under his coat and is very fast.',
+    hides: 'He is Crowe\'s gun. He shot the stage guard Tom Bell and he shot Eli Garrett. He keeps an ace up his left sleeve.', love: null, hate: 'cole' },
+  josiah: { body: 'preacher', name: 'Reverend Josiah Maddox', short: 'the Reverend', age: 45, job: 'preacher at the clapboard church', drink: 'sarsaparilla', holds: 3, style: 'gentle, measured, quotes scripture now and then; a hard man under the cloth',
+    who: 'He came to Perdition six years ago and built the church with his own hands. He comes in to keep an eye on his flock, he says.',
+    hides: 'He rode with Quantrill as a boy and killed nine men before he found God. Cole Maddox is his brother. His guns are under the pulpit.', love: 'cole', hate: null },
+  dutch: { body: 'prospector', name: 'Dutch Henry Voss', short: 'Dutch', age: 63, job: 'a prospector, thirty years in these hills', drink: 'beer', holds: 3, style: 'loud, cheerful, rambling, a thick old-country turn of phrase; talks too much when he drinks',
+    who: 'Everyone\'s friend and nobody\'s fool except when he drinks. He has paid for his beer in dust for years.',
+    hides: 'Three weeks ago he found a silver seam as thick as his arm. It runs from his claim straight under THE LAST CHANCE. He has told nobody, and after the third beer he tells anybody.', love: null, hate: null },
+  ada: { body: 'townswoman_frontier_town', name: 'Ada Bell', short: 'Mrs Bell', age: 38, job: 'a widow; she keeps the boarding house', drink: 'whiskey', holds: 4, style: 'plain, direct, dignified; does not waste a word',
+    who: 'Her husband Tom rode guard on the Tucson stage and was shot dead in the robbery. She has come into a saloon for the first time in her life to hear what men say when they drink.',
+    hides: 'She carries Tom\'s derringer in her bag and means to use it on the man who killed him. She believes that man is Cole Maddox.', love: 'hale', hate: 'cole' },
+  ned: { body: 'blackjack_dealer', name: 'Lucky Ned Tolliver', short: 'Ned', age: 30, job: 'your faro dealer, kept on from Eli\'s day', drink: 'beer', holds: 5, style: 'fast, friendly, eager to please, laughs too easily',
+    who: 'He deals faro at the back table and takes a wage from the house. He was good to you when you arrived.',
+    hides: 'He skims the faro bank, and he sells Silas Crowe everything he hears across your bar for five dollars a week.', love: null, hate: null },
+  doc: { body: 'professor', name: 'Doc Whitlow', short: 'Doc', age: 60, job: 'the only doctor for sixty miles', drink: 'rye', holds: 6, style: 'educated, gentle, vague, drifts off mid-thought',
+    who: 'A good surgeon once, in the war. He patches everyone in Perdition and is paid in chickens.',
+    hides: 'He takes laudanum. He dug a .41 bullet out of Tom Bell and the same out of Eli Garrett; only one man in town carries a .41 Colt Thunderer, and that is Jack Pike. He is afraid to say so.', love: null, hate: null },
+  mateo: { body: 'huaso', name: 'Mateo Reyes', short: 'Mateo', age: 29, job: 'a vaquero for the Crowe Cattle Company', drink: 'whiskey', holds: 6, style: 'quiet, proud, courteous, a little Spanish in it',
+    who: 'The best hand with a horse in the county. Crowe has not paid his crew in two months.',
+    hides: 'He saw Pike ride in on a lathered horse the night Eli Garrett died and wash his hands at the trough. He is saving to marry Rosa and cannot afford to lose his place.', love: 'rosa', hate: 'crowe' },
+  rosa: { body: 'china_cueca_dancer', name: 'Rosa Delgado', short: 'Rosa', age: 24, job: 'the laundress; she does the saloon\'s linen and Crowe\'s too', drink: 'sarsaparilla', holds: 2, style: 'bright, sharp, misses nothing, quick to laugh and quick to anger',
+    who: 'She washes for the whole town, so she knows what the whole town has on its shirts.',
+    hides: 'She washed blood out of Jack Pike\'s cuffs the morning after Eli Garrett died. Crowe\'s housekeeper told her he has men coming from Tombstone.', love: 'mateo', hate: 'pike' },
+  tom: { body: 'railway_carter', name: 'Big Tom Brannigan', short: 'Big Tom', age: 36, job: 'a teamster on the Tucson freight road', drink: 'beer', holds: 9, style: 'big, loud, Irish, sentimental; a fighter when crossed',
+    who: 'He drives freight three days out and three back and spends the seventh here. Stand him a drink and he is your friend for life; water one and he is not.',
+    hides: 'He hauled a locked strongbox from Crowe\'s ranch to the Tucson assay office the week after the stage was robbed, and was paid double to forget it.', love: null, hate: null },
+  eb: { body: 'farmer_cozy_farm', name: 'Eb Tanner', short: 'Eb', age: 50, job: 'a homesteader on Dry Creek', drink: 'beer', holds: 4, style: 'slow, worried, decent; turns his hat in his hands',
+    who: 'He has a wife, four children and a quarter section Crowe has dammed the creek above.',
+    hides: 'Crowe holds his note and has called it. He has ten days. He has thought about a rifle and a window.', love: null, hate: 'crowe' },
+  quimby: { body: 'trader', name: 'Professor Lyle Quimby', short: 'the Professor', age: 43, job: 'purveyor of Quimby\'s Celebrated Vital Tonic, in from Tombstone', drink: 'gin', holds: 5, style: 'grand, fast, a salesman\'s patter, big words slightly wrong',
+    who: 'He sells tonic from a wagon and news for free. He has been everywhere and exaggerates all of it.',
+    hides: 'His tonic is laudanum and creek water. In Tombstone he saw four hard men take Crowe\'s money to ride to Perdition.', love: null, hate: null },
+  ines: { body: 'grandmother_in_a_rebozo', name: 'Abuela Inés Delgado', short: 'Abuela', age: 71, job: 'Rosa\'s grandmother; she reads the cards', drink: 'brandy', holds: 3, style: 'slow, sure, wry, speaks in pictures; calls you mijo',
+    who: 'She sits by the stove with a deck older than the Territory. She was in Perdition before it had a name.',
+    hides: 'Nothing. She says what she sees, and people take it for riddles.', love: 'rosa', hate: null },
+};
+export const KEEPER = 'saloon_keeper';

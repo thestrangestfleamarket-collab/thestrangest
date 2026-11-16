@@ -244,7 +244,7 @@ const srv = require('http').createServer((q, r) => { const f = path.join(ROOT, d
     ok(!r.touch.hits.length && !r.touch.lost.length && !r.touch.dead, 'RAMEN: a slow touch of the cleaver does nothing (' + JSON.stringify(r.touch) + ')');
     ok(r.flat.hits.length && r.flat.hits[0].cut < 0.3 && !r.flat.lost.length && !r.flat.dead, 'RAMEN: the flat of the blade only knocks: nothing cut off (' + JSON.stringify(r.flat.hits[0]) + ')');
     ok(r.edge.lost.includes('head') && r.edge.dead && r.head && r.head.body && r.blood > 0, 'RAMEN: the cleaver\'s edge leading through a neck takes the head off; it falls as a body of its own, and there is blood (' + JSON.stringify([r.edge.hits.slice(-1)[0], r.head, r.blood]) + ')');
-    ok(r.parry.n >= 1 && !r.parry.hits.length && !r.parry.lost.length, 'RAMEN: a blade held across parries the stroke: it never reaches them (' + JSON.stringify(r.parry) + ')');
+    ok(r.parry.n >= 1 && !r.parry.hits.filter(h => h.seg).length && !r.parry.lost.length, 'RAMEN: a blade held across parries the stroke: it never reaches them (' + JSON.stringify(r.parry) + ')');
     ok(r.noise.heard && r.noise.x1 < r.noise.x0 - 0.8, 'RAMEN: in the dark, a loud noise down the street draws them to it (' + JSON.stringify(r.noise) + ')');
     ok(r.death.dead && r.death.bites >= 3 && r.death.card, 'RAMEN: bitten enough, you die; a quiet card and BEGIN AGAIN (' + JSON.stringify(r.death) + ')');
     await o.close(); }

@@ -139,6 +139,7 @@ export default {
     if (request.method === "GET" && p === "/sushi/keys") return new Response(JSON.stringify({ claude: !!env.ANTHROPIC_API_KEY, eleven: !!env.ELEVENLABS_API_KEY, ai: !!env.AI }), { headers: { "content-type": "application/json", "cache-control": "no-store" } }); // which of the game's services the worker has been given: yes or no, never a value
     // THE LAST CHANCE (src/saloon/): its own page at /wild (also /saloon), to anyone with the link; its surfaces, models and people under /saloon-assets/; the townspeople's voices (POST /saloon/talk) and the night reached (POST /saloon/save) only to a login
     if ((request.method === "GET" || request.method === "HEAD") && (p === "/wild" || p === "/saloon")) return page(env, url, "/saloon", request, "no-cache");
+    if (request.method === "GET" && p === "/saloon/look") { const f = await postOf(env).getFile("saloon-look.json"); return f ? new Response(f.data, { headers: { "content-type": "application/json", "cache-control": "no-store" } }) : new Response(null, { status: 204 }); }   // the look the owner saved from the render inspector (POST /shared/saloon-look.json, his alone), to anyone who plays
     if (p === "/wild/" || p === "/saloon/") return Response.redirect(url.origin + "/wild" + url.search, 301);
     // THE CANTINA (src/cantina/): its own page at /cantina, to anyone with the link; its models and pictures under /cantina-assets/
     if ((request.method === "GET" || request.method === "HEAD") && p === "/cantina") return page(env, url, "/cantina", request, "no-cache");

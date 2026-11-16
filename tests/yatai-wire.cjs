@@ -11,7 +11,7 @@ const shot = (j, name) => { if (out && j) fs.writeFileSync(path.join(out, name),
   const until = (p, f, ms, arg) => p.waitForFunction(f, arg, { timeout: ms, polling: 500 }).then(() => true, () => false);
   try {
     const a = await cx.newPage(); a.on('pageerror', (e) => errs.push('cook: ' + e.message.slice(0, 200))); await a.goto(BASE + '/ramen?desktop'); await a.waitForFunction('window.G && G.live && G.mirror && G.items && G.items.length > 10', null, { timeout: 300000 });
-    await a.evaluate(() => { G.muteVoices = true; G.cart.pots.forEach((p) => p.setOn(true)); if (G.game.state !== 'open') G.game.toggleOpen(); G.clock.follow(0.1); });
+    await a.evaluate(() => { G.muteVoices = true; G.cart.pots.forEach((p) => p.setOn(true)); if (G.game.state !== 'open') G.game.toggleOpen(); G.clock.follow(0.05); });
     // THE MARKET: GO TO RAMEN leaves it for the alley as a guest
     const m = await cx.newPage(); m.on('pageerror', (e) => errs.push('market: ' + e.message.slice(0, 200))); await m.goto(BASE + '/?fresh=1&hour=21'); await m.waitForFunction(() => window.__started, null, { timeout: 600000 }); await m.waitForTimeout(3000);
     await m.evaluate(() => { __dbg.UI.goPlace('RAMEN'); }); await m.waitForURL(/\/holo\?g=ramen&as=guest/, { timeout: 120000 }).catch(() => {});

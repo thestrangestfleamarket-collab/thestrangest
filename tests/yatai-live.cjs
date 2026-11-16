@@ -36,7 +36,7 @@ const shot = (j, name) => { if (out && j) fs.writeFileSync(path.join(out, name),
   const open = async (url, card, tag) => { const p = await cx.newPage(); p.on('pageerror', (e) => errs.push(tag + ': ' + e.message.slice(0, 200))); await p.addInitScript((c) => { if (window === top && !sessionStorage.getItem('holo')) sessionStorage.setItem('holo', c); }, JSON.stringify(card)); await p.goto(BASE + url);
     const fr = await (async () => { for (let i = 0; i < 600; i++) { const f = p.frames().find((x) => /\/ramen/.test(x.url())); if (f) return f; await p.waitForTimeout(200); } return null; })(); await fr.waitForFunction('window.G && G.debug && G.live && G.live.share', null, { timeout: 300000 }); return { p, fr }; };
   const A = await open('/holo?g=ramen&who=cook', { room: 's-test', name: 'THE COOK', look: 'w0', at: [0, 0, 0, 0, 'up', 'alley'], back: '/_back.html' }, 'cook');
-  await A.fr.evaluate(() => { G.debug.startDesktop(); G.frozen = true; G.renderer.setAnimationLoop(null); G.muteVoices = true; const g = G.game; G.cart.pots.forEach((p) => p.setOn(true)); g.toggleOpen(); G.clock.follow(0.1); });
+  await A.fr.evaluate(() => { G.debug.startDesktop(); G.frozen = true; G.renderer.setAnimationLoop(null); G.muteVoices = true; const g = G.game; G.cart.pots.forEach((p) => p.setOn(true)); g.toggleOpen(); G.clock.follow(0.05); });
   const B = await open('/holo?g=ramen&as=guest&who=tenant', guestCard, 'guest');
   await B.fr.evaluate(() => { G.debug.startDesktop(); G.frozen = true; G.renderer.setAnimationLoop(null); G.muteVoices = true; });
   // both run in step, a second of the night for every second of the clock

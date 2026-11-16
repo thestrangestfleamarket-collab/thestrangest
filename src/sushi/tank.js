@@ -63,7 +63,7 @@ export function buildTank(scene) {
     for (let i = 0; i < blades.length; i++) blades[i].rotation.z = Math.sin(t * 0.7 + i) * 0.08 + water.at(blades[i].position.x - X, blades[i].position.z - Z) * 20;
     if (!tank.dead) { tank.hunger = Math.min(1, tank.hunger + run / DEAD); if (tank.hunger >= 1) tank.dead = true; }
     // what enters the water: a dropped thing, a hand
-    for (const it of G.items) { if (it.dead || it.kind === 'pinch') continue; const p = it.obj.position, inX = Math.hypot(p.x - X, p.z - Z) < R - 0.03, was = seen.get(it) ?? 9; seen.set(it, p.y); if (inX && was > WATER && p.y <= WATER + 0.02) { water.poke(p.x - X, p.z - Z, Math.min(0.012, 0.004 + Math.abs(it.vel.y) * 0.003), 0.03); fish.scare = 1.2; G.audio?.play('plop', p); } }
+    for (const it of G.items) { if (it.dead || it.kind === 'pinch') continue; const p = it.obj.position, inX = Math.hypot(p.x - X, p.z - Z) < R - 0.03, was = seen.get(it) ?? 9; seen.set(it, p.y); if (inX && was > WATER && p.y <= WATER + 0.02) { water.poke(p.x - X, p.z - Z, Math.min(0.006, 0.002 + Math.abs(it.vel.y) * 0.0015), 0.03); fish.scare = 1.2; G.audio?.play('plop', p); } }
     for (const h of G.hands || []) { if (!h.active && G.mode !== 'vr') continue; const hp = h.pos; if (Math.hypot(hp.x - X, hp.z - Z) < R - 0.03 && hp.y < WATER + 0.01 && hp.y > TOP) { const v = h.vs ? h.vs.length() : 0.5; if (Math.random() < dt * 20) water.poke(hp.x - X, hp.z - Z, Math.min(0.006, 0.0006 + v * 0.002), 0.025); if (v > 0.3) fish.scare = Math.max(fish.scare, 0.8); } }
     water.update(dt);
     let n = 0; for (let i = tank.flakes.length - 1; i >= 0; i--) { const f = tank.flakes[i]; f.t += dt; water.slope(f.x - X, f.z - Z, _sl);

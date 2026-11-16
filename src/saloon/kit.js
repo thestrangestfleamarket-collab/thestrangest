@@ -5,9 +5,9 @@ import { G } from '../sushi/ctx.js';
 
 export const BASE = '/saloon-assets/';
 const TL = new THREE.TextureLoader(), GL = new GLTFLoader(), sets = {}, models = {};
-export const TEX = ['floor', 'wall', 'planks', 'dark', 'walnut', 'paper', 'velvet', 'leather', 'dirt', 'rust', 'plate', 'plaster', 'siding'];
+export const TEX = ['floor', 'wall', 'planks', 'dark', 'walnut', 'paper', 'velvet', 'leather', 'dirt', 'rust', 'plate', 'plaster', 'siding', 'sand', 'rock', 'peel'];
 export const MODELS = ['round_wooden_table_01', 'woodentable_02', 'woodenchair_01', 'wooden_stool_01', 'lantern_chandelier_01', 'vintage_oil_lamp', 'lantern_01', 'wine_barrel_01', 'wooden_crate_01', 'dartboard', 'ornate_mirror_01', 'fancy_picture_frame_01',
-  'hanging_picture_frame_01', 'vintage_grandfather_clock_01', 'cashregister_01', 'wooden_bucket_01', 'brass_candleholders', 'jug_01', 'barrel_stove', 'rockingchair_01', 'painted_wooden_bench', 'brass_pot_01', 'mantel_clock_01', 'wooden_display_shelves_01', 'hatchet', 'painted_wooden_chair_02', 'painted_wooden_table', 'wooden_candlestick', 'wooden_lantern_01', 'hanging_picture_frame_02', 'wooden_barrels_01', 'vintage_cabinet_01', 'brass_vase_03', 'wooden_broom', 'vintage_suitcase', 'wooden_ladder'];
+  'hanging_picture_frame_01', 'vintage_grandfather_clock_01', 'cashregister_01', 'wooden_bucket_01', 'brass_candleholders', 'jug_01', 'barrel_stove', 'rockingchair_01', 'painted_wooden_bench', 'brass_pot_01', 'mantel_clock_01', 'wooden_display_shelves_01', 'hatchet', 'painted_wooden_chair_02', 'painted_wooden_table', 'wooden_candlestick', 'wooden_lantern_01', 'hanging_picture_frame_02', 'wooden_barrels_01', 'vintage_cabinet_01', 'brass_vase_03', 'wooden_broom', 'vintage_suitcase', 'wooden_ladder', 'namaqualand_boulder_02', 'namaqualand_boulder_05', 'dead_tree_trunk', 'tree_stump_01'];
 
 const one = (url, srgb) => TL.loadAsync(url).then((t) => { t.wrapS = t.wrapT = THREE.RepeatWrapping; t.colorSpace = srgb ? THREE.SRGBColorSpace : THREE.NoColorSpace; t.anisotropy = 4; return t; }).catch(() => null);
 export async function loadKit(onProgress = () => { }) {

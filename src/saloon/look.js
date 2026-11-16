@@ -3,6 +3,7 @@ import * as THREE from 'three';
 import { G } from '../sushi/ctx.js';
 import { R } from './room.js';
 import { pbr, plain, brass, slab, tube, model, canvasTex, glow } from './kit.js';
+import { buildTown } from './town.js';
 
 const rnd = (() => { let s = 91; return () => ((s = (s * 16807) % 2147483647) / 2147483647); })();
 
@@ -50,6 +51,9 @@ export function buildLook(scene, room, renderer, camera) {
     const rug = new THREE.Mesh(new THREE.PlaneGeometry(2.0, 1.3).rotateX(-Math.PI / 2), plain(0x3a2420, { rough: 1, env: 0.05 })); rug.position.set(3.3, 0.008, -4.2); rug.rotation.y = 0.15; rug.receiveShadow = true; g.add(rug);
     for (let i = 0; i < 3; i++) { const sk = new THREE.Mesh(new THREE.SphereGeometry(0.32, 10, 8), plain(0x6e6450, { rough: 1, env: 0.05 })); sk.scale.set(0.7, 0.55, 1); sk.position.set(-6.55, 0.17 + (i === 1 ? 0.3 : 0), -4.1 + (i === 1 ? 0.25 : i * 0.5)); sk.castShadow = true; g.add(sk); } }
 
+  // ---- the street outside, the desert, the sky and the moon (town.js)
+  const town = buildTown(scene, room); g.userData.moon = town.moon;
+
   // ---- the room seen in its own glass and brass: one look round from the middle, kept (taken again when the lamps change)
   const moonS = g.children.find((o) => o.isSprite && o.scale.x > 5) || null;
   const cubeRT = new THREE.WebGLCubeRenderTarget(512, { type: THREE.HalfFloatType }), cube = new THREE.CubeCamera(0.1, 60, cubeRT); cube.position.set(2, 1.7, -2.5); scene.add(cube);
@@ -67,8 +71,8 @@ export function buildLook(scene, room, renderer, camera) {
   const size = () => { const r = renderer.getPixelRatio(); rt?.dispose(); rt = new THREE.WebGLRenderTarget(Math.round(innerWidth * r), Math.round(innerHeight * r), { type: THREE.HalfFloatType, samples: 4 }); quad.material.uniforms.tD.value = rt.texture; }; size(); addEventListener('resize', size);
 
   let frames = 0;
-  return { group: g, reflect, moon: g.userData.moon,
-    update(dt, t) { for (const s of sheets) { s.t.offset.x += s.vx * dt; s.t.offset.y += s.vz * dt; } const p = motes.geometry.attributes.position; for (let i = 0; i < N; i++) { p.array[i * 3] += Math.sin(t * 0.21 + mv[i]) * 0.012 * dt; p.array[i * 3 + 1] += Math.sin(t * 0.13 + mv[i] * 2) * 0.01 * dt; p.array[i * 3 + 2] += Math.cos(t * 0.17 + mv[i]) * 0.012 * dt; } p.needsUpdate = true; for (const o of room.lamps) if (o.cone) o.cone.visible = o.on; },
+  return { group: g, reflect, moon: g.userData.moon, town,
+    update(dt, t) { town.update(dt, t); for (const s of sheets) { s.t.offset.x += s.vx * dt; s.t.offset.y += s.vz * dt; } const p = motes.geometry.attributes.position; for (let i = 0; i < N; i++) { p.array[i * 3] += Math.sin(t * 0.21 + mv[i]) * 0.012 * dt; p.array[i * 3 + 1] += Math.sin(t * 0.13 + mv[i] * 2) * 0.01 * dt; p.array[i * 3 + 2] += Math.cos(t * 0.17 + mv[i]) * 0.012 * dt; } p.needsUpdate = true; for (const o of room.lamps) if (o.cone) o.cone.visible = o.on; },
     render() { if (++frames === 3 || frames === 40) reflect(); if (renderer.xr.isPresenting) return renderer.render(scene, camera);
       const tm = renderer.toneMapping; renderer.toneMapping = THREE.NoToneMapping; renderer.setRenderTarget(rt); renderer.render(scene, camera); renderer.setRenderTarget(null); quad.material.uniforms.t.value = (G.t * 60 | 0) % 97; quad.material.uniforms.hurt.value = Math.max(0, G.hurtT || 0); renderer.render(qs, qc); renderer.toneMapping = tm; } };
 }

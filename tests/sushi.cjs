@@ -19,6 +19,20 @@ const srv = require('http').createServer((q, r) => { const f = path.join(ROOT, d
       G.frozen = false; return { worst: +worst.toFixed(3), who, easy: !!(G.set && G.set.easy), fill: G.city ? null : null }; });
     ok(f.worst < 0.05 && f.easy, 'easy on the eyes: on from the start, and no light flickers (largest change between frames ' + f.worst + (f.who ? ', ' + f.who : '') + ')'); }
   ok(await p.evaluate(() => G.game.customers.length === 0 && G.cart.pots.length === 3 && Object.keys(G.cart.bins).length === 7), 'three pots, seven bins, nobody yet');
+  { // the recorded sounds, every source through one chain: quieter and duller with distance, wetter with it, muffled behind the counter; things sound as what they are made of
+    await p.waitForFunction('G.audio.ready && G.audio.loaded + (G.audio.missing || 0) >= 31', null, { timeout: 90000 }).catch(() => { });
+    const a = await p.evaluate(() => { const A = G.audio, V = G.debug.THREE.Vector3; A.earAt = new V(0, 1.6, 0.4);
+      const at = (p) => { const e = A.spatial('item', p), o = { g: +e.dist.gain.value.toFixed(3), f: Math.round(e.air.frequency.value), s: +e.send.gain.value.toFixed(3) }; e.free(); return o; };
+      const far = [1, 4, 12, 30].map((m) => at(new V(0, 1.6, 0.4 - m))), behind = at(new V(0, 0.3, -0.9)), over = at(new V(0, 1.2, -0.9)); A.earAt = null;
+      const heard = []; const shot = A.shot; A.shot = function (n, ...r) { heard.push(n); return shot.call(this, n, ...r); };
+      const bowl = new G.debug.Items.Bowl(), ladle = G.items.find((i) => i.kind === 'ladle'); A.play('grab', bowl); bowl.remove(); A.hit(ladle, 2.5); A.play('chop', new V(0.3, 0.93, -0.26)); A.shot = shot;
+      return { loaded: A.loaded, missing: A.missing || 0, far, behind, over, heard, beds: !!(A.bedOn && A.edges && A.edges.length === 4 && A.street), live: A.emit.size }; });
+    ok(a.loaded === 31 && !a.missing && a.beds, `the recorded sounds load (${a.loaded} of 31) and the rain, its runoff at the roof's edges and the street are going (${a.live} sources live)`);
+    ok(a.far.every((o, i) => !i || (o.g < a.far[i - 1].g && o.f < a.far[i - 1].f && o.s >= a.far[i - 1].s)), 'a sound grows quieter, duller and more of the alley with distance ' + JSON.stringify(a.far));
+    ok(a.behind.f < 1500 && a.over.f > 5000, `behind the counter it is muffled (${a.behind.f} Hz), over it not (${a.over.f} Hz)`);
+    ok(/^ceramic/.test(a.heard[0]) && /^(metal|clank)/.test(a.heard[1]) && /^chop/.test(a.heard[2]), 'a bowl is taken up as ceramic, a ladle knocks as metal, the knife chops on the board ' + a.heard.join(','));
+    const s = await p.evaluate(() => { const bad = new Set(); let n = 0; G.scene.traverse((o) => { if (!o.isMesh) return; for (const m of [].concat(o.material)) if (m && m.map && m.map.userData.photo) { if (m.userData.surface) n++; else bad.add(m.map.userData.photo + ' on ' + (o.name || o.geometry.type)); } }); return { n, bad: [...bad] }; });
+    ok(s.n > 10 && !s.bad.length, `every photographed surface wears the shared material (no tile repeats, grime, wear): ${s.n}${s.bad.length ? ', not: ' + s.bad.join('; ') : ''}`); }
   const log = await p.evaluate(async () => {
     const log = []; const L = (...a) => log.push(a.join(' '));
     G.frozen = true; Math.random = (() => { let s = 7; return () => { s = (s * 16807) % 2147483647; return s / 2147483647; }; })();

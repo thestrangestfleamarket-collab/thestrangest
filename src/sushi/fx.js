@@ -1,11 +1,11 @@
-// steam, drops and the slip of paper that says how a bowl went
+// steam (soft wisps that rise, sway and thin out), drops and the slip of paper that says how a bowl went
 import * as THREE from 'three';
 import { G, V3, mat } from './ctx.js';
 import * as T from './tex.js';
 
 export function buildFx(scene) {
   const root = new THREE.Group(); scene.add(root);
-  const smoke = T.smokeTex();
+  const smoke = T.wispTex();
   const steam = [], NS = 70;
   for (let i = 0; i < NS; i++) {
     const s = new THREE.Sprite(new THREE.SpriteMaterial({ map: smoke, color: 0xffe8d0, transparent: true, opacity: 0, depthWrite: false }));
@@ -34,7 +34,7 @@ export function buildFx(scene) {
   const fx = {
     steam(p, k = 1) {
       const s = steam[si++ % NS]; s.visible = true; s.position.copy(p); s.userData.life = 1; s.userData.k = k; s.userData.vx = (Math.random() - 0.5) * 0.06; s.userData.r = Math.random() * 6;
-      s.scale.setScalar(0.08 * k + 0.04);
+      s.userData.s = 0.06 * k + 0.035; s.scale.set(s.userData.s * 0.7, s.userData.s * 1.3, 1);
     },
     drops(p, color, n = 8) {
       for (let i = 0; i < n; i++) { const d = drops[di++ % ND]; d.visible = true; d.userData.chain = null; d.userData.pay = null; d.scale.setScalar(1); d.position.copy(p); d.material.color.set(color); d.userData.v.set((Math.random() - 0.5) * 0.5, Math.random() * 0.4, (Math.random() - 0.5) * 0.5); d.userData.life = 0.6; }
@@ -63,8 +63,8 @@ export function buildFx(scene) {
       for (let i = splats.length - 1; i >= 0; i--) { const s = splats[i]; s.life -= dt; if (s.life <= 0) { s.m.removeFromParent(); splats.splice(i, 1); } }
       for (const s of steam) if (s.visible) {
         const u = s.userData; u.life -= dt * 0.55; if (u.life <= 0) { s.visible = false; continue; }
-        s.position.y += dt * 0.22; s.position.x += u.vx * dt; s.scale.addScalar(dt * 0.11); s.material.rotation = u.r + u.life;
-        s.material.opacity = Math.sin(u.life * Math.PI) * 0.13 * Math.min(1, u.k);
+        s.position.y += dt * (0.12 + 0.12 * u.life); s.position.x += (u.vx + Math.sin(G.t * 1.1 + u.r) * 0.025) * dt; u.s += dt * 0.09; s.scale.set(u.s * 0.75, u.s * 1.35, 1); s.material.rotation = Math.sin(u.r) * 0.3 + (1 - u.life) * 0.35 * Math.sign(u.vx);
+        s.material.opacity = Math.pow(Math.sin(u.life * Math.PI), 1.5) * 0.12 * Math.min(1, u.k);
       }
       for (const d of drops) if (d.visible) { const u = d.userData; u.life -= dt; if (u.life <= 0) { d.visible = false; u.pay = null; u.chain = null; d.scale.setScalar(1); continue; } const y0 = d.position.y; u.v.y -= 9.8 * dt; d.position.addScaledVector(u.v, dt);
         if (!u.pay) continue; const p = d.position; let done = false; // poured liquid: whatever bowl it falls into gets it; anything else it wets
@@ -73,7 +73,7 @@ export function buildFx(scene) {
         if (!done) for (const s of G.surfaces) if (p.y <= s.y && y0 > s.y - 0.05 && p.x > s.minX && p.x < s.maxX && p.z > s.minZ && p.z < s.maxZ) { if (Math.random() < 0.12) fx.splat(p.clone().setY(s.y), d.material.color.getHex(), 0.025); done = true; break; }
         if (!done && p.y <= 0.01) { if (Math.random() < 0.12) fx.splat(p.clone().setY(0), d.material.color.getHex(), 0.03); done = true; }
         if (done) { d.visible = false; u.pay = null; u.chain = null; d.scale.setScalar(1); } }
-      let k = 0; for (const [src, c] of chains) { c.list = c.list.filter((d) => d.visible && d.userData.chain === c); if (!c.list.length && G.t - c.t > 0.1) { chains.delete(src); continue; } if (k < streams.length) skin(streams[k++], c); } for (; k < streams.length; k++) streams[k].m.visible = false;
+      let k = 0; for (const [src, c] of chains) { c.list = c.list.filter((d) => d.visible && d.userData.chain === c); if (!c.list.length && G.t - c.t > 0.1) { chains.delete(src); continue; } if (k < streams.length) skin(streams[k++], c); if (G.t - c.t < 0.1) G.audio?.flow?.(src, c.list.length ? c.list[c.list.length - 1].position : c.lip, c.r * 4); } // heard where it lands for (; k < streams.length; k++) streams[k].m.visible = false;
       for (let i = pops.length - 1; i >= 0; i--) { const p = pops[i]; p.life -= dt; p.s.position.y += dt * 0.012; p.s.material.opacity = Math.min(1, p.life); if (p.life <= 0) { p.s.removeFromParent(); p.s.material.map.dispose(); p.s.material.dispose(); pops.splice(i, 1); } }
     },
   };

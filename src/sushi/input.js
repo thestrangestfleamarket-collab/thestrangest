@@ -44,7 +44,7 @@ function grab(h, cand) {
   if (h.xr && it.handles) { let bd = 0.12, hb = null; for (const l of it.handles) { const d = _v.copy(l).applyQuaternion(it.obj.quaternion).add(it.obj.position).distanceTo(h.pos); if (d < bd) { bd = d; hb = l; } } if (hb) h.relPos.copy(hb).applyQuaternion(h.relQ).negate(); } // its handle comes into the palm
   if (h.xr && PH.ready && it.kind !== 'rag') PH.hold(it);
   h.tiltA = 0; h.chopT = 0;
-  G.audio.play('grab'); h.pulse(0.4, 25);
+  G.audio.play('grab', it); h.pulse(0.4, 25);
   return it;
 }
 

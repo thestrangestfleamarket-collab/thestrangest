@@ -19,6 +19,20 @@ const srv = require('http').createServer((q, r) => { const f = path.join(ROOT, d
       G.frozen = false; return { worst: +worst.toFixed(3), who, easy: !!(G.set && G.set.easy), fill: G.city ? null : null }; });
     ok(f.worst < 0.05 && f.easy, 'easy on the eyes: on from the start, and no light flickers (largest change between frames ' + f.worst + (f.who ? ', ' + f.who : '') + ')'); }
   ok(await p.evaluate(() => G.game.customers.length === 0 && G.cart.pots.length === 3 && Object.keys(G.cart.bins).length === 7), 'three pots, seven bins, nobody yet');
+  { // the recorded sounds, every source through one chain: quieter and duller with distance, wetter with it, muffled behind the counter; things sound as what they are made of
+    await p.waitForFunction('G.audio.ready && G.audio.loaded + (G.audio.missing || 0) >= 31', null, { timeout: 90000 }).catch(() => { });
+    const a = await p.evaluate(() => { const A = G.audio, V = G.debug.THREE.Vector3; A.earAt = new V(0, 1.6, 0.4);
+      const at = (p) => { const e = A.spatial('item', p), o = { g: +e.dist.gain.value.toFixed(3), f: Math.round(e.air.frequency.value), s: +e.send.gain.value.toFixed(3) }; e.free(); return o; };
+      const far = [1, 4, 12, 30].map((m) => at(new V(0, 1.6, 0.4 - m))), behind = at(new V(0, 0.3, -0.9)), over = at(new V(0, 1.2, -0.9)); A.earAt = null;
+      const heard = []; const shot = A.shot; A.shot = function (n, ...r) { heard.push(n); return shot.call(this, n, ...r); };
+      const bowl = new G.debug.Items.Bowl(), ladle = G.items.find((i) => i.kind === 'ladle'); A.play('grab', bowl); bowl.remove(); A.hit(ladle, 2.5); A.play('chop', new V(0.3, 0.93, -0.26)); A.shot = shot;
+      return { loaded: A.loaded, missing: A.missing || 0, far, behind, over, heard, beds: !!(A.bedOn && A.edges && A.edges.length === 4 && A.street), live: A.emit.size }; });
+    ok(a.loaded === 31 && !a.missing && a.beds, `the recorded sounds load (${a.loaded} of 31) and the rain, its runoff at the roof's edges and the street are going (${a.live} sources live)`);
+    ok(a.far.every((o, i) => !i || (o.g < a.far[i - 1].g && o.f < a.far[i - 1].f && o.s >= a.far[i - 1].s)), 'a sound grows quieter, duller and more of the alley with distance ' + JSON.stringify(a.far));
+    ok(a.behind.f < 1500 && a.over.f > 5000, `behind the counter it is muffled (${a.behind.f} Hz), over it not (${a.over.f} Hz)`);
+    ok(/^ceramic/.test(a.heard[0]) && /^(metal|clank)/.test(a.heard[1]) && /^chop/.test(a.heard[2]), 'a bowl is taken up as ceramic, a ladle knocks as metal, the knife chops on the board ' + a.heard.join(','));
+    const s = await p.evaluate(() => { const bad = new Set(); let n = 0; G.scene.traverse((o) => { if (!o.isMesh) return; for (const m of [].concat(o.material)) if (m && m.map && m.map.userData.photo) { if (m.userData.surface) n++; else bad.add(m.map.userData.photo + ' on ' + (o.name || o.geometry.type)); } }); return { n, bad: [...bad] }; });
+    ok(s.n > 10 && !s.bad.length, `every photographed surface wears the shared material (no tile repeats, grime, wear): ${s.n}${s.bad.length ? ', not: ' + s.bad.join('; ') : ''}`); }
   const log = await p.evaluate(async () => {
     const log = []; const L = (...a) => log.push(a.join(' '));
     G.frozen = true; Math.random = (() => { let s = 7; return () => { s = (s * 16807) % 2147483647; return s / 2147483647; }; })();
@@ -116,26 +130,83 @@ const srv = require('http').createServer((q, r) => { const f = path.join(ROOT, d
   const hurt = await p.evaluate(() => { const T = G.debug.THREE, V = (x, y, z) => new T.Vector3(x, y, z), step = (n) => { for (let i = 0; i < n; i++) { G.scene.updateMatrixWorld(); G.debug.tick(1 / 60); } }, game = G.game, B = G.block, out = {};
     G.talk.live = false; G.talk.tts = false; if (game.state !== 'open') game.toggleOpen(); const c = game.customers.find((x) => x.state === 'waiting' || x.state === 'eating') || game.forceSpawn(); let g = 0; while (c.state !== 'waiting' && c.state !== 'eating' && g++ < 2400) step(1);
     const torso = (P) => P.bones.find((b) => b.name === 'torso').quaternion.clone(), H = c.p.bones.find((b) => b.name === 'head').getWorldPosition(V(0, 0, 0)), q0 = torso(c.p), h = G.hands[0], ladle = G.items.find((i) => i.kind === 'ladle'), n0 = G.react.log.length;
-    h.active = true; h.held = ladle; for (let i = 0; i < 12; i++) { const at = H.clone().add(V(0.04, 0, 0.4 - i * 0.05)); h.pos.copy(at); h.vs.set(0, 0, -3); ladle.obj.position.copy(at).sub(ladle.center.clone().applyQuaternion(ladle.obj.quaternion)); step(1); if (i === 9) out.lean = q0.angleTo(torso(c.p)); }
-    h.active = false; h.held = null; step(10); const e = G.react.log[n0]; out.cust = { seated: e && e.seated, kind: e && e.kind, gone: c.state === 'leaving', said: G.talk.last && G.talk.last.who, cop: !!B.by.denise.cop || B.by.denise.taken };
-    game.spawnT = 999; const free = () => B.people.find((x) => !x.taken && x.def.id !== 'denise' && !B.mad[x.def.id]), park = (x, at) => { x.hidden = false; x.lead = null; x.crew.length = 0; x.chat = null; x.greet = null; x.step = 'stand'; x.t = 60; x.p.root.position.copy(at); };
-    const pb = free(); park(pb, V(1.2, 0, -2.6)); pb.p.root.rotation.y = Math.PI; step(5); const ch = pb.p.bones.find((b) => b.name === 'torso').getWorldPosition(V(0, 0, 0)), bw = new G.debug.Items.Bowl(); bw.obj.position.set(ch.x, ch.y + 0.1, ch.z + 1); bw.drop(V(0, 0.3, -6));
-    let down = false; for (let i = 0; i < 60; i++) { step(1); down = down || pb.p.down(); } const e2 = G.react.log[G.react.log.length - 1]; out.pass = { who: e2 && e2.who === pb.def.name, seated: e2 && e2.seated, down, mad: !!B.mad[pb.def.id] }; step(60 * 5); out.pass.up = !pb.p.down() && !pb.p.reeling();
+    h.active = true; h.held = ladle; for (let i = 0; i < 12; i++) { const at = H.clone().add(V(0.04, 0, 0.4 - i * 0.05)); h.pos.copy(at); h.vs.set(0, 0, -3); ladle.obj.position.copy(at).sub(ladle.center.clone().applyQuaternion(ladle.obj.quaternion)); step(1); out.lean = Math.max(out.lean || 0, q0.angleTo(torso(c.p))); }
+    h.active = false; h.held = null; for (let i = 0; i < 20; i++) { step(1); out.lean = Math.max(out.lean, q0.angleTo(torso(c.p))); } const e = G.react.log[n0]; out.cust = { seated: e && e.seated, kind: e && e.kind, gone: c.state === 'leaving', said: G.talk.last && G.talk.last.who, cop: !!B.by.denise.cop || B.by.denise.taken, lean: +out.lean.toFixed(3) };
+    game.spawnT = 999; const free = () => B.people.find((x) => !x.taken && x.def.id !== 'denise' && !B.mad[x.def.id]), park = (x, at) => { x.hidden = false; x.lead = null; x.crew.length = 0; x.chat = null; x.greet = null; x.step = 'stand'; x.t = 60; x.p.root.position.copy(at); for (const o of B.people) if (o !== x && !o.taken && Math.abs(o.p.root.position.x) < 30) o.p.root.position.x += 40; }; // alone in the alley, so nothing else is in the way
+    out.cust.J = e && e.J; out.cust.limbs = G.react.limbs ? G.react.limbs.active : 0;
+    const pb = free(); park(pb, V(1.2, 0, -2.6)); pb.p.root.rotation.y = Math.PI; step(5); const ch = pb.p.bones.find((b) => b.name === 'torso').getWorldPosition(V(0, 0, 0)), throwAt = (y, v) => { const bw = new G.debug.Items.Bowl(); bw.obj.position.set(ch.x, y, ch.z + 1); bw.drop(V(0, 0.3, -v)); return bw; };
+    // a bowl thrown at the chest: it bounces off them (never through), and they take it as hard as it landed
+    const n1 = G.react.log.length, tq = (P) => P.bones.find((b) => b.name === 'torso').quaternion.clone(), t0 = tq(pb.p), bw = throwAt(ch.y + 0.1, 6); let minZ = 9, rb = false, rock = 0, lastY = 9;
+    for (let i = 0; i < 40; i++) { step(1); if (!bw.dead) { lastY = bw.obj.position.y; minZ = Math.min(minZ, bw.obj.position.z); if (bw.vel.z > 0.2) rb = true; } rock = Math.max(rock, t0.angleTo(tq(pb.p))); }
+    const e1 = G.react.log.slice(n1).find((x) => x.who === pb.def.name); out.bounce = { J: e1 && e1.J, kind: e1 && e1.kind, bone: e1 && e1.bone, through: minZ < ch.z - 0.1, back: rb, whole: !bw.dead || lastY < 0.3, rock: +rock.toFixed(3), mad: !!B.mad[pb.def.id] };
+    // the same bowl thrown twice as hard at the head floors them
+    step(60); park(pb, V(1.2, 0, -2.6)); pb.p.root.rotation.y = Math.PI; step(5); const hd = pb.p.bones.find((b) => b.name === 'head').getWorldPosition(V(0, 0, 0)); throwAt(hd.y + 0.12, 13);
+    let down = false; for (let i = 0; i < 60; i++) { step(1); down = down || pb.p.down(); } const e2 = G.react.log[G.react.log.length - 1]; out.pass = { who: e2 && e2.who === pb.def.name, seated: e2 && e2.seated, J: e2 && e2.J, down, mad: !!B.mad[pb.def.id] }; step(60 * 5); out.pass.up = !pb.p.down() && !pb.p.reeling();
+    // a slow hand laid on someone's chest is a touch: nobody is knocked about
+    const pt = free(); park(pt, V(-1.3, 0, -2.6)); pt.p.root.rotation.y = 0; step(5); const tc = pt.p.bones.find((b) => b.name === 'torso').getWorldPosition(V(0, 0, 0)), n3 = G.react.log.length; h.active = true; h.held = null; step(40);
+    let reel = false; for (let i = 0; i < 50; i++) { h.pos.set(tc.x, tc.y + 0.05, tc.z + 0.35 - i * 0.006); h.vs.set(0, 0, -0.3); step(1); reel = reel || pt.p.down() || pt.p.reeling(); } h.active = false;
+    const e3 = G.react.log.slice(n3).find((x) => x.who === pt.def.name); out.touch = { kind: e3 && e3.kind, J: e3 && e3.J, level: e3 && e3.level, reel, mad: !!B.mad[pt.def.id] };
     let back = false; for (let k = 0; k < 10; k++) { const t = B.take(); if (!t) break; back = back || t === pb; B.give(t); } out.pass.notBack = !back;
+    for (let w = 0; w < 900 && (G.talk.D.cur || G.talk.D.q.length || G.t < (G.talk.floorT || 0)); w++) step(1); // the shouts above have had the floor
     const pw = free(); park(pw, V(-1.6, 0, -2.7)); for (const o of B.people) if (o !== pw && !o.taken) o.p.root.position.x += 40; step(5); G.talk.last = null; game.onWave(); out.wave = { greet: !!pw.greet }; step(50); out.wave.waving = pw.p.waveT > 0; out.wave.said = G.talk.last && G.talk.last.who === pw.def.name;
     const cam = G.camera.getWorldPosition(V(0, 0, 0)); out.wave.faces = Math.abs(Math.atan2(Math.sin(pw.p.root.rotation.y - Math.atan2(cam.x - pw.p.root.position.x, cam.z - pw.p.root.position.z)), Math.cos(pw.p.root.rotation.y - Math.atan2(cam.x - pw.p.root.position.x, cam.z - pw.p.root.position.z)))) < 0.5;
     return out; });
   ok(hurt.lean > 0.05 && hurt.cust.seated && hurt.cust.kind === 'thing' && hurt.cust.gone && hurt.cust.said && hurt.cust.cop, 'a seated customer struck with a held ladle lurches, says so, leaves unpaid, and the beat cop comes over (' + JSON.stringify(hurt.cust) + ')');
-  ok(hurt.pass.who && !hurt.pass.seated && hurt.pass.down && hurt.pass.up && hurt.pass.mad && hurt.pass.notBack, 'a passer-by hit by a thrown bowl is knocked down, gets up, and will not come to the cart tonight (' + JSON.stringify(hurt.pass) + ')');
+  ok(hurt.cust.J > 2 && hurt.cust.limbs >= 12, 'the people near the cart have real limbs, and the ladle\'s blow is measured (' + JSON.stringify([hurt.cust.J, hurt.cust.limbs]) + ')');
+  ok(hurt.bounce.kind === 'thing' && hurt.bounce.J > 0.5 && !hurt.bounce.through && hurt.bounce.back && hurt.bounce.whole && hurt.bounce.rock > 0.01 && hurt.bounce.mad, 'a bowl thrown at a passer-by bounces off them, not through, and they rock with the impact and are angry (' + JSON.stringify(hurt.bounce) + ')');
+  ok(hurt.pass.who && !hurt.pass.seated && hurt.pass.J >= 3 && hurt.pass.down && hurt.pass.up && hurt.pass.mad && hurt.pass.notBack, 'a bowl thrown hard at the head knocks them down, they get up, and will not come to the cart tonight (' + JSON.stringify(hurt.pass) + ')');
+  ok(hurt.touch.kind === 'tap' && hurt.touch.J < 0.9 && !hurt.touch.level && !hurt.touch.reel && !hurt.touch.mad, 'a slow hand on someone\'s chest is only a touch: nobody is knocked about (' + JSON.stringify(hurt.touch) + ')');
   ok(hurt.wave.greet && hurt.wave.waving && hurt.wave.said && hurt.wave.faces, 'a passer-by turns to a wave from the cook, waves back and says something (' + JSON.stringify(hurt.wave) + ')');
   ok(await p.evaluate(() => !!G.debug.city.alley && !!G.debug.city.rain && G.debug.city.shops.length >= 5), 'the cart stands in the alley, in the rain, with its back doors');
   const tvc = await p.evaluate(() => { const t = G.tv, b = (n) => G.buttons.find((x) => x.name === n), c0 = t.ch.ch; b('TV channel').press(); const c1 = t.ch.ch; b('TV power').press(); const off = !t.on; b('TV power').press(); for (let i = 0; i < 10; i++) G.debug.tick(1 / 30); return { sets: t.tubes.reduce((a, q) => a + q.sets.length, 0), changed: c0 !== c1, off, on: t.on, chans: t.channels.length }; });
   ok(tvc.sets >= 1 && (tvc.changed || tvc.chans === 1) && tvc.off && tvc.on && tvc.chans >= 1, 'the cart has a television: its knobs change the channel and switch it off and on');
+  const tk = await p.evaluate(async () => { for (let i = 0; i < 100 && !G.tank.ready; i++) await new Promise((r) => setTimeout(r, 200)); const a = G.tank.fish.g.position.clone(); for (let i = 0; i < 30; i++) G.debug.tick(1 / 30); return { ready: G.tank.ready, fish: G.tank.fish.g ? G.tank.fish.g.children.length : 0, moved: G.tank.fish.g.position.distanceTo(a) > 0.005 }; });
+  ok(tk.ready && tk.fish === 1 && tk.moved, 'the cart has a small fish tank with one koi swimming (' + JSON.stringify(tk) + ')');
   const tvv = await p.evaluate(() => { const m = G.tv.mine, b = G.buttons.find((x) => x.name === 'TV volume'), c = G.tv.channels.find((q) => q.name === 'CREATURE FEATURE'), v = []; const v0 = m.vol; for (let i = 0; i < 4; i++) { b.press(); v.push(m.vol); } while (m.vol !== v0) b.press(); return { v, movie: !!c && c.shows.some((s) => /NIGHT OF THE LIVING DEAD/.test(s.title)) }; });
   ok(tvv.movie && tvv.v.join() === '0.6,0.9,0,0.3', 'the cart\'s TV has NIGHT OF THE LIVING DEAD on the creature feature, and its volume knob steps up to 0.9 then off (' + tvv.v.join() + ')');
   const rtv = await p.evaluate(async () => { for (let i = 0; i < 100 && !(G.tv.models >= 1 && G.cart.radio); i++) await new Promise((r) => setTimeout(r, 200)); const names = G.tv.channels.map((c) => c.name), a = G.audio, was = a.label(); a.setRadio(true); const l0 = a.label(); a.tune(); const l1 = a.label(); return { films: names.includes('CREATURE FEATURE') && G.tv.channels[0].shows.every((x) => /^\/sushi-assets\/film\/notld-\d\.mp4$/.test(x.src)), models: G.tv.models + !!G.cart.radio, n: a.stations, l0, l1, was }; });
   ok(rtv.films && rtv.models >= 2 && rtv.n >= 4 && rtv.n <= 8 && rtv.l0 !== rtv.l1 && /WBGO|WWOZ|WNYC|WQXR|SomaFM|TAPE/.test(rtv.l0 + rtv.l1), 'the TV and boombox are real models, the TV plays the creature feature from our own small copy, the radio tunes real stations (' + rtv.l0 + ' > ' + rtv.l1 + ')');
   ok(await p.evaluate(() => document.querySelectorAll('canvas').length === 1 && G.renderer.info.memory.geometries > 60 && G.baked > 100), 'the street is drawn, its still parts baked together');
+  { // the conversation director, offline: the site's mind and voice are fakes; one floor, the cook's turn ends only when they have stopped, the cook cuts in, stale lines drop
+    const d = await p.evaluate(async () => {
+      const T = G.talk, D = T.D, out = {}, wait = (ms) => new Promise((r) => setTimeout(r, ms)), real = window.fetch, fz = G.frozen; G.frozen = true; if (!G.audio.ctx) G.audio.init(); await G.audio.ctx.resume?.(); G.muteVoices = false; T.tts = null;
+      window.fetch = async (u, o) => { u = String(u);
+        if (/\/sushi\/say$/.test(u)) { const text = JSON.parse(o.body).text, secs = Math.max(0.5, (text.match(/[\w']+/g) || []).length * 0.3), n = Math.round(secs * 24000), per = 2400; let i = 0;
+          const body = new ReadableStream({ async pull(c) { if (i >= n) return c.close(); await new Promise((r) => setTimeout(r, 30)); const k = Math.min(per, n - i), b = new Int16Array(k); for (let j = 0; j < k; j++) b[j] = Math.round(Math.sin((i + j) * 0.05) * 3000); i += k; c.enqueue(new Uint8Array(b.buffer)); } });
+          await new Promise((r) => setTimeout(r, 120)); return new Response(body, { headers: { 'content-type': 'audio/pcm', 'x-rate': '24000', 'x-voice': 'eleven-ny' } }); }
+        if (/\/sushi\/talk$/.test(u)) { await new Promise((r) => setTimeout(r, 300)); return new Response(JSON.stringify({ say: 'Yeah, long night, pal.' }), { headers: { 'content-type': 'application/json' } }); }
+        if (/\/sushi\/log$|\/holmes\/hear$/.test(u)) return new Response('{}', { headers: { 'content-type': 'application/json' } });
+        return real(u, o); };
+      const T3 = G.debug.THREE, who = (n) => { const c = { p: { root: new T3.Object3D(), sex: 'm', style: '-', talkT: 0, gesture() {} }, here: () => true }; G.scene.add(c.p.root); c.p.root.position.set(n - 1, 1.2, -1.2); return c; };
+      const A = who(0), B = who(1), C = who(2), idle = async (ms = 8000) => { const t0 = performance.now(); while ((D.cur || D.q.length) && performance.now() - t0 < ms) await wait(50); };
+      D.cookEnd = -9; D.cookOn = false; T.EP.text = ''; const s0 = T.spoken.length;
+      // three people with something to say at once: one at a time, a breath between them
+      T.queue(A, 'Evening. One shoyu, please, and a cola.', { kind: 'order' }); T.queue(B, 'This rain won’t quit, huh?', { kind: 'order' }); T.queue(C, 'Smells good tonight.', { kind: 'order' });
+      await idle(); const L = T.spoken.slice(s0); let over = 0, gap = 9; for (let i = 1; i < L.length; i++) { over = Math.max(over, (L[i - 1].t1 || 1e9) - L[i].t0); gap = Math.min(gap, L[i].t0 - L[i - 1].t1); }
+      out.floor = { n: L.length, over: +over.toFixed(3), gap: +gap.toFixed(2) };
+      // the cook's words are held until a real pause, longer after a trailing "and", and the pieces of one turn are joined
+      const was = T.cookSays, got = []; T.cookSays = (text) => { got.push({ text, at: performance.now() }); return true; };
+      T.cookVoice(true); await wait(200); T.cookVoice(true); T.cookVoice(false); const t1 = performance.now(); T.heard('so I was thinking and'); await wait(1000); const early = got.length; await wait(1000);
+      out.trail = { early, got: got.length, ms: got.length ? Math.round(got[0].at - t1) : -1 };
+      got.length = 0; T.cookVoice(true); await wait(150); T.cookVoice(false); const t2 = performance.now(); T.heard('the broth is'); await wait(300); T.cookVoice(true); await wait(200); T.cookVoice(false); T.heard('almost ready.'); const mid = got.length; await wait(1300);
+      out.join = { mid, n: got.length, text: got[0] && got[0].text, ms: got.length ? Math.round(got[0].at - t2) : -1 }; T.cookSays = was;
+      // a long line stops when the cook starts talking, and is remembered only as far as it got; a short one is let finish
+      const h = { who: 'me', text: 'Listen, I been comin’ here three years now and I gotta tell ya, this is the best bowl on the whole West Side, no kiddin’.' };
+      D.cookEnd = -9; const it = T.queue(A, h.text, { kind: 'reply', h }); for (let i = 0; i < 80 && D.cur !== it; i++) await wait(50); await wait(900);
+      const tb = performance.now(); T.cookVoice(true); const cutNow = D.cur !== it; await wait(250); T.cookVoice(false);
+      out.barge = { playing: !!it.playing, stopped: cutNow && D.cur === null, ms: Math.round(performance.now() - tb), cut: !!(it.log && it.log.cut), kept: h.text };
+      await idle(); const sh = T.queue(B, 'Yeah, sure.', { kind: 'reply' }); for (let i = 0; i < 80 && D.cur !== sh; i++) await wait(50); T.cookVoice(true); await wait(100); out.barge.short = D.cur === sh; T.cookVoice(false); await idle();
+      // nobody starts while the cook is talking; small talk that waits too long is dropped, and an answer the cook has moved past is dropped
+      T.cookVoice(true); T.queue(C, 'You been here long tonight?', { kind: 'chat' }); const held = []; for (let i = 0; i < 27; i++) { await wait(200); T.cookVoice(true); held.push(!!D.cur); } T.cookVoice(false); await wait(400);
+      const r1 = T.queue(B, 'Nah, it’s fine.', { kind: 'reply' }); B.voice.gen++; await wait(600);
+      const drops = T.book.filter((x) => x.dropped).map((x) => x.who + ': ' + x.dropped);
+      out.stale = { quiet: !held.some(Boolean), chatGone: !T.spoken.slice(-3).some((x) => x.kind === 'chat') && drops.some((x) => /moment passed/.test(x)), superseded: !r1.playing && drops.some((x) => /superseded/.test(x)) };
+      await idle(); window.fetch = real; G.frozen = fz; for (const c of [A, B, C]) G.scene.remove(c.p.root); return out; });
+    ok(d.floor.n === 3 && d.floor.over <= 0.01 && d.floor.gap >= 0.25, 'the director gives one floor: three people with something to say speak one after another, a breath between (' + JSON.stringify(d.floor) + ')');
+    ok(d.trail.early === 0 && d.trail.got === 1 && d.trail.ms >= 1300, 'the cook\'s turn is not answered before it ends: after a trailing "and" it waits for a longer pause (' + JSON.stringify(d.trail) + ')');
+    ok(d.join.mid === 0 && d.join.n === 1 && /broth is almost ready/.test(d.join.text || ''), 'two pieces of one turn, a short pause between, are joined and answered once (' + JSON.stringify(d.join) + ')');
+    ok(d.barge.playing && d.barge.stopped && d.barge.cut && / —$/.test(d.barge.kept) && d.barge.short, 'when the cook cuts in a long line stops at once and is remembered only as far as it got; a short one is let finish (' + JSON.stringify(d.barge) + ')');
+    ok(d.stale.quiet && d.stale.chatGone && d.stale.superseded, 'nobody speaks while the cook does, small talk whose moment has passed is dropped, and so is an answer the cook has moved past (' + JSON.stringify(d.stale) + ')'); }
   if (OUT) await p.screenshot({ path: path.join(OUT, '01-cart.png'), timeout: 120000 }).catch(() => {});
   await p.close();
   // an emulated Quest 3 with controllers

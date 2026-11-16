@@ -1,11 +1,24 @@
-// the yatai itself: its frame, stove and pots, crocks, bins, board, shelves, switches, the ticket rail, and tonight's stock (what runs out is gone for the night)
+// the yatai itself: its frame, stove and pots, crocks, bins, board, shelves, switches, the ticket rail, its shaded lamps' pools of light, the little things on its ledge, and tonight's stock (what runs out is gone for the night)
 import * as THREE from 'three';
+import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.js';
+import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
+import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+import { MeshoptDecoder } from 'three/addons/libs/meshopt_decoder.module.js';
 import { G, V3, Q, mat, mesh, box, cyl, quatLook, clamp, mergeStatic } from './ctx.js';
 import * as T from './tex.js';
 import { glb } from './tv.js';
 import { Bowl, Food, Raw, Drink, Ladle, Basket, Knife, Prop, Vessel, Sticks, Rag, TOPPINGS, TARE, BROTH, RAW, doneness } from './items.js';
 
 export const SEATS = [-0.72, 0, 0.72];
+// a turned thing's outline (radius, height) from the foot up the outside, over the lip and down the inside: pots, crocks, cups and bottles are lathed with real walls
+const lathe = (pts, seg = 28) => new THREE.LatheGeometry(pts.map(([x, y]) => new THREE.Vector2(x, y)), seg);
+const potGeo = (r, h) => lathe([[0, 0], [r - 0.014, 0], [r - 0.003, 0.005], [r, 0.02], [r, h - 0.012], [r + 0.004, h - 0.005], [r + 0.0035, h + 0.002], [r - 0.002, h + 0.0035], [r - 0.005, h - 0.006], [r - 0.005, 0.013], [0, 0.013]], 32);
+const jarGeo = (r, h) => lathe([[0, 0], [r - 0.006, 0], [r, 0.008], [r, h - 0.03], [r * 0.82, h - 0.012], [r * 0.75, h - 0.006], [r * 0.76, h], [0, h]], 16);
+const crockGeo = () => lathe([[0, 0], [0.04, 0], [0.047, 0.006], [0.054, 0.035], [0.057, 0.07], [0.053, 0.1], [0.048, 0.112], [0.05, 0.118], [0.047, 0.122], [0.044, 0.117], [0.048, 0.07], [0.042, 0.02], [0, 0.014]], 22);
+// a model off the shelf with its own materials kept as the game's one cheap kind (a glass in it is left out: the bulb is the light)
+const gl = new GLTFLoader(); gl.setMeshoptDecoder(MeshoptDecoder);
+const model = (file, tint = 0xb0a8a0) => gl.loadAsync('/sushi-assets/m/' + file + '.glb').then((d) => { d.scene.traverse((o) => { if (!o.isMesh) return; if (/glass/i.test(o.material.name)) o.visible = false; else o.material = mat({ map: o.material.map, color: tint }); o.userData.nopick = true; }); return d.scene; });
+const fit = (o, size) => { const b = new THREE.Box3().setFromObject(o), s = b.getSize(new V3()); o.scale.multiplyScalar(size / Math.max(s.x, s.y, s.z)); return o; };
 // prices in cents, 1985 dollars
 export const RECIPES = {
   shoyu: { name: 'SHOYU', jp: '醤油ラーメン', price: 450, broth: 'chicken', tare: 'shoyu', tops: { chashu: 2, menma: 1, negi: 1, nori: 1, naruto: 1 } },
@@ -22,13 +35,16 @@ export function buildCart(scene, city) {
   const cart = new THREE.Group(); scene.add(cart); G.pickRoot.add(cart);
   const C = { group: cart, pots: [], bins: {}, board: null, open: false, ups: [], knobs: [], shown: { noodles: [], raw: {}, drinks: {} }, stock: { noodles: 0, kettle: 0, jar: { shoyu: 0, shio: 0, miso: 0 }, drinks: { beer: 0, cola: 0 }, raw: { chashu: 0, naruto: 0, negi: 0, egg: 0 } } };
   G.cart = C;
-  const wood = mat({ map: T.photo('wood', () => T.woodTex('#5a3a22', '#24140a')), color: 0xc8b8a8, userData: { metres: 1.5 } }); // photographed planks, laid by the metre (T.metreUV)
-  const woodDark = mat({ map: T.photo('wood_dark', () => T.woodTex('#3a2414', '#150c06', [1, 1], 5)), color: 0xa89888, userData: { metres: 1.6 } });
-  const woodLight = mat({ map: T.photo('wood_light', () => T.woodTex('#8f7350', '#54391f', [1, 1], 9)), color: 0xc0b0a0, userData: { metres: 1.3 } });
+  const wood = T.surface(mat({ map: T.photo('wood', () => T.woodTex('#5a3a22', '#24140a')), color: 0xc8b8a8, userData: { metres: 1.5 } }), { grime: 0.4, band: 0.45 }); // photographed planks, laid by the metre (T.metreUV), never twice alike (T.surface)
+  const woodDark = T.surface(mat({ map: T.photo('wood_dark', () => T.woodTex('#3a2414', '#150c06', [1, 1], 5)), color: 0xa89888, userData: { metres: 1.6 } }), { grime: 0.3 });
+  const woodLight = T.surface(mat({ map: T.photo('wood_light', () => T.woodTex('#8f7350', '#54391f', [1, 1], 9)), color: 0xc0b0a0, userData: { metres: 1.3 } }), { worn: 0.4, grime: 0.2 });
+  const woodTop = T.surface(mat({ map: T.photo('wood_counter', () => T.woodTex('#a07040', '#5a3a1c', [1, 1], 13)), color: 0xdcc6a6, userData: { metres: 1.1 } }), { worn: 0.7, grime: 0.12, vary: 0.16 }); // the worn, honey-coloured tops hands rest on
+  const rbox = (w, h, d, m, x, y, z, p, r = 0.008) => mesh(new RoundedBoxGeometry(w, h, d, 2, r), m, x, y, z, p); // wood with its edges worn round
   T.dirty(wood.map, 2, { stains: 26, drips: 12, scratches: 60, rings: 4 }); T.dirty(woodDark.map, 3, { stains: 18, scratches: 40, drips: 8 }); T.dirty(woodLight.map, 4, { stains: 30, rings: 16, scratches: 90 });
   for (const m of [wood, woodDark, woodLight]) { m.normalMap = T.normalOf(m.map, 1.6); m.normalScale.set(0.6, 0.6); }
   const steel = mat({ map: T.steelTex([2, 2]), color: 0xcfd2d6, metalness: 0.55, roughness: 0.34, envMapIntensity: 1.6 });
   T.dirty(steel.map, 5, { scratches: 220, stains: 20, rings: 10 }); steel.roughnessMap = T.smudgeTex([2, 2]); steel.roughness = 0.62; woodLight.roughnessMap = T.smudgeTex([1, 1], 9); woodLight.roughness = 0.85;
+  T.surface(steel, { vary: 0.12, grime: 0.15 });
   const steelDS = Object.assign(steel.clone(), { side: THREE.DoubleSide });
   const black = mat({ color: 0x111113, roughness: 0.6, metalness: 0.4 });
   const surf = (minX, maxX, minZ, maxZ, y) => G.surfaces.push({ minX, maxX, minZ, maxZ, y });
@@ -37,11 +53,11 @@ export function buildCart(scene, city) {
   // ---------------- structure ----------------
   box(2.3, 0.88, 0.4, wood, 0, 0.44, -0.35, cart);                       // front body
   box(2.3, 0.02, 0.42, steel, 0, 0.89, -0.35, cart); surf(-1.15, 1.15, -0.56, -0.14, 0.9);
-  box(2.44, 0.04, 0.36, woodLight, 0, 0.98, -0.71, cart); surf(-1.22, 1.22, -0.89, -0.53, 1.0); // customer ledge
+  rbox(2.44, 0.04, 0.36, woodTop, 0, 0.98, -0.71, cart, 0.012); surf(-1.22, 1.22, -0.89, -0.53, 1.0); // customer ledge
   box(2.4, 0.9, 0.04, woodDark, 0, 0.51, -0.57, cart);                    // front panel
   box(2.3, 0.094, 0.02, steel, 0, 0.947, -0.519, cart);                   // backsplash lip, just clear of the ledge (no two faces in one place)
   box(0.45, 0.8, 1.15, wood, -0.925, 0.4, 0.425, cart); box(0.47, 0.02, 1.17, steel, -0.925, 0.81, 0.425, cart); surf(-1.15, -0.7, -0.15, 1.0, 0.82); // stove wing
-  box(0.45, 0.88, 1.15, wood, 0.925, 0.44, 0.425, cart); box(0.47, 0.02, 1.149, woodLight, 0.925, 0.89, 0.4355, cart); surf(0.7, 1.15, -0.15, 1.0, 0.9); // prep wing, meeting the steel top edge to edge
+  box(0.45, 0.88, 1.15, wood, 0.925, 0.44, 0.425, cart); rbox(0.47, 0.02, 1.149, woodTop, 0.925, 0.89, 0.4355, cart, 0.006); surf(0.7, 1.15, -0.15, 1.0, 0.9); // prep wing, meeting the steel top edge to edge
   box(1.4, 0.03, 1.95, mat({ color: 0x1a1a1c, roughness: 0.8 }), 0, 0.015, 0.75, cart).castShadow = false; // rubber floor mat
   // posts, roof
   for (const [x, z] of [[-1.16, -0.56], [1.16, -0.56], [-1.16, 1.78], [1.16, 1.78]]) box(0.08, 2.62, 0.08, woodDark, x, 1.31, z, cart);
@@ -54,11 +70,11 @@ export function buildCart(scene, city) {
   // a pitched roof of weathered sheet in two tiers, high enough to stand tall under
   const tileT = T.canvasTex(256, 256, (g, w, h) => { for (let x = 0; x < w; x += 16) { const gr = g.createLinearGradient(x, 0, x + 16, 0); gr.addColorStop(0, '#4a4d52'); gr.addColorStop(0.5, '#8a8e94'); gr.addColorStop(1, '#3a3d42'); g.fillStyle = gr; g.fillRect(x, 0, 16, h); } }, { repeat: [3, 1] });
   T.dirty(tileT, 12, { rust: 26, drips: 30, stains: 24, patch: 3 });
-  const tileM = mat({ map: T.photo('corrugated', () => tileT), color: 0x9a9ea4, side: THREE.DoubleSide, userData: { metres: 1.12 } }); tileM.normalMap = T.normalOf(tileT, 3);
+  const tileM = T.surface(mat({ map: T.photo('corrugated', () => tileT), color: 0x9a9ea4, side: THREE.DoubleSide, userData: { metres: 1.12 } }), { bomb: 0, grime: 0.45, vary: 0.3 }); tileM.normalMap = T.normalOf(tileT, 3);
   for (const [zc, rx] of [[-0.82, -0.32], [1.12, 0.32]]) { const r = box(3.5, 0.03, 2.12, tileM, 0, 2.97, zc, cart); r.rotation.x = rx; }
   for (const [zc, rx] of [[-0.42, -0.36], [0.72, 0.36]]) { const r = box(2.7, 0.03, 1.25, tileM, 0, 3.42, zc, cart); r.rotation.x = rx; }
   box(2.8, 0.06, 0.1, woodDark, 0, 3.64, 0.15, cart);
-  for (const sx of [-1.5, 1.5]) { const tri = new THREE.Shape(); tri.moveTo(-1.9, 0); tri.lineTo(1.9, 0); tri.lineTo(0, 0.62); tri.closePath(); const gm = mesh(new THREE.ShapeGeometry(tri), mat({ map: woodLight.map, roughness: 0.8, side: THREE.DoubleSide }), sx, 2.62, 0.15, cart); gm.rotation.y = Math.PI / 2; }
+  for (const sx of [-1.5, 1.5]) { const tri = new THREE.Shape(); tri.moveTo(-1.9, 0); tri.lineTo(1.9, 0); tri.lineTo(0, 0.62); tri.closePath(); const gm = mesh(new THREE.ShapeGeometry(tri), T.surface(mat({ map: woodLight.map, side: THREE.DoubleSide }), { worn: 0.3 }), sx, 2.62, 0.15, cart); gm.rotation.y = Math.PI / 2; }
   T.dirty(roofT, 6, { stains: 8 }); const roof = { rotation: {} };
   // wheels + pull handles
   for (const s of [-1, 1]) {
@@ -109,33 +125,58 @@ export function buildCart(scene, city) {
   // work lights: bare bulbs under the roof (real shadow-casting sources)
   const bulbM = new THREE.MeshBasicMaterial({ color: new THREE.Color(3.2, 2.5, 1.5), toneMapped: false });
   C.bulbs = [];
+  // each hangs in an enamel shade (Poly Haven's), so its light falls in a warm pool on the wood below and not up into the roof
+  const shade = model('hanging_industrial_lamp', 0x8a8070);
   [[-0.55, -0.25, true], [0.6, 0.1, false], [0, -1.05, false]].forEach(([x, z, sh], i) => {
     const pv = new THREE.Group(); pv.position.set(x, 2.62, z); pv.userData.dyn = true; cart.add(pv); C.bulbs.push(pv);
     cyl(0.003, 0.003, 0.2, black, 0, -0.11, 0, pv, 4); cyl(0.016, 0.02, 0.04, black, 0, -0.21, 0, pv, 8);
     const b = new THREE.Mesh(new THREE.SphereGeometry(0.03, 12, 10), bulbM); b.position.set(0, -0.255, 0); pv.add(b); b.userData.nopick = true;
     halo(0xffc070, 0.26, 0, -0.255, 0, pv, 0.3);
-    const l = new THREE.PointLight(0xffb070, i === 2 ? 0.8 : 1.25, 6, 1.8); l.position.set(0, -0.28, 0); pv.add(l);
-    if (sh) { const sl = new THREE.SpotLight(0xffb070, 12, 5, 1.2, 0.7, 1.7); sl.position.set(x, 2.3, z); sl.target.position.set(x + 0.15, 0, z + 0.05); cart.add(sl, sl.target); sl.castShadow = true; sl.shadow.mapSize.set(512, 512); sl.shadow.bias = -0.002; sl.shadow.camera.near = 0.1; sl.shadow.camera.far = 5; l.intensity = 0.6; }
+    shade.then((m) => { const o = fit(m.clone(), 0.5); o.position.y = 0.2; pv.add(o); }).catch(() => { });
+    const l = sh ? new THREE.PointLight(0xffb070, 0.6, 6, 1.8) : new THREE.SpotLight(0xffb070, i === 2 ? 4 : 5, 6, 0.62, 0.9, 1.6); l.position.set(0, -0.28, 0); pv.add(l); if (l.isSpotLight) { l.target.position.set(0, -2.5, 0); pv.add(l.target); }
+    if (sh) { const sl = new THREE.SpotLight(0xffb070, 12, 5, 0.9, 0.85, 1.7); sl.position.set(x, 2.3, z); sl.target.position.set(x + 0.15, 0, z + 0.05); cart.add(sl, sl.target); sl.castShadow = true; sl.shadow.mapSize.set(512, 512); sl.shadow.bias = -0.002; sl.shadow.camera.near = 0.1; sl.shadow.camera.far = 5; l.intensity = 0.6; }
   });
 
   // stools
   for (const x of SEATS) { cyl(0.16, 0.16, 0.05, mat({ color: 0x7a1814, roughness: 0.45 }), x, 0.67, -1.16, cart, 20); cyl(0.02, 0.02, 0.65, steel, x, 0.33, -1.16, cart, 8); cyl(0.17, 0.19, 0.02, steel, x, 0.01, -1.16, cart, 16); mesh(new THREE.TorusGeometry(0.13, 0.008, 6, 20), steel, x, 0.28, -1.16, cart).rotation.x = Math.PI / 2; }
   // placemats on the ledge
   C.seatSpots = SEATS.map((x) => { const p = box(0.3, 0.004, 0.22, mat({ color: 0x2a3a2e, roughness: 0.9 }), x, 1.002, -0.71, cart); p.castShadow = false; return new V3(x, 1.0, -0.71); });
-  // chopstick jar + shichimi on the ledge
+  // on a little tray at each pair of seats: a glazed cup of chopsticks, the shichimi, a soy dispenser
+  const indigo = mat({ color: 0x2c3c62 }), trayM = woodTop;
   for (const x of [-0.36, 0.36]) {
-    const jg = new THREE.Group(); jg.position.set(x, 1.0, -0.8); cyl(0.035, 0.03, 0.1, mat({ color: 0x222226, roughness: 0.3, side: THREE.DoubleSide }), 0, 0.05, 0, jg, 12, true); cyl(0.03, 0.03, 0.006, black, 0, 0.003, 0, jg, 12);
-    const jar = new Prop(jg, { name: 'chopstick jar', col: { t: 'cyl', hh: 0.05, r: 0.036 }, mass: 0.35, radius: 0.04, fragile: 0x222226 }); jar.pick = true;
+    rbox(0.27, 0.008, 0.115, trayM, x + 0.01, 1.004, -0.805, cart, 0.003).castShadow = false;
+    const jg = new THREE.Group(); jg.position.set(x, 1.0, -0.8); mesh(lathe([[0, 0], [0.03, 0], [0.032, 0.004], [0.036, 0.098], [0.0345, 0.101], [0.032, 0.097], [0.028, 0.008], [0, 0.008]], 16), indigo, 0, 0, 0, jg);
+    const jar = new Prop(jg, { name: 'chopstick cup', col: { t: 'cyl', hh: 0.05, r: 0.036 }, mass: 0.35, radius: 0.04, fragile: 0x2c3c62, mat: 'ceramic' }); jar.pick = true;
     for (let i = 0; i < 5; i++) { const st = new Sticks(); st.obj.position.set(x + Math.cos(i * 1.26) * 0.013, 1.11, -0.8 + Math.sin(i * 1.26) * 0.013); st.obj.rotation.set(Math.PI / 2 + Math.sin(i * 3) * 0.1, 0, Math.cos(i * 2) * 0.1); jar.hold(st); }
     const sg = new THREE.Group(); sg.position.set(x + 0.08, 1.0, -0.82); cyl(0.018, 0.018, 0.07, mat({ color: 0xb02a1a, roughness: 0.4 }), 0, 0.035, 0, sg, 10); cyl(0.019, 0.019, 0.012, steel, 0, 0.074, 0, sg, 10);
-    const sh = new Prop(sg, { name: 'shichimi shaker', col: { t: 'cyl', hh: 0.04, r: 0.019 }, mass: 0.12, radius: 0.03, top: 0.08, pour: { color: 0xc8401c, pay: null, r: 0.0015, rate: 0.3, lip: 0 } }); sh.pick = true;
+    const sh = new Prop(sg, { name: 'shichimi shaker', col: { t: 'cyl', hh: 0.04, r: 0.019 }, mass: 0.12, radius: 0.03, top: 0.08, mat: 'wood', pour: { color: 0xc8401c, pay: null, r: 0.0015, rate: 0.3, lip: 0 } }); sh.pick = true;
+    const yg = new THREE.Group(); yg.position.set(x - 0.075, 1.0, -0.81); mesh(lathe([[0, 0], [0.024, 0], [0.026, 0.006], [0.025, 0.07], [0.016, 0.09], [0.012, 0.096], [0, 0.096]], 14), mat({ color: 0x2a1206, transparent: true, opacity: 0.9 }), 0, 0, 0, yg); cyl(0.0125, 0.0135, 0.022, mat({ color: 0xc81c14 }), 0, 0.104, 0, yg, 12); cyl(0.003, 0.004, 0.016, mat({ color: 0xc81c14 }), 0.008, 0.118, 0, yg, 6).rotation.z = -0.9;
+    yg.traverse((o) => { o.castShadow = false; }); new Prop(yg, { name: 'soy sauce', col: { t: 'cyl', hh: 0.055, r: 0.026 }, mass: 0.25, radius: 0.03, top: 0.12, fragile: 0x2a1206, mat: 'glass', pour: { color: 0x2a1206, pay: null, r: 0.0015, rate: 0.4, lip: 0.01 } }).pick = true;
+  }
+  { // a box of tissues by the right-hand seats, and the beckoning cat at the left end, for luck
+    const tg = new THREE.Group(); tg.position.set(0.98, 1.0, -0.6); tg.rotation.y = 0.12;
+    box(0.12, 0.065, 0.064, mat({ map: T.canvasTex(128, 64, (g, w, h) => { g.fillStyle = '#e8dcc8'; g.fillRect(0, 0, w, h); const R = T.rng(4); for (let i = 0; i < 26; i++) { g.fillStyle = ['#d86a7a', '#7aa06a', '#e8b84a'][i % 3]; g.beginPath(); g.arc(R() * w, R() * h, 3 + R() * 5, 0, 7); g.fill(); } g.fillStyle = '#5a3a5a'; g.fillRect(0, h - 8, w, 8); }) }), 0, 0.0325, 0, tg);
+    const puff = new THREE.PlaneGeometry(0.06, 0.05, 4, 4), pp = puff.attributes.position; for (let i = 0; i < pp.count; i++) pp.setZ(i, Math.sin(pp.getX(i) * 60) * 0.006 + Math.cos(pp.getY(i) * 70) * 0.005); puff.computeVertexNormals();
+    mesh(puff, mat({ color: 0xf4f2ee, side: THREE.DoubleSide }), 0, 0.085, 0, tg).rotation.set(0.15, 0.3, 0);
+    new Prop(tg, { name: 'tissue box', col: { t: 'box', hx: 0.06, hy: 0.033, hz: 0.032 }, mass: 0.12, radius: 0.06, mat: 'paper' }).pick = true;
+    const white = [], red = [], gold = [], dark = [], add = (list, g, x, y, z, rx = 0, rz = 0) => list.push(g.rotateX(rx).rotateZ(rz).translate(x, y, z));
+    add(white, new THREE.SphereGeometry(1, 14, 10).scale(0.036, 0.044, 0.03), 0, 0.048, 0); add(white, new THREE.SphereGeometry(1, 14, 10).scale(0.034, 0.03, 0.029), 0, 0.1, 0.004);
+    for (const s of [-1, 1]) add(white, new THREE.ConeGeometry(0.011, 0.02, 6), s * 0.02, 0.128, 0.002, 0, -s * 0.35);
+    add(white, new THREE.CylinderGeometry(0.008, 0.009, 0.04, 8), 0.03, 0.105, 0.006, 0, 0.2); add(white, new THREE.SphereGeometry(0.01, 8, 6), 0.034, 0.126, 0.008);
+    add(red, new THREE.TorusGeometry(0.026, 0.0035, 5, 18), 0, 0.074, 0.003, Math.PI / 2); add(red, new THREE.BoxGeometry(0.09, 0.012, 0.075), 0, 0.006, 0);
+    add(gold, new THREE.SphereGeometry(0.0065, 8, 6), 0, 0.068, 0.029); add(gold, new THREE.CylinderGeometry(0.014, 0.014, 0.003, 12), -0.012, 0.04, 0.032, Math.PI / 2);
+    for (const s of [-1, 1]) add(dark, new THREE.SphereGeometry(0.0035, 6, 4).scale(1.3, 0.5, 0.6), s * 0.012, 0.106, 0.031);
+    const ng = new THREE.Group(); ng.position.set(-1.12, 1.0, -0.62); ng.rotation.y = 0.35;
+    [[white, 0xf2eee6], [red, 0xc0281c], [gold, 0xd8a838], [dark, 0x1a1414]].forEach(([l, c]) => mesh(mergeGeometries(l.map((g) => g.toNonIndexed())), mat({ color: c }), 0, 0, 0, ng));
+    for (const o of [tg, ng]) o.traverse((c) => { c.castShadow = false; }); // small things on the ledge: no shadows to draw
+    new Prop(ng, { name: 'maneki-neko', col: { t: 'box', hx: 0.045, hy: 0.07, hz: 0.04 }, mass: 0.4, radius: 0.06, fragile: 0xf2eee6, mat: 'ceramic' }).pick = true;
   }
 
   { const bk = new THREE.Group(); cart.add(bk);
-    box(1.36, 0.86, 0.34, wood, 0, 0.43, 1.62, bk); box(1.4, 0.03, 0.38, woodLight, 0, 0.885, 1.62, bk); surf(-0.7, 0.7, 1.43, 1.81, 0.9);
+    box(1.36, 0.86, 0.34, wood, 0, 0.43, 1.62, bk); rbox(1.4, 0.03, 0.38, woodTop, 0, 0.885, 1.62, bk); surf(-0.7, 0.7, 1.43, 1.81, 0.9);
     for (const dx of [-0.34, 0.34]) { box(0.6, 0.7, 0.02, woodDark, dx, 0.44, 1.445, bk); cyl(0.012, 0.012, 0.03, steel, dx + (dx < 0 ? 0.22 : -0.22), 0.5, 1.43, bk, 8).rotation.x = Math.PI / 2; }
     for (let i = 0; i < 5; i++) { const b = new Bowl(); const o = b.obj; b.remove(); o.userData.item = null; o.position.set(-0.2, 0.9 + i * 0.022, 1.64); o.rotation.y = i * 1.3; bk.add(o); }
-    box(1.4, 0.03, 0.22, woodLight, 0, 1.62, 1.72, bk); for (const sx of [-0.66, 0.66]) box(0.03, 0.74, 0.2, woodDark, sx, 1.26, 1.72, bk);
+    rbox(1.4, 0.03, 0.22, woodTop, 0, 1.62, 1.72, bk); for (const sx of [-0.66, 0.66]) box(0.03, 0.74, 0.2, woodDark, sx, 1.26, 1.72, bk);
     bk.traverse((o) => { o.userData.nopick = true; }); }
   surf(-0.7, 0.7, 1.61, 1.83, 1.635);
   { // what stands on the back counter and its shelf: a rice tub, the stock kettle that tops the pots up, jars of tare for the crocks, a rag
@@ -143,10 +184,10 @@ export function buildCart(scene, city) {
     new Prop(tg, { name: 'rice tub', col: { t: 'cyl', hh: 0.125, r: 0.13 }, mass: 3, radius: 0.13 });
     const kg = new THREE.Group(); kg.position.set(0.5, 0.9, 1.66); cyl(0.09, 0.11, 0.17, steel, 0, 0.085, 0, kg, 16); const sp = cyl(0.012, 0.02, 0.12, steel, 0.1, 0.12, 0, kg, 8); sp.rotation.z = -0.9; mesh(new THREE.TorusGeometry(0.07, 0.008, 6, 14, Math.PI), black, 0, 0.18, 0, kg);
     C.kettle = new Prop(kg, { name: 'stock kettle', col: { t: 'cyl', hh: 0.09, r: 0.11 }, mass: 2.5, radius: 0.11, top: 0.15, pour: { color: 0xc9a868, pay: { kind: 'stock', type: 'stock', heat: 0.6 }, r: 0.007, rate: 2.2, lip: 0.14, can: (q) => C.stock.kettle > 0 && ((C.stock.kettle -= q * 0.03), true) } });
-    Object.keys(TARE).forEach((k, i) => { const g = new THREE.Group(); g.position.set(-0.56 + i * 0.16, 1.635, 1.72); cyl(0.04, 0.04, 0.15, mat({ color: TARE[k].color, roughness: 0.15, transparent: true, opacity: 0.92 }), 0, 0.075, 0, g, 12); cyl(0.03, 0.03, 0.02, black, 0, 0.16, 0, g, 10);
+    Object.keys(TARE).forEach((k, i) => { const g = new THREE.Group(); g.position.set(-0.56 + i * 0.16, 1.635, 1.72); mesh(jarGeo(0.04, 0.15), mat({ color: TARE[k].color, transparent: true, opacity: 0.92 }), 0, 0, 0, g); cyl(0.03, 0.03, 0.02, black, 0, 0.16, 0, g, 10);
       const lb = mesh(new THREE.PlaneGeometry(0.06, 0.04), new THREE.MeshBasicMaterial({ map: T.labelTex([TARE[k].label], { w: 256, h: 120, fs: 56 }), color: 0xbbbbbb }), 0, 0.08, 0.041, g); lb.castShadow = false; g.rotation.y = Math.PI;
       new Prop(g, { name: `${TARE[k].label.toLowerCase()} tare jar`, col: { t: 'cyl', hh: 0.085, r: 0.041 }, mass: 0.9, radius: 0.05, top: 0.17, fragile: TARE[k].color, pour: { color: TARE[k].color, pay: { kind: 'tare', type: k, heat: 1 }, r: 0.004, rate: 1.1, can: (q) => C.stock.jar[k] > 0 && ((C.stock.jar[k] -= q * 0.25), true) } }); });
-    for (let i = 3; i < 9; i++) { const hh = 0.07 + (i % 3) * 0.02, col = [0x5a2a0c, 0xb8c8c0, 0x8a5a14, 0x2a3a24][i % 4], g = new THREE.Group(); g.position.set(-0.56 + i * 0.14, 1.635, 1.72); cyl(0.045, 0.045, hh * 2, mat({ color: col, roughness: 0.2 }), 0, hh, 0, g, 10); new Prop(g, { name: 'jar', col: { t: 'cyl', hh, r: 0.046 }, mass: 0.7, radius: 0.05, fragile: col }); }
+    for (let i = 3; i < 9; i++) { const hh = 0.07 + (i % 3) * 0.02, col = [0x5a2a0c, 0xb8c8c0, 0x8a5a14, 0x2a3a24][i % 4], g = new THREE.Group(); g.position.set(-0.56 + i * 0.14, 1.635, 1.72); mesh(jarGeo(0.045, hh * 2), mat({ color: col }), 0, 0, 0, g); cyl(0.034, 0.034, 0.016, i % 2 ? black : mat({ color: 0xb8b0a0 }), 0, hh * 2 + 0.008, 0, g, 12); new Prop(g, { name: 'jar', col: { t: 'cyl', hh, r: 0.046 }, mass: 0.7, radius: 0.05, fragile: col }); }
     C.rag = new Rag(0.72, 0.935, -0.42);
   }
 
@@ -167,17 +208,16 @@ export function buildCart(scene, city) {
     // the pot itself stands on the burner: lift it, carry it, tip it out
     const pg = new THREE.Group(); pg.position.set(d.x, 0.86, d.z);
     const p = { id: d.id, type: d.type, r: d.r, h: d.h, color: d.color, heat: d.heat, label: d.label, hot: false, sip: d.type ? 0.022 : 0 };
-    cyl(d.r, d.r, d.h, steelDS, 0, d.h / 2, 0, pg, 32, true); cyl(d.r, d.r, 0.006, steel, 0, 0.003, 0, pg, 32);
-    mesh(new THREE.TorusGeometry(d.r, 0.006, 6, 32), steel, 0, d.h, 0, pg).rotation.x = Math.PI / 2;
+    mesh(potGeo(d.r, d.h), steel, 0, 0, 0, pg);
     for (const sd of [-1, 1]) mesh(new THREE.TorusGeometry(0.03, 0.006, 6, 12, Math.PI), steel, 0, d.h - 0.04, sd * (d.r + 0.005), pg).rotation.set(0, Math.PI / 2, 0);
-    p.liqM = mat({ color: d.color, map: d.type ? brothMap : null, roughness: 0.05, clearcoat: 1, transparent: true, opacity: d.type === 'tonkotsu' ? 1 : 0.9 });
+    p.liqM = T.liquid(mat({ color: d.color, map: d.type ? brothMap : null, roughness: 0.05, clearcoat: 1, transparent: true, opacity: d.type === 'tonkotsu' ? 1 : 0.9 }), { stir: d.type ? 0.25 : 0.6, sheen: d.type ? 0.55 : 0.35 });
     p.liq = mesh(new THREE.CircleGeometry(d.r - 0.004, 32).rotateX(-Math.PI / 2), p.liqM, 0, d.h * 0.8, 0, pg); p.liq.castShadow = false;
     if (d.type) { // pork bones / chicken + aromatics lying in the broth
       const bm = mat({ color: d.type === 'tonkotsu' ? 0xe8e0d0 : 0xd8b070, roughness: 0.6 });
       for (let k = 0; k < 4; k++) { const b = cyl(0.014, 0.018, 0.09, bm, Math.cos(k * 1.9) * 0.07, -0.005, Math.sin(k * 1.9) * 0.07, p.liq, 8); b.rotation.set(1.4, k, 0.3); }
       cyl(0.012, 0.012, 0.12, mat({ color: 0x5fae3a }), 0.03, 0, -0.05, p.liq, 6).rotation.set(1.5, 0.7, 0);
     }
-    p.item = new Vessel(pg, { name: d.type ? `${d.type} broth pot` : 'noodle pot', col: { t: 'cyl', hh: d.h / 2, r: d.r + 0.005 }, mass: 9, radius: d.r, h: d.h, liq: p.liq, lift: 0.02 }, p);
+    p.item = new Vessel(pg, { name: d.type ? `${d.type} broth pot` : 'noodle pot', col: { t: 'cyl', hh: d.h / 2, r: d.r + 0.005 }, mass: 9, radius: d.r, h: d.h, liq: p.liq, lift: 0.02, mat: 'metal' }, p);
     p.item.pay = d.type ? { kind: 'broth', type: d.type, heat: 1 } : { kind: 'water', type: 'water', heat: 1 }; p.item.fill = d.type ? 0.03 : 0.05;
     Object.defineProperty(p, 'on', { get: () => !p.tipped && C.burners.some((q) => q.on && Math.hypot(q.x - p.x, q.z - p.z) < 0.09 && Math.abs(p.baseY - 0.86) < 0.04) });
     p.bubbles = []; for (let k = 0; k < 10; k++) { const b = new THREE.Mesh(new THREE.RingGeometry(0.006, 0.009, 10).rotateX(-Math.PI / 2), new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.5 })); b.visible = false; b.userData = { t: Math.random(), nopick: true }; cart.add(b); p.bubbles.push(b); }
@@ -187,7 +227,7 @@ export function buildCart(scene, city) {
     const mark = box(0.004, 0.05, 0.008, mat({ color: 0xf0f0f0 }), 0.032, 0, 0, kb);
     const lt = mesh(new THREE.PlaneGeometry(0.16, 0.035), new THREE.MeshBasicMaterial({ map: T.labelTex(d.label, { w: 256, h: 56, fs: 26, bg: '#1a1a1c', fg: '#e8e0c8' }) }), -0.699, 0.76, d.z, cart); lt.rotation.y = Math.PI / 2; lt.castShadow = false;
     const led = new THREE.Mesh(new THREE.SphereGeometry(0.008, 8, 6), new THREE.MeshBasicMaterial({ color: 0x401010 })); led.position.set(-0.697, 0.7, d.z - 0.06); led.userData.keep = true; cart.add(led);
-    p.setOn = (on) => { bn.on = on; kb.rotation.x = on ? Math.PI / 2 : 0; led.material.color.set(on ? new THREE.Color(3, 0.4, 0.1) : new THREE.Color(0x401010)); led.material.toneMapped = !on; bn.flames.forEach((f) => (f.visible = on)); G.audio.play(on ? 'ignite' : 'click'); };
+    p.setOn = (on) => { bn.on = on; kb.rotation.x = on ? Math.PI / 2 : 0; led.material.color.set(on ? new THREE.Color(3, 0.4, 0.1) : new THREE.Color(0x401010)); led.material.toneMapped = !on; bn.flames.forEach((f) => (f.visible = on)); G.audio.play(on ? 'ignite' : 'knob', _bp4.set(-0.67, 0.7, d.z)); };
     km.userData.button = kb.userData.button = mark.userData.button = { getPos: () => _bp.set(-0.67, 0.7, d.z), r: 0.045, press: () => p.setOn(!bn.on), name: `${d.id} burner knob` };
     G.buttons.push(km.userData.button);
     C.pots.push(p);
@@ -230,11 +270,10 @@ export function buildCart(scene, city) {
   // tare crocks
   C.tares = Object.keys(TARE).map((k, i) => {
     const x = -0.64 + i * 0.15, z = -0.45, v = { r: 0.052, type: k, heat: 1, sip: 0.05 }, cg = new THREE.Group(); cg.position.set(x, 0.905, z);
-    cyl(0.055, 0.048, 0.12, mat({ color: [0x4a2a18, 0x8a5a2a, 0xd8d0c0][i], roughness: 0.3 }), 0, 0.055, 0, cg, 20, true).material.side = THREE.DoubleSide;
-    cyl(0.048, 0.048, 0.005, black, 0, 0, 0, cg, 20);
-    const liq = mesh(new THREE.CircleGeometry(0.05, 20).rotateX(-Math.PI / 2), mat({ color: TARE[k].color, roughness: 0.08, clearcoat: 1 }), 0, 0.085, 0, cg); liq.castShadow = false;
+    mesh(crockGeo(), mat({ color: [0x4a2a18, 0x8a5a2a, 0xd8d0c0][i] }), 0, 0, 0, cg);
+    const liq = mesh(new THREE.CircleGeometry(0.049, 20).rotateX(-Math.PI / 2), T.liquid(mat({ color: TARE[k].color }), { stir: 0, sheen: 0.4 }), 0, 0.085, 0, cg); liq.castShadow = false;
     const lb = mesh(new THREE.PlaneGeometry(0.085, 0.04), new THREE.MeshBasicMaterial({ map: T.labelTex([`${TARE[k].jp} ${TARE[k].label}`], { w: 256, h: 120, fs: 50 }), color: 0xbbbbbb }), 0, 0.055, 0.056, cg); lb.castShadow = false;
-    const it = new Vessel(cg, { name: `${TARE[k].label.toLowerCase()} tare crock`, col: { t: 'cyl', hh: 0.06, r: 0.056 }, mass: 1.6, radius: 0.055, h: 0.115, liq, lo: 0.1, hi: 0.74, fragile: [0x4a2a18, 0x8a5a2a, 0xd8d0c0][i] }, v); it.pay = { kind: 'tare', type: k, heat: 1 }; it.fill = 0.25; it.drain = 0.6;
+    const it = new Vessel(cg, { name: `${TARE[k].label.toLowerCase()} tare crock`, col: { t: 'cyl', hh: 0.06, r: 0.056 }, mass: 1.6, radius: 0.055, h: 0.115, liq, lo: 0.1, hi: 0.74, fragile: [0x4a2a18, 0x8a5a2a, 0xd8d0c0][i], mat: 'ceramic' }, v); it.pay = { kind: 'tare', type: k, heat: 1 }; it.fill = 0.25; it.drain = 0.6;
     const l = new Ladle('tare', k, v); placeTool(l, new V3(x, v.liqY - 0.004, z - 0.01), new V3(x + 0.02, 1.1, z + 0.12)); it.tools.push(l);
     return v;
   });
@@ -267,7 +306,9 @@ export function buildCart(scene, city) {
 
   // ---------------- cutting board + knife ----------------
   C.board = { x: 0.37, y: 0.928, z: -0.265, item: null };
-  box(0.36, 0.028, 0.2, woodLight, C.board.x, 0.914, C.board.z, cart); surf(0.19, 0.55, -0.365, -0.165, 0.928);
+  const bb0 = box(0.36, 0.028, 0.2, woodLight, C.board.x, 0.914, C.board.z, cart); bb0.userData.keep = true; surf(0.19, 0.55, -0.365, -0.165, 0.928);
+  model('wooden_cutting_board', 0xc8b8a8).then((m) => { const o = fit(m, 0.36); o.scale.y *= 0.82; o.position.set(C.board.x, 0.9, C.board.z); cart.add(o); bb0.visible = false; }).catch(() => { });   // Poly Haven's board, its knife-scored face
+  model('food_ginger_01', 0xc0b0a0).then((m) => { const o = fit(m, 0.07); o.position.set(0.215, 0.928, -0.345); o.rotation.set(0, 0.8, 1.45); cart.add(o); }).catch(() => { });   // a knob of ginger by the board
   G.targets.push({ getPos: () => _bp2.set(C.board.x - 0.03, C.board.y, C.board.z), r: 0.17, accepts: (it) => it.kind === 'raw' && !C.board.item, receive: (it) => { it.obj.position.set(C.board.x - 0.15, C.board.y + it.base, C.board.z); it.obj.quaternion.identity(); it.board = C.board; C.board.item = it; G.audio.play('place'); } });
   C.knife = new Knife(); C.knife.cup = C.knife.blade;
   C.knife.setHome(new V3(0.62, 0.912, -0.2), new Q().setFromEuler(new THREE.Euler(0, 0, Math.PI / 2)));
@@ -311,7 +352,7 @@ export function buildCart(scene, city) {
     ['beer', 'cola'].forEach((d, j) => {
       const grp = new THREE.Group(); g.add(grp);
       C.shown.drinks[d] = []; for (let n = 0; n < 3; n++) { const b = new Drink(d); const o = b.obj; b.remove(); o.userData.item = null; o.userData.dyn = true; C.shown.drinks[d].push(o); o.position.set(-0.11 + n * 0.11, 0.06, (j - 0.5) * 0.11); o.rotation.z = (n - 1) * 0.08; grp.add(o); }
-      const src = { pos: new V3(0.935, 1.14, 0.68 + (j - 0.5) * 0.11), r: 0.075, name: d, can: () => C.stock.drinks[d] > 0, take: () => { C.stock.drinks[d]--; C.showStock(); G.audio.play('bottle'); return new Drink(d); } };
+      const src = { pos: new V3(0.935, 1.14, 0.68 + (j - 0.5) * 0.11), r: 0.075, name: d, can: () => C.stock.drinks[d] > 0, take: () => { C.stock.drinks[d]--; C.showStock(); G.audio.play('bottle', _bp4.set(0.935, 1.0, 0.68)); return new Drink(d); } };
       G.sources.push(src); srcMesh(grp, src); C.shown.drinks[d] = shelf(C.shown.drinks[d], src);
     });
   }
@@ -342,7 +383,7 @@ export function buildCart(scene, city) {
     box(0.36, 0.01, 0.15, tm, 0, 0.005, 0, g); for (const [x, z, w, d] of [[0, 0.075, 0.36, 0.01], [0, -0.075, 0.36, 0.01], [0.175, 0, 0.01, 0.15], [-0.175, 0, 0.01, 0.15]]) box(w, 0.12, d, tm, x, 0.06, z, g);
     const lm = mesh(new THREE.PlaneGeometry(0.13, 0.04), new THREE.MeshBasicMaterial({ map: T.labelTex(['DIRTY BOWLS'], { w: 320, h: 96, fs: 38 }), color: 0xcccccc }), -0.181, 0.07, 0, g); lm.rotation.y = -Math.PI / 2;
     const pos = new V3(0.935, 0.98, 0.91);
-    G.targets.push({ getPos: () => pos, r: 0.2, prio: 1, accepts: (it) => it.kind === 'bowl' || it.kind === 'drink', receive: (it) => { it.remove(); G.audio.play('clink'); G.game?.onBus?.(); } });
+    G.targets.push({ getPos: () => pos, r: 0.2, prio: 1, accepts: (it) => it.kind === 'bowl' || it.kind === 'drink', receive: (it) => { G.audio.play('set', it, 0.7); it.remove(); G.game?.onBus?.(); } });
   }
 
   // ---------------- beam: ticket rail, recipe board ----------------
@@ -419,11 +460,11 @@ export function buildCart(scene, city) {
 
   // ---------------- per-frame ----------------
   C.update = (dt, t) => {
-    let boil = 0;
+    let boil = 0; T.SURF.time.value = t;
     for (const bn of C.burners) if (bn.on) bn.flames.forEach((f, i) => { f.scale.y = 0.9 + Math.sin(t * 2.2 + i * 2.1) * 0.08; });
     for (const p of C.pots) {
       p.heat = clamp(p.heat + (p.on ? dt / 14 : -dt / 90), 0.15, 1); p.hot = p.heat > 0.9;
-      const k = clamp((p.heat - 0.6) / 0.4, 0, 1); boil += k * (p.type ? 0.5 : 1);
+      const k = clamp((p.heat - 0.6) / 0.4, 0, 1); boil += k * (p.type ? 0.5 : 1); p.liqM.userData.liquid.stir.value = (p.type ? 0.15 : 0.25) + k * (p.type ? 0.35 : 0.75);
       p.bubbles.forEach((b) => {
         b.userData.t += dt * (1.5 + k * 3) * (p.type ? 0.45 : 1);
         if (b.userData.t > 1) { b.userData.t = 0; const a = Math.random() * 6.28, d = Math.sqrt(Math.random()) * (p.r - 0.03); b.position.set(p.x + Math.cos(a) * d, p.liqY + 0.002, p.z + Math.sin(a) * d); }
@@ -437,4 +478,4 @@ export function buildCart(scene, city) {
   };
   return C;
 }
-const _a = new V3(), _bp = new V3(), _bp2 = new V3(), _bp3 = new V3();
+const _a = new V3(), _bp = new V3(), _bp2 = new V3(), _bp3 = new V3(), _bp4 = new V3();

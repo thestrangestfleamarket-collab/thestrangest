@@ -2,6 +2,7 @@
 import * as THREE from 'three';
 import { G, mat, box, cyl, mesh, mergeStatic } from './ctx.js';
 import * as T from './tex.js';
+import { glb } from './tv.js';
 
 export function buildGrit(scene, city, cart) {
   const root = new THREE.Group(); scene.add(root);
@@ -12,7 +13,8 @@ export function buildGrit(scene, city, cart) {
 
   // propane bottles + hose to the stove wing
   const tankM = rusty('#6f7a72', 3);
-  for (const [x, z, s] of [[-1.5, 0.35, 1], [-1.52, 0.72, 0.86]]) { const t = cyl(0.15 * s, 0.15 * s, 0.5 * s, tankM, x, 0.27 * s, z, root, 16); mesh(new THREE.SphereGeometry(0.15 * s, 16, 8, 0, 6.3, 0, 1.57), tankM, x, 0.52 * s, z, root); cyl(0.03, 0.04, 0.08, mat({ color: 0x8a6a20, metalness: 0.8, roughness: 0.4 }), x, 0.7 * s, z, root, 8); t.rotation.y = R() * 3; }
+  const bottles = [[-1.5, 0.35, 1], [-1.52, 0.72, 0.86]], tankAt = (x, z, s, ry) => { const t = cyl(0.15 * s, 0.15 * s, 0.5 * s, tankM, x, 0.27 * s, z, root, 16); mesh(new THREE.SphereGeometry(0.15 * s, 16, 8, 0, 6.3, 0, 1.57), tankM, x, 0.52 * s, z, root); cyl(0.03, 0.04, 0.08, mat({ color: 0x8a6a20, metalness: 0.8, roughness: 0.4 }), x, 0.7 * s, z, root, 8); t.rotation.y = ry; };
+  glb('propane_tank', 0x9a9a92).then((m) => { for (const [x, z, s] of bottles) { const o = m.clone(); o.scale.setScalar(1.3 * s); o.position.set(x, 0, z); o.rotation.y = R() * 6; root.add(o); } }).catch(() => { for (const [x, z, s] of bottles) tankAt(x, z, s, R() * 3); });   // Poly Haven's gas bottle, a little dented
   const hose = new THREE.Mesh(new THREE.TubeGeometry(new THREE.CatmullRomCurve3([[-1.5, 0.74, 0.35], [-1.42, 0.6, 0.3], [-1.3, 0.2, 0.28], [-1.17, 0.35, 0.3], [-1.16, 0.7, 0.3]].map((p) => new THREE.Vector3(...p))), 24, 0.012, 6), mat({ color: 0x1a1210, roughness: 0.7 })); hose.castShadow = true; root.add(hose);
 
   // rags, a bucket, crates, cardboard, bin bags, a broom
@@ -56,7 +58,7 @@ export function buildGrit(scene, city, cart) {
 
   // nothing hangs level: lanterns at different drops, a tired bulb that browns out now and then
   if (cart.lanterns[1]) { cart.lanterns[1].scale.setScalar(0.93); cart.lanterns[1].position.y -= 0.04; }
-  const lights = cart.bulbs.map((pv) => pv.children.find((c) => c.isPointLight)); const base = lights.map((l, i) => l.intensity * [1, 0.72, 0.9][i]); lights.forEach((l, i) => { l.intensity = base[i]; l.color.offsetHSL((i - 1) * 0.012, 0, 0); });
+  const lights = cart.bulbs.map((pv) => pv.children.find((c) => c.isLight)); const base = lights.map((l, i) => l.intensity * [1, 0.72, 0.9][i]); lights.forEach((l, i) => { l.intensity = base[i]; l.color.offsetHSL((i - 1) * 0.012, 0, 0); });
   let brown = 0, next = 9;
   mergeStatic(root); nop(root);
   return { root, update() { lights[1].intensity = base[1]; } };

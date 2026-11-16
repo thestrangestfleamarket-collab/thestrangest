@@ -46,6 +46,8 @@ export class SaloonAudio {
       case 'match': this.hiss(0.3, 4200, 1, 0.08, { to: 1500 }); break;
     }
   }
+  // a loose thing strikes something: its sound by what it is and how hard (dv, metres a second)
+  hit(it, dv) { const k = Math.min(1, Math.abs(dv) / 4); if (k < 0.08) return; this.play(it.kind === 'glass' || it.kind === 'bottle' ? 'clink' : it.kind === 'coin' ? 'coin' : it.kind === 'gun' || it.kind === 'mallet' ? 'thunk' : 'place', 0.4 + k); }
   // a piano note: three strings a little apart, as an upright left in the desert sounds
   note(m, at, len = 0.5, v = 0.07) { const f = 440 * Math.pow(2, (m - 69) / 12); for (const d of [-7, 0, 9]) this.tone(f * Math.pow(2, d / 1200), len, { v: v / 2, at, type: 'triangle', a: 0.006 }); this.tone(f * 2, len * 0.5, { v: v / 5, at }); }
   update(dt, crowd = 0) {

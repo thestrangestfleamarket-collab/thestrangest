@@ -113,7 +113,7 @@ export function buildDarts(scene, room) {
     S.on = false; S.over = true; S.won = won; S.pause = 2.5; S.wait = 0; N.n = 0; S.last = { won, stake: S.stake, who: S.who }; chalk();
     G.story?.onGame?.('darts', { won, stake: S.stake, who: S.who }); G.folk?.say?.(S.who, won ? 'darts-lose' : 'darts-win');
   }
-  function turn(k) { S.turn = k; S.left = 3; S.start = S[k]; S.marks.length = 0; S.sum = 0; S.pause = 0; S.good = false; S.wait = (k === 'them' ? S.auto : S.robot >= 0) ? 1.5 : 0; chalk(); }
+  function turn(k) { S.turn = k; S.left = 3; S.start = S[k]; S.marks.length = 0; S.sum = 0; S.pause = 0; S.good = false; S.wait = k === 'them' ? (S.auto ? 4 : 0) : S.robot >= 0 ? 1.5 : 0; chalk(); }
   function want(r) { return r > 62 ? [20, 3] : r === 50 ? [25, 2] : r === 25 ? [25, 1] : r <= 20 ? [r, 1] : r <= 40 ? (r % 2 ? [r - 20, 1] : [r / 2, 2]) : r <= 60 && r % 3 === 0 ? [r / 3, 3] : [20, 1]; }
   function free(by) { const a = by === 'you' ? 0 : 3; let any = null; for (let i = 0; i < 6; i++) { const d = darts[(a + i) % 6]; if (d.held || d.st === 'fly' || d.st === 'home' || d.st === 'held') continue; if (d.st === 'rack') return d; any ||= d; } return any; }
   function toss(by, skill) {
@@ -175,13 +175,13 @@ export function buildDarts(scene, room) {
 
   const state = () => ({ on: S.on, turn: S.turn, you: S.you, them: S.them, stake: S.stake, who: S.who, dartsLeft: S.left });
   function challenge(personId, stakeCents = 0, o = {}) {
-    if (S.on) return false;
+    if (S.on) return false; if (typeof o === 'number') o = { skill: o };
     Object.assign(S, { on: true, over: false, you: 301, them: 301, stake: stakeCents | 0, who: personId, name: String(o.name ?? personId ?? 'THEM').toUpperCase().slice(0, 9), skill: o.skill ?? 0.5, auto: o.auto ?? true }); N.n = 0;
     collect(); turn(o.first === 'them' ? 'them' : 'you'); return true;
   }
   return {
     update, scoreAt, aimAt, challenge, state, darts, collect,
-    npcTurn: (skill) => begin('them', skill ?? S.skill),
+    npcTurn(skill) { if (skill !== undefined) S.skill = skill; return begin('them', S.skill); },
     quit() { if (!S.on) return; S.on = false; S.marks.length = 0; S.sum = 0; S.pause = 0; S.wait = 0; N.n = 0; collect(); chalk(); },
     board: { x: XB, y: CY, z: CZ, r: RB, k: K, oche: hand },
     // for tests: a dart thrown from the oche (or o.from) so its point arrives at (y, z) on the board's face (o.x another plane), where the darts are, a whole game at once

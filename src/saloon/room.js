@@ -3,6 +3,7 @@ import * as THREE from 'three';
 import { G, BOUNDS, mergeStatic } from '../sushi/ctx.js';
 import { PH } from '../sushi/physics.js';
 import { pbr, plain, brass, slab, tube, model, canvasTex, glow } from './kit.js';
+import { buildBarWood } from './barwood.js';
 
 // the room: x from -W to W, z from the street wall at -L to the back wall at B; you stand behind the bar at the origin, looking down the room (-z)
 export const R = { W: 7, L: 11.5, B: 1.7, H: 4.3, barX: 3.2, barZ0: -0.9, barZ1: -0.32, barY: 1.06, backZ: 1.05, backY: 0.92, stoolZ: -1.32,
@@ -41,28 +42,8 @@ export function buildRoom(scene) {
         for (let k = 0; k < 3; k++) if (Math.random() < 0.45) { x.fillStyle = `rgba(255,${170 + Math.random() * 40 | 0},90,${0.5 + Math.random() * 0.4})`; x.fillRect(px + 14 + k * (bw - 40) / 3, h - bh + 26, 14, 22); } px += bw; } });
     const card = new THREE.Mesh(new THREE.PlaneGeometry(40, 10), new THREE.MeshBasicMaterial({ map: far, fog: false })); card.position.set(0, 4.2, -L - 12); g.add(card); }
 
-  // ---- the bar: the counter down the room's width, its brass foot rail, the flap at the right end
-  const X = R.barX, by = R.barY, z0 = R.barZ0, z1 = R.barZ1;
-  slab(2 * X + 0.3, 0.07, z1 - z0 + 0.16, walnut, 0, by - 0.035, (z0 + z1) / 2, g);                       // the top
-  slab(2 * X, by - 0.07, 0.1, walnut, 0, (by - 0.07) / 2, z0 + 0.08, g);                                    // the front
-  for (let x = -X + 0.4; x <= X - 0.3; x += 0.8) { slab(0.62, 0.62, 0.03, plank, x, 0.52, z0 + 0.02, g); }
-  slab(2 * X, 0.04, z1 - z0 - 0.1, plank, 0, 0.62, (z0 + z1) / 2 + 0.05, g);                                // the shelf under it, on your side
-  for (const s of [-1, 1]) slab(0.1, by - 0.07, z1 - z0, walnut, s * X, (by - 0.07) / 2, (z0 + z1) / 2, g);
-  { const rail = tube(0.022, 0.022, 2 * X, brass(), 0, 0.2, z0 - 0.16, g, 10); rail.rotation.z = Math.PI / 2; for (let x = -X + 0.3; x <= X; x += 1.3) { const p = tube(0.012, 0.012, 0.2, brass(), x, 0.1, z0 - 0.16, g, 6); p.castShadow = false; } }
-  top(-X - 0.15, X + 0.15, z0 - 0.08, z1 + 0.08, by); top(-X, X, z0 + 0.15, z1, 0.64, 0.02);
-  solid(-X - 0.1, X + 0.1, z0 - 0.05, z1, by); solid(-W, -X - 0.1, z0 + 0.1, z1 - 0.1, by);                 // the counter; the left end is closed off to the wall
-  slab(W - X - 0.1, by, 0.1, walnut, -(W + X + 0.1) / 2, by / 2, (z0 + z1) / 2, g); slab(W - X - 0.1, 0.06, 0.4, walnut, -(W + X + 0.1) / 2, by - 0.03, (z0 + z1) / 2, g);
-
-  // ---- the back bar: a low cupboard, three shelves of bottles either side of the great mirror
-  const bz = R.backZ;
-  slab(2 * X, R.backY - 0.05, B - bz, walnut, 0, (R.backY - 0.05) / 2, (bz + B) / 2, g); slab(2 * X + 0.1, 0.05, B - bz + 0.06, walnut, 0, R.backY - 0.025, (bz + B) / 2 - 0.02, g);
-  top(-X, X, bz - 0.05, B, R.backY); solid(-X, X, bz, B, R.backY);
-  const shelves = []; for (const sx of [-1, 1]) for (const y of [1.42, 1.86, 2.3]) { slab(1.9, 0.035, 0.24, walnut, sx * 2.15, y - 0.018, B - 0.14, g); top(sx * 2.15 - 0.95, sx * 2.15 + 0.95, B - 0.26, B - 0.02, y, 0.018); shelves.push({ x0: sx * 2.15 - 0.85, x1: sx * 2.15 + 0.85, y, z: B - 0.14 }); }
-  for (const x of [-3.15, -1.15, 1.15, 3.15]) slab(0.09, 2.5, 0.26, walnut, x, R.backY + 1.25, B - 0.14, g);
-  slab(2 * X + 0.3, 0.2, 0.34, walnut, 0, R.backY + 2.6, B - 0.16, g);
-  { const mir = new THREE.Mesh(new THREE.PlaneGeometry(2.1, 1.5), new THREE.MeshStandardMaterial({ color: 0xc8c4b8, metalness: 1, roughness: 0.06, envMapIntensity: 1.5 })); mir.position.set(0, 2.05, B - 0.03); mir.rotation.y = Math.PI; g.add(mir); mir.userData.keep = true; g.userData.mirror = mir;
-    const fr = model('ornate_mirror_01', 0, 1.22, B - 0.06, Math.PI, { w: 2.3 }, g); fr.visible = false; slab(2.3, 0.1, 0.06, brass(), 0, 2.85, B - 0.05, g); slab(2.3, 0.1, 0.06, brass(), 0, 1.25, B - 0.05, g); for (const s of [-1, 1]) slab(0.1, 1.7, 0.06, brass(), s * 1.1, 2.05, B - 0.05, g); }
-  model('cashregister_01', 1.55, R.backY, bz + 0.3, Math.PI, { h: 0.42 }, g);
+  // ---- the bar and the back bar (barwood.js)
+  const X = R.barX, bz = R.backZ, { shelves, mirror } = buildBarWood(g, top, solid);
   model('mantel_clock_01', -1.5, R.backY, bz + 0.34, Math.PI, { h: 0.3 }, g);
 
   // ---- stools along the bar
@@ -119,7 +100,7 @@ export function buildRoom(scene) {
   Object.assign(BOUNDS, { minX: -W + 0.3, maxX: W - 0.3, minZ: -L + 0.3, maxZ: bz - 0.22 });
   G.baked = mergeStatic(g);
   let t0 = 0;
-  return { group: g, mirror: g.userData.mirror, dyn, solids, seats, tables, lamps, spots, shelves, hemi, fire,
+  return { group: g, mirror, dyn, solids, seats, tables, lamps, spots, shelves, hemi, fire,
     // you are kept out of what is solid (a circle against boxes), as input.js keeps you in the room
     keepOut(rig, camera) { const p = camera.getWorldPosition(new THREE.Vector3()), r = 0.22; for (const s of solids) { if (s.step) continue; const cx = Math.max(s.x0, Math.min(p.x, s.x1)), cz = Math.max(s.z0, Math.min(p.z, s.z1)), dx = p.x - cx, dz = p.z - cz, d = Math.hypot(dx, dz);
         if (d < r && d > 1e-5) { const k = (r - d) / d; rig.position.x += dx * k; rig.position.z += dz * k; p.x += dx * k; p.z += dz * k; } else if (d <= 1e-5) { const ex = Math.min(p.x - s.x0, s.x1 - p.x), ez = Math.min(p.z - s.z0, s.z1 - p.z); if (ex < ez) { const m = p.x - s.x0 < s.x1 - p.x ? s.x0 - r - p.x : s.x1 + r - p.x; rig.position.x += m; p.x += m; } else { const m = p.z - s.z0 < s.z1 - p.z ? s.z0 - r - p.z : s.z1 + r - p.z; rig.position.z += m; p.z += m; } } } },

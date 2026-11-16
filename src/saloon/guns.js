@@ -28,7 +28,7 @@ const sm = (pts, n = 4, closed = false) => { const l = new THREE.CatmullRomCurve
 function revolverParts() {
   const P = [], add = (g, m, part = 'body') => P.push({ g, m, part }), B = 0.068, C = 0.0545;
   add(ext([[0.022, 0.0835], [0.086, 0.0835], [0.088, 0.06], [0.086, 0.04], [0.078, 0.024], [0.04, 0.021], [0.016, 0.0215],
-    ...sm([[0.012, 0.021], [0.006, 0.014], [-0.001, 0.002], [-0.006, -0.014], [-0.006, -0.03], [-0.003, -0.046], [-0.005, -0.055]]).reverse(), [-0.03, -0.0585], [-0.05, -0.0545],
+    ...sm([[0.012, 0.021], [0.006, 0.014], [-0.001, 0.002], [-0.006, -0.014], [-0.006, -0.03], [-0.003, -0.046], [-0.005, -0.055]]), [-0.03, -0.0585], [-0.05, -0.0545],
     ...sm([[-0.004, 0.058], [-0.012, 0.042], [-0.024, 0.026], [-0.034, 0.008], [-0.043, -0.012], [-0.051, -0.03], [-0.056, -0.047]]).reverse(), [0, 0.068], [0.006, 0.077], [0.014, 0.082]], 0.016, 0.0012,
     [[0.029, 0.0325], [0.072, 0.0325], [0.072, 0.0765], [0.029, 0.0765]]), 'frame');
   add(rod(0.0215, 0.0215, 0.021, 0.029, 0, C, 24), 'frame');
@@ -68,7 +68,8 @@ function shotgunParts() {
 }
 
 let MAT = null, cheapMat = null;
-const mats = () => (MAT ||= { steel: plain(TINT.steel, { rough: 0.34, metal: 0.8, env: 1.4 }), frame: plain(TINT.frame, { rough: 0.4, metal: 0.8, env: 1.3 }), wood: pbr('walnut', { color: 0x705848, rough: 0.55, env: 0.9 }), brass: brass(), dark: plain(TINT.dark, { rough: 0.95 }) });
+const HULL = new THREE.MeshBasicMaterial({ visible: false });
+const mats = () => (MAT ||= { steel: plain(TINT.steel, { rough: 0.34, metal: 0.8, env: 1.4 }), frame: plain(TINT.frame, { rough: 0.4, metal: 0.8, env: 1.3 }), wood: pbr('walnut', { color: 0x6a564a, rough: 0.55, env: 0.9 }), brass: brass(), dark: plain(TINT.dark, { rough: 0.95 }) });
 // one moving piece of a gun (or its still body): a group at its pivot, one mesh a material
 function piece(D, part, parent) {
   const g = new THREE.Group(), pv = D.pivots[part] || [0, 0, 0], M = mats(); g.position.set(pv[0], pv[1], pv[2]);
@@ -132,11 +133,11 @@ export function buildGuns(scene, room) {
       it.worldCenter(_b).sub(from); const t = _b.dot(dir); if (t < 0 || t > far || _b.lengthSq() - t * t > it.radius * it.radius) continue;
       if (it.onImpact(10) === true || it.dead || it.held || it.locked) continue;
       it.drop(_vel.copy(dir).multiplyScalar(sg ? 1.6 : 3).setY(1 + Math.random())); }
-    for (const l of room.lamps) { if (!l.on || l === room.fire || !l.s.visible) continue; _b.set(l.x, l.y, l.z).sub(from); const t = _b.dot(dir); if (t < 0 || t > far || _b.lengthSq() - t * t > 0.0625) continue;
+    for (const l of room.lamps) { if (!l.on || l === room.fire || !l.s.visible) continue; _b.set(l.x, l.y, l.z).sub(from); const t = _b.dot(dir), r = l.wheel ? 0.72 : 0.25; if (t < 0 || t > far + r || _b.lengthSq() - t * t > r * r || Math.abs(dir.y * t - _b.y) > 0.25) continue;
       room.lampOut(l); G.audio?.play('break'); G.fx?.drops?.(_b.set(l.x, l.y, l.z), 0xffd9a0, 8); }
     last.dist = far; last.point.copy(from).addScaledVector(dir, far);
     if (you) { last.you = true; G.audio?.play('hit'); G.story?.youShot?.(sg ? 22 : head ? 100 : 60, by); }
-    else if (who) { last.person = who.person; if (who.point) last.point.copy(who.point); how.by = by; how.kind = sg ? 'shotgun' : 'revolver'; how.head = !!who.head; how.dmg = sg ? 22 : who.head ? 100 : 60; if (i === 0) G.audio?.play('hit'); G.folk?.shot?.(who.person, last.point, dir, how); }
+    else if (who) { last.person = who.person; if (who.point) last.point.copy(who.point); how.by = by; how.kind = sg ? 'shotgun' : 'revolver'; how.head = !!who.head; how.dmg = sg ? 22 : who.head ? 100 : 60; G.folk?.shot?.(who.person, last.point, dir, how); }
     else if (wall) { last.wall = true; last.point.copy(wall.point);
       if (wall.face && wall.object.material.isMeshStandardMaterial) { _n.copy(wall.face.normal).transformDirection(wall.object.matrixWorld); if (_n.dot(dir) > 0) _n.negate(); hole(wall.point, _n, sg ? 0.011 : 0.02);
         if (i < 2) puff(_a.copy(wall.point).addScaledVector(_n, 0.03), _b.copy(_n).multiplyScalar(0.35).setY(_n.y * 0.35 + 0.12), 0.07, 0.9, 0.5, 0xa89070); }
@@ -160,6 +161,7 @@ export function buildGuns(scene, room) {
       super('gun', obj, { name: o.name, radius: o.radius, cy: 0, base: hx, lift: 0 });
       this.type = type; this.col = { t: 'box', hx, hy: (v1 - v0) / 2, hz: (u1 - u0) / 2, cy: 0 }; this.mass = o.mass;
       this.grip = at(D.grip[0], D.grip[1], new V3()); this.muzzle = at(D.muzzle[0], D.muzzle[1], new V3()); this.view = o.view; this.handles = [this.grip];
+      const hull = new THREE.Mesh(new THREE.BoxGeometry(hx * 2, v1 - v0, u1 - u0), HULL); obj.add(hull); // unseen: a whole shape for a pointer to land on
       this.kickG = new THREE.Group(); this.kickG.position.copy(this.grip); obj.add(this.kickG);
       const body = new THREE.Group(); body.position.set(0, -cv, cu).sub(this.grip); this.kickG.add(body);
       piece(D, 'body', body); this.cyl = D.pivots.cyl ? piece(D, 'cyl', body) : null; this.brl = D.pivots.brl ? piece(D, 'brl', body) : null;
@@ -171,14 +173,14 @@ export function buildGuns(scene, room) {
     onGrab(h) { if (h.xr) { this.obj.quaternion.copy(h.quat); this.obj.position.copy(this.grip).applyQuaternion(h.quat).negate().add(h.pos); } if (!this.armed) this.cockT = 0.12; this.downT = 0; }
     onRelease() { this.loading = false; return false; }
     hint() { return this.loading ? 'loading' : this.rounds ? `${this.rounds} of ${this.cap}: RMB or E fires` : 'empty: point it at the floor, or hold it to the cartridges'; }
-    aim(from, dir) { from.copy(this.muzzle).applyQuaternion(this.obj.quaternion).add(this.obj.position); dir.set(0, 0, -1).applyQuaternion(this.obj.quaternion); }
+    sight(from, dir) { from.copy(this.muzzle).applyQuaternion(this.obj.quaternion).add(this.obj.position); dir.set(0, 0, -1).applyQuaternion(this.obj.quaternion); }
     // the trigger: 'shot', 'click' on an empty chamber, 'wait' while the hammer is not back
     pull(h) {
       if (this.loading || !this.armed || this.cockT > 0) return 'wait';
       if (this.type === 'revolver') { this.armed = false; this.cockT = 0.16; this.hamV[0] = 0; } else this.cockT = 0.2;
       if (this.rounds <= 0) { G.audio?.play('click'); h?.pulse?.(0.3, 20); return 'click'; }
       if (this.type === 'shotgun') this.hamV[this.cap - this.rounds] = 0;
-      this.rounds--; this.aim(shot.from, shot.dir); shot.kind = this.type; shot.gun = this; fire(shot);
+      this.rounds--; this.sight(shot.from, shot.dir); shot.kind = this.type; shot.gun = this; fire(shot);
       this.rec = 1; h?.pulse?.(1, 80); if (h && !h.xr && G.desk) G.desk.pitch = Math.min(1.2, G.desk.pitch + this.kickK * 0.09);
       return 'shot';
     }
@@ -213,9 +215,9 @@ export function buildGuns(scene, room) {
   const shotgun = new Gun('shotgun', SG, { name: 'coach gun', radius: 0.17, mass: 3.2, cap: 2, kick: 1.5, view: new V3(0.13, -0.17, -0.2) }); rest(shotgun, -0.62, -0.5, Math.PI / 2 + 0.04);
   { // the box of cartridges: fifty to the box, the lid off
     const tex = canvasTex(256, 256, (x) => { x.fillStyle = '#6a2a1c'; x.fillRect(0, 0, 256, 128); for (let r = 0; r < 4; r++) for (let c = 0; c < 8; c++) { const cx = 20 + c * 31, cy = 19 + r * 30; x.fillStyle = '#7a5a1c'; x.beginPath(); x.arc(cx, cy, 13, 0, 7); x.fill(); x.fillStyle = '#c8a040'; x.beginPath(); x.arc(cx, cy, 11.5, 0, 7); x.fill(); x.fillStyle = '#8a6a2a'; x.beginPath(); x.arc(cx, cy, 4, 0, 7); x.fill(); }
-      x.fillStyle = '#c9b68a'; x.fillRect(0, 128, 256, 128); x.strokeStyle = '#3a1a10'; x.lineWidth = 5; x.strokeRect(8, 136, 240, 112); x.fillStyle = '#3a1a10'; x.textAlign = 'center'; x.font = 'bold 34px Georgia'; x.fillText('50 CARTRIDGES', 128, 180, 220); x.font = 'bold 26px Georgia'; x.fillText('.45 COLT', 128, 212); x.font = '15px Georgia'; x.fillText('UNION METALLIC CARTRIDGE CO.', 128, 236, 220); });
+      x.fillStyle = '#a8946a'; x.fillRect(0, 128, 256, 128); x.strokeStyle = '#3a1a10'; x.lineWidth = 5; x.strokeRect(8, 136, 240, 112); x.fillStyle = '#3a1a10'; x.textAlign = 'center'; x.font = 'bold 34px Georgia'; x.fillText('50 CARTRIDGES', 128, 180, 220); x.font = 'bold 26px Georgia'; x.fillText('.45 COLT', 128, 212); x.font = '15px Georgia'; x.fillText('UNION METALLIC CARTRIDGE CO.', 128, 236, 220); });
     const g = new THREE.BoxGeometry(0.105, 0.036, 0.068).translate(0, 0.018, 0), uv = g.attributes.uv; for (let i = 0; i < uv.count; i++) uv.setY(i, (i >> 2) === 2 ? 0.5 + uv.getY(i) * 0.5 : uv.getY(i) * 0.5);
-    const m = new THREE.Mesh(g, new THREE.MeshStandardMaterial({ map: tex, roughness: 0.8 })), grp = new THREE.Group(); grp.add(m);
+    const m = new THREE.Mesh(g, new THREE.MeshStandardMaterial({ map: tex, roughness: 0.8, color: 0xb0a898 })), grp = new THREE.Group(); grp.add(m);
     box = new Prop(grp, { col: { t: 'box', hx: 0.0525, hy: 0.018, hz: 0.034 }, mass: 0.9, name: 'cartridges', radius: 0.055, lift: 0.06 }); box.kind = 'cartridges'; box.pick = true; grp.position.set(0.66, SHELF, -0.42); grp.rotation.y = -0.2; box.last.copy(grp.position); }
 
   // a gun in a townsman's right hand, along his forearm: one mesh; .userData.muzzle is its muzzle in its own space

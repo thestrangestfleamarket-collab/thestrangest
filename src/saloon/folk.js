@@ -3,10 +3,12 @@ import * as THREE from 'three';
 import { G, V3, clamp, pick, rand } from '../sushi/ctx.js';
 import { pfPerson } from '../sushi/pf.js';
 import { PEOPLE, DRINKS } from './cast.js';
+import { tender } from './bar.js';
 import { R } from './room.js';
 import { glow } from './kit.js';
 
 const _v = new V3(), _d = new V3(), _a = new V3(), _b = new V3(), _c = new V3();
+const skinM = new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.92, metalness: 0, envMapIntensity: 0.35, color: 0xc8c0b8 });   // cloth and skin that take the lamps' light softly, not flat facets
 const blobM = new THREE.MeshBasicMaterial({ map: null, color: 0x000000, transparent: true, opacity: 0.38, depthWrite: false });
 
 export function buildFolk(scene, room) {
@@ -17,7 +19,7 @@ export function buildFolk(scene, room) {
 
   function make(id) {
     const S = PEOPLE[id]; if (!S || by[id] || !G.castReady) return by[id] || null;
-    const P = pfPerson(S.body); P.root.traverse((o) => { o.userData.nopick = true; if (o.isMesh) o.castShadow = true; }); P.root.visible = false; G.peopleRoot.add(P.root);
+    const P = pfPerson(S.body, new THREE.Group()); P.root.traverse((o) => { o.userData.nopick = true; if (o.isMesh) o.castShadow = true; if (o.isSkinnedMesh) o.material = skinM; }); P.root.visible = false; G.peopleRoot.add(P.root);
     const blob = new THREE.Mesh(new THREE.PlaneGeometry(0.9, 0.9).rotateX(-Math.PI / 2), blobM); blob.position.y = 0.012; blob.userData.nopick = true; P.root.add(blob);
     const p = { id, S,  name: S.name, P, root: P.root, alive: true, here: false, hidden: false, state: 'out', seat: null, spot: null, tgt: null, plan: [], act: null, t: 0, drunk: 0, hp: 100, want: null, wait: 0, glass: null, rounds: 0, trust: 0, armed: false, gun: null, drawn: false, foe: null, aimT: 0, sipT: 0, house: false, cut: false, said: 0, dead: 0, fled: false };
     people.push(p); by[id] = p; return p;
@@ -59,8 +61,9 @@ export function buildFolk(scene, room) {
   function releaseGlass(p) { const gl = p.glass; p.glass = null; if (gl && !gl.dead) { gl.owner = null; gl.locked = false; if (gl.inHand) { G.itemRoot.add(gl.obj); gl.obj.position.copy(gl.homeP); gl.obj.quaternion.identity(); gl.inHand = false; } } }
   function barLife(p, dt) {
     const a = p.act, x = p.root.position.x;
-    if (p.cut) { if (p.t > 6) next(p); return; }
-    if (!p.want && !p.glass) { if (p.rounds <= 0) { if (p.t > (a[2] ?? 14)) next(p); return; } if ((p.wait += dt) > (p.said ? rand(10, 22) : rand(2.5, 5))) { p.want = p.S.drink; p.wait = 0; p.asked = 1; ev('order', { id: p.id, drink: p.want }); } return; }
+    if (p.due > 0) change(p, dt); if (p.wantCigar) cigar(p);
+    if (p.cut) { if (p.t > 6 && !(p.due > 0)) next(p); return; }
+    if (!p.want && !p.glass) { if (p.rounds <= 0) { if (p.t > (a[2] ?? 14) && !(p.due > 0) && p.wantCigar !== 1) next(p); return; } if ((p.wait += dt) > (p.said ? rand(10, 22) : rand(2.5, 5))) { p.want = p.S.drink; p.wait = 0; p.asked = 1; ev('order', { id: p.id, drink: p.want }); } return; }
     if (p.want) { p.wait += dt;
       const gl = G.bar.glassAt(x, R.barZ0 + 0.2, 0.36);
       if (gl && gl !== p.refused && gl.vol > 0.1) { const j = G.bar.judge(gl, p.want); if (j.ok) { p.glass = gl; gl.owner = p; gl.locked = true; gl.homeP = gl.obj.position.clone(); p.want = null; p.rounds--; p.sipT = 2; G.bar.served++; ev('served', { id: p.id, drink: gl.what(), short: j.short, waited: p.wait }); p.wait = 0; } else { p.refused = gl; ev('wrong', { id: p.id, why: j.why, got: j.got, want: p.want }); } }
@@ -74,7 +77,12 @@ export function buildFolk(scene, room) {
       if (gl.vol <= 0.05) { gl.empty(); const w = DRINKS[p.S.drink]; p.drunk += p.S.drink === 'sarsaparilla' ? 0 : p.S.drink === 'beer' ? 0.6 : 1; releaseGlass(p); p.t = 0; p.said = 1; ev('drank', { id: p.id, drunk: p.drunk, holds: p.S.holds, cents: w[1] }); } }
     else if (!gl.inHand && p.sipT <= 0) { p.P.gesture('Drinking'); const hb = p.P.bones.find((b) => b.name === 'handR'); if (hb) { gl.inHand = true; hb.add(gl.obj); gl.obj.position.set(0, -0.02, 0.06); gl.obj.quaternion.identity(); p.sipT = 0; } else p.sipT = -1.7; }
   }
-  folk.pays = (id, cents) => { const p = by[id]; if (p && p.here) G.bar.pay(cents, p.root.position.x); };
+  // they put down what they have; if it is more than the price they wait for their change to be laid on the bar
+  folk.pays = (id, cents) => { const p = by[id]; if (!p || !p.here) return; const t = tender(cents); G.bar.pay(t, p.root.position.x, id); p.due = t - cents; p.dueT = 0; p.dueAsk = 0; if (p.due) ev('change', { id, due: p.due, gave: t }); };
+  function change(p, dt) { p.dueT += dt; const c = G.bar.changeAt(p.root.position.x); if (c.cents >= p.due) { for (const k of c.coins) k.remove(); G.audio.play('coin'); ev('changed', { id: p.id, over: c.cents - p.due }); p.due = 0; } else if (p.dueT > 35 && !p.dueAsk) { p.dueAsk = 1; ev('changeWait', { id: p.id, due: p.due }); } else if (p.dueT > 100) { ev('shortchanged', { id: p.id, due: p.due - c.cents }); p.due = 0; } }
+  // a cigar set before them is taken; then they want a light, and a lit match held near their face gives it
+  function cigar(p) { if (p.wantCigar === 1) { const c = G.bar.thingAt('cigar', p.root.position.x, R.barZ0 + 0.2, 0.36); if (c) { c.remove(); p.wantCigar = 2; G.bar.pay(5, p.root.position.x, p.id); ev('cigar', { id: p.id }); } } }
+  folk.lightFor = (pt) => { for (const p of people) if (p.here && p.alive && p.wantCigar === 2 && head(p, _c).distanceTo(pt) < 0.45) { p.wantCigar = 3; p.smoke = 240; ev('lit', { id: p.id }); } };
 
   // ---- guns in their hands
   function holster(p) { if (p.gun) { p.gun.removeFromParent(); p.gun = null; } p.drawn = false; p.foe = null; }
@@ -98,7 +106,7 @@ export function buildFolk(scene, room) {
   folk.heard = (kind, pos, who) => { folk.shots++; for (const p of people) if (p.here && p.alive && p.id !== who && !p.drawn) { if (p.root.position.distanceTo(pos) < 14) p.P.duck(); } ev('gunfire', { by: who, pos }); };
   folk.kill = (id, byWho) => { const p = by[id]; if (p && p.alive) { p.hp = 1; folk.shot(p, head(p, new V3()).setY(1.2), _d.set(0, 0, 1), { by: byWho, dmg: 100 }); } };
   folk.flee = () => { for (const p of people) if (p.here && p.alive && !p.drawn && !p.S.brave) { releaseGlass(p); p.want = null; leaveSeat(p); p.plan = []; p.act = ['leave']; p.tgt = { ...room.spots.street }; p.state = 'walk'; p.run = true; p.fled = true; } };
-  folk.clear = () => { for (const p of people) { if (!p.alive && p.root.visible) { p.root.visible = false; p.here = false; } if (p.here && p.alive) { p.here = false; p.root.visible = false; p.state = 'out'; leaveSeat(p); releaseGlass(p); holster(p); } p.hidden = false; p.run = false; p.drunk = 0; p.want = null; p.plan = []; p.act = null; } };
+  folk.clear = () => { for (const p of people) { if (!p.alive && p.root.visible) { p.root.visible = false; p.here = false; } if (p.here && p.alive) { p.here = false; p.root.visible = false; p.state = 'out'; leaveSeat(p); releaseGlass(p); holster(p); } p.hidden = false; p.run = false; p.drunk = 0; p.want = null; p.due = 0; p.wantCigar = 0; p.smoke = 0; p.plan = []; p.act = null; } };
 
   // ---- who you are looking at, and who can hear
   folk.lookedAt = (far = 6) => { const c = G.camera.getWorldPosition(_a), f = G.camera.getWorldDirection(_b); let best = null, bs = 0.86; for (const p of people) { if (!p.here || !p.alive) continue; head(p, _c).sub(c); const d = _c.length(); if (d > far) continue; const s = _c.normalize().dot(f) - d * 0.006; if (s > bs) { bs = s; best = p; } } return best; };
@@ -127,6 +135,7 @@ export function buildFolk(scene, room) {
       }
       // they look at you when you are close or speaking to them, or at who is speaking
       const d = Math.hypot(cam.x - p.root.position.x, cam.z - p.root.position.z); if (!(p.drawn && p.foe)) p.P.look = (d < 2.6 || p.heed > G.t) && p.state !== 'walk' ? cam : null;
+      if (p.smoke > 0) { p.smoke -= dt; if ((p.puff = (p.puff || 0) - dt) < 0) { p.puff = rand(3, 7); G.fx.steam(head(p, _c).addScaledVector(_d.set(Math.sin(p.root.rotation.y), 0, Math.cos(p.root.rotation.y)), 0.15), 0.5); } }
       p.P.act = p.state !== 'walk' && p.drunk >= p.S.holds && p.state !== 'sit' ? 'Drunk idle' : p.state === 'stand' && p.act && p.act[0] === 'bar' && !p.glass?.inHand ? 'Leaning on rail' : null;
       p.P.update(dt);
     }

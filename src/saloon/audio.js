@@ -41,6 +41,8 @@ export class SaloonAudio {
       case 'pocket': this.tone(140, 0.18, { v: 0.25, type: 'triangle', to: 70 }); this.tone(900, 0.06, { v: 0.08, at: 0.16 }); break;
       case 'dart': this.tone(220, 0.07, { v: 0.3, type: 'triangle', to: 110 }); this.hiss(0.04, 1200, 1, 0.14); break;
       case 'card': this.hiss(0.05, 3200, 1.5, 0.07); break;
+      case 'cork': this.tone(520, 0.07, { v: 0.22, to: 180, type: 'triangle' }); this.hiss(0.05, 1400, 1, 0.1); break;
+      case 'slide': this.hiss(0.1, 2400, 2, 0.03 * k); break;
       case 'match': this.hiss(0.3, 4200, 1, 0.08, { to: 1500 }); break;
     }
   }

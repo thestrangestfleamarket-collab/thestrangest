@@ -13,7 +13,7 @@ const QUIRKS = ['You have eaten at this stall for years.', 'This is your first t
 const FITS = PF; // each person's voice and age (pf.js)
 const VOICES = { m: ['orion', 'perseus'], f: ['luna', 'stella'] };
 const CANNED = {
-  order: ['Good day. {order}, if you please.', 'One {order}. It smells fine today.', '{order} for me. How is business?'],
+  order: ['Hello. {order}, please.', 'Hi there. Could I get a {order}?', 'Evening. {order} for me, please.'], more: ['Oh, and could I get a {drink} too?', 'Can I also have a {drink}?', 'And a {drink}, please.'], gotdrink: ['Thank you.', 'Thanks.', 'Ah, thank you.'],
   impatient: ['Is mine nearly ready?', 'Forgive me, I must be on my way soon.', 'I am getting hungry here.'],
   good: ['Ahh. That warms the belly.', 'Excellent. Just what I needed.', 'This is why I come to your stall.'], ok: ['Not bad. Thank you.', 'Mm. It will do.'],
   bad: ['Hm. This is not what I asked for.', 'Something is wrong with this bowl.'], angry: ['Enough. I cannot wait any longer.'],
@@ -46,7 +46,7 @@ export function buildTalk() {
   const here = (c) => (c.here ? c.here() : G.game.customers.includes(c));
 
   // ---- one floor (owner, 16 Nov 2026: "its hard for the convo to flow because of all the stops starts and talking over"): every line goes through this director, which lets one person speak at a time, never over the cook
-  const PRIO = { hurt: 5, police: 5, reply: 4, ack: 4, noise: 4, order: 3, good: 3, ok: 3, bad: 3, angry: 3, pay: 3, thanks: 3, short: 3, shorted: 3, over: 3, waitchange: 3, impatient: 2, greet2: 2 }, AGE = [0, 5, 10, 20, 8, 6]; // seconds a line may wait for the floor before its moment has passed
+  const PRIO = { hurt: 5, police: 5, reply: 4, ack: 4, noise: 4, order: 3, more: 3, gotdrink: 3, good: 3, ok: 3, bad: 3, angry: 3, pay: 3, thanks: 3, short: 3, shorted: 3, over: 3, waitchange: 3, impatient: 2, greet2: 2 }, AGE = [0, 5, 10, 20, 8, 6]; // seconds a line may wait for the floor before its moment has passed
   const D = { q: [], cur: null, lastEnd: -9, gap: 0.4, cookAt: -9, cookOn: false, cookEnd: -9, lastWho: null, echo: 0.6, tm: 0, bus: null, outAn: null, outBuf: null };
   const nowS = () => performance.now() / 1000;
   talk.D = D; talk.clockS = nowS;
@@ -155,7 +155,7 @@ export function buildTalk() {
 
   async function say(c, kind, situation, facts, cookSaid) {
     if (c.guest) return; // a tenant from THE MARKET speaks for themself
-    const v = voiceOf(c), reply = kind === 'reply' || kind === 'hurt' || kind === 'police', must = reply || kind === 'order' || kind === 'taste' || kind === 'angry' || kind === 'pay' || kind === 'short' || kind === 'over' || kind === 'thanks' || kind === 'greet2' || kind === 'cry';
+    const v = voiceOf(c), reply = kind === 'reply' || kind === 'hurt' || kind === 'police', must = reply || kind === 'order' || kind === 'more' || kind === 'gotdrink' || kind === 'taste' || kind === 'angry' || kind === 'pay' || kind === 'short' || kind === 'over' || kind === 'thanks' || kind === 'greet2' || kind === 'cry';
     if (c.p.cast && c.p.cast.name) v.story = G.block.story(c.p.cast);
     if (reply) { v.gen = (v.gen || 0) + 1; c.chatT = Math.max(c.chatT || 0, 30); talk.floorT = G.t + 6; for (const o of G.game.customers) if (o !== c) o.chatT = Math.max(o.chatT || 0, 12); }
     else if (v.busy || (v.until || 0) > G.t || (!must && (D.cur || D.q.some((x) => x.prio >= 4) || cookBusy() || G.t < (talk.floorT || 0)))) return; // nobody starts small talk while you are speaking or being answered
@@ -170,7 +170,7 @@ export function buildTalk() {
       } catch (e) { talk.live = talk.live || false; }
     }
     if (gen !== v.gen) { v.busy = false; note({ who: v.name, kind, text: line || '', dropped: 'the cook spoke again before this was said' }); return; }
-    if (!line) { const set = CANNED[kind] || CANNED.reply; line = pick(set).replace('{order}', c.order ? c.order.recipe.name[0] + c.order.recipe.name.slice(1).toLowerCase() + ' ramen' : 'ramen'); }
+    if (!line) { const set = CANNED[kind] || CANNED.reply; line = pick(set).replace('{order}', c.order ? c.order.recipe.name[0] + c.order.recipe.name.slice(1).toLowerCase() + ' ramen' : 'ramen').replace('{drink}', c.order && c.order.drink || 'tea'); }
     const h = { who: 'me', text: line }; v.busy = false; v.history.push(h); if (v.history.length > 10) v.history.splice(0, 2);
     if (!here(c)) return;
     talk.last = { who: v.name, line, n: (talk.lastN = (talk.lastN || 0) + 1) }; enqueue(c, line, { kind, live, h, think: Math.round(performance.now() - t0) });
@@ -178,9 +178,12 @@ export function buildTalk() {
 
   talk.event = (c, kind, r) => {
     const waited = c.order ? Math.round(c.maxPatience - c.patience) : 0;
-    if (kind === 'order') say(c, 'order', 'You just came up the street and sat down at the stall in the village street. Greet the cook and say what you want; you may ask how their day is going.', `You have not been served yet. ${menuText()}`);
+    if (kind === 'order') { say(c, 'order', 'You just sat down at the stall. Say hello and order your bowl of ramen, the way anyone does at a food stall: a hello and the order, a few plain words, nothing more. Order only the ramen now, not a drink.', `You have not been served yet. ${menuText()}`);
+      if (c.order && c.order.drink) setTimeout(() => { if (c.order && c.order.drink && !c.gotDrink && (c.state === 'waiting' || c.state === 'eating')) talk.event(c, 'more'); }, 5000 + Math.random() * 4000); }   // the drink comes after, as an afterthought
+    else if (kind === 'more') say(c, 'more', `You already ordered your ramen. Now, as an afterthought, ask for a ${c.order.drink} as well, in a few plain words.`, '');
+    else if (kind === 'gotdrink') say(c, 'gotdrink', `The cook just set your ${c.order.drink} in front of you. Thank them, a word or two.`, '');
     else if (kind === 'impatient') say(c, 'impatient', 'You have been waiting a while and your bowl has not arrived.', `You have waited about ${waited} seconds. Nothing has been served to you yet.`);
-    else if (kind === 'taste') { c.p.gesture?.(r.score >= 80 ? 'nod' : r.score >= 50 ? 'shrug' : 'no'); say(c, r.score >= 80 ? 'good' : r.score >= 50 ? 'ok' : 'bad', 'The cook just set your bowl in front of you and you took your first taste. Say what you think of it.', `Quality ${r.score}/100. ${r.issues.length ? 'Problems with the bowl: ' + r.issues.join('; ') + '.' : 'It is exactly what you ordered, hot and well made.'} ${r.pay ? `You will pay${r.tip ? ' and leave a tip' : ', no tip'}.` : 'It is so wrong you refuse to pay.'}`); }
+    else if (kind === 'taste') { c.p.gesture?.(r.score >= 80 ? 'nod' : r.score >= 50 ? 'shrug' : 'no'); say(c, r.score >= 80 ? 'good' : r.score >= 50 ? 'ok' : 'bad', 'The cook just set your bowl in front of you and you took your first taste. Thank them and say what you think of it, briefly, as anyone would.', `Quality ${r.score}/100. ${r.issues.length ? 'Problems with the bowl: ' + r.issues.join('; ') + '.' : 'It is exactly what you ordered, hot and well made.'} ${r.pay ? `You will pay${r.tip ? ' and leave a tip' : ', no tip'}.` : 'It is so wrong you refuse to pay.'}`); }
     else if (kind === 'wave') say(c, 'wave', 'The cook just caught your eye and waved at you from behind the counter. You wave back and say something.', c.result ? 'You have your food.' : 'You are still waiting for your food.');
     else if (kind === 'react') { c.p.gesture?.(Math.random() < 0.5 ? 'laugh' : 'no'); say(c, 'react', `Right in front of you, the cook just ${r}. You react out loud.`, ''); }
     else if (kind === 'chat') say(c, 'chat', c.state === 'eating' ? 'You are eating and want to talk: ask the cook a question or tell them something, about the food, your day, the weather, the harvest or the village.' : 'You are waiting and want to talk: ask the cook a question (how they are doing, how long they have had the stall, anything this person would ask) or tell them about your day.', c.result ? `Your bowl scored ${c.result.score}/100.` : 'Your bowl has not arrived yet.');

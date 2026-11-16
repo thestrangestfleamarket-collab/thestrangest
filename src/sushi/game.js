@@ -57,7 +57,7 @@ export function buildGame(scene) {
       receive: (it) => {
         const c = game.seats[i].c;
         if (it.kind === 'bowl') { it.obj.position.set(x, 1.0, -0.71); it.upright(); serve(c, it); }
-        else { it.obj.position.set(x + 0.19, 1.0, -0.66); it.upright(); it.served = true; c.bottle = it; if (it.drink === c.order.drink) c.gotDrink = true; else c.wrongDrink = true; G.audio.play('bottle'); drawTicket(c, true); }
+        else { it.obj.position.set(x + 0.19, 1.0, -0.66); it.upright(); it.served = true; c.bottle = it; if (it.drink === c.order.drink) { c.gotDrink = true; G.talk?.event(c, 'gotdrink'); } else c.wrongDrink = true; G.audio.play('bottle'); drawTicket(c, true); }
       },
     });
   });

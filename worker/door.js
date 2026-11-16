@@ -30,7 +30,8 @@ const EDMAP = /^\/edmap\/t\d{1,2}_\d{1,2}\.jpg$/;
 const SCAREA = /^\/scare-assets\/[a-z0-9_-]+\.glb$/;   // VESPER WARD's models: to anyone
 const SNIPA = /^\/sniper-assets\/(sky|tex|m|snd|p)\/[A-Za-z0-9_-]+\.(glb|json|mp3|jpg|webp)$/, SNIPT = { glb: "model/gltf-binary", json: "application/json", mp3: "audio/mpeg", jpg: "image/jpeg", webp: "image/webp" };   // COLD BORE's skies, surfaces, models and sounds: to anyone
 const JAMA = /^\/jam-assets\/[a-z0-9_-]+\.(glb|json|mp3)$/, JAMT = { glb: "model/gltf-binary", json: "application/json", mp3: "audio/mpeg" };   // STADIUM JAM's avatars, hands and samples: to anyone
-const GOLFA = /^\/(golf|duel|cantina|hide|zombie|sushi|tank)-assets\/(?!.*\.\.)[A-Za-z0-9_.\/-]+\.(jpg|json|txt|glb|mp3|hdr|fbx|webp)$/;   // HALCYON GREENS' pictures and models, AR DUEL's pictures, THE CANTINA's models and pictures, DEAD END's pictures, models and sounds, EYES DOWN's pictures and models, HULL DOWN's sky, surfaces, models and sounds: to anyone
+const SAYNO = new Map();
+const GOLFA = /^\/(golf|duel|cantina|hide|zombie|sushi|tank)-assets\/(?!.*\.\.)[A-Za-z0-9_.\/-]+\.(jpg|json|txt|glb|mp3|hdr|fbx|webp|mp4)$/;   // HALCYON GREENS' pictures and models, AR DUEL's pictures, THE CANTINA's models and pictures, DEAD END's pictures, models and sounds, EYES DOWN's pictures and models, HULL DOWN's sky, surfaces, models and sounds, YATAI '86's late movie: to anyone
 const BOOK = /^\/book\/(\d{1,6})\.txt$/, FILM = /^\/film\/([A-Za-z0-9_.-]{1,80})\/([A-Za-z0-9_.-]{1,120}\.mp4)$/, IA = /^\/ia\/([A-Za-z0-9_.-]{1,80})\.jpg$/, YT = /^\/yt\/([A-Za-z0-9_-]{11})\.jpg$/, BLANK = "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYGD4DwABBAEAHnOcQAAAAABJRU5ErkJggg==";
 const SKYJD = () => { const d = new Date(); return Date.UTC(1985, d.getUTCMonth(), d.getUTCDate()) / 864e5 + 2440587.5; },   // the sky's year is 1985 (src/134b DN.YEAR): that year's comets
    SBDB = "https://ssd-api.jpl.nasa.gov/sbdb_query.api?", SWPC = "https://services.swpc.noaa.gov/";
@@ -138,7 +139,9 @@ export default {
     // THE CANTINA (src/cantina/): its own page at /cantina, to anyone with the link; its models and pictures under /cantina-assets/
     if ((request.method === "GET" || request.method === "HEAD") && p === "/cantina") return page(env, url, "/cantina", request, "no-cache");
     if ((request.method === "GET" || request.method === "HEAD") && GOLFA.test(p)) {
-      const r = await env.ASSETS.fetch(new Request(url.origin + p)); if (!r.ok) return new Response("not found", { status: 404 });
+      const r = await env.ASSETS.fetch(new Request(url.origin + p, request.headers.has("range") ? { headers: { range: request.headers.get("range") } } : {})); if (!r.ok) return new Response("not found", { status: 404 });
+      const rg = /^bytes=(\d*)-(\d*)$/.exec(request.headers.get("range") || ""), size = +r.headers.get("content-length");
+      if (rg && r.status === 200 && p.endsWith(".mp4")) return ranged(r, rg, size > 0 ? size : null);   // a video seeks: the part asked for, cut from the whole
       const out = new Response(r.body, r); out.headers.set("cache-control", "public, max-age=86400"); out.headers.set("x-robots-tag", "noindex"); return out; }
     if (request.method === "GET" && p === "/sw.js") {
       if (!(await inside(env, request, dev))) return new Response("not found", { status: 404 });
@@ -240,7 +243,11 @@ export default {
         const text = word(body.text, 240); if (!text) return json({ why: "nothing to say" }, 400);
         const SPK = ["orion", "perseus", "orpheus", "helios", "zeus", "arcas", "angus", "luna", "stella", "hera", "asteria", "athena"], spk = SPK.includes(body.speaker) ? body.speaker : "orion";
         if (env.ELEVENLABS_API_KEY) { const EL = { orion: "CwhRBWXzGAHq8TQ4Fs17", perseus: "iP95p4xoKVk53GoZ742B", orpheus: "bIHbv24MWmeRgasZH58o", arcas: "cjVigY5qzO86Huf0OWal", zeus: "4vNbGJTjRuBObQgnJZio", angus: "IKne3meq5aSn9XLyUdCD", helios: "CwhRBWXzGAHq8TQ4Fs17", asteria: "cgSgspJ2msm6clMCkdW9", luna: "rwDJofyi5zcfK5WOmfb4", stella: "xd8j2LFPw16XKmJ5qeBK", hera: "VmWxtEYGgb6QIzh7Bnik", athena: "KHDywVwjZ97ShJLe4NCr" }; // ElevenLabs, once the owner has put his key on the worker: the same people, its voices
-          try { const v = await fetch("https://api.elevenlabs.io/v1/text-to-speech/" + EL[spk] + "?output_format=mp3_44100_64", { method: "POST", headers: { "xi-api-key": env.ELEVENLABS_API_KEY, "content-type": "application/json" }, body: JSON.stringify({ text, model_id: "eleven_flash_v2_5" }) }); if (v.ok) return new Response(v.body, { headers: { "content-type": "audio/mpeg", "cache-control": "no-store", "x-voice": "eleven" } }); } catch (e) { } }
+          const NY = { orion: "OBLxU3DhFiBOh33EeRvi", perseus: "SZGxn2RdlB51rqi1Oaqp", orpheus: "OUMCtiPJh3qF3pL2iWeJ", helios: "zWoalRDt5TZrmW4ROIA7", zeus: "bRlp5mUWs01wX4H4oW4X", arcas: "qZD4lsr8kIiotITUSBmL", angus: "ICwKbPHDHAM3eal5tHEZ", luna: "2bk7ULW9HfwvcIbMWod0", stella: "DZ2ULBbuhpX6zJYCQic4", hera: "C3x1TEM7scV4p2AXJyrp", asteria: "oWjuL7HSoaEJRMDMP3HD", athena: "6ho9AoOwAU5MmduUDlKe" };   // New Yorkers from ElevenLabs' library: Brooklyn, Queens, Dominican, Latina, an old-timer
+          let bad = 0; // raw 24 kHz samples streamed as they are made, so the page starts playing before the line is finished
+          const say = (id, kind) => fetch("https://api.elevenlabs.io/v1/text-to-speech/" + id + "/stream?output_format=pcm_24000", { method: "POST", headers: { "xi-api-key": env.ELEVENLABS_API_KEY, "content-type": "application/json" }, body: JSON.stringify({ text, model_id: "eleven_multilingual_v2", voice_settings: { stability: 0.45, similarity_boost: 0.75, style: 0.1, use_speaker_boost: true } }) }).then((v) => v.ok ? new Response(v.body, { headers: { "content-type": "audio/pcm", "x-rate": "24000", "cache-control": "no-store", "x-voice": kind } }) : (bad = v.status, v.body && v.body.cancel(), null)).catch(() => null);
+          const ny = NY[spk] && body.pin !== "stock" && !(SAYNO.get(NY[spk]) > Date.now()) ? await say(NY[spk], "eleven-ny") : null; if (ny) return ny; if (NY[spk] && bad >= 400 && bad < 500 && bad !== 429) SAYNO.set(NY[spk], Date.now() + 3600e3);   // a voice the account cannot use is let be for an hour; a person keeps the voice they started the night with
+          const st = await say(EL[spk], "eleven"); if (st) return st; }
         try { const v = await env.AI.run("@cf/deepgram/aura-1", { text, speaker: spk, encoding: "mp3" }, { returnRawResponse: true }); if (v && v.ok) return new Response(v.body, { headers: { "content-type": "audio/mpeg", "cache-control": "no-store" } }); } catch (e) { } // a natural voice of their own; the plain one below if it fails
         try { const r = await env.AI.run("@cf/myshell-ai/melotts", { prompt: text, lang: "en" }), a = r && r.audio; if (typeof a !== "string" || !a) return json({ why: "no voice came" }, 502);
           return new Response(Uint8Array.from(atob(a), ch => ch.charCodeAt(0)), { headers: { "content-type": "audio/mpeg", "cache-control": "no-store", "x-voice": "plain" } }); } catch (e) { return json({ why: "the voice could not be made" }, 502); } }
@@ -351,6 +358,14 @@ async function bookText(id) {
     "https://mirror.cs.odu.edu/gutenberg/" + d + "/" + id + "-0.txt", "https://mirror.cs.odu.edu/gutenberg/" + d + "/" + id + ".txt"]) {
     try { const r = await fetch(u, { cf: { cacheTtl: 2592000, cacheEverything: true } }); if (r.ok) return { ok: true, body: r.body }; why.push(new URL(u).host + " " + r.status); } catch (e) { why.push(new URL(u).host + " failed"); } }
   return { ok: false, why: why.join(", ") };
+}
+// the bytes a=..b of a whole response, as a 206
+async function ranged(r, rg, size) {
+  let body = r.body; if (!size) { const buf = await r.arrayBuffer(); size = buf.byteLength; body = new Blob([buf]).stream(); }
+  let a = rg[1] === "" ? size - +rg[2] : +rg[1], b = rg[1] === "" || rg[2] === "" ? size - 1 : Math.min(+rg[2], size - 1); a = Math.max(0, a);
+  if (a > b || a >= size) { body && body.cancel(); return new Response(null, { status: 416, headers: { "content-range": "bytes */" + size } }); }
+  let at = 0; const cut = new TransformStream({ transform(ch, c) { const s = at, e = at + ch.byteLength; at = e; if (e <= a || s > b) return; c.enqueue(ch.subarray(Math.max(0, a - s), Math.min(ch.byteLength, b + 1 - s))); } });
+  return new Response(body.pipeThrough(cut), { status: 206, headers: { "content-type": "video/mp4", "content-range": "bytes " + a + "-" + b + "/" + size, "content-length": String(b - a + 1), "accept-ranges": "bytes", "cache-control": "public, max-age=86400", "x-robots-tag": "noindex" } });
 }
 // the films kept in R2: served with ranges (a video seeks); null when there is no bucket or no copy, and the Internet Archive serves it
 async function filmR2(env, key, request) {

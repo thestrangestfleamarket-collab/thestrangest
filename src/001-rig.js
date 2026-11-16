@@ -766,12 +766,13 @@ function tick(st,h){ st.run+=(st.runTarget-st.run)*Math.min(1,h*RIGT.blend); con
   waterTick(st,h); if(st.fly){ const F=st.fly; F.k=clamp(F.k+(F.on?1:-1)*h*2.5,0,1); F.t=(F.t||0)+h; if(!F.on&&!F.k) st.fly=null; }
   const sk=(st.wk||1)+((st.rk||1)-(st.wk||1))*st.run, walked=st.move?0:g.speed*st.w*h*sk; st.wd=(st.wd||0)+walked;
   st.ph=(st.ph+h*sk*(st.anim||1)/g.cycle)%1; st.dist+=walked+(st.move&&st.move.def.air&&st.move.t<st.move.def.air.t0?(st.move.def.entry?0:st.mvw||0):st.mv)*h;
+  if(st.lite){ st.last=null; if(st.head)st.head.a0=null; return; }   // a walker nobody sees (111a): it walks on, no pose worked out (its head's sway starts afresh when seen)
   const P=rawPose(st); st.last=P; const B=build(P,null),H=st.head;
   if(H.a0==null){ H.a0=H.a1=B.J.head.y; }
   const acc=(B.J.head.y-2*H.a1+H.a0)/(h*h); H.a0=H.a1; H.a1=B.J.head.y;
   { const s=st.head,[k,c]=SPR.head; s.v+=(-k*s.x-c*s.v-acc)*h; s.x=clamp(s.x+s.v*h,-1.5,1.5); } }
 function step(st,dt){ if(st.target>0&&!st.went&&st.w<0.3&&!st.move){ st.ph=0; st.wd=0; } st.went=st.target>0;
-  const T=Math.min(dt,0.25),n=Math.ceil(T*120-1e-6); for(let i=0;i<n;i++) tick(st,T/n); return st; }
+  const T=Math.min(dt,0.25),n=st.lite?1:Math.ceil(T*120-1e-6); for(let i=0;i<n;i++) tick(st,T/n); return st; }
 const WSTEP=4.75;
 function pose(st,inPlace){ const busy=st.move||st.out,P=JSON.parse(JSON.stringify(st.last||rawPose(st))),dev={};
   for(const n of 'LR') dev[n]=ZERO;

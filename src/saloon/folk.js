@@ -29,7 +29,7 @@ export function buildFolk(scene, room) {
   const head = (p, out) => out.copy(p.root.position).setY(p.root.position.y + (p.state === 'sit' ? 1.3 : 1.62));
 
   // ---- seats and standing places
-  const freeSeat = (at) => { const L = room.seats.filter((s) => !s.who && (at === 'bar' ? s.kind === 'stool' : s.at === at)); return L.length ? (at === 'bar' ? L.sort((a, b) => Math.abs(a.x) - Math.abs(b.x))[(Math.random() * Math.min(3, L.length)) | 0] : L[0]) : null; };
+  const freeSeat = (at) => { const L = room.seats.filter((s) => !s.who && !s.gone && (at === 'bar' ? s.kind === 'stool' : s.at === at)); return L.length ? (at === 'bar' ? L.sort((a, b) => Math.abs(a.x) - Math.abs(b.x))[(Math.random() * Math.min(3, L.length)) | 0] : L[0]) : null; };
   const leaveSeat = (p) => { if (p.seat) { p.seat.who = null; p.seat = null; } if (p.spot) { p.spot.who = null; p.spot = null; } p.P.pose = 'stand'; p.root.position.y = 0; };
   const barSpot = () => { const L = room.spots.bar.filter((s) => !s.who); return L.length ? pick(L) : null; };
 
@@ -73,7 +73,7 @@ export function buildFolk(scene, room) {
     // drinking it: a sip every few seconds, the glass to the mouth and back
     const gl = p.glass; if (gl.dead) { p.glass = null; return; }
     p.sipT -= dt;
-    if (gl.inHand && p.sipT < -1.7) { G.itemRoot.add(gl.obj); gl.obj.position.copy(gl.homeP); gl.obj.quaternion.identity(); gl.inHand = false; gl.vol = Math.max(0, gl.vol - (gl.shape === 'shot' ? 0.5 : 0.22)); gl.refresh(); p.sipT = gl.shape === 'shot' ? rand(5, 9) : rand(4, 8);
+    if (gl.inHand && p.sipT < -1.7) { G.itemRoot.add(gl.obj); gl.obj.position.copy(gl.homeP); gl.obj.quaternion.identity(); gl.inHand = false; gl.vol = Math.max(0, gl.vol - (gl.cut === 'shot' ? 0.5 : 0.22)); gl.refresh(); p.sipT = gl.cut === 'shot' ? rand(5, 9) : rand(4, 8);
       if (gl.vol <= 0.05) { gl.empty(true); const w = DRINKS[p.S.drink]; p.drunk += p.S.drink === 'sarsaparilla' ? 0 : p.S.drink === 'beer' ? 0.6 : 1; releaseGlass(p); p.t = 0; p.said = 1; ev('drank', { id: p.id, drunk: p.drunk, holds: p.S.holds, cents: w[1] }); } }
     else if (!gl.inHand && p.sipT <= 0) { p.P.gesture('Drinking'); const hb = p.P.bones.find((b) => b.name === 'handR'); if (hb) { gl.inHand = true; hb.add(gl.obj); gl.obj.position.set(0, -0.02, 0.06); gl.obj.quaternion.identity(); p.sipT = 0; } else p.sipT = -1.7; }
   }
@@ -121,6 +121,7 @@ export function buildFolk(scene, room) {
       if (!p.here) continue;
       if (!p.alive) { if (p.dead < 1.5) { p.dead += dt; p.P.update(dt); } continue; }   // the dead lie where they fell
       p.t += dt;
+      if (p.seat && p.seat.gone && p.state === 'sit') { leaveSeat(p); p.state = 'stand'; p.act = null; ev('unseated', { id: p.id }); }
       if (p.state === 'walk' && p.tgt && !p.P.reeling()) {
         const pos = p.root.position; _d.set(p.tgt.x - pos.x, 0, p.tgt.z - pos.z); const d = _d.length();
         if (d < 0.12) arrived(p);

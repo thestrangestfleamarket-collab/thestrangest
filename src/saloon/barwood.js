@@ -30,8 +30,8 @@ export function buildBarWood(g, top, solid) {
   // ---- the back bar's cupboards: doors with brass knobs, and the opening the cash drawer runs in (bar.js)
   const D = B - bz, cy = R.backY;
   slab(2 * X, 0.1, D, dk, 0, 0.05, (bz + B) / 2, g); slab(2 * X + 0.08, 0.045, D + 0.07, wal, 0, cy - 0.0225, (bz + B) / 2 - 0.02, g); rod(2 * X + 0.08, 0.0225, wal, 0, cy - 0.0225, bz - 0.055);
-  slab(2 * X, cy - 0.145, D - 0.04, dk, 0, 0.1 + (cy - 0.145) / 2, (bz + B) / 2 + 0.02, g);
-  const nd = 8, dw = 2 * X / nd; for (let i = 0; i < nd; i++) { const x = -X + (i + 0.5) * dw; if (i === 5) continue; slab(dw - 0.06, cy - 0.3, 0.025, wal, x, 0.1 + (cy - 0.2) / 2, bz + 0.012, g); slab(dw - 0.2, cy - 0.44, 0.012, pan, x, 0.1 + (cy - 0.2) / 2, bz - 0.002, g); const k = new THREE.Mesh(new THREE.SphereGeometry(0.014, 10, 8), br); k.position.set(x + (i % 2 ? -1 : 1) * (dw / 2 - 0.09), 0.52, bz - 0.012); g.add(k); }
+  slab(2 * X, cy - 0.145, D - 0.34, dk, 0, 0.1 + (cy - 0.145) / 2, (bz + B) / 2 + 0.17, g); slab(2 * X, 0.02, 0.3, pan, 0, 0.47, bz + 0.17, g); for (let i = 0; i <= 8; i++) slab(0.03, cy - 0.145, 0.3, dk, -X + i * 2 * X / 8, 0.1 + (cy - 0.145) / 2, bz + 0.17, g);   // the cupboards are hollow: a shelf and a back a foot in
+  const cupboards = [], nd = 8, dw = 2 * X / nd; for (let i = 0; i < nd; i++) { const x = -X + (i + 0.5) * dw; if (i === 5) continue; const sd = i % 2 ? 1 : -1, hg = new THREE.Group(); hg.userData.keep = true; hg.position.set(x + sd * (dw / 2 - 0.03), 0.1 + (cy - 0.2) / 2, bz + 0.012); g.add(hg); for (const m of [slab(dw - 0.06, cy - 0.3, 0.025, wal, -sd * (dw / 2 - 0.03), 0, 0, hg), slab(dw - 0.2, cy - 0.44, 0.012, pan, -sd * (dw / 2 - 0.03), 0, -0.014, hg)]) m.userData.keep = true; const k = new THREE.Mesh(new THREE.SphereGeometry(0.014, 10, 8), br); k.position.set(-sd * (dw - 0.15), 0.1, -0.024); k.userData.keep = true; hg.add(k); cupboards.push({ g: hg, a: 0, to: 0, open: sd * 1.9, name: 'a cupboard door', knobM: k, x, z: bz + 0.17 }); }
   top(-X, X, bz - 0.06, B, cy); solid(-X, X, bz, B, cy);
 
   // ---- above: columns, shelves, the mirror in its arch, the cornice
@@ -46,5 +46,5 @@ export function buildBarWood(g, top, solid) {
   slab(2.18, 0.09, 0.06, wal, 0, cy + 0.375, B - 0.07, g); slab(2.18, 0.09, 0.06, wal, 0, cy + 2.025, B - 0.07, g); slab(2.0, 0.03, 0.03, br, 0, cy + 0.42, B - 0.085, g); slab(2.0, 0.03, 0.03, br, 0, cy + 1.98, B - 0.085, g);
   const arch = new THREE.Mesh(new THREE.TorusGeometry(1.09, 0.05, 8, 24, Math.PI), wal); arch.scale.y = 0.34; arch.position.set(0, cy + 2.07, B - 0.07); arch.castShadow = true; g.add(arch);
   const crest = new THREE.Mesh(new THREE.SphereGeometry(0.13, 14, 10), wal); crest.scale.set(1.5, 0.9, 0.35); crest.position.set(0, cy + 2.36, B - 0.07); g.add(crest);
-  return { shelves, mirror: mir };
+  return { shelves, mirror: mir, cupboards };
 }

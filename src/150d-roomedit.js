@@ -33,7 +33,8 @@ import {ROOMK} from './150a-bedroom.js';
   // a layout that comes back with pieces inside one another is put right once, and says so
   const tidy=A=>{ '@later'; if(HOME.guest)return; const T=MODS.apts.TIERS[MODS.apts.tier||0]||{}, L=HOME.layout, moved=!L||(L.tier??2)!==(MODS.apts.tier||0); if(moved&&L)for(const u of A.units())if(u.gone&&!u.added&&ROOMK.always.has(u.kind))A.restore(u);   // a new size of flat: the pieces every flat has come out again, then those it has no room for go back
     const m=settle(moved&&T.start?T.start:null); A.R.tier=MODS.apts.tier||0; if(!m.length&&!moved)return; if(HOME.loaded&&(m.length||L))HOME.save(snapshot(A)); const mv=m.filter(x=>x[1]==='moved').map(x=>x[0]), aw=m.filter(x=>x[1]!=='moved').map(x=>x[0]);
-    if(mv.length)UI.log('MOVED TO FIT: '+mv.join(', ')+'.','#c8a090'); if(aw.length)UI.log('NO ROOM FOR: '+aw.join(', ')+'. PUT AWAY (DECORATE BRINGS THEM BACK).','#c8a090'); };
+    const relay=A.R.loftDress&&!QS.has('furnished')&&(A.R.loftV||0)<A.R.LOFTV;   // the loft is about to be laid out again: what it moves now is moved again then
+    if(mv.length&&!relay)UI.log('MOVED TO FIT: '+mv.join(', ')+'.','#c8a090'); if(aw.length)UI.log('NO ROOM FOR: '+aw.join(', ')+'. PUT AWAY (DECORATE BRINGS THEM BACK).','#c8a090'); };
   // a visit: another player's apartment is your rooms dressed in their layout, to look at, not to change; leaving puts yours back
   const swap=L=>{ const A=ROOMK.api; if(!A)return; for(const un of A.units().slice())if(un.added)A.drop(un); else if(un.gone)A.restore(un); const D=A.R.bare||{}; apply(A,{...D,...(L||{}),lights:{...(D.lights||{}),...((L&&L.lights)||{})}}); };
   HOME.visit=async(id,name,L0)=>{ '@later'; if(!id||(MODS.apts&&MODS.apts.inReal))return; let L=L0; if(L===undefined&&web){ try{ L=(await ask({who:id})).home; }catch(e){ L=null; } }

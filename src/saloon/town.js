@@ -323,7 +323,12 @@ export function buildTown(scene, room) {
   const groundAt = (x, z) => { if (z > -0.3 && Math.abs(x) < HW + 0.2) return 0; let y = null; for (const d of decks) if (x >= d.x0 && x <= d.x1 && z >= d.z0 && z <= d.z1) y = Math.max(y ?? -9, d.y); return y ?? land(x, z); };
   let footY = 0, wasIn = true;
   const town = { group: T0, drawn: T, moon: moonIn, sun, frame: FRAME, toWorld, toStreet, land, groundAt, decks, haze: HZ, isInside: () => wasIn,
+    // the town is only for show (owner, 16 Nov 2026): once it is all built and its shadows laid, it is pictured once all round from the doorway and that picture is what the doors and windows look out on; the town itself, its lights and its shadow map are let go
+    backdrop() { if (town.baked) return; const r = G.renderer, rt = new THREE.WebGLCubeRenderTarget(1024, { generateMipmaps: false }), cc = new THREE.CubeCamera(0.3, 1700, rt), at = toWorld(0, -0.35), room = G.room && G.room.group, pv = G.peopleRoot.visible, iv = G.itemRoot.visible, xe = r.xr.enabled, tm = r.toneMapping;
+      T.visible = true; if (room) room.visible = false; G.peopleRoot.visible = G.itemRoot.visible = false; cc.position.set(at.x, 1.65, at.z); scene.add(cc); r.xr.enabled = false; r.toneMapping = THREE.NoToneMapping; cc.update(r, scene); r.toneMapping = tm; r.xr.enabled = xe; scene.remove(cc); if (room) room.visible = true; G.peopleRoot.visible = pv; G.itemRoot.visible = iv;
+      scene.background = rt.texture; town.baked = true; T0.traverse((o) => { if (o.isMesh || o.isPoints) { o.geometry.dispose(); } if (o.isLight && o.shadow && o.shadow.map) o.shadow.map.dispose(); }); scene.remove(T0); moonIn.intensity = 0; G.camera.far = 90; G.camera.updateProjectionMatrix(); },
     update(dt, t) {
+      if (town.baked) return; { let n = 0; T.traverse(() => { n++; }); if (n === town._n && bake === 0) { if (++town._still > 90 && t > 3 && !G.params?.has('livetown')) return town.backdrop(); } else { town._n = n; town._still = 0; } }
       const rig = G.rig; G.camera.getWorldPosition(camP); const p = toStreet(camP.x, camP.z), isIn = p.z > 0.02 && Math.abs(p.x) < HW + 0.3; wasIn = isIn;
       if (G.mode === 'desktop' || G.mode === 'vr') {
         if (isIn || (G.room && G.room.state.lv !== 0)) footY = rig.position.y;   // inside, the room's own floors carry you (room.js)

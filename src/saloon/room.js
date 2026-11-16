@@ -117,7 +117,7 @@ export function buildRoom(scene) {
   const hang = (x, y, z, k, d, lv) => { model('lantern_01', x, y - 0.15, z, 0, { h: 0.42 }, g); tube(0.006, 0.006, 0.35, iron, x, y + 0.42, z, g, 4); return lamp(x, y, z, k, d, 0xffc898, lv); };
   hang(-1.7, 2.4, 0.25, 13, 7); hang(1.7, 2.4, 0.25, 13, 7);
   const fire = hang(4.7, 2.35, -6.2, 8, 6);
-  hang(2.2, UP + 2.3, -0.4, 9, 7); hang(BD.x0 + 2.0, UP + 2.2, -0.6, 7, 5.5, 1); hang(-3.0, DN + 2.0, -8.2, 8, 6.5, -1);
+  model('lantern_01', 2.2, UP + 2.15, -0.4, 0, { h: 0.42 }, g); halo(2.2, UP + 2.3, -0.4, 0xffc898, 0.5); hang(BD.x0 + 2.0, UP + 2.2, -0.6, 7, 5.5, 1); hang(-3.0, DN + 2.0, -8.2, 8, 6.5, -1);
 
   // ---- where people stand
   const spots = { door: { x: 0, z: -L + 0.7 }, street: { x: 0, z: -L - 2.5 }, bar: [-2.98, -2.13, -1.28, -0.43, 0.42, 1.27, 2.12, 2.9].map((x) => ({ x, z: -1.4 })), stove: { x: 4.6, z: -8.6 }, piano: { x: R.piano.x - 0.55, z: R.piano.z }, stage: { x: 4.2, z: -6.0 }, pool: { x: R.pool.x + 1.5, z: R.pool.z }, darts: { x: R.darts.x + 2.4, z: R.darts.z }, board: { x: R.board.x - 1.0, z: R.board.z }, flap: { x: X + 0.7, z: -0.6 } };
@@ -128,7 +128,7 @@ export function buildRoom(scene) {
   const _p = new THREE.Vector3(), m = 0.24, state = { lv: 0, y: 0 };
   const into = (p, x0, x1, z0, z1) => { p.x = clamp(p.x, x0 + m, x1 - m); p.z = clamp(p.z, z0 + m, z1 - m); };
   function walk(rig, camera, dt = 1 / 60) {
-    const p = camera.getWorldPosition(_p), ox = p.x, oz = p.z; if (p.z < -L + 0.05 && state.lv === 0 && Math.abs(p.x) < 1) { state.out = true; return state; } state.out = false;
+    const p = camera.getWorldPosition(_p), ox = p.x, oz = p.z;
     const onS = p.x < S.x1 && p.x > S.x0 - 0.5 && p.z > S.z0 && p.z < S.z1 && (state.lv !== 0 || p.z < S.z0 + 0.5 || state.y > 0.15), onW = p.x > WL.x0 && p.x < WL.x1 && p.z > WL.z0 && p.z < WL.z1 && (state.lv !== 0 || p.z > WL.z1 - 0.5 || state.y < -0.1);
     let ty = 0;
     if (onS) { ty = UP * clamp((p.z - S.z0) / (S.z1 - S.z0), 0, 1); p.x = clamp(p.x, S.x0 + m, S.x1 - m); state.lv = ty > UP - 0.05 ? 1 : ty < 0.05 ? 0 : 0.5; }
@@ -137,7 +137,7 @@ export function buildRoom(scene) {
       if (inBed || (p.x < -W + m && atDoor)) { if (p.x > -W - 0.3 && atDoor) p.z = clamp(p.z, BD.door[0] + 0.2, BD.door[1] - 0.2); else into(p, BD.x0, BD.x1 - 0.06, BD.z0, BD.z1); }
       else { p.x = clamp(p.x, -W + m, W - m); p.z = clamp(p.z, -L + m, B - m); if (p.z < GZ + m && p.x < GX + m && p.x > S.x1 - 0.05) { if (GZ + m - p.z < GX + m - p.x) p.z = GZ + m; else p.x = GX + m; } } }
     else if (state.lv <= -0.5) { state.lv = -1; ty = DN; if (p.x > WL.x0 && p.x < WL.x1 && p.z > CE.z1 - m) p.x = clamp(p.x, WL.x0 + m, WL.x1 - m); else into(p, CE.x0, CE.x1, CE.z0, CE.z1); }
-    else { state.lv = 0; p.x = clamp(p.x, -W + m, W - m); p.z = clamp(p.z, Math.abs(p.x) < 0.7 ? -L - 1 : -L + m, bz - 0.22); }
+    else { state.lv = 0; p.x = clamp(p.x, -W + m, W - m); p.z = clamp(p.z, -L + m, bz - 0.22); }   // the doors are as far as you go: the town is only looked at
     const r = 0.22; for (const s of solids) { if (s.step || (s.lv !== undefined ? s.lv !== state.lv : !s.any && state.lv !== 0)) continue; const cx = clamp(p.x, s.x0, s.x1), cz = clamp(p.z, s.z0, s.z1), dx = p.x - cx, dz = p.z - cz, d = Math.hypot(dx, dz);
       if (d < r && d > 1e-5) { const k = (r - d) / d; p.x += dx * k; p.z += dz * k; } else if (d <= 1e-5) { const ex = Math.min(p.x - s.x0, s.x1 - p.x), ez = Math.min(p.z - s.z0, s.z1 - p.z); if (ex < ez) p.x = p.x - s.x0 < s.x1 - p.x ? s.x0 - r : s.x1 + r; else p.z = p.z - s.z0 < s.z1 - p.z ? s.z0 - r : s.z1 + r; } }
     rig.position.x += p.x - ox; rig.position.z += p.z - oz; state.y += (ty - state.y) * Math.min(1, dt * 12); rig.position.y = Math.abs(state.y) < 1e-3 ? 0 : state.y;

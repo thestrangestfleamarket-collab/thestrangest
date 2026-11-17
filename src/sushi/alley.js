@@ -11,6 +11,7 @@ import { buildSky } from './sky.js';
 import * as E from './ephem.js';
 import { AIR } from './air.js';
 import { weatherAt } from './weather.js';
+import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 
 export const FOG = 0xb8c4cc;
 export function buildAlley(scene, o = {}) {
@@ -37,10 +38,18 @@ export function buildAlley(scene, o = {}) {
   const NOREN = [['#24325a', '酒', 'SAKE'], ['#2a2a2a', '茶', 'TEA'], ['#5a2a1c', '魚', 'FISH'], ['#3a4a2a', '陶', 'POTTERY'], ['#24325a', '宿', 'INN'], ['#6a1c1c', '米', 'RICE'], ['#2a3a4a', '豆腐', 'TOFU'], ['#4a3a24', '薬', 'MEDICINE']];
   const norenM = NOREN.map(([c, k]) => { const t = T.canvasTex(256, 128, (g, w, h) => { g.fillStyle = c; g.fillRect(0, 0, w, h); g.fillStyle = '#efe8d8'; g.font = `bold ${k.length > 1 ? 70 : 90}px ${T.JP}`; g.textAlign = 'center'; g.textBaseline = 'middle'; g.fillText(k, w / 2, h / 2 + 4); g.fillStyle = 'rgba(0,0,0,0.25)'; for (let x = w / 3; x < w; x += w / 3) g.fillRect(x - 1, 0, 3, h); }); T.dirty(t, 3 + k.length, { stains: 10, fade: 1 }); return T.sway(mat({ map: t, side: THREE.DoubleSide }), 'cloth'); });   // (they move in the wind)
   // the lamps: every paper lantern in the village shares a few materials whose light comes up together at dusk and goes at dawn (steadily: nothing flickers)
-  const lampMats = [], lampHalos = new THREE.SpriteMaterial({ map: glowMap, color: 0xffa860, blending: THREE.AdditiveBlending, depthWrite: false, transparent: true, opacity: 0, fog: true });
+  // every lamp's and fire's glow in the air is one drawing of camera-facing cards: larger and softer the thicker the air (mist, rain), fading into the haze with distance
+  const HU = { map: { value: glowMap }, color: { value: new THREE.Color(0xffa860) }, opacity: { value: 0 }, grow: { value: 1 }, fogD: { value: 0.006 } };
+  const haloM = new THREE.ShaderMaterial({ uniforms: HU, transparent: true, depthWrite: false, blending: THREE.AdditiveBlending, fog: false,
+    vertexShader: 'uniform float grow; varying vec2 vUv; varying float vD; void main(){ vec4 c = modelViewMatrix * instanceMatrix * vec4(0.0, 0.0, 0.0, 1.0); float s = length(instanceMatrix[0].xyz) * grow; c.xy += position.xy * s; vUv = uv; vD = -c.z; gl_Position = projectionMatrix * c; }',
+    fragmentShader: 'uniform sampler2D map; uniform vec3 color; uniform float opacity, fogD; varying vec2 vUv; varying float vD; void main(){ vec4 t = texture2D(map, vUv); float f = exp(-fogD * vD * 0.8); gl_FragColor = vec4(color * t.rgb * t.a * opacity * f, 1.0); }' });
+  const haloAt = [], haloIM = new THREE.InstancedMesh(new THREE.PlaneGeometry(1, 1), haloM, 64); haloIM.count = 0; haloIM.frustumCulled = false; haloIM.userData.nopick = true; haloIM.castShadow = haloIM.receiveShadow = false; city.add(haloIM);
+  const _hm = new THREE.Matrix4(), haloSet = (i, x, y, z, size) => { _hm.makeScale(size, size, size).setPosition(x, y, z); haloIM.setMatrixAt(i, _hm); haloIM.instanceMatrix.needsUpdate = true; };
+  const addHalo = (x, y, z, size) => { const i = haloIM.count++; haloAt.push(size); haloSet(i, x, y, z, size); return i; };
+  const lampMats = [];
   const paper = (bg, ink, txt) => { const t = T.canvasTex(128, 128, (g, w, h) => { g.fillStyle = bg; g.fillRect(0, 0, w, h); g.strokeStyle = 'rgba(0,0,0,0.25)'; g.lineWidth = 2; for (let y = 8; y < h; y += 12) { g.beginPath(); g.moveTo(0, y); g.lineTo(w, y); g.stroke(); } if (txt) { g.fillStyle = ink; g.font = `bold 54px ${T.JP}`; g.textAlign = 'center'; g.textBaseline = 'middle'; g.fillText(txt, w / 4, h / 2); g.fillText(txt, (w * 3) / 4, h / 2); } }); const m = mat({ map: t, emissiveMap: t, emissive: 0xffb070, emissiveIntensity: 0 }); m.userData.lamp = 1; lampMats.push(m); return m; };
   const lampW = paper('#efe4c8', '#1a1a1a', '提灯'.slice(0, 1)), lampR = paper('#c8301c', '#140404', '祭'), lampS = paper('#e8dcc0', '#1a1a1a', '');
-  const chochin = (x, y, z, m = lampW, s = 1) => { const g = new THREE.Group(); g.position.set(x, y + 0.34 * s, z); g.scale.setScalar(s); g.userData.dyn = true; city.add(g); mesh(new THREE.SphereGeometry(0.17, 12, 8).scale(1, 1.35, 1), m, 0, -0.34, 0, g).castShadow = false; for (const dy of [-0.24, 0.24]) cyl(0.1, 0.1, 0.03, ridgeM, 0, dy - 0.34, 0, g, 10).castShadow = false; cyl(0.004, 0.004, 0.1, ridgeM, 0, -0.05, 0, g, 4).castShadow = false; const h = new THREE.Sprite(lampHalos); h.position.y = -0.34; h.scale.set(1.6 * s, 1.6 * s, 1); g.add(h); h.userData.nopick = true; return g; };   // hung from its cord's top, so it swings in the wind
+  const chochin = (x, y, z, m = lampW, s = 1) => ({ x, y: y + 0.34 * s, z, m, s });   // a lantern hung from its cord's top (drawn all together below, so it swings in the wind at no cost in draws)
   const house = (x, z, w, s, k, far) => { // s: 1 the row behind the stall (its front faces -z), -1 across the street
     const D = far ? 6 : 7, fz = z, cz = z + s * D / 2, g1 = 2.9, kind = k.kind;
     const wallM = kind === 'kura' ? plaster : cedar;
@@ -82,12 +91,22 @@ export function buildAlley(scene, o = {}) {
     box(0.5, 0.22, 6.4, ver, tx, 3.55, MID, city); const k = box(0.6, 0.3, 7.4, blackM, tx, 4.45, MID, city); k.castShadow = true; box(0.5, 0.18, 6.9, ver, tx, 4.2, MID, city);
     box(0.25, 0.7, 0.18, ver, tx, 3.95, MID, city); for (const s of [-1, 1]) { const tip = box(0.6, 0.3, 0.9, blackM, tx, 4.55, MID + s * 3.9, city); tip.rotation.x = s * 0.25; }
     for (const s of [-1, 1]) { const lz = MID + s * 3.3, lx = W0 + 4.5; box(0.5, 0.2, 0.5, stone, lx, 0.1, lz, city); cyl(0.09, 0.12, 0.8, stone, lx, 0.6, lz, city, 8); box(0.42, 0.1, 0.42, stone, lx, 1.05, lz, city); const head = box(0.3, 0.32, 0.3, stone, lx, 1.26, lz, city); head.userData.keep = false; const cap = new THREE.Mesh(new THREE.ConeGeometry(0.4, 0.3, 4), stone); cap.position.set(lx, 1.57, lz); cap.rotation.y = Math.PI / 4; city.add(cap);
-      const fire = mesh(new THREE.BoxGeometry(0.2, 0.2, 0.31), lampS, lx, 1.26, lz, city); fire.castShadow = false; const h = new THREE.Sprite(lampHalos); h.position.set(lx, 1.26, lz); h.scale.set(1.2, 1.2, 1); city.add(h); }
+      const fire = mesh(new THREE.BoxGeometry(0.2, 0.2, 0.31), lampS, lx, 1.26, lz, city); fire.castShadow = false; addHalo(lx, 1.26, lz, 1.2); }
     for (let i = 0; i < 6; i++) box(1.4, 0.2, 5, stone, W0 - 1 - i * 0.7, 0.1 + i * 0.2, MID, city);   // the steps up
     box(14, 1.4, 22, stone, W0 - 12, 0.7, MID, city);   // the shrine's terrace
     const hx = W0 - 13; box(6, 3, 5, cedar, hx, 1.4 + 1.5, MID, city); for (const sd of [-1, 1]) { const r = box(8, 0.12, 3.6, tiles, hx, 5.1, MID + sd * 1.5, city); r.rotation.x = -sd * 0.55; } box(8.1, 0.25, 0.3, ridgeM, hx, 6.05, MID, city);
     for (let i = 0; i < 4; i++) { const hz = MID + (i - 1.5) * 1.3; mesh(new THREE.PlaneGeometry(1.1, 2.2), lattice, hx + 3.01, 1.4 + 1.2, hz, city).rotation.y = Math.PI / 2; }
     lamps.push(chochin(hx + 3.4, 3.8, MID - 1.2, lampW, 1.3), chochin(hx + 3.4, 3.8, MID + 1.2, lampW, 1.3)); }
+  // ---- the lanterns, drawn together: the paper of each kind and the black caps and cords, one instanced drawing each, every one turned about its cord's top as the wind swings it
+  const lampG = new THREE.SphereGeometry(0.17, 12, 8).scale(1, 1.35, 1).translate(0, -0.34, 0), capG = mergeGeometries([new THREE.CylinderGeometry(0.1, 0.1, 0.03, 10).translate(0, -0.58, 0), new THREE.CylinderGeometry(0.1, 0.1, 0.03, 10).translate(0, -0.1, 0), new THREE.CylinderGeometry(0.004, 0.004, 0.1, 4).translate(0, -0.05, 0)]);
+  const lampSets = [...new Set(lamps.map((L) => L.m))].map((m) => ({ list: lamps.filter((L) => L.m === m), im: null, m })); lampSets.push({ list: lamps, m: ridgeM, g: capG });
+  for (const S of lampSets) { S.im = new THREE.InstancedMesh(S.g || lampG, S.m, S.list.length); S.im.castShadow = false; S.im.receiveShadow = true; S.im.userData.nopick = true; city.add(S.im); }
+  for (const L of lamps) L.h = addHalo(L.x, L.y - 0.34 * L.s, L.z, 1.6 * L.s);
+  const _le = new THREE.Euler(), _lq = new THREE.Quaternion(), _lp = new THREE.Vector3(), _ls = new THREE.Vector3(), _lv = new THREE.Vector3(), _lm = new THREE.Matrix4();
+  const swing = (t) => { const wk = G.wind ?? 0.3; lamps.forEach((L, i) => { _le.set(Math.sin(t * 1.1 + i * 2.3) * 0.035 * wk, 0, Math.sin(t * 1.6 + i * 1.7) * 0.05 * wk + 0.03 * wk); L.q = _lq.setFromEuler(_le); L.mx = _lm.compose(_lp.set(L.x, L.y, L.z), _lq, _ls.setScalar(L.s)).clone(); });
+    for (const S of lampSets) { S.list.forEach((L, i) => S.im.setMatrixAt(i, L.mx)); S.im.instanceMatrix.needsUpdate = true; }
+    for (const L of lamps) { _lv.set(0, -0.34, 0).applyMatrix4(L.mx); haloSet(L.h, _lv.x, _lv.y, _lv.z, 1.6 * L.s); } };
+  swing(0); for (const S of lampSets) S.im.computeBoundingSphere();
   // ---- trees: cedars and pines round the shrine and the village's edges (a trunk and its tiers, cheap)
   const bark = real('bark', 1, 0x7a5a44), needles = T.sway(real('grass', 1.2, 0x3a5a3a), 'tree'), pineM = T.sway(real('grass', 1.4, 0x4a6a3a), 'tree');   // the needles' texture is the grass photograph, darkened
   const tree = (x, z, h, pine) => { cyl(0.18 * h / 8, 0.28 * h / 8, h * 0.45, bark, x, h * 0.22, z, city, 6); const n = pine ? 3 : 4; for (let i = 0; i < n; i++) { const r = (pine ? 1.6 : 1.2) * (1 - i / (n + 0.5)) * h / 8, c = mesh(new THREE.ConeGeometry(r * (pine ? 1.4 : 1), h * (pine ? 0.22 : 0.3), 7), pine ? pineM : needles, x, h * (0.42 + i * (pine ? 0.16 : 0.15)), z, city); c.rotation.y = R() * 3; c.castShadow = i === 0; } };
@@ -140,7 +159,7 @@ export function buildAlley(scene, o = {}) {
     for (let k = 0; k < 3; k++) { const a = (k / 3) * Math.PI * 2, leg = cyl(0.025, 0.03, 1.62, iron, Math.cos(a) * 0.2, 0.78, Math.sin(a) * 0.2, g, 6); leg.rotation.set(Math.sin(a) * 0.12, 0, -Math.cos(a) * 0.12); }
     cyl(0.26, 0.17, 0.3, iron, 0, 1.68, 0, g, 10, true).material = mat({ color: 0x2a2622, side: THREE.DoubleSide }); cyl(0.2, 0.2, 0.06, darkWood, 0, 1.6, 0, g, 8);
     const fl = new THREE.Group(); fl.position.set(0, 1.7, 0); fl.userData.dyn = true; g.add(fl); for (let k = 0; k < 3; k++) { const c = mesh(flameG, fireM, 0, 0, 0, fl); c.rotation.y = (k / 3) * Math.PI; c.castShadow = c.receiveShadow = false; c.userData.nopick = true; }
-    const hl = new THREE.Sprite(lampHalos); hl.position.set(0, 1.95, 0); hl.scale.set(2.6, 2.6, 1); hl.userData.nopick = true; g.add(hl);
+    addHalo(x, 1.95, z, 2.6);
     const puffs = []; for (let k = 0; k < 4; k++) { const s = new THREE.Sprite(new THREE.SpriteMaterial({ map: smokeT, color: 0x6a6460, transparent: true, opacity: 0, depthWrite: false, fog: true })); s.userData = { t: k / 4, nopick: true }; g.add(s); puffs.push(s); }
     braz.push({ fl, puffs, ph: i * 2.1, l }); });
   const _mp = new THREE.Vector3(), fogC = new THREE.Color(), tmp = new THREE.Color(), tmp2 = new THREE.Color(), MOONC = new THREE.Color(0x9ab0e8), NIGHTF = new THREE.Color(0x5468a0), DAYF = new THREE.Color(0xbcd0ec), EARTH = new THREE.Color(0x6a5a40);
@@ -152,6 +171,7 @@ export function buildAlley(scene, o = {}) {
     const l = Sk.horizon.r * 0.3 + Sk.horizon.g * 0.59 + Sk.horizon.b * 0.11; fogC.copy(Sk.horizon).lerp(tmp.setRGB(l, l, l), 0.3 + 0.35 * w.cloud + 0.2 * w.mist); fogC.lerp(tmp.copy(Sk.zen).lerp(Sk.horizon, 0.55), 0.22 * day * (1 - w.cloud));   // by day the far air goes bluer, toward the sky's own
     if (scene.fog) { scene.fog.color.copy(fogC); scene.fog.density = 0.0068 + 0.004 * (1 - day) + 0.014 * (G.rainK || 0) + 0.006 * w.mist; } scene.background = fogC;
     AIR.mist[0] = 0.003 + 0.03 * w.mist + 0.012 * (1 - day) + 0.01 * (G.rainK || 0); AIR.mist[1] = 1 / (1.8 + 2.4 * w.mist); AIR.mist[2] = -0.1;
+    HU.fogD.value = scene.fog ? scene.fog.density : 0.006; HU.grow.value = 1 + 0.8 * w.mist + 1.5 * (G.rainK || 0);   // the lamps' glow spreads in damp air
     sky.U.uFogC.value.copy(fogC); sky.U.uFogK.value = 0.5 + 0.4 * w.mist;
     // the light: the sun's while it is up, the moon's after (the same light, so one shadow map), passing between them through the twilight
     const f = sm(1, -5, e), sunK = sm(-1, 9, e) * 2.7 * (1 - 0.6 * clamp((w.cloud - 0.25) / 0.7, 0, 1)), mk = (1 - sm(-4, 2, e)) * clamp((Sk.moonAlt + 2) / 12, 0, 1) * (0.25 + 0.75 * Sk.moonLit) * (1 - 0.55 * clamp((w.cloud - 0.3) / 0.6, 0, 1));
@@ -169,10 +189,10 @@ export function buildAlley(scene, o = {}) {
   ups.push((dt, t) => {
     const K = G.clock, hr = K ? K.hour : 11, want = hr >= 17.8 && hr < 29 ? 1 : hr >= 29 && hr < 30.2 ? clamp((30.2 - hr) / 1.2, 0, 1) : 0;   // the lamps are lit as the sun goes, and burn down one by one through the dawn
     lit += clamp(want - lit, -dt / 4, dt / 4); const e = S.easy ? 0.6 : 1;
-    for (const m of lampMats) m.emissiveIntensity = lit * 1.6 * e; lampHalos.opacity = lit * 0.32 * e; fireM.opacity = lit * 0.7 * e;
+    for (const m of lampMats) m.emissiveIntensity = lit * 1.6 * e; HU.opacity.value = lit * 0.32 * e; fireM.opacity = lit * 0.7 * e;
     braz.forEach((b, i) => { const br = 1 + 0.05 * Math.sin(t * 0.9 + b.ph) + 0.03 * Math.sin(t * 0.37 + b.ph * 2); b.l.intensity = lit * 3.4 * br; b.fl.scale.set(1, br * (0.6 + 0.4 * lit), 1); b.fl.visible = lit > 0.02;   // a slow breath: nothing flickers
       for (const s of b.puffs) { const u = s.userData; u.t += dt * 0.09; if (u.t > 1) u.t -= 1; const k = u.t, wd = (G.wind ?? 0.3) * 2.4; s.position.set(k * k * wd, 2.0 + k * 3.4, k * 0.3); const sc = 0.5 + k * 2.2; s.scale.set(sc, sc, 1); s.material.opacity = Math.sin(k * Math.PI) * 0.16 * lit; } });
-    for (const [i, g] of lamps.entries()) { const wk = G.wind ?? 0.3; g.rotation.z = Math.sin(t * 1.6 + i * 1.7) * 0.05 * wk + 0.03 * wk; g.rotation.x = Math.sin(t * 1.1 + i * 2.3) * 0.035 * wk; }   // the lanterns swing a little on their cords
+    swing(t);   // the lanterns swing a little on their cords
     wet += clamp(clamp((G.rainK || 0) / 0.2, 0, 1) - wet, -dt / 300, dt / 60); T.SURF.wet.value = wet;   // the ground darkens as it rains and dries slowly after
     if (G.cart && G.cart.lamps) G.cart.lamps(lit);
     sky.update(dt, G.renderer && G.renderer.xr.isPresenting ? 1.5 : 1);

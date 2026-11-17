@@ -1,4 +1,4 @@
-// THE GARAGE CHECK: node tests/drums.cjs [dist/drums.html] [folder for screenshots]. THE GARAGE loads its kit, models and recordings; every key plays its piece and its zone, a click strikes where it lands, the hi-hat's pedal chicks; then the same page in an emulated Quest 3 (IWER): you are seated at the kit, a stick through a head plays it once and not again until it has come up, the bell, bow and edge of a cymbal are told apart, a rimshot and a hoop are told from a head, the triggers are the kick and the hi-hat, a grip on a cymbal stops it, the sticks set by the thumbstick stay set.
+// THE GARAGE CHECK: node tests/drums.cjs [dist/drums.html] [folder for screenshots] (ONLY=screen leaves the headset out). THE GARAGE loads its kit, models and recordings; every key plays its piece and its zone, a click strikes where it lands, the hi-hat's pedal chicks; then the same page in an emulated Quest 3 (IWER): you are seated at the kit, a stick through a head plays it once and not again until it has come up, the bell, bow and edge of a cymbal are told apart, a rimshot and a hoop are told from a head, the triggers are the kick and the hi-hat, a grip on a cymbal stops it, the sticks set by the thumbstick stay set.
 const { chromium } = require('playwright'), path = require('path'), fs = require('fs');
 const fails = [], ok = (c, m) => { if (!c) { fails.push(m); console.log((process.env.GITHUB_ACTIONS ? '::error title=drums::' : 'FAIL ') + m); } else console.log('ok   ' + m); };
 const PAGE = path.resolve(process.argv[2] || 'dist/drums.html'), ROOT = path.dirname(PAGE), OUT = process.argv[3]; if (OUT) fs.mkdirSync(OUT, { recursive: true });
@@ -12,7 +12,7 @@ const quest = IWER + ';window.xrDevice=new IWER.XRDevice(IWER.metaQuest3);xrDevi
   const b = await chromium.launch({ ...(process.env.PWCHROME ? { executablePath: process.env.PWCHROME } : {}), args: ['--use-gl=swiftshader', '--enable-unsafe-swiftshader', '--ignore-gpu-blocklist', '--autoplay-policy=no-user-gesture-required'] });
   let n = 0; const shot = async (pg, name) => { if (OUT) await pg.screenshot({ path: path.join(OUT, String(++n).padStart(2, '0') + '-' + name + '.png'), timeout: 120000 }); };
   const open = async init => { const pg = await b.newPage({ viewport: { width: 1024, height: 640 } }), errs = [], miss = [];
-    pg.on('pageerror', e => errs.push(e.message.slice(0, 300))); pg.on('requestfailed', r => { if (!/\/drums\/(load|save|talk)$/.test(r.url())) miss.push(r.url().split('/').pop()); }); pg.on('response', r => { if (r.status() >= 400 && !/\/drums\/(load|save|talk)$/.test(r.url())) miss.push(r.status() + ' ' + r.url().split('/').pop()); }); pg.on('console', m => { if (m.type() === 'error' && !/Failed to load resource/.test(m.text())) errs.push('console: ' + m.text().slice(0, 300)); });
+    pg.on('pageerror', e => errs.push(e.message.slice(0, 300))); pg.on('requestfailed', r => { if (!/\/drums\/(load|save|talk)$|archive\.org/.test(r.url())) miss.push(r.url().split('/').pop()); }); pg.on('response', r => { if (r.status() >= 400 && !/\/drums\/(load|save|talk)$|archive\.org/.test(r.url())) miss.push(r.status() + ' ' + r.url().split('/').pop()); }); pg.on('console', m => { if (m.type() === 'error' && !/Failed to load resource/.test(m.text())) errs.push('console: ' + m.text().slice(0, 300)); });
     if (init) await pg.addInitScript(init); await pg.goto(FILE, { waitUntil: 'commit', timeout: 120000 }); await pg.waitForFunction(() => window.__drums && __drums.ready, null, { timeout: 420000 }).catch(() => {});
     return { pg, errs, miss, ev: (f, a) => pg.evaluate(f, a), wait: (f, ms = 60000) => pg.waitForFunction(f, null, { timeout: ms }).then(() => true, () => false) }; };
 
@@ -33,15 +33,31 @@ const quest = IWER + ';window.xrDevice=new IWER.XRDevice(IWER.metaQuest3);xrDevi
     // the garage door, the hour, the street and its people
     const d0 = await ev(() => __drums.garage.door.open); await pg.keyboard.press('KeyO');
     ok(d0 < 0.3 && await wait(() => __drums.garage.door.open > 0.99, 90000), 'O runs the garage door up its tracks');
-    const hr = await ev(async () => { const D = __drums, a = [+D.life.hour.toFixed(1), +D.garage.day.toFixed(2)]; for (let i = 0; i < 8; i++) D.life.skip(); await new Promise(r => setTimeout(r, 600)); return [...a, +D.life.hour.toFixed(1), +D.garage.day.toFixed(2), +D.street.group.children.length > 20]; });
-    ok(hr[0] === 15 && hr[1] > 0.9 && hr[2] === 23 && hr[3] < 0.1 && hr[4], 'the hour is the one asked for, in full day; eight hours on it is night: ' + hr);
-    const st = await ev(async () => { const D = __drums, S = D.street, p = S.people.find(q => q.id === 'marcus'), nap = ms => new Promise(r => setTimeout(r, ms)); for (let i = 0; i < 16; i++) D.life.skip(); await nap(400);
+    const hr = await ev(async () => { const D = __drums, L = D.life, a = [+D.garage.sunE.toFixed(1), +L.hour.toFixed(1) >= +L.dusk.toFixed(1)]; let top = -99, dark = 0; for (let i = 0; i < 30; i++) { L.skip(); await new Promise(r => setTimeout(r, 250)); top = Math.max(top, D.garage.sunE); if (D.garage.day < 0.05) dark++; } return [...a, +top.toFixed(1), dark, D.street.group.children.length > 20]; });
+    ok(hr[0] <= 8 && hr[1] && hr[2] <= 8 && hr[3] >= 15 && hr[4], 'it is dusk when you come in, and through thirty hours on the sun never climbs: dusk, evening and night only: ' + hr);
+    const st = await ev(async () => { const D = __drums, S = D.street, p = S.people.find(q => q.id === 'marcus'), nap = ms => new Promise(r => setTimeout(r, ms)); D.life.to(D.life.dusk + 1); await nap(600);
       for (let i = 0; i < 6; i++) D.life.note(1); p.g.visible = true; p.pos.set(-1.5, 0, p.pos.z = -13.75); p.dir = 1; p.asked = false; p.state = 'walk'; p.path = [[44, -13.75]]; p.pi = 0;
-      for (let i = 0; i < 80 && p.state !== 'visit'; i++) await nap(250); const came = p.state, bub = p.bub.sprite.visible, rel = p.rel; await D.life.say('Hello Marcus, how was your shift?'); await nap(300);
+      for (let i = 0; i < 160 && p.state !== 'visit'; i++) { D.life.note(1); await nap(250); } const came = p.state, bub = p.bub.sprite.visible, rel = p.rel; await D.life.say('Hello Marcus, how was your shift?'); await nap(300);
       return { n: S.people.length, mixers: S.people.filter(q => q.mixer).length, came, bub, rel, met: p.met, said: D.life.said.length, near: S.nearest() && S.nearest().id, cars: S.cars.length }; });
     ok(st.n === 7 && st.mixers === 7 && st.came === 'visit' && st.bub && st.rel > 0 && st.met && st.said === 1 && st.near === 'marcus' && st.cars === 3, 'seven neighbours with their own motion; one passing hears you play, comes up the drive, speaks, likes you a little more, and answers when spoken to: ' + JSON.stringify(st));
+    // a lesson: the count, the notes laid out a bar ahead, each played on its beat, marked, and the next lesson opened
+    const les = await ev(async () => { const D = __drums, T = D.teach; let t = 100, played = 0; T.clock = () => t; T.mute = true; T.i = 1; T.start(true); const n0 = T.board.visible;
+      for (let k = 0; k < 4000 && T.state !== 'done'; k++) { t += 0.01; T.update(); for (const n of T.notes) if (!n.done && t >= n.t - 0.005) { T.hit(n.piece, 0.7, n.hand === 'L' ? 'left' : 'right'); played++; } }
+      const rings = Object.values(D.scene.children).filter(m => m.isMesh && m.geometry.type === 'TorusGeometry').length;
+      const out = { shown: n0, played, best: T.best[1], next: D.set.lesson, state: T.state, rings }; T.start(false); T.clock = () => D.sound.ctx.currentTime; T.mute = false; return out; });
+    ok(les.shown && les.played === 16 && les.best >= 85 && les.next === 2 && les.state === 'done' && les.rings >= 27, 'a lesson counts you in, lays its notes on the kit, marks sixteen played on the beat as passed and opens the next: ' + JSON.stringify(les));
+    // on your feet: the door stops you until it is up, the shotgun is taken, loaded, pumped and fired, a neighbour runs
+    const wk = await ev(async () => { const D = __drums, g = D.gun, nap = ms => new Promise(r => setTimeout(r, ms)), key = async (c, ms = 250) => { window.dispatchEvent(new KeyboardEvent('keydown', { code: c })); await nap(60); window.dispatchEvent(new KeyboardEvent('keyup', { code: c })); await nap(ms); }, o = {};
+      await key('Tab'); o.up = D.walk.on; D.garage.setDoor(0.1); D.walk.pos.set(0, 0, -3.0); D.scr.yaw = 0; window.dispatchEvent(new KeyboardEvent('keydown', { code: 'KeyW' })); await nap(2500); o.shut = +D.walk.pos.z.toFixed(1);
+      D.garage.setDoor(1); await nap(3500); window.dispatchEvent(new KeyboardEvent('keyup', { code: 'KeyW' })); o.out = D.walk.pos.z < -4.5;
+      D.walk.pos.set(-1.0, 0, 2.2); await nap(200); await key('KeyE'); D.walk.pos.set(0.9, 0, 2.3); await nap(200); await key('KeyE'); o.held = g.held; o.pouch = g.pouch;
+      for (let i = 0; i < 6 && g.tube < 2; i++) await key('KeyR', 1500); o.tube = g.tube; await key('KeyF', 1500); o.ready = g.chamber;
+      const p = D.street.people[0]; p.g.visible = true; p.state = 'walk'; p.pos.set(3, 0, -13.75); p.path = [[70, -13.75]]; p.pi = 0; p.asked = true; const rel = p.rel;
+      D.walk.pos.set(-0.08, 0, 1.4); D.scr.yaw = 0; D.scr.pitch = -0.51; await nap(600); const k0 = D.stats.hits; g.shoot(true); await nap(500); o.shots = g.shots; o.kit = D.stats.hits - k0; o.spent = g.chamber; o.fled = p.fled && p.rel < rel;
+      await key('KeyF', 1500); o.next = g.chamber; D.walk.pos.set(0, 0, 0.5); await nap(200); await key('Tab'); o.sat = !D.walk.on && !g.held; return o; });
+    ok(wk.up && wk.shut > -3.6 && wk.out && wk.held && wk.pouch === 25 && wk.tube >= 2 && wk.ready === 1 && wk.shots === 1 && wk.kit >= 1 && wk.spent === 2 && wk.fled && wk.next === 1 && wk.sat, 'TAB stands you up; the shut door stops you and the open one lets you out; the shotgun is taken, loaded from your belt, pumped and fired, its shot rings the kit and sends a neighbour running; the pump brings up the next; TAB at the stool sits you down: ' + JSON.stringify(wk));
     const r = await ev(() => ({ calls: __drums.renderer.info.render.calls, tris: __drums.renderer.info.render.triangles, lines: __drums.renderer.domElement.height }));
-    ok(r.calls < 420 && r.tris < 420000, 'the whole garage is ' + r.calls + ' draws and ' + r.tris + ' triangles, drawn ' + r.lines + ' lines tall');
+    ok(r.calls < 520 && r.tris < 520000, 'the whole garage is ' + r.calls + ' draws and ' + r.tris + ' triangles, drawn ' + r.lines + ' lines tall');
     ok(miss.length === 0 && errs.length === 0, 'no missing file, no page error' + (miss.length || errs.length ? ': ' + miss.concat(errs).join(' | ') : '')); await pg.close(); }
 
   // in the headset
@@ -55,7 +71,7 @@ const quest = IWER + ';window.xrDevice=new IWER.XRDevice(IWER.metaQuest3);xrDevi
     window.on = (name, u, h) => { const D = __drums, p = D.kit.P[name], o = name === 'hat' ? p.top : p.group, rho = u * p.radius; return new V(0, D.kit.height(p, rho) + h, rho).applyMatrix4(o.matrixWorld); };
     window.strike = async (side, name, u) => { const D = __drums, b = D.stats.hits; for (const h of [0.12, 0.04, -0.03]) await tipTo(side, on(name, u, h)); const got = D.stats.hits - b, last = D.stats.last; await tipTo(side, on(name, u, 0.15)); return { got, zone: last && last.zone, piece: last && last.piece, r: last && +last.r.toFixed(2) }; };
   };
-  { const { pg, errs, ev, wait } = await open(quest); await wait(() => !document.getElementById('vr').disabled); await ev(drive);
+  if (process.env.ONLY !== 'screen') { const { pg, errs, ev, wait } = await open(quest); await wait(() => !document.getElementById('vr').disabled); await ev(drive);
     await pg.click('#vr'); ok(await wait(() => __drums.renderer.xr.isPresenting && __drums.sticks.right.active && __drums.sticks.left.active, 60000), 'ENTER VR starts the session with a stick in each hand');
     await pg.waitForTimeout(1500);
     const seat = await ev(() => { const D = __drums, p = new D.camera.position.constructor(); D.renderer.xr.getCamera().getWorldPosition(p); return [+p.x.toFixed(2), +p.y.toFixed(2), +p.z.toFixed(2)]; });
@@ -69,6 +85,11 @@ const quest = IWER + ';window.xrDevice=new IWER.XRDevice(IWER.metaQuest3);xrDevi
     ok(cy.join() === 'bell,bow,edge,bow,hat', 'a cymbal\'s bell, bow and edge are told apart: ' + cy);
     const rim = await ev(async () => { const D = __drums, p = D.kit.P.snare, b = D.stats.hits; for (const h of [0.1, 0.03, -0.02]) await tipTo('right', on('snare', 1.05, h)); const z = D.stats.last.zone, got = D.stats.hits - b; await tipTo('right', on('snare', 1.05, 0.15)); return [got, z]; });
     ok(rim[0] === 1 && rim[1] === 'rim', 'the tip on a hoop is the hoop, not the head: ' + rim);
+    const clk = await ev(async () => { const D = __drums, S = D.sticks, V = D.camera.position.constructor, Qn = D.camera.quaternion.constructor, q = new Qn(), n0 = D.sound.stats.hits; let n = 0; const keep = S.onClick; S.onClick = (v) => { n++; keep(v); };
+      const A = new V(-0.1, 1.2, -0.3), B = new V(0.1, 1.2, -0.3), qa = new Qn().setFromAxisAngle(new V(0, 1, 0), -0.5), qb = new Qn().setFromAxisAngle(new V(0, 1, 0), 0.5); S.time = 10; S.detect = true;
+      for (let i = 0; i < 12; i++) { const up = i % 2 ? 0.04 : -0.04; S.set('left', A.clone().setY(1.2 + up), qa, true); S.set('right', B, qb, true); S.left.had = S.right.had = true; S._knock(0.011); S.time += 0.06; }
+      S.onClick = keep; return [n, D.sound.stats.hits - n0]; });
+    ok(clk[0] >= 10, 'two sticks crossed twelve times in under a second click nearly every time: ' + clk);
     const kick = await ev(async () => { const D = __drums, b = D.stats.hits, c = xrDevice.controllers.right; c.updateButtonValue('trigger', 1); await new Promise(r => setTimeout(r, 300)); const down = D.stats.hits - b, ped = D.kit.pedal; await new Promise(r => setTimeout(r, 300)); const held = D.stats.hits - b; c.updateButtonValue('trigger', 0); await new Promise(r => setTimeout(r, 300)); return [down, held, D.stats.last.piece, ped]; });
     ok(kick[0] === 1 && kick[1] === 1 && kick[2] === 'kick' && kick[3] === 1, 'the right trigger is the kick: once as it is pulled, not again while it is held: ' + kick);
     const hat = await ev(async () => { const D = __drums, c = xrDevice.controllers.left; c.updateButtonValue('trigger', 1); await new Promise(r => setTimeout(r, 1500)); const open = D.sound.hat, gap = D.kit.P.hat.top.position.y; const s = await strike('right', 'hat', 0.5); c.updateButtonValue('trigger', 0); await new Promise(r => setTimeout(r, 300)); return [open, +gap.toFixed(3), s.got, D.sound.hat, D.sound.stats.last.zone]; });

@@ -2,7 +2,7 @@
 import { G, V3, pick } from './ctx.js';
 import { SEATS, RECIPES, DRINKS } from './cart.js';
 import { mon as usd } from './till.js';
-import { PF } from './pf.js';
+import { RB } from './rb.js';
 
 const NAMES = { m: ['Kichibei', 'Sukeroku', 'Heiji', 'Matsuzō', 'Old Genbei', 'Tamekichi', 'Shinsuke', 'Rokubei', 'Kanta', 'Yohei'], f: ['O-Hana', 'O-Sei', 'O-Toku', 'O-Kiku', 'Old O-Tatsu', 'O-Shin', 'O-Natsu', 'O-Fuku', 'O-Yae', 'O-Matsu'] };
 const JOBS = ['a carpenter mending the temple roof', 'a packhorse driver on the road to the castle town', 'a charcoal burner down from the hills', 'a weaver from the next village', 'a pilgrim on the way to the great shrine', 'a boatman from the river ferry', 'a cooper who makes barrels for the sake house', 'a straw-sandal maker', 'a lantern maker who paints the paper himself', 'a travelling medicine seller', 'a woman who sells pickles from a basket', 'a mat maker who weaves tatami'];
@@ -10,7 +10,7 @@ const MOODS = ['tired but friendly', 'a little merry from sake and talkative', '
 const STYLES = ['speaks in short, plain sentences', 'talks fast and laughs at their own jokes', 'is formal and very polite', 'speaks slowly, with long pauses', 'is blunt and a little loud', 'is warm and asks questions back'];
 const STORIES = ['The headman scolded you in front of everyone today.', 'Your ox went lame and the field is only half ploughed.', 'You had good news today and want to tell someone.', 'The rice tax is due and you are short.', 'You lost a bet on the cockfight.', 'You are to meet a go-between about a marriage and you are nervous.', 'You have been on your feet since before dawn.', 'You found a few mon on the road this morning.', 'Your sister is to be married at the new moon.', 'You have only lately come to this village and everything is new.'];
 const QUIRKS = ['You have eaten at this stall for years.', 'This is your first time at the stall; you have never had Chinese noodles before.', 'You compare everything to the soba in the castle town.', 'You always ask for the news from the road.', 'You think things were better in your grandfather\'s day.', 'You bow a great deal.', 'You are superstitious about which stool you take.', 'You are counting your coppers carefully today.'];
-const FITS = PF; // each person's voice and age (pf.js)
+const FITS = RB; // each person's voice and age (rb.js)
 const VOICES = { m: ['orion', 'perseus'], f: ['luna', 'stella'] };
 const CANNED = {
   order: ['Hello. {order}, please.', 'Hi there. Could I get a {order}?', 'Evening. {order} for me, please.'], more: ['Oh, and could I get a {drink} too?', 'Can I also have a {drink}?', 'And a {drink}, please.'], gotdrink: ['Thank you.', 'Thanks.', 'Ah, thank you.'],

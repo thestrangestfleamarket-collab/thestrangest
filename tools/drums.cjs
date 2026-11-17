@@ -8,8 +8,11 @@ fs.rmSync('dist/drums-assets', { recursive: true, force: true }); fs.cpSync('dat
 const PEOPLE = ['Male_Adult_03', 'Male_Adult_05', 'Male_Adult_06', 'Male_Adult_08', 'Female_Adult_01', 'Female_Adult_02', 'Female_Adult_04', 'Female_Adult_09', 'Security_Male_01'];
 fs.mkdirSync('dist/drums-assets/p', { recursive: true });
 for (const n of PEOPLE) fs.copyFileSync('data/sniper/p/' + n + '.glb', 'dist/drums-assets/p/' + n + '.glb');
-for (const s of ['m', 'f']) for (const c of ['walk', 'idle', 'talk']) fs.copyFileSync('data/sniper/p/a_' + s + '_' + c + '.glb', 'dist/drums-assets/p/a_' + s + '_' + c + '.glb');
+for (const s of ['m', 'f']) for (const c of ['walk', 'idle', 'talk', 'run']) fs.copyFileSync('data/sniper/p/a_' + s + '_' + c + '.glb', 'dist/drums-assets/p/a_' + s + '_' + c + '.glb');
 for (const n of ['car', 'street_lamp_01', 'fire_hydrant']) fs.copyFileSync('data/sniper/m/' + n + '.glb', 'dist/drums-assets/m/' + n + '.glb');
 for (let i = 0; i < 5; i++) fs.copyFileSync('data/sniper/tex/car_' + i + '.jpg', 'dist/drums-assets/tex/car_' + i + '.jpg');
+// the trees are HULL DOWN's (six scanned species, each seen from two sides, with their sizes)
+for (const f of fs.readdirSync('data/tank/tex')) if (/_d\.webp$/.test(f)) fs.copyFileSync('data/tank/tex/' + f, 'dist/drums-assets/tex/' + f);
+fs.copyFileSync('data/tank/trees.json', 'dist/drums-assets/trees.json');
 fs.copyFileSync('data/sniper/tex/asphalt_02_d.jpg', 'dist/drums-assets/tex/road_c.jpg'); fs.copyFileSync('data/sniper/tex/asphalt_02_n.jpg', 'dist/drums-assets/tex/road_n.jpg');
 console.log('dist/drums.html', html.length, 'bytes, dist/drums-assets/ copied');

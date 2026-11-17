@@ -116,7 +116,7 @@ export class Sound {
     const src = c.createBufferSource();
     src.buffer = P.buf;
     src.playbackRate.value = (o.rate || 1) * (1 + (Math.random() - 0.5) * 0.006);
-    const g = c.createGain(), level = gain * (MIX[key] || 1) * (o.gain ?? 1);
+    const g = c.createGain(), level = gain * (MIX[key] || 1) * (o.gain ?? 1) * (o.flat ? 1 : 0.22 + 0.78 * Math.pow(Math.min(1, vel), 1.25));
     g.gain.value = level;
     let node = src;
     for (const f of o.filters || []) {
@@ -179,11 +179,12 @@ export class Sound {
       } else {
         // off the middle a head loses its thump and rings: less low end, a little more top
         const e = r * r, f = [];
-        if (e > 0.08) f.push(['lowshelf', piece === 'snare' ? 240 : 150, -9 * e], ['peaking', piece === 'snare' ? 950 : 520, 4 * e, 1.2]);
+        if (e > 0.04) f.push(['lowshelf', piece === 'snare' ? 260 : 170, -15 * e], ['peaking', piece === 'snare' ? 1050 : 560, 7 * e, 1.4], ['highshelf', 5000, 3 * e]);
+        else f.push(['highshelf', 4500, -3]);
         if (zone === 'rimshot') {
           this._play(piece, Math.min(1, vel * 1.1 + 0.08), { filters: [['highshelf', 3500, 3]], gain: 1.12 });
           this._play('stick', Math.min(1, vel + 0.1), { rate: RIM[piece] * 1.04, gain: 0.8 });
-        } else this._play(piece, vel, { filters: f, gain: 1 - 0.22 * e });
+        } else this._play(piece, vel, { filters: f, gain: 1 - 0.3 * e, rate: 1 + 0.035 * e });
         if (piece !== 'snare') this._wires(vel * 0.35);
       }
     } else if (piece === 'hat') {
@@ -213,7 +214,7 @@ export class Sound {
   // the snare's wires answering a drum struck beside them: the snare's own softest ring, without its attack
   _wires(v) {
     if (v < 0.12) return;
-    this._play('snare', 0.05, { skip: 0.035, gain: Math.min(0.5, v * 0.45), filters: [['highpass', 1800]], group: 'stick', decay: 0.12 });
+    this._play('snare', 0.05, { skip: 0.035, gain: Math.min(0.5, v * 0.45), filters: [['highpass', 1800]], group: 'stick', decay: 0.12, flat: true });
   }
 
   click(vel) {
@@ -227,6 +228,29 @@ export class Sound {
     this.stats.hits++; this.stats.last = { piece: 'sticks', zone: 'click', vel };
   }
 
+  // a burst of noise shaped by a filter: the shotgun's blast and the works of its action
+  _noise(dur, gain, type, f0, f1, when = 0) {
+    const c = this.ctx, n = Math.floor(c.sampleRate * dur), b = c.createBuffer(1, n, c.sampleRate), d = b.getChannelData(0);
+    for (let i = 0; i < n; i++) d[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / n, 2.2);
+    const s = c.createBufferSource(), f = c.createBiquadFilter(), g = c.createGain(), t = c.currentTime + when;
+    s.buffer = b; f.type = type; f.frequency.setValueAtTime(f0, t); f.frequency.exponentialRampToValueAtTime(Math.max(30, f1), t + dur); g.gain.value = gain;
+    s.connect(f).connect(g).connect(this.bus); s.start(t);
+  }
+  boom() {
+    if (!this.ctx) return;
+    const c = this.ctx, t = c.currentTime, o = c.createOscillator(), g = c.createGain();
+    o.type = 'triangle'; o.frequency.setValueAtTime(150, t); o.frequency.exponentialRampToValueAtTime(34, t + 0.28);
+    g.gain.setValueAtTime(1.1, t); g.gain.exponentialRampToValueAtTime(0.001, t + 0.4); o.connect(g).connect(this.bus); o.start(t); o.stop(t + 0.42);
+    this._noise(0.5, 1.5, 'lowpass', 5200, 220); this._noise(1.6, 0.35, 'lowpass', 1400, 160, 0.05); this._noise(0.05, 0.8, 'highpass', 2500, 5000);
+  }
+  // k: 'back' the fore-end pulled, 'fwd' pushed home, 'shell' one pushed into the tube, 'dry' a hammer on nothing
+  action(k) {
+    if (!this.ctx) return;
+    if (k === 'back') { this._noise(0.07, 0.5, 'bandpass', 1900, 900); this._noise(0.04, 0.35, 'highpass', 3000, 4200, 0.05); }
+    else if (k === 'fwd') { this._noise(0.06, 0.55, 'bandpass', 1200, 2400); this._noise(0.03, 0.4, 'highpass', 3500, 5000, 0.045); }
+    else if (k === 'shell') this._noise(0.05, 0.3, 'bandpass', 2600, 1500);
+    else this._noise(0.025, 0.3, 'highpass', 3800, 5200);
+  }
   // the metronome's tick at an exact time on the audio clock
   tick(when, accent) {
     const c = this.ctx, o = c.createOscillator(), g = c.createGain();

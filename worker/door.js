@@ -33,7 +33,7 @@ const APPF = /^\/(app\.webmanifest|icon-(192|512)\.png)$/;   // the installable 
 const EDMAP = /^\/edmap\/t\d{1,2}_\d{1,2}\.jpg$/;
 const SCAREA = /^\/scare-assets\/[a-z0-9_-]+\.glb$/;   // VESPER WARD's models: to anyone
 const SNIPA = /^\/sniper-assets\/(sky|tex|m|snd|p)\/[A-Za-z0-9_-]+\.(glb|json|mp3|jpg|webp)$/, SNIPT = { glb: "model/gltf-binary", json: "application/json", mp3: "audio/mpeg", jpg: "image/jpeg", webp: "image/webp" };   // COLD BORE's skies, surfaces, models and sounds: to anyone
-const SPCA = /^\/space-assets\/((m|snd)\/[A-Za-z0-9_-]+\.(glb|mp3)|stars\.json)$/;   // SPACE FLEET's models, sky and sounds: to anyone
+const SPCA = /^\/space-assets\/((m|snd)\/[A-Za-z0-9_-]+\.(glb|mp3)|tex\/[a-z0-9_]+\.jpg|stars\.json)$/;   // SPACE FLEET's models, sky and sounds: to anyone
 const JAMA = /^\/jam-assets\/[a-z0-9_-]+\.(glb|json|mp3)$/, JAMT = { glb: "model/gltf-binary", json: "application/json", mp3: "audio/mpeg" };   // STADIUM JAM's avatars, hands and samples: to anyone
 const DRUMA = /^\/drums-assets\/(?:(?:tex|m|p)\/)?[A-Za-z0-9_-]+\.(glb|json|mp3|jpg)$/, DRUMT = { glb: "model/gltf-binary", json: "application/json", mp3: "audio/mpeg", jpg: "image/jpeg" };   // THE GARAGE's recorded kit, models and surfaces: to anyone
 const SAYNO = new Map();

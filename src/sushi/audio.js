@@ -120,15 +120,18 @@ export class GameAudio {
     f.key = key; f.idle = 0; f.e.at.copy(pos); f.e.level(Math.min(0.5, 0.12 + rate * 6));
   }
 
-  // the bed: rain over the alley (louder out from under the roof), on the cart's sheet roof and running off its edges into puddles, the street's traffic at the open end, the pots
+  // the rain, only while it falls (weather.js, G.rainK): over the village (louder out from under the roof), on the stall's roof and running off its edges; no traffic in the village
   beds() {
-    if (this.bedOn || !this.buf.rain || !G.wet) return; this.bedOn = true;   // (a dry day in the village: no rain, no traffic) const c = this.ctx;
-    const r = c.createBufferSource(); r.buffer = this.buf.rain; r.loop = true; r.loopStart = 0.05; r.loopEnd = r.buffer.duration - 0.05; r.connect(this.bed); r.start(0, Math.random() * 10);
+    if (this.bedOn || !this.buf.rain || !(G.rainK > 0.005)) return; this.bedOn = true; const c = this.ctx;
+    this.rainG = c.createGain(); this.rainG.gain.value = 0; this.rainG.connect(this.bed);
+    const r = c.createBufferSource(); r.buffer = this.buf.rain; r.loop = true; r.loopStart = 0.05; r.loopEnd = r.buffer.duration - 0.05; r.connect(this.rainG); r.start(0, Math.random() * 10);
     this.edges = [[-0.9, 2.62, -1.86], [0.9, 2.62, -1.86], [-0.9, 2.62, 2.14], [0.9, 2.62, 2.14]].map(([x, y, z], i) => this.loop(i % 2 ? 'drip' : 'eaves', 'eaves', new THREE.Vector3(x, i % 2 ? 0.1 : y, z), { rate: 0.94 + i * 0.04 }));
-    this.edges.forEach((e) => e.level(0.5));
-    this.roof = this.loop('eaves', 'roof', new THREE.Vector3(0, 3.1, 0.15), { rate: 1.12, wet: 0.3 }); this.roof.level(0.22);
-    this.street = this.loop('traffic', 'street', new THREE.Vector3(35, 1.5, -1), { wet: 1.6 }); this.street.level(0.9);
-    this.pots = [];
+    this.roof = this.loop('eaves', 'roof', new THREE.Vector3(0, 3.1, 0.15), { rate: 1.12, wet: 0.3 });
+  }
+  // as loud as what falls: nothing on a dry day, a soft hiss in the drizzle
+  rainLevel(now) {
+    const k = Math.min(1, (G.rainK || 0) / 0.32); if (k > 0) this.beds(); if (!this.bedOn) return;
+    this.rainG.gain.setTargetAtTime(k * 1.3, now, 0.8); this.edges.forEach((e) => e.level(0.45 * k)); this.roof.level(0.2 * k);
   }
 
   play(name, at, k = 1) {
@@ -229,7 +232,8 @@ export class GameAudio {
     if (this.el && !this.elGain && !this.el.paused) { const d = Math.hypot(_p.x + 1.0, _p.z + 0.46); this.el.volume = Math.max(0.05, Math.min(1, 0.55 / Math.max(0.6, d))) * Math.min(1, this.master.gain.value); }
     // out from under the cart's roof the open sky's rain grows
     const e0 = this.ear(), out = Math.max(0, Math.abs(e0.x) - 1.75, -1.86 - e0.z, e0.z - 2.14); this.bed.gain.setTargetAtTime(0.1 + 0.22 * Math.min(1, out / 1.5), now, 0.3);
-    if (this.bedOn && G.cart) {
+    this.rainLevel(now);
+    if (G.cart && this.buf.boil) { this.pots ||= [];
       // the pots: the noodle water at a rolling boil, the stocks at a simmer, a faint hiss of steam off the hottest
       if (!this.pots.length) { this.pots = G.cart.pots.map((pt) => ({ pt, e: this.loop(pt.type ? 'simmer' : 'boil', 'pot', () => _q.set(pt.x, pt.liqY > 0 ? pt.liqY : pt.baseY + 0.1, pt.z), { rate: 0.95 + Math.random() * 0.1 }) })); this.hiss = this.loop('steam', 'pot', () => { const pt = G.cart.pots[0]; return _q.set(pt.x, pt.rimY + 0.15, pt.z); }, { rate: 0.8 }); }
       let top = 0; for (const q of this.pots) { const k = Math.max(0, Math.min(1, (q.pt.heat - 0.55) / 0.45)) * (q.pt.liqY > 0 ? 1 : 0); q.e.level((q.pt.type ? 0.3 : 0.45) * k * k); if (!q.pt.type) top = k; }

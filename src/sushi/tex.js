@@ -2,7 +2,34 @@
 import * as THREE from 'three';
 
 // one clock for every surface that moves (broth); cart.js moves it
-export const SURF = { time: { value: 0 }, lamp: { value: new THREE.Vector3(0, 2.36, -0.3) } };
+export const SURF = { time: { value: 0 }, lamp: { value: new THREE.Vector3(0, 2.36, -0.3) }, wet: { value: 0 } };
+// the wind in what hangs and grows (noren, the trees' crowns, the young rice), moved in the vertex shader so it costs nothing to draw: WIND.t the time, WIND.k how hard it blows (life.js)
+export const WIND = { t: { value: 0 }, k: { value: 0.3 } };
+const SWAY = {
+  cloth: 'float sw = clamp(1.0 - uv.y, 0.0, 1.0); sw *= sw * 0.16;',
+  tree: 'float sw = pow(clamp((swp.y - 1.6) / 12.0, 0.0, 1.0), 1.4) * 0.5;',
+  grass: 'float sw = clamp(position.y / 0.42, 0.0, 1.0); sw *= sw * 0.07;',
+};
+export function sway(m, kind) {
+  const prev = m.onBeforeCompile, key = prev && m.customProgramCacheKey ? m.customProgramCacheKey() : '';
+  m.onBeforeCompile = (s, r) => {
+    if (prev) prev.call(m, s, r);
+    Object.assign(s.uniforms, { uWindT: WIND.t, uWindK: WIND.k });
+    s.vertexShader = s.vertexShader.replace('#include <common>', '#include <common>\nuniform float uWindT, uWindK;').replace('#include <begin_vertex>', `#include <begin_vertex>
+  { vec4 swp = vec4(transformed, 1.0);
+  #ifdef USE_INSTANCING
+    swp = instanceMatrix * swp;
+  #endif
+    swp = modelMatrix * swp; ${SWAY[kind]}
+    float ph = uWindT * 1.3 + swp.x * 0.31 + swp.z * 0.23, gust = 0.65 + 0.35 * sin(uWindT * 0.37 + swp.x * 0.05);
+    vec3 off = vec3(1.0, 0.0, 0.35) * sw * uWindK * (gust + 0.35 * sin(ph)) + vec3(0.2, 0.0, 1.0) * sw * uWindK * 0.3 * sin(ph * 1.9 + 1.3);
+  #ifdef USE_INSTANCING
+    off = inverse(mat3(instanceMatrix)) * off;
+  #endif
+    transformed += off; }`);
+  };
+  const k = key + 'sway' + kind; m.customProgramCacheKey = () => k; m.needsUpdate = true; return m;
+}
 const NOISE = `varying vec3 vSurfW;
 float sH(vec2 p) { return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453); }
 float sN(vec2 p) { vec2 i = floor(p), f = fract(p); f = f * f * (3.0 - 2.0 * f); return mix(mix(sH(i), sH(i + vec2(1.0, 0.0)), f.x), mix(sH(i + vec2(0.0, 1.0)), sH(i + vec2(1.0, 1.0)), f.x), f.y); }`;
@@ -32,7 +59,11 @@ vec4 sBomb(sampler2D t, vec2 uv) {
     diffuseColor.rgb *= 1.0 + ${f(P.vary)} * (v - 0.5) * 2.0;
     float g = smoothstep(0.55, 0.85, sN(w.xz * 1.6 + w.zy * 1.3 + 11.0)) * 0.7 + (1.0 - smoothstep(${f(P.low)}, ${f(P.low + P.band)}, vSurfW.y)) * 0.8;
     diffuseColor.rgb = mix(diffuseColor.rgb, diffuseColor.rgb * vec3(0.46, 0.4, 0.33), clamp(g, 0.0, 1.0) * ${f(P.grime)});
-    ${P.worn ? `float p = smoothstep(0.35, 0.8, sN(w.xz * 2.3 + 5.0)); diffuseColor.rgb = mix(diffuseColor.rgb, diffuseColor.rgb * vec3(1.18, 1.1, 0.95) + vec3(0.025, 0.016, 0.0), p * ${f(P.worn)});` : ''} }`);
+    ${P.worn ? `float p = smoothstep(0.35, 0.8, sN(w.xz * 2.3 + 5.0)); diffuseColor.rgb = mix(diffuseColor.rgb, diffuseColor.rgb * vec3(1.18, 1.1, 0.95) + vec3(0.025, 0.016, 0.0), p * ${f(P.worn)});` : ''} }`)
+      .replace('#include <normal_fragment_maps>', `#include <normal_fragment_maps>
+  if (uWet > 0.0) { float up = smoothstep(0.5, 0.9, dot(normal, (viewMatrix * vec4(0.0, 1.0, 0.0, 0.0)).xyz)), roof = step(abs(vSurfW.x), 1.95) * step(-1.95, vSurfW.z) * step(vSurfW.z, 2.25) * step(vSurfW.y, 2.7);
+    diffuseColor.rgb *= 1.0 - uWet * up * (1.0 - roof) * (0.3 + 0.12 * sN(vSurfW.xz * 1.3)); }`);   // in the rain what faces the sky darkens, as wet earth and wood do; under the stall's roof it stays dry
+    s.uniforms.uWet = SURF.wet; s.fragmentShader = s.fragmentShader.replace('#include <common>', '#include <common>\nuniform float uWet;');
   };
   const k = key + 'surf' + Object.values(P).map(f).join(',');
   m.customProgramCacheKey = () => k; m.userData.surface = P; m.needsUpdate = true; return m;
@@ -71,10 +102,10 @@ export function rng(seed) {
 }
 
 export function canvasTex(w, h, draw, o = {}) {
-  // o.lo: a surface is drawn large and kept small (the PlayStation 2's texel size); writing is kept whole
+  // (o.lo once kept a surface small, the PlayStation 2's texel size; every picture is drawn at its full size now: THE MARKET's look, 17 Nov 2026)
   const c = document.createElement('canvas'); c.width = w; c.height = h;
   const g = c.getContext('2d'); draw(g, w, h);
-  const k = o.lo || 1, sc = document.createElement('canvas'); sc.width = Math.max(8, Math.round(w * k)); sc.height = Math.max(8, Math.round(h * k));
+  const k = 1, sc = document.createElement('canvas'); sc.width = Math.max(8, Math.round(w * k)); sc.height = Math.max(8, Math.round(h * k));
   const sg = sc.getContext('2d'), t = new THREE.CanvasTexture(sc);
   t.colorSpace = o.linear ? THREE.NoColorSpace : THREE.SRGBColorSpace; t.anisotropy = 4;
   if (o.repeat) { t.wrapS = t.wrapT = THREE.RepeatWrapping; t.repeat.set(o.repeat[0], o.repeat[1]); }
@@ -90,12 +121,12 @@ const PIMG = {}, PTEX = {};
 export function loadPhotos(base = '/sushi-assets/tex/', ms = 9000) {
   return Promise.all(PHOTOS.map((n) => new Promise((res) => { const im = new Image(); im.onload = () => { PIMG[n] = im; const t = PTEX[n]; if (t) { t.dispose(); t.image = small(im); t.needsUpdate = true; } res(); }; im.onerror = res; im.src = base + n + '.jpg'; setTimeout(res, ms); })));
 }
-const small = (im, n = 128) => { const c = document.createElement('canvas'); c.width = c.height = n; c.getContext('2d').drawImage(im, 0, 0, n, n); return c; }; // a photograph at the PlayStation 2's size
+const small = (im, n = 512) => { const c = document.createElement('canvas'); c.width = c.height = n; c.getContext('2d').drawImage(im, 0, 0, n, n); return c; }; // a photograph at its own size (512), mipmapped and filtered at a slant
 export const photoImg = (name) => PIMG[name];
 export function photo(name, fallback) { // one texture a file, shared by every material that wears it
   if (PTEX[name]) return PTEX[name];
   const t = new THREE.Texture(PIMG[name] ? small(PIMG[name]) : (fallback ? fallback().image : canvasTex(8, 8, (g) => { g.fillStyle = '#666'; g.fillRect(0, 0, 8, 8); }).image));
-  t.colorSpace = THREE.SRGBColorSpace; t.wrapS = t.wrapT = THREE.RepeatWrapping; t.anisotropy = 4; t.needsUpdate = true; t.userData.photo = name; return (PTEX[name] = t);
+  t.colorSpace = THREE.SRGBColorSpace; t.wrapS = t.wrapT = THREE.RepeatWrapping; t.anisotropy = 8; t.needsUpdate = true; t.userData.photo = name; return (PTEX[name] = t);
 }
 // the picture laid by the metre from where a thing stands (size = metres a tile), so scaled and instanced boxes all wear it at its true size
 export function worldUV(m, size = 1) {

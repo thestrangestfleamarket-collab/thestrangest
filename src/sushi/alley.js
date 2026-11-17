@@ -7,15 +7,14 @@ import { taru } from './models.js';
 import { makeWater } from './ripple.js';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { MeshoptDecoder } from 'three/addons/libs/meshopt_decoder.module.js';
+import { buildSky } from './sky.js';
+import * as E from './ephem.js';
+import { AIR } from './air.js';
+import { weatherAt } from './weather.js';
 
 export const FOG = 0xb8c4cc;
-const C3 = (h) => new THREE.Color(h);
-// the sky at each moment: [hour, zenith, horizon, fog, sun colour, sun, hemisphere sky, hemisphere ground, fill]
-const SKY = [[6, 0x5a6a92, 0xe0a070, 0x9a8a88, 0xffb070, 0.9, 0x8a94b8, 0x3a3028, 0.7], [10, 0x5e8ed0, 0xc8d8e4, 0xb8c4cc, 0xfff2dc, 2.4, 0xbcd0ec, 0x6a5a40, 1.05], [16.5, 0x6a94cc, 0xd8d8d0, 0xbcc4c4, 0xffe8c8, 2.1, 0xc0cce0, 0x6a5a40, 1.0],
-  [18.2, 0x4a5a8a, 0xf08848, 0xb08070, 0xff8a40, 1.1, 0x9a88a8, 0x4a3828, 0.8], [19, 0x1c2244, 0x8a4a48, 0x4a3a48, 0xd06040, 0.25, 0x4a4a78, 0x201818, 0.5], [19.6, 0x070a18, 0x18203a, 0x0c1020, 0x000000, 0, 0x2a3a6a, 0x0a0a10, 0.38],
-  [28.8, 0x070a18, 0x18203a, 0x0c1020, 0x000000, 0, 0x2a3a6a, 0x0a0a10, 0.38], [29.05, 0x10163a, 0x4a3a5e, 0x1e1c2e, 0xc07050, 0, 0x3a4272, 0x16141c, 0.45], [29.6, 0x2a3460, 0xb06a5a, 0x5a4a58, 0xff9a60, 0.4, 0x6a6a90, 0x2a2420, 0.55], [30.5, 0x5a6a9a, 0xe8a878, 0x9a8c8c, 0xffb878, 1.0, 0x9aa0c0, 0x3a3028, 0.75]];
-
-export function buildAlley(scene) {
+export function buildAlley(scene, o = {}) {
+  const rich = !!o.rich;   // a screen: the richer path (finer shadows, the brazier's shadows); a headset: the lean one
   const city = new THREE.Group(); scene.add(city); const glow = new THREE.Group(); city.add(glow); const ups = [], R = T.rng(1862);
   const glowMap = T.glowTex(), S = { easy: true };
   const halo = (color, size, x, y, z, parent = glow, op = 0.5) => { const s = new THREE.Sprite(new THREE.SpriteMaterial({ map: glowMap, color, blending: THREE.AdditiveBlending, depthWrite: false, transparent: true, opacity: op, fog: true })); s.scale.set(size, size, 1); s.position.set(x, y, z); parent.add(s); s.userData.nopick = true; return s; };
@@ -24,6 +23,7 @@ export function buildAlley(scene) {
   // ---- the ground: the street's packed dirt, grass beyond the houses, the path out between the fields
   const dirt = real('dirt', 3.2, 0xa89880, { grime: 0.2 }), grass = real('grass', 3, 0x8a9a70), mud = real('mud', 2.6, 0x8a7a68);
   box(160, 0.4, 140, grass, 20, -0.21, 0, city).castShadow = false;
+  { const fg = new THREE.CircleGeometry(430, 48).rotateX(-Math.PI / 2), fm = mesh(fg, real('grass', 6, 0x8a9468, { grime: 0.1 }), 20, -0.24, 0, city); fm.castShadow = false; fm.receiveShadow = false; fm.userData.nopick = true; }   // the plain out to the hills
   box(E0 - W0 + 12, 0.2, NZ - FZ + 1.2, dirt, (E0 + W0) / 2 + 2, -0.1, MID, city).castShadow = false;
   box(70, 0.2, 4.2, dirt, E0 + 41, -0.105, MID, city).castShadow = false;   // the road east, out between the fields
   for (let i = 0; i < 22; i++) { const m = mesh(new THREE.CircleGeometry(0.4 + R() * 1.1, 10), mud, W0 + 4 + R() * 48, 0.002, FZ + 0.6 + R() * (NZ - FZ - 1.2), city); m.rotation.x = -Math.PI / 2; m.castShadow = false; m.scale.y = 0.5 + R(); }   // worn patches where feet and carts go
@@ -35,12 +35,12 @@ export function buildAlley(scene) {
   const lattice = mat({ map: latticeT, alphaTest: 0.5, side: THREE.DoubleSide }), inside = new THREE.MeshBasicMaterial({ color: 0x120c08 }), tatami = real('tatami', 1, 0x8a8060, { grime: 0.1 });
   const slats = mat({ map: T.canvasTex(64, 32, (g, w, h) => { g.fillStyle = '#16100a'; g.fillRect(0, 0, w, h); g.fillStyle = '#d8d0c0'; for (let x = 0; x < w; x += 10) g.fillRect(x, 0, 5, h); }) });
   const NOREN = [['#24325a', '酒', 'SAKE'], ['#2a2a2a', '茶', 'TEA'], ['#5a2a1c', '魚', 'FISH'], ['#3a4a2a', '陶', 'POTTERY'], ['#24325a', '宿', 'INN'], ['#6a1c1c', '米', 'RICE'], ['#2a3a4a', '豆腐', 'TOFU'], ['#4a3a24', '薬', 'MEDICINE']];
-  const norenM = NOREN.map(([c, k]) => { const t = T.canvasTex(256, 128, (g, w, h) => { g.fillStyle = c; g.fillRect(0, 0, w, h); g.fillStyle = '#efe8d8'; g.font = `bold ${k.length > 1 ? 70 : 90}px ${T.JP}`; g.textAlign = 'center'; g.textBaseline = 'middle'; g.fillText(k, w / 2, h / 2 + 4); g.fillStyle = 'rgba(0,0,0,0.25)'; for (let x = w / 3; x < w; x += w / 3) g.fillRect(x - 1, 0, 3, h); }); T.dirty(t, 3 + k.length, { stains: 10, fade: 1 }); return mat({ map: t, side: THREE.DoubleSide }); });
+  const norenM = NOREN.map(([c, k]) => { const t = T.canvasTex(256, 128, (g, w, h) => { g.fillStyle = c; g.fillRect(0, 0, w, h); g.fillStyle = '#efe8d8'; g.font = `bold ${k.length > 1 ? 70 : 90}px ${T.JP}`; g.textAlign = 'center'; g.textBaseline = 'middle'; g.fillText(k, w / 2, h / 2 + 4); g.fillStyle = 'rgba(0,0,0,0.25)'; for (let x = w / 3; x < w; x += w / 3) g.fillRect(x - 1, 0, 3, h); }); T.dirty(t, 3 + k.length, { stains: 10, fade: 1 }); return T.sway(mat({ map: t, side: THREE.DoubleSide }), 'cloth'); });   // (they move in the wind)
   // the lamps: every paper lantern in the village shares a few materials whose light comes up together at dusk and goes at dawn (steadily: nothing flickers)
   const lampMats = [], lampHalos = new THREE.SpriteMaterial({ map: glowMap, color: 0xffa860, blending: THREE.AdditiveBlending, depthWrite: false, transparent: true, opacity: 0, fog: true });
   const paper = (bg, ink, txt) => { const t = T.canvasTex(128, 128, (g, w, h) => { g.fillStyle = bg; g.fillRect(0, 0, w, h); g.strokeStyle = 'rgba(0,0,0,0.25)'; g.lineWidth = 2; for (let y = 8; y < h; y += 12) { g.beginPath(); g.moveTo(0, y); g.lineTo(w, y); g.stroke(); } if (txt) { g.fillStyle = ink; g.font = `bold 54px ${T.JP}`; g.textAlign = 'center'; g.textBaseline = 'middle'; g.fillText(txt, w / 4, h / 2); g.fillText(txt, (w * 3) / 4, h / 2); } }); const m = mat({ map: t, emissiveMap: t, emissive: 0xffb070, emissiveIntensity: 0 }); m.userData.lamp = 1; lampMats.push(m); return m; };
   const lampW = paper('#efe4c8', '#1a1a1a', '提灯'.slice(0, 1)), lampR = paper('#c8301c', '#140404', '祭'), lampS = paper('#e8dcc0', '#1a1a1a', '');
-  const chochin = (x, y, z, m = lampW, s = 1) => { const g = new THREE.Group(); g.position.set(x, y, z); g.scale.setScalar(s); city.add(g); mesh(new THREE.SphereGeometry(0.17, 12, 8).scale(1, 1.35, 1), m, 0, 0, 0, g).castShadow = false; for (const dy of [-0.24, 0.24]) cyl(0.1, 0.1, 0.03, ridgeM, 0, dy, 0, g, 10).castShadow = false; const h = new THREE.Sprite(lampHalos); h.scale.set(1.6 * s, 1.6 * s, 1); g.add(h); h.userData.nopick = true; return g; };
+  const chochin = (x, y, z, m = lampW, s = 1) => { const g = new THREE.Group(); g.position.set(x, y + 0.34 * s, z); g.scale.setScalar(s); g.userData.dyn = true; city.add(g); mesh(new THREE.SphereGeometry(0.17, 12, 8).scale(1, 1.35, 1), m, 0, -0.34, 0, g).castShadow = false; for (const dy of [-0.24, 0.24]) cyl(0.1, 0.1, 0.03, ridgeM, 0, dy - 0.34, 0, g, 10).castShadow = false; cyl(0.004, 0.004, 0.1, ridgeM, 0, -0.05, 0, g, 4).castShadow = false; const h = new THREE.Sprite(lampHalos); h.position.y = -0.34; h.scale.set(1.6 * s, 1.6 * s, 1); g.add(h); h.userData.nopick = true; return g; };   // hung from its cord's top, so it swings in the wind
   const house = (x, z, w, s, k, far) => { // s: 1 the row behind the stall (its front faces -z), -1 across the street
     const D = far ? 6 : 7, fz = z, cz = z + s * D / 2, g1 = 2.9, kind = k.kind;
     const wallM = kind === 'kura' ? plaster : cedar;
@@ -89,64 +89,98 @@ export function buildAlley(scene) {
     for (let i = 0; i < 4; i++) { const hz = MID + (i - 1.5) * 1.3; mesh(new THREE.PlaneGeometry(1.1, 2.2), lattice, hx + 3.01, 1.4 + 1.2, hz, city).rotation.y = Math.PI / 2; }
     lamps.push(chochin(hx + 3.4, 3.8, MID - 1.2, lampW, 1.3), chochin(hx + 3.4, 3.8, MID + 1.2, lampW, 1.3)); }
   // ---- trees: cedars and pines round the shrine and the village's edges (a trunk and its tiers, cheap)
-  const bark = real('bark', 1, 0x7a5a44), needles = real('grass', 1.2, 0x3a5a3a), pineM = real('grass', 1.4, 0x4a6a3a);   // the needles' texture is the grass photograph, darkened
+  const bark = real('bark', 1, 0x7a5a44), needles = T.sway(real('grass', 1.2, 0x3a5a3a), 'tree'), pineM = T.sway(real('grass', 1.4, 0x4a6a3a), 'tree');   // the needles' texture is the grass photograph, darkened
   const tree = (x, z, h, pine) => { cyl(0.18 * h / 8, 0.28 * h / 8, h * 0.45, bark, x, h * 0.22, z, city, 6); const n = pine ? 3 : 4; for (let i = 0; i < n; i++) { const r = (pine ? 1.6 : 1.2) * (1 - i / (n + 0.5)) * h / 8, c = mesh(new THREE.ConeGeometry(r * (pine ? 1.4 : 1), h * (pine ? 0.22 : 0.3), 7), pine ? pineM : needles, x, h * (0.42 + i * (pine ? 0.16 : 0.15)), z, city); c.rotation.y = R() * 3; c.castShadow = i === 0; } };
   for (let i = 0; i < 18; i++) tree(W0 - 4 - R() * 16, MID + (R() < 0.5 ? -1 : 1) * (6 + R() * 9), 9 + R() * 7, false);
   for (let i = 0; i < 16; i++) tree(-30 + R() * 60, (R() < 0.5 ? NZ + 15 + R() * 10 : FZ - 15 - R() * 10), 6 + R() * 6, R() < 0.5);
+  const paddyW = mat({ color: 0x3a4848, emissive: 0x8aa0b8, emissiveIntensity: 0.4, transparent: true, opacity: 0.82 });   // (the paddies' water shows the sky: its glow is the sky's colour, set with the light below)
   // ---- the rice fields east of the village: flooded paddies between low dikes, the young rice in rows
-  { const water = mat({ color: 0x5a6a6a, transparent: true, opacity: 0.72 }), dike = grass, field = real('field', 2, 0x6a5a48); const rice = [], dd = new THREE.Object3D();
+  { const water = paddyW, dike = grass, field = real('field', 2, 0x6a5a48); const rice = [], dd = new THREE.Object3D();
     for (let px = E0 + 3; px < E0 + 60; px += 9) for (const pz of [MID - 9, MID - 18, MID + 7, MID + 16, MID - 27, MID + 25]) { const w = 8.2, d = 8.2;
-      box(w, 0.06, d, field, px + w / 2, -0.17, pz, city).castShadow = false; box(w, 0.02, d, water, px + w / 2, -0.12, pz, city).castShadow = false;
-      for (const s of [-1, 1]) { box(w + 0.8, 0.22, 0.4, dike, px + w / 2, -0.05, pz + s * (d / 2 + 0.2), city).castShadow = false; box(0.4, 0.22, d, dike, px + (s > 0 ? w + 0.2 : -0.2), -0.05, pz, city).castShadow = false; }
-      for (let i = 0; i < 7; i++) for (let j = 0; j < 7; j++) { dd.position.set(px + 0.6 + i * 1.15, -0.12, pz - d / 2 + 0.6 + j * 1.15); dd.rotation.y = R() * 3; dd.scale.setScalar(0.8 + R() * 0.4); dd.updateMatrix(); rice.push(dd.matrix.clone()); } }
-    const rg = new THREE.ConeGeometry(0.07, 0.42, 4).translate(0, 0.21, 0), im = new THREE.InstancedMesh(rg, real('grass', 0.5, 0x9ac060), rice.length); rice.forEach((m, i) => im.setMatrixAt(i, m)); im.castShadow = false; im.userData.nopick = true; city.add(im); }
-  // ---- the dark hills all round, and the far mountains
-  const hillM = real('grass', 18, 0x4a6040, { grime: 0.5 }), farM = real('stone_wall', 30, 0x6a7480, { grime: 0.5 });
-  for (let i = 0; i < 14; i++) { const a = (i / 14) * Math.PI * 2 + R() * 0.3, d = 85 + R() * 40, h = mesh(new THREE.SphereGeometry(1, 12, 6, 0, Math.PI * 2, 0, Math.PI / 2), i % 3 ? hillM : farM, 20 + Math.cos(a) * d, -0.5, Math.sin(a) * d, city); h.scale.set(30 + R() * 25, 14 + R() * 22, 30 + R() * 25); h.castShadow = false; h.receiveShadow = false; }
+      box(w, 0.06, d, field, px + w / 2, 0.0, pz, city).castShadow = false; box(w, 0.02, d, water, px + w / 2, 0.05, pz, city).castShadow = false;
+      for (const s of [-1, 1]) { box(w + 0.8, 0.22, 0.4, dike, px + w / 2, 0.06, pz + s * (d / 2 + 0.2), city).castShadow = false; box(0.4, 0.22, d, dike, px + (s > 0 ? w + 0.2 : -0.2), 0.06, pz, city).castShadow = false; }
+      for (let i = 0; i < 7; i++) for (let j = 0; j < 7; j++) { dd.position.set(px + 0.6 + i * 1.15, 0.04, pz - d / 2 + 0.6 + j * 1.15); dd.rotation.y = R() * 3; dd.scale.setScalar(0.8 + R() * 0.4); dd.updateMatrix(); rice.push(dd.matrix.clone()); } }
+    const rg = (() => { const p = [], RR = T.rng(7); for (let b = 0; b < 6; b++) { const a = (b / 6) * Math.PI * 2 + RR() * 0.5, lean = 0.05 + RR() * 0.07, h = 0.28 + RR() * 0.14, w = 0.012, ca = Math.cos(a), sa = Math.sin(a); p.push(-sa * w, 0, ca * w, sa * w, 0, -ca * w, ca * lean, h, sa * lean); } const g = new THREE.BufferGeometry(); g.setAttribute('position', new THREE.Float32BufferAttribute(p, 3)); g.setAttribute('uv', new THREE.Float32BufferAttribute(new Array((p.length / 3) * 2).fill(0), 2)); g.computeVertexNormals(); return g; })();   // a tuft of young rice: six thin blades leaning out
+    const im = new THREE.InstancedMesh(rg, T.sway(mat({ color: 0x6e9a3a, side: THREE.DoubleSide }), 'grass'), rice.length); rice.forEach((m, i) => im.setMatrixAt(i, m)); im.castShadow = false; im.userData.nopick = true; city.add(im); }
+  // ---- the hills all round in three ridges, each further one bluer in the haze (air.js), lower to the west-south-west where Fuji stands far off over the plain, snow on its top
+  { const hillM = real('grass', 22, 0xffffff, { grime: 0.15 }); hillM.vertexColors = true; const FUJI = 247 * Math.PI / 180, wrap = (a) => Math.atan2(Math.sin(a), Math.cos(a)), c0 = new THREE.Color(), c1 = new THREE.Color();
+    const ridge = (r0, depth, h0, h1, lo, hi, seed, N = 160) => { const pos = [], col = [], idx = [], ph = [1, 2, 3, 5, 7, 11, 17, 29, 47, 83].map((k) => [k, R() * 6.28, k > 20 ? 0.09 : 1 / Math.sqrt(k)]);   // (the high ones: the treeline's ragged top)
+      const H = (a) => { let v = 0, n = 0; for (const [k, p, w] of ph) { v += Math.sin(k * a + p + seed) * w; n += w; } const dip = 1 - 0.72 * Math.exp(-((wrap(a - FUJI) / 0.42) ** 2)); return (h0 + (h1 - h0) * (0.5 + 0.5 * v / n * 1.6)) * dip; };
+      const rows = [[0, -2, 0.25], [0.45, 0.7, 0.55], [1, 1, 1], [1.7, 0.45, 0.8]];
+      for (let i = 0; i <= N; i++) { const a = (i / N) * Math.PI * 2, h = Math.max(1, H(a)), sx = Math.sin(a), sz = Math.cos(a);
+        for (const [dr, fh, cb] of rows) { const r = r0 + depth * dr, y = fh < 0 ? -2 : h * fh; pos.push(20 + sx * r, y, sz * r); c0.setHex(lo).lerp(c1.setHex(hi), cb * (0.75 + 0.25 * R())); col.push(c0.r, c0.g, c0.b); } }
+      for (let i = 0; i < N; i++) for (let j = 0; j < 3; j++) { const a = i * 4 + j, b = a + 4; idx.push(a, a + 1, b, a + 1, b + 1, b); }
+      const g = new THREE.BufferGeometry(); g.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3)); g.setAttribute('color', new THREE.Float32BufferAttribute(col, 3)); g.setAttribute('uv', new THREE.Float32BufferAttribute(new Array((pos.length / 3) * 2).fill(0), 2)); g.setIndex(idx); g.computeVertexNormals();
+      const m = new THREE.Mesh(g, hillM); m.castShadow = m.receiveShadow = false; m.userData.nopick = true; city.add(m); };
+    ridge(105, 30, 7, 20, 0x1e2a18, 0x3a4a2c, 0.3); ridge(165, 40, 14, 32, 0x2a3830, 0x4a5a4a, 1.7); ridge(240, 55, 22, 48, 0x3a4652, 0x5a6672, 3.1);
+    // Fuji: a long concave cone, snow over the top third with a ragged edge
+    const prof = []; for (let i = 0; i <= 12; i++) { const t = i / 12; prof.push(new THREE.Vector2(Math.max(4, 82 * Math.pow(1 - t, 1.7)), t * 34)); } const fg = new THREE.LatheGeometry(prof, 48), fp = fg.attributes.position, fc = [];
+    for (let i = 0; i < fp.count; i++) { const y = fp.getY(i), a = Math.atan2(fp.getZ(i), fp.getX(i)), snow = y > 34 * (0.62 + 0.07 * Math.sin(a * 7) + 0.05 * Math.sin(a * 13 + 1)); c0.setHex(snow ? 0xe8ecf2 : 0x4a5868); fc.push(c0.r, c0.g, c0.b); }
+    fg.setAttribute('color', new THREE.Float32BufferAttribute(fc, 3)); const fm = new THREE.Mesh(fg, mat({ vertexColors: true })); fm.position.set(20 + Math.sin(FUJI) * 340, -3, Math.cos(FUJI) * 340); fm.castShadow = fm.receiveShadow = false; fm.userData.nopick = true; city.add(fm); }
   // ---- what stands about: barrels, buckets, baskets, crates, a broom, a stump, shrubs (CC0 models)
   const gl = new GLTFLoader(); gl.setMeshoptDecoder(MeshoptDecoder); const A = '/sushi-assets/m/';
   const put = (file, spots, tint = 0xa8a8a8) => gl.loadAsync(A + file + '.glb').then((g) => { g.scene.traverse((o) => { if (o.isMesh) { o.material = mat({ map: o.material.map, color: tint }); o.userData.nopick = true; o.castShadow = false; } }); for (const [x, z, ry, s] of spots) { const c = g.scene.clone(); c.position.set(x, 0, z); c.rotation.y = ry || 0; c.scale.setScalar(s || 1); city.add(c); } }).catch(() => { });
   for (const [x, z, ry, s] of [[-13.2, NZ - 0.5, 0, 1], [-12.6, NZ - 0.55, 1, 0.9], [-1.2, FZ + 0.6, 2, 1], [-0.6, FZ + 0.62, 0.4, 0.85], [11.6, FZ + 0.6, 0.5, 1], [6.2, NZ - 0.6, 3, 0.9]]) taru(city, x, z, s, ry);   // sake barrels by the sake house and the inn put('wooden_bucket_01', [[-6.2, 2.0, 0.4], [-5.9, 2.5, 1.7], [-9.6, FZ + 0.7, 0], [16.3, NZ - 0.6, 2]]);
   put('wicker_basket_01', [[5.4, NZ - 0.5, 0.2], [-16.7, FZ + 0.6, 1.1], [-14.4, FZ + 0.65, 0.4], [10.6, NZ - 0.55, 2]]); put('wooden_crate_01', [[-12.4, FZ + 0.6, 0.3], [-12.4, FZ + 0.6, 0.1, 0.9], [12.5, NZ - 0.55, 1.2]], 0x9a9088); put('wooden_broom', [[-4.4, NZ - 0.3, 1.6]]);
   put('tree_stump_01', [[23.8, NZ - 1.5, 0], [W0 + 6, FZ + 0.8, 2]]); put('shrub_02', [[-23.6, NZ - 0.6, 0], [-18.4, FZ + 0.6, 1], [17.6, NZ - 0.6, 2], [23.2, FZ + 0.8, 3], [W0 + 3.4, NZ - 0.4, 1], [W0 + 3.4, FZ + 0.5, 2]], 0x8a9a80);
-  // ---- the light: the sun across the sky, the moon at night, the hemisphere's fill, the sky dome and its stars; and the village's lanterns
+  // ---- the light, after THE MARKET's: the real sun and moon over Edo on the run's clock (sky.js, ephem.js), the light from whichever is up and its shadows, the hemisphere's fill by the sky's colour, the air's haze and mist (air.js) by the hour and the weather (weather.js); and the village's lanterns and braziers
   const fill = new THREE.HemisphereLight(0xbcd0ec, 0x6a5a40, 1.05); scene.add(fill);
-  const sun = new THREE.DirectionalLight(0xfff2dc, 2.4); sun.castShadow = true; sun.shadow.mapSize.set(1024, 1024); Object.assign(sun.shadow.camera, { left: -9, right: 9, top: 9, bottom: -9, near: 1, far: 80 }); sun.shadow.bias = -0.0015; scene.add(sun, sun.target);
+  const sun = new THREE.DirectionalLight(0xfff2dc, 2.4); sun.castShadow = true; const SH = rich ? 15 : 10; sun.shadow.mapSize.set(rich ? 2048 : 1024, rich ? 2048 : 1024); Object.assign(sun.shadow.camera, { left: -SH, right: SH, top: SH, bottom: -SH, near: 1, far: 90 }); sun.shadow.bias = -0.0012; sun.shadow.normalBias = 0.02; sun.shadow.radius = rich ? 2.5 : 1.2; scene.add(sun, sun.target);
   sun.shadow.camera.layers.set(2); sun.shadow.autoUpdate = false; sun.shadow.needsUpdate = true; let shT = 0; ups.push((dt) => { if ((shT -= dt) <= 0) { shT = 1; sun.shadow.needsUpdate = true; } });   // the sun's (and the moon's) shadows are the still village's (layer 2), laid again once a second as the light creeps; what moves takes its shadows from the lanterns near the stall
-  const moon = sun;
-  const skyG = new THREE.SphereGeometry(400, 24, 12), skyC = new Float32Array(skyG.attributes.position.count * 3); skyG.setAttribute('color', new THREE.BufferAttribute(skyC, 3));
-  const sky = new THREE.Mesh(skyG, new THREE.MeshBasicMaterial({ vertexColors: true, side: THREE.BackSide, fog: false, depthWrite: false })); sky.renderOrder = -10; sky.userData.nopick = true; sky.userData.dyn = true; sky.frustumCulled = false; scene.add(sky);
-  const disc = (c, s) => { const m = new THREE.Sprite(new THREE.SpriteMaterial({ map: glowMap, color: c, fog: false, depthWrite: false, transparent: true })); m.scale.set(s, s, 1); m.renderOrder = -9; scene.add(m); return m; };
-  const sunDisc = disc(0xfff0d0, 60), moonDisc = disc(0xdfe8ff, 26);
-  const nS = 420, sp = new Float32Array(nS * 3); for (let i = 0; i < nS; i++) { const a = R() * Math.PI * 2, e = 0.12 + R() * 1.35, r = 380; sp.set([Math.cos(a) * Math.cos(e) * r, Math.sin(e) * r, Math.sin(a) * Math.cos(e) * r], i * 3); }
-  const sg = new THREE.BufferGeometry(); sg.setAttribute('position', new THREE.BufferAttribute(sp, 3)); const stars = new THREE.Points(sg, new THREE.PointsMaterial({ color: 0xdfe6ff, size: 1.6, sizeAttenuation: false, transparent: true, opacity: 0, fog: false, depthWrite: false })); stars.renderOrder = -9; stars.frustumCulled = false; scene.add(stars);
-  const lampLights = [[-2.4, 2.6, FZ + 1.2], [9, 2.6, NZ - 1.3], [-15, 2.6, NZ - 1.3]].map(([x, y, z]) => { const p = new THREE.PointLight(0xffa860, 0, 12, 1.6); p.position.set(x, y, z); scene.add(p); return p; });
-  const _mp = new THREE.Vector3(), zen = new THREE.Color(), hor = new THREE.Color(), fogC = new THREE.Color(), sc = new THREE.Color(), tmp = new THREE.Color(), tmp2 = new THREE.Color();
-  const mix = (i, a, b, f) => tmp.set(a).lerp(tmp2.set(b), f);
-  let lit = 0, skyT = 9, ease = true;
-  const look = (h) => { let i = SKY.findIndex((k) => k[0] > h); if (i < 0) i = SKY.length - 1; if (i === 0) i = 1; const a = SKY[i - 1], b = SKY[i], f = clamp((h - a[0]) / (b[0] - a[0]), 0, 1); const v = (j) => a[j] + (b[j] - a[j]) * f, c = (j, out) => out.set(a[j]).lerp(tmp2.set(b[j]), f);
-    return { zen: c(1, zen), hor: c(2, hor), fog: c(3, fogC), sunC: c(4, sc), sun: v(5), hs: c(6, new THREE.Color()), hg: c(7, new THREE.Color()), fill: v(8) }; };
-  const paint = () => { const K = G.clock, h = K ? K.hour : 11, L = look(h), dark = 1 - (K ? K.light : 1);
-    const dawn = h > 28.7 && h < 31.5 ? clamp(1 - Math.abs(h - 30.1) / 1.4, 0, 1) : 0;   // the first light: a pale glow low in the east (+x, where the sun comes up) before the sun is up
-    const p = skyG.attributes.position; for (let i = 0; i < p.count; i++) { const y = p.getY(i) / 400, k = clamp(y * 2.2, 0, 1); tmp.copy(L.hor).lerp(L.zen, Math.sqrt(k)); if (y < 0) tmp.copy(L.hor).multiplyScalar(0.6);
-      if (dawn > 0) { const x = p.getX(i), e = Math.max(0, x / (Math.hypot(x, p.getZ(i)) || 1)); const gl = dawn * e * e * (1 - Math.sqrt(k)) * 0.85; if (gl > 0) tmp.lerp(tmp2.set(0xf2c08a), gl); }
-      skyC.set([tmp.r, tmp.g, tmp.b], i * 3); } skyG.attributes.color.needsUpdate = true;
-    if (scene.fog) scene.fog.color.copy(L.fog); scene.background = L.fog.clone(); if (scene.fog) scene.fog.density = 0.009 + dark * 0.014;
-    const a = ((h - 6) / 12) * Math.PI, sy = Math.sin(a), sx = Math.cos(a); sun.position.set(sx * 30, Math.max(2, sy * 32), -14); sun.target.position.set(0, 0, 0); sun.color.copy(L.sunC); sun.intensity = sy > 0 ? L.sun : 0;
-    sunDisc.position.set(sx * 360, sy * 360, -170); sunDisc.visible = sy > -0.05; sunDisc.material.color.copy(L.sunC).lerp(tmp2.set(0xffffff), 0.4);
-    const ma = ((h - 19) / 11) * Math.PI; moonDisc.position.set(-Math.cos(ma) * 340, Math.sin(ma) * 300 + 30, 160); moonDisc.material.opacity = clamp(dark * 1.2, 0, 1); const f = clamp((0.1 - sy) / 0.25, 0, 1); if (f > 0) { _mp.copy(moonDisc.position).normalize().multiplyScalar(30); _mp.y = Math.max(8, _mp.y); sun.position.lerp(_mp, f); sun.color.lerp(tmp2.set(0x9ab0e8), f); sun.intensity = sun.intensity * (1 - f) + clamp(dark * 1.1, 0, 1) * 0.9 * f; }   // by night the same light is the moon's: its soft shadows, no second shadow map
-    stars.material.opacity = clamp((dark - 0.6) / 0.4, 0, 1) * 0.8;
-    fill.color.copy(L.hs); fill.groundColor.copy(L.hg); fill.intensity = L.fill * (S.easy ? 1.25 : 1); };
+  const moon = sun, sky = buildSky(scene);
+  // the day the run is set on: 11 May 1862 (Bunkyū 2), in Edo's own time, the young rice just planted and the moon two days from full; the clock's hours run true through the day and the dusk, and the night is drawn so the sun comes up as the dawn's light does (clock.js: dawn 29 to 30.5)
+  const BASE = Date.UTC(1862, 4, 11) - (E.LON / 15) * 3600e3, R0 = (() => { for (let h = 3; h < 8; h += 0.01) if (E.seen('sun', E.jdOf(BASE + (24 + h) * 3600e3)).alt > -0.83) return 24 + h; return 29; })();
+  const realH = (h) => (h <= 19.5 ? h : h <= 29 ? 19.5 + ((h - 19.5) * (R0 - 1.15 - 19.5)) / 9.5 : R0 - 1.15 + (h - 29));
+  city.jd = (h) => E.jdOf(BASE + realH(h) * 3600e3);
+  const lampLights = [[-4.6, 1.75, FZ + 0.8], [10.6, 1.75, NZ - 0.85], [-16.9, 1.75, NZ - 0.85]].map(([x, y, z]) => { const p = new THREE.PointLight(0xff9a48, 0, 13, 1.6); p.position.set(x, y + 0.25, z); scene.add(p); return p; });
+  if (rich) { const b = lampLights[0]; b.castShadow = true; b.shadow.mapSize.set(512, 512); b.shadow.camera.near = 0.3; b.shadow.camera.far = 14; b.shadow.bias = -0.004; b.shadow.radius = 2; b.shadow.camera.layers.set(2); b.shadow.autoUpdate = false; b.shadow.needsUpdate = true; ups.push(() => { if (b.intensity > 0.05 && !b.userData.laid) { b.userData.laid = 1; b.shadow.needsUpdate = true; } }); }   // (on a screen the brazier across the street throws the village's shadows too, laid once when it is lit)
+  // the braziers (kagaribi): an iron basket of pine on three legs, its fire a slow breath (never a flicker), its smoke going up into the haze
+  const flameT = T.canvasTex(64, 128, (g, w, h) => { g.clearRect(0, 0, w, h); for (const [c, k] of [['rgba(255,120,30,0.55)', 1], ['rgba(255,190,90,0.7)', 0.62], ['rgba(255,240,200,0.9)', 0.3]]) { g.fillStyle = c; g.beginPath(); g.moveTo(w / 2, h * (1 - 0.95 * k) ); g.bezierCurveTo(w / 2 + w * 0.42 * k, h * (1 - 0.55 * k), w / 2 + w * 0.46 * k, h * 0.96, w / 2, h * 0.98); g.bezierCurveTo(w / 2 - w * 0.46 * k, h * 0.96, w / 2 - w * 0.42 * k, h * (1 - 0.55 * k), w / 2, h * (1 - 0.95 * k)); g.fill(); } }), flameG = new THREE.PlaneGeometry(0.42, 0.62).translate(0, 0.27, 0);
+  const iron = mat({ color: 0x2a2622 }), fireM = new THREE.MeshBasicMaterial({ map: flameT, color: 0xffffff, transparent: true, opacity: 0, blending: THREE.AdditiveBlending, depthWrite: false, side: THREE.DoubleSide, fog: true }), smokeT = T.smokeTex(), braz = [];
+  lampLights.forEach((l, i) => { const { x, z } = l.position, g = new THREE.Group(); g.position.set(x, 0, z); city.add(g);
+    for (let k = 0; k < 3; k++) { const a = (k / 3) * Math.PI * 2, leg = cyl(0.025, 0.03, 1.62, iron, Math.cos(a) * 0.2, 0.78, Math.sin(a) * 0.2, g, 6); leg.rotation.set(Math.sin(a) * 0.12, 0, -Math.cos(a) * 0.12); }
+    cyl(0.26, 0.17, 0.3, iron, 0, 1.68, 0, g, 10, true).material = mat({ color: 0x2a2622, side: THREE.DoubleSide }); cyl(0.2, 0.2, 0.06, darkWood, 0, 1.6, 0, g, 8);
+    const fl = new THREE.Group(); fl.position.set(0, 1.7, 0); fl.userData.dyn = true; g.add(fl); for (let k = 0; k < 3; k++) { const c = mesh(flameG, fireM, 0, 0, 0, fl); c.rotation.y = (k / 3) * Math.PI; c.castShadow = c.receiveShadow = false; c.userData.nopick = true; }
+    const hl = new THREE.Sprite(lampHalos); hl.position.set(0, 1.95, 0); hl.scale.set(2.6, 2.6, 1); hl.userData.nopick = true; g.add(hl);
+    const puffs = []; for (let k = 0; k < 4; k++) { const s = new THREE.Sprite(new THREE.SpriteMaterial({ map: smokeT, color: 0x6a6460, transparent: true, opacity: 0, depthWrite: false, fog: true })); s.userData = { t: k / 4, nopick: true }; g.add(s); puffs.push(s); }
+    braz.push({ fl, puffs, ph: i * 2.1, l }); });
+  const _mp = new THREE.Vector3(), fogC = new THREE.Color(), tmp = new THREE.Color(), tmp2 = new THREE.Color(), MOONC = new THREE.Color(0x9ab0e8), NIGHTF = new THREE.Color(0x5468a0), DAYF = new THREE.Color(0xbcd0ec), EARTH = new THREE.Color(0x6a5a40);
+  let lit = 0, skyT = 0, wet = 0, lastH = -1; const api = {};
+  const sm = (a, b, x) => { const t = clamp((x - a) / (b - a), 0, 1); return t * t * (3 - 2 * t); };
+  const paint = () => { const K = G.clock, h = K ? K.hour : 11, w = G.weather ? G.weather.now : weatherAt(K ? K.frac : 0), jd = city.jd(h);
+    const Sk = sky.set(jd, w, null), e = Sk.e, day = sm(-10, 8, e);   // (the twilight counts: the dawn brightens the street before the sun is up)
+    // the air's colour: the horizon's, greyed (more under cloud and in the mist), as THE MARKET's haze
+    const l = Sk.horizon.r * 0.3 + Sk.horizon.g * 0.59 + Sk.horizon.b * 0.11; fogC.copy(Sk.horizon).lerp(tmp.setRGB(l, l, l), 0.3 + 0.35 * w.cloud + 0.2 * w.mist);
+    if (scene.fog) { scene.fog.color.copy(fogC); scene.fog.density = 0.0042 + 0.0035 * (1 - day) + 0.012 * (G.rainK || 0) + 0.004 * w.mist; } scene.background = fogC;
+    AIR.mist[0] = 0.0015 + 0.024 * w.mist; AIR.mist[1] = 1 / (1.8 + 2.4 * w.mist); AIR.mist[2] = -0.1;
+    sky.U.uFogC.value.copy(fogC); sky.U.uFogK.value = 0.5 + 0.4 * w.mist;
+    // the light: the sun's while it is up, the moon's after (the same light, so one shadow map), passing between them through the twilight
+    const f = sm(1, -5, e), sunK = sm(-1, 9, e) * 2.7 * (1 - 0.6 * clamp((w.cloud - 0.25) / 0.7, 0, 1)), mk = (1 - sm(-4, 2, e)) * clamp((Sk.moonAlt + 2) / 12, 0, 1) * (0.25 + 0.75 * Sk.moonLit) * (1 - 0.55 * clamp((w.cloud - 0.3) / 0.6, 0, 1));
+    _mp.copy(Sk.sunDir).lerp(Sk.moonDir, f); _mp.y = Math.max(0.12, _mp.y); _mp.normalize(); sun.position.copy(_mp).multiplyScalar(40); sun.target.position.set(0, 0, 0);
+    sun.color.copy(Sk.sunC).lerp(MOONC, f); sun.intensity = sunK * (1 - f) + 1.15 * mk * f;
+    AIR.sun[0] = _mp.x; AIR.sun[1] = _mp.y; AIR.sun[2] = _mp.z; const glow = sm(-3, 3, e) * (0.35 + 0.65 * (1 - clamp((e - 5) / 25, 0, 1))) * 0.16 * (1 - 0.7 * w.cloud);
+    tmp.copy(Sk.sunC).multiplyScalar(glow).lerp(tmp2.copy(MOONC).multiplyScalar(0.03 * mk), f); AIR.sunC[0] = tmp.r; AIR.sunC[1] = tmp.g; AIR.sunC[2] = tmp.b;
+    fill.color.copy(NIGHTF).lerp(DAYF, day).lerp(Sk.sunC, 0.22 * day * (1 - clamp(e / 20, 0, 1))).lerp(tmp2.setRGB(0.6, 0.62, 0.66), 0.3 * w.cloud * day); fill.groundColor.copy(EARTH).multiplyScalar(0.25 + 0.75 * day);
+    fill.intensity = (0.9 + 0.42 * day + 0.3 * mk) * (S.easy ? 1.2 : 1);
+    if (G.renderer) G.renderer.toneMappingExposure = 1.15 + 0.7 * (1 - day);   // the eye opens in the dark: night dark but readable
+    paddyW.emissive.copy(Sk.zen).lerp(Sk.horizon, 0.5).lerp(fogC, 0.3); paddyW.emissiveIntensity = 0.3 + 0.45 * day;
+    if (G.weather) G.weather.rain.material.color.setHex(0x8a98a8).multiplyScalar(0.16 + 0.84 * day + 0.25 * lit);
+    api.sky = { e: +e.toFixed(2), day: +day.toFixed(3), moon: +mk.toFixed(3), sun: +sun.intensity.toFixed(3), hour: +h.toFixed(2) }; lastH = h; };
   paint();
-  ups.push((dt) => {
+  ups.push((dt, t) => {
     const K = G.clock, hr = K ? K.hour : 11, want = hr >= 17.8 && hr < 29 ? 1 : hr >= 29 && hr < 30.2 ? clamp((30.2 - hr) / 1.2, 0, 1) : 0;   // the lamps are lit as the sun goes, and burn down one by one through the dawn
     lit += clamp(want - lit, -dt / 4, dt / 4); const e = S.easy ? 0.6 : 1;
-    for (const m of lampMats) m.emissiveIntensity = lit * 1.6 * e; lampHalos.opacity = lit * 0.32 * e; lampLights.forEach((l) => (l.intensity = lit * 3.2));
+    for (const m of lampMats) m.emissiveIntensity = lit * 1.6 * e; lampHalos.opacity = lit * 0.32 * e; fireM.opacity = lit * 0.7 * e;
+    braz.forEach((b, i) => { const br = 1 + 0.05 * Math.sin(t * 0.9 + b.ph) + 0.03 * Math.sin(t * 0.37 + b.ph * 2); b.l.intensity = lit * 3.4 * br; b.fl.scale.set(1, br * (0.6 + 0.4 * lit), 1); b.fl.visible = lit > 0.02;   // a slow breath: nothing flickers
+      for (const s of b.puffs) { const u = s.userData; u.t += dt * 0.09; if (u.t > 1) u.t -= 1; const k = u.t, wd = (G.wind ?? 0.3) * 2.4; s.position.set(k * k * wd, 2.0 + k * 3.4, k * 0.3); const sc = 0.5 + k * 2.2; s.scale.set(sc, sc, 1); s.material.opacity = Math.sin(k * Math.PI) * 0.16 * lit; } });
+    for (const [i, g] of lamps.entries()) { const wk = G.wind ?? 0.3; g.rotation.z = Math.sin(t * 1.6 + i * 1.7) * 0.05 * wk + 0.03 * wk; g.rotation.x = Math.sin(t * 1.1 + i * 2.3) * 0.035 * wk; }   // the lanterns swing a little on their cords
+    wet += clamp(clamp((G.rainK || 0) / 0.2, 0, 1) - wet, -dt / 300, dt / 60); T.SURF.wet.value = wet;   // the ground darkens as it rains and dries slowly after
     if (G.cart && G.cart.lamps) G.cart.lamps(lit);
-    if ((skyT -= dt) <= 0) { skyT = 0.25; paint(); } });
+    sky.update(dt, G.renderer && G.renderer.xr.isPresenting ? 1.5 : 1);
+    if ((skyT -= dt) <= 0 || Math.abs((G.clock ? G.clock.hour : 11) - lastH) > 0.05) { skyT = 0.25; paint(); } });   // (at once when the clock jumps: a guest joining, a new run)
   S.easy = !!(G.set && G.set.easy); city.setEasy = (on) => { S.easy = on; paint(); };
   // where the village's people stop: the sake house's door, the tofu maker's, the teahouse, the road out east, a house's step, the shrine gate
   const P = (x, z) => new THREE.Vector3(x, 0, z), shops = [{ type: 'bar', open: true, p: P(-2.1, FZ + 1.2) }, { type: 'kitchen', open: true, p: P(8.2, NZ - 1.2) }, { type: 'stage', open: true, p: P(-10.8, FZ + 1.2) }, { type: 'corner', open: true, p: P(E0 - 2.5, -3.6) }, { type: 'stoop', open: true, p: P(-14.6, NZ - 1.3) }, { type: 'fence', open: true, p: P(W0 + 6, -2.8) }];
   const block = buildBlock(city, shops, { near: -2.6, far: -4.2, split: -3.4, end: E0 + 4, dead: true }); ups.push((dt, t) => block.update(dt, t));
-  return { group: city, shops, glow, fill, sun, moon, lamps, alley: true, setEasy(on) { S.easy = on; paint(); }, update(dt, t) { for (const u of ups) u(dt, t); }, halo, rain: null, cars: [], glowMap, bakeFar() { }, reflect() { } };
+  return Object.assign(api, { group: city, shops, glow, fill, sun, moon, lamps, alley: true, skyDome: sky, weatherAt, setEasy(on) { S.easy = on; paint(); }, update(dt, t) { for (const u of ups) u(dt, t); }, halo, rain: null, cars: [], glowMap, bakeFar() { }, reflect() { } });
 }

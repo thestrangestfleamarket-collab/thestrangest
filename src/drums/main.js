@@ -14,6 +14,7 @@ import { buildGarage } from './garage.js';
 import { GripHand, Body } from './hands.js';
 import { startLife } from './life.js';
 import { buildGun, RACK, BOX } from './gun.js';
+import { buildTeach } from './teach.js';
 import { installAir } from '../sushi/air.js';
 import { ROOM } from './garage.js';
 
@@ -94,7 +95,7 @@ function card(lines, w = 0.86) {
   return m;
 }
 const VR_GUIDE = [['RIGHT TRIGGER', 'kick drum'], ['LEFT TRIGGER', 'open the hi-hat'], ['GRIP ON A CYMBAL', 'choke it'], ['RIGHT STICK  ↕', 'stick angle'], ['RIGHT GRIP + STICK  ↕', 'body forward / back'], ['LEFT STICK  ↕', 'seat height'],
-  ['LEFT STICK  ↔', 'timing: earlier / later'], ['RIGHT STICK  ↔ / CLICK', 'metronome tempo / on-off'], ['LEFT STICK  CLICK', 'garage door up / down'], ['HOLD A', 'talk to a neighbour'], ['X', 'stand up / sit down at the stool'], ['ON YOUR FEET', 'left stick walks, right stick turns'], ['YOUR FEET, or a pedal', 'the kick (and hi-hat) where the headset sees them'], ['BOTH TRIGGERS, 3 s', 'send a picture of what you see'], ['B or Y', 'hide this guide']];
+  ['LEFT STICK  ↔', 'timing: earlier / later'], ['RIGHT STICK  ↔ / CLICK', 'metronome tempo / on-off'], ['LEFT STICK  CLICK', 'garage door up / down'], ['HOLD A', 'talk to a neighbour'], ['X', 'stand up / sit down at the stool'], ['ON YOUR FEET', 'left stick walks, right stick turns'], ['YOUR FEET, or a pedal', 'the kick (and hi-hat) where the headset sees them'], ['BOTH TRIGGERS, 3 s', 'send a picture of what you see'], ['RIGHT GRIP + STICK  ↔', 'television: volume, off at nothing'], ['Y', 'lessons (left stick ↔ picks one)'], ['B', 'hide this guide']];
 
 // a small readout that shows only while a setting is being changed
 const readout = (() => {
@@ -118,7 +119,7 @@ const readout = (() => {
 
 // ---------- build ----------
 const head = { pos: new THREE.Vector3(), quat: new THREE.Quaternion() };
-let kit, sticks, garage, body, hands, metro, life, gun;
+let kit, sticks, garage, body, hands, metro, life, gun, teach;
 // on your feet: where they are and which way you face (a screen); in a headset the rig is moved under you
 const walk = { on: false, pos: new THREE.Vector3(0, 0, 0.5), bob: 0 };
 const mkHand = () => ({ pos: new THREE.Vector3(), quat: new THREE.Quaternion(), grip: false, gripDown: false, gripUp: false, trigDown: false });
@@ -189,6 +190,8 @@ async function build() {
   }
   gun = buildGun(scene, garage, life.street, sound, kit, T, { readout: (t) => readout.show(t, clock.elapsedTime), pulse, kit: (n, v, z, r) => onHit(n, v, z, r, 0, 0, null) });
   D.gun = gun;
+  teach = buildTeach(scene, kit, sound, set, keep); D.teach = teach;
+  if (set.tv !== undefined) garage.tv.vol = set.tv;
   guide.gun = card([['THE SHOTGUN', ''], ['RIGHT GRIP', 'take it; let go here to hang it up'], ['LEFT GRIP at the box', 'shells onto your belt'], ['LEFT GRIP at your hip', 'a shell in your hand'], ['PUSH IT IN under the gun', 'loads the tube (five)'], ['LEFT GRIP on the fore-end', 'pull back, push forward: pump'], ['RIGHT TRIGGER', 'fire']], 0.8);
   guide.gun.position.set(RACK.x, 2.12, ROOM.z1 - 0.03); guide.gun.rotation.y = Math.PI; scene.add(guide.gun);
   D.kit = kit; D.sticks = sticks; D.garage = garage; D.body = body; D.hands = hands; D.guide = guide;
@@ -220,6 +223,7 @@ function onHit(piece, vel, zone, r, lx, lz, side) {
     if (hands[side]) hands[side].kick = 1;
   }
   life.note(vel);
+  teach.hit(piece, vel, side);
   if (vel > 0.5) garage.jolt((vel - 0.5) * (cym ? 0.5 : 1));
   shake.v = Math.max(shake.v, vel * (piece === 'kick' ? 1 : 0.4));
   const l = guide.labels[piece];
@@ -377,7 +381,8 @@ function vrInput(dt, now) {
       // with the grip held, the same stick slides your body forward or back under your head
       if (sq > 0.6 && Math.abs(sy) > 0.5) { set.body = Math.max(-0.3, Math.min(0.3, set.body + sy * dt * 0.15)); readout.show('BODY ' + (set.body > 0 ? 'BACK ' : 'FORWARD ') + Math.abs(Math.round(set.body * 100)) + ' cm', now); keep(); }
       else if (Math.abs(sy) > 0.5) { set.tilt = Math.max(-0.9, Math.min(0.9, set.tilt - sy * dt * 0.5)); readout.show('STICK ANGLE ' + Math.round(set.tilt * 57.3) + '°', now); keep(); }
-      if (Math.abs(sx) > 0.6 && Math.abs(sy) < 0.4) { set.bpm = Math.max(40, Math.min(240, set.bpm + sx * dt * 30)); readout.show('TEMPO ' + Math.round(set.bpm), now); keep(); }
+      if (sq > 0.6 && Math.abs(sx) > 0.6 && Math.abs(sy) < 0.4) { set.tv = garage.tvVol(sx * dt * 0.5); readout.show(set.tv > 0.01 ? 'TELEVISION ' + Math.round(set.tv * 100) + '%' : 'TELEVISION OFF', now); keep(); }
+      else if (Math.abs(sx) > 0.6 && Math.abs(sy) < 0.4) { set.bpm = Math.max(40, Math.min(240, set.bpm + sx * dt * 30)); readout.show('TEMPO ' + Math.round(set.bpm), now); keep(); }
       if (th && !P.th) toggleMetro(now);
     } else {
       // the hi-hat: the trigger lifts the top cymbal; letting go shuts it with the pedal's chick
@@ -385,12 +390,13 @@ function vrInput(dt, now) {
       if ((P.trig || 0) > 0.12 && trig <= 0.12) rumble('left', 0.3, 0.03);
       if (!(feet.seen && trig < 0.05) && !feet.key) { sound.setHat(trig, rate); kit.setHat(trig); }
       if (Math.abs(sy) > 0.5 && Math.abs(sx) < 0.4) { set.height = Math.max(-0.4, Math.min(0.4, set.height - sy * dt * 0.2)); placeRig(); readout.show('SEAT ' + (set.height >= 0 ? '+' : '') + Math.round(set.height * 100) + ' cm', now); keep(); }
-      if (Math.abs(sx) > 0.6 && Math.abs(sy) < 0.4) { set.lead = Math.max(0, Math.min(80, set.lead + sx * dt * 25)); sticks.lead = set.lead / 1000; readout.show('HITS ' + Math.round(set.lead) + ' ms EARLY', now); keep(); }
+      if (teach.on) { if (Math.abs(sx) > 0.7 && !P.step) { P.step = true; teach.go(Math.sign(sx)); } if (Math.abs(sx) < 0.3) P.step = false; }
+      else if (Math.abs(sx) > 0.6 && Math.abs(sy) < 0.4) { set.lead = Math.max(0, Math.min(80, set.lead + sx * dt * 25)); sticks.lead = set.lead / 1000; readout.show('HITS ' + Math.round(set.lead) + ' ms EARLY', now); keep(); }
     }
     if (side === 'left') { if (a && !P.a) { if (walk.on) sit(now); else stand(now); } if (th && !P.th) { garage.toggleDoor(); readout.show(garage.door.want > 0.5 ? 'DOOR UP' : 'DOOR DOWN', now); } }
     else if (a !== !!P.a) life.listen(a);
     P.a = a;
-    if (b && !P.b) { guide.on = !guide.on; }
+    if (b && !P.b) { if (side === 'left') { teach.start(); readout.show(teach.on ? 'LESSONS' : 'LESSONS OFF', now); } else guide.on = !guide.on; }
     // a cymbal held is a cymbal stopped
     if (sq > 0.6) for (const p of kit.pieces) if (p.kind === 'cymbal') {
       _a.copy(_p).applyMatrix4(p.inv);
@@ -442,6 +448,10 @@ addEventListener('keydown', (e) => {
   else if (e.code === 'KeyH') guide.on = !guide.on;
   else if (e.code === 'KeyO') { garage.toggleDoor(); readout.show(garage.door.want > 0.5 ? 'DOOR UP' : 'DOOR DOWN', now); }
   else if (e.code === 'KeyN') life.skip();
+  else if (e.code === 'KeyL') { teach.start(); readout.show(teach.on ? 'LESSONS' : 'LESSONS OFF', now); }
+  else if (e.code === 'Comma' || e.code === 'Period') teach.go(e.code === 'Comma' ? -1 : 1);
+  else if (e.code === 'Minus' || e.code === 'Equal') { set.tv = garage.tvVol(e.code === 'Minus' ? -0.1 : 0.1); readout.show(set.tv > 0.01 ? 'TELEVISION ' + Math.round(set.tv * 100) + '%' : 'TELEVISION OFF', now); keep(); }
+  else if (e.code === 'KeyK') { garage.tvToggle(); readout.show(garage.tv.on ? 'TELEVISION ON' : 'TELEVISION OFF', now); }
   else if (e.code === 'KeyP') sendPicture(now);
   else if (e.code === 'Enter') { const b = $('say'); b.hidden = false; b.focus(); e.preventDefault(); }
   else if (e.code === 'KeyM') toggleMetro(now);
@@ -572,7 +582,8 @@ renderer.setAnimationLoop(() => {
   }
   sticks.detect = vr;
   sticks.update(dt);
-  metroTick();
+  if (!teach.on) metroTick();
+  teach.update();
   // your body: seated, the arms ending at the hands on the sticks
   const cam = vr ? renderer.xr.getCamera() : camera;
   cam.getWorldPosition(head.pos); cam.getWorldQuaternion(head.quat);
@@ -599,7 +610,7 @@ renderer.setAnimationLoop(() => {
   garage.haloM.opacity = vr ? 0.12 : 0; // a pane's glow: the bloom does it on a screen
   for (const n in guide.labels) guide.labels[n].visible = guide.on && !walk.on && !guide.labels[n].played;
   if (D.mode === 'screen' && D.walking !== walk.on) { D.walking = walk.on; $('help').innerHTML = walk.on ? WALK_HELP : SEAT_HELP; }
-  guide.card.visible = vr && guide.on && !walk.on;
+  guide.card.visible = vr && guide.on && !walk.on && !teach.on;
   guide.gun.visible = guide.on;
   readout.tick(now);
   // the lamp's shadows follow the sticks; given up first if a frame ever runs long

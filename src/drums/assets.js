@@ -32,7 +32,7 @@ export async function loadAssets(onProgress = () => { }, aniso = 4) {
       clip.tracks = keep; clip.name = c; P.clip[s][c] = clip; }).catch((e) => console.warn('no motion', s, c, e)).then(tick))),
     // HULL DOWN's trees: each species' size and its two views
     fetch(BASE + 'trees.json').then((r) => r.json()).then((d) => Promise.all(Object.keys(d).map((k) => Promise.all([0, 1].map((i) => TL.loadAsync(`${BASE}tex/${k}_${i}_d.webp`).then((t) => { t.colorSpace = THREE.SRGBColorSpace; return t; }))).then((v) => { P.trees[k] = { ...d[k], v }; })))).catch((e) => console.warn('no trees', e)).then(tick),
-    ...[0, 1, 2, 3, 4].map((i) => TL.loadAsync(`${BASE}tex/car_${i}.jpg`).then((t) => { t.colorSpace = THREE.SRGBColorSpace; t.flipY = false; P.car[i] = t; }).catch(() => null).then(tick)),
+    ...[0, 1, 2, 3, 4].map((i) => TL.loadAsync(`${BASE}tex/car_${i}.jpg`).then((t) => { t.colorSpace = THREE.SRGBColorSpace; t.flipY = false; t.wrapS = t.wrapT = THREE.RepeatWrapping; P.car[i] = t; }).catch(() => null).then(tick)),
   ]);
 }
 

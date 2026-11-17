@@ -179,16 +179,19 @@ export function buildGarage(scene, low) {
   const tz = 1.35, tx = x1 - 0.3, UW = 1.5;
   box(M.wood, 0.5, 0.035, UW, tx, 0.56, tz); box(M.wood, 0.5, 0.03, UW, tx, 0.28, tz); box(M.wood, 0.5, 0.04, UW, tx, 0.04, tz);
   for (const s of [-1, 0, 1]) box(M.wood, 0.5, 0.56, 0.03, tx, 0.29, tz + s * (UW / 2 - 0.015));
-  model('television_01', tx + 0.02, 0.578, tz - 0.25, -Math.PI / 2, { h: 0.5 }, group);
+  // the television hangs on the wall to the drummer's right, on a steel arm over the fridge
+  const TVX = x1 - 0.3, TVY = 1.42, TVZ = -0.72;
+  model('television_01', TVX, TVY, TVZ, -Math.PI / 2, { h: 0.5 }, group);
+  box(M.steel, 0.3, 0.05, 0.05, x1 - 0.14, TVY + 0.2, TVZ); box(M.steel, 0.02, 0.3, 0.3, x1 - 0.012, TVY + 0.2, TVZ); box(M.dark, 0.5, 0.03, 0.5, TVX, TVY - 0.015, TVZ);
   // its picture: a channel that will not quite hold, drawn onto the glass and thrown into the room
   const tvC = document.createElement('canvas'); tvC.width = 64; tvC.height = 48;
   const tvX = tvC.getContext('2d', { willReadFrequently: true }), tvT = new THREE.CanvasTexture(tvC); tvT.colorSpace = THREE.SRGBColorSpace; tvT.magFilter = THREE.NearestFilter;
   const tvM = new THREE.MeshBasicMaterial({ map: tvT, toneMapped: false, color: 0xbbbbbb });
   const screen = new THREE.Mesh(new THREE.PlaneGeometry(0.39, 0.3), tvM);
-  screen.position.set(tx - 0.225, 0.578 + 0.27, tz - 0.31); screen.rotation.y = -Math.PI / 2;
+  screen.position.set(TVX - 0.245, TVY + 0.27, TVZ - 0.06); screen.rotation.y = -Math.PI / 2;
   group.add(screen);
   // the film: Night of the Living Dead (1968, in the public domain), from the Internet Archive; the set's own channels until it comes, or if it never does
-  const tv = { on: true, dead: false, film: null, tex: null, gain: null, at: new THREE.Vector3(tx - 0.225, 0.848, tz - 0.31) };
+  const tv = { on: true, dead: false, vol: 0.6, film: null, tex: null, gain: null, at: new THREE.Vector3(TVX - 0.245, TVY + 0.27, TVZ - 0.06) };
   G0.tvStart = (sound) => {
     if (tv.film) { if (tv.on && !tv.dead) tv.film.play().catch(() => { }); return; }
     const v = document.createElement('video'); v.crossOrigin = 'anonymous'; v.loop = true; v.playsInline = true; v.preload = 'auto';
@@ -198,7 +201,7 @@ export function buildGarage(scene, low) {
     v.play().catch(() => { });
   };
   const tvL = new THREE.PointLight(0x9bb8ff, 1.2, 4.5, 2);
-  tvL.position.set(tx - 0.6, 0.9, tz - 0.3);
+  tvL.position.set(TVX - 0.7, TVY + 0.25, TVZ);
   group.add(tvL);
   // the tape machine and the console under it, their leads, two pads on the floor
   box(M.dark, 0.34, 0.085, 0.42, tx, 0.34, tz - 0.4); box(M.steel, 0.01, 0.02, 0.16, tx - 0.172, 0.35, tz - 0.4);
@@ -408,7 +411,9 @@ export function buildGarage(scene, low) {
   Object.assign(G0, {
     group, out, sun, lamp, sky, M, cord, haloM, door, posters, tv, ear: new THREE.Vector3(), sunV: SUN, dim: 1,
     tvToggle() { tv.on = !tv.on; if (tv.film) { if (tv.on && !tv.dead) tv.film.play().catch(() => { }); else tv.film.pause(); } },
-    tvShot() { tv.dead = true; if (tv.film) tv.film.pause(); }, swing: 0, hour: 12, day: 1, lean: false,
+    tvShot() { tv.dead = true; if (tv.film) tv.film.pause(); },
+    // louder or quieter; at nothing the set is off
+    tvVol(d) { tv.vol = Math.max(0, Math.min(1, tv.vol + d)); const on = tv.vol > 0.01; if (on !== tv.on) G.tvToggle(); return tv.vol; }, swing: 0, hour: 12, day: 1, lean: false,
     // a headset that still cannot keep up loses the two softest lights, never the sun or the lamp
     thin() { G.lean = true; fills[1][0].visible = fills[2][0].visible = false; hemi.intensity *= 2; },
     // a loud hit sets the lamp going on its cord
@@ -454,19 +459,17 @@ export function buildGarage(scene, low) {
       const film = tv.film && tv.film.readyState >= 2 && !tv.film.paused;
       if (tvM.map !== (film ? tv.tex : tvT)) { tvM.map = film ? tv.tex : tvT; tvM.needsUpdate = true; }
       tvM.color.setHex(tv.on && !tv.dead ? 0xbbbbbb : 0x050505);
-      if (tv.gain) tv.gain.gain.value = tv.on && !tv.dead ? Math.min(0.9, 0.5 / Math.max(0.6, G.ear.distanceToSquared(tv.at) * 0.35)) : 0;
+      if (tv.gain) tv.gain.gain.value = tv.on && !tv.dead ? tv.vol * Math.min(1.5, 1.1 / Math.max(0.6, G.ear.distanceToSquared(tv.at) * 0.3)) : 0;
       if (!tv.on || tv.dead) tvL.intensity = 0;
       else if (film) { tvL.color.setHex(0xcfd6e6); tvL.intensity = (0.8 + 0.5 * Math.abs(Math.sin(time * 5.3) * Math.sin(time * 1.7))) * (1.6 - 0.9 * G.day); }
       else if (time - tvT0 > 0.1) {
         tvT0 = time;
-        const ph = Math.floor(time / 9) % 3, k = (time * 30) | 0;
-        if (ph === 0) { for (let i = 0; i < 7; i++) { tvX.fillStyle = ['#c9c9c9', '#c9c93a', '#3ac9c9', '#3ac93a', '#c93ac9', '#c93a3a', '#3a3ac9'][i]; tvX.fillRect(i * 9.2, 0, 10, 48); } }
-        else if (ph === 1) { tvX.fillStyle = '#10182c'; tvX.fillRect(0, 0, 64, 48); tvX.fillStyle = '#e8e8e8'; tvX.fillRect(2, 18 + 10 * Math.sin(time * 2), 2, 10); tvX.fillRect(60, 18 + 10 * Math.cos(time * 1.7), 2, 10); tvX.fillRect(32 + 26 * Math.sin(time * 1.9), 24 + 18 * Math.sin(time * 2.7), 2, 2); for (let y = 0; y < 48; y += 6) tvX.fillRect(31, y, 1, 3); }
-        else { const im = tvX.getImageData(0, 0, 64, 48), d = im.data; for (let i = 0; i < d.length; i += 4) { const v = ((i * 2654435761 + k * 40503) >>> 8) & 255; d[i] = d[i + 1] = d[i + 2] = v; d[i + 3] = 255; } tvX.putImageData(im, 0, 0); }
+        const k = (time * 30) | 0;
+        { const im = tvX.getImageData(0, 0, 64, 48), d = im.data; for (let i = 0; i < d.length; i += 4) { const v = (((i * 2654435761 + k * 40503) >>> 8) & 255) * 0.35; d[i] = d[i + 1] = d[i + 2] = v; d[i + 3] = 255; } tvX.putImageData(im, 0, 0); }
         tvX.fillStyle = 'rgba(0,0,0,.25)'; tvX.fillRect(0, (k * 3) % 48, 64, 3);
         tvT.needsUpdate = true;
-        tvL.color.setHex(ph === 0 ? 0xc8d0b0 : ph === 1 ? 0x7f9cff : 0xcfd6e6);
-        tvL.intensity = (0.9 + 0.5 * Math.abs(Math.sin(time * 7.3) * Math.sin(time * 2.1))) * (1.6 - 0.9 * G.day);
+        tvL.color.setHex(0xcfd6e6);
+        tvL.intensity = 0.35;
       }
       string.intensity = 1.6 * (1.5 - 0.9 * G.day);
       for (let i = 0; i < N; i++) {

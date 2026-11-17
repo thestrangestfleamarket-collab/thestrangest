@@ -91,7 +91,8 @@ export class World {
     this.arrows = Array.from({ length: 6 }, () => { const a = new THREE.Mesh(tg, new THREE.MeshBasicMaterial({ color: 0xff5548, transparent: true, opacity: 0.9, depthTest: false, toneMapped: false })); a.renderOrder = 30; a.visible = false; this.camera.add(a); return a; });
     const mc = this.msgC = document.createElement('canvas'); mc.width = 1024; mc.height = 320; this.msgTex = new THREE.CanvasTexture(mc); this.msgTex.colorSpace = THREE.SRGBColorSpace;
     this.msg = new THREE.Mesh(new THREE.PlaneGeometry(1.5, 0.47), new THREE.MeshBasicMaterial({ map: this.msgTex, transparent: true, depthTest: false, toneMapped: false })); this.msg.renderOrder = 40; this.msg.position.set(0, 0.32, -2.2); this.msg.visible = false; this.camera.add(this.msg);
-    this.red = new THREE.Mesh(new THREE.RingGeometry(0.55, 1.6, 40), new THREE.MeshBasicMaterial({ color: 0xff2a1a, transparent: true, opacity: 0, depthTest: false, blending: THREE.AdditiveBlending, toneMapped: false })); this.red.position.z = -1; this.red.renderOrder = 35; this.red.visible = false; this.camera.add(this.red);
+    const edge = canvasTex(128, 128, (g) => { const r = g.createRadialGradient(64, 64, 26, 64, 64, 64); r.addColorStop(0, 'rgba(255,40,20,0)'); r.addColorStop(1, 'rgba(255,40,20,1)'); g.fillStyle = r; g.fillRect(0, 0, 128, 128); });
+    this.red = new THREE.Mesh(new THREE.PlaneGeometry(3.6, 3.6), new THREE.MeshBasicMaterial({ map: edge, transparent: true, opacity: 0, depthTest: false, depthWrite: false, toneMapped: false })); this.red.position.z = -1; this.red.renderOrder = 35; this.red.visible = false; this.camera.add(this.red);
   }
   say(big, small = '', secs = 3) {
     const g = this.msgC.getContext('2d'); g.clearRect(0, 0, 1024, 320); g.textAlign = 'center'; g.shadowColor = '#000'; g.shadowBlur = 16;
@@ -210,6 +211,6 @@ export class World {
     this.dustM.uniforms.uT.value = this.t * CRUISE;
 
     if (this.msgT > 0 && (this.msgT -= dt) <= 0) this.msg.visible = false; if (this.msg.visible) this.msg.material.opacity = Math.min(1, this.msgT * 2);
-    this.hurtT = Math.max(0, this.hurtT - dt); this.red.visible = this.hurtT > 0; this.red.material.opacity = Math.min(0.5, this.hurtT * 1.2);
+    this.hurtT = Math.max(0, this.hurtT - dt); this.red.visible = this.hurtT > 0; this.red.material.opacity = Math.min(0.32, this.hurtT * 0.8);
   }
 }

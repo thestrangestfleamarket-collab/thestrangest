@@ -44,18 +44,17 @@ function tex(file,o={}){return count(new Promise((ok,no)=>texL.load(BASE+'tex/'+
 const pbr=async(n,rep)=>{const[d,nm,a]=await Promise.all([tex(n+'_d.jpg',{srgb:1}),tex(n+'_n.jpg'),tex(n+'_a.jpg')]);for(const t of[d,nm,a])t.repeat.set(rep,rep);return{d,n:nm,a};};
 const model=n=>count(new Promise((ok,no)=>gltfL.load(BASE+'m/'+n+'.glb',g=>{g.scene.userData.clips=g.animations;ok(g.scene);},null,()=>no(new Error('model '+n)))));
 const jget=f=>count(fetch(BASE+f).then(r=>r.json()));
-const TREES=['island_tree_01','island_tree_02','island_tree_03','tree_small_02','jacaranda_tree','shrub_02'];
+const TREES=[['A',0,17],['C',1,22],['AL',2,14],['CL',3,24],['E',0,30],['B',0,2.6]];
 let A0;
 try{
   const names=['hero','ally','foe','seat','console','display','switchbox','radio','helmet','barn','cars','pipes','sconce','ammobox','rocks','h6','row','h9','shop','cork','flats','white','cottage','villa','mill','works','church','watertower','silos','stacks','mast','pylon','pole','stonewall','lamp','hay','brokenwall','rubble','trabant','lada','van','tractor','truck','busstop','hand_l','hand_r','crag','deadtree','sandbags','hedgehog','wreck','grenade','pistol','soldier','breech','mfd','shell','mine','hatch'];
-  const[sky,skyS,SKY,TREEJ,MODJ,grass,dry,soil,plate,paint,leather,cards,models]=await Promise.all([
-    count(new Promise((ok,no)=>texL.load(BASE+'sky/sky.jpg',ok,null,()=>no(new Error('sky'))))),count(new Promise((ok,no)=>texL.load(BASE+'sky/sky_s.jpg',ok,null,()=>no(new Error('sky'))))),jget('sky/sky.json'),jget('trees.json'),jget('models.json'),
+  const[sky,skyS,SKY,MT,MODJ,grass,dry,soil,plate,paint,leather,models]=await Promise.all([
+    count(new Promise((ok,no)=>texL.load(BASE+'sky/sky.jpg',ok,null,()=>no(new Error('sky'))))),count(new Promise((ok,no)=>texL.load(BASE+'sky/sky_s.jpg',ok,null,()=>no(new Error('sky'))))),jget('sky/sky.json'),jget('trees-market.json'),jget('models.json'),
     pbr('leafy_grass',1),tex('sparse_grass_d.jpg',{srgb:1}),pbr('farm_soil',1),pbr('metal_plate',1),pbr('green_metal_rust',1),pbr('fabric_leather_02',1),
-    Promise.all(TREES.map(n=>Promise.all([0,1].map(v=>Promise.all([tex(n+'_'+v+'_d.webp',{srgb:1,clamp:1})]))))),
     Promise.all(names.map(model))]);
-  A0={sky,skyS,SKY,TREEJ,MODJ,grass,dry,soil,plate,paint,leather,cards,M:Object.fromEntries(names.map((n,i)=>[n,models[i]]))};
+  A0={sky,skyS,SKY,MT,MODJ,grass,dry,soil,plate,paint,leather,M:Object.fromEntries(names.map((n,i)=>[n,models[i]]))};
 }catch(e){$('loading').textContent='Could not load the game’s files ('+e.message+'). Reload to try again.';return;}
-const{SKY,TREEJ,MODJ}=A0,M=A0.M;
+const{SKY,MODJ}=A0,M=A0.M;
 
 // ---------- sky + sun ----------
 const sunPhi=SKY.u*Math.PI*2,SUN=new T.Vector3(-Math.cos(sunPhi)*Math.cos(SKY.el),Math.sin(SKY.el),Math.sin(sunPhi)*Math.cos(SKY.el)).normalize();
@@ -133,7 +132,7 @@ function h0(x,z){let h=hRaw(x,z);const pd=pondAt(x,z);if(pd){const d=Math.hypot(
 function roadDist(x,z){let m=1e9;for(let i=0;i<ROAD.length-1;i++){const a=ROAD[i],b=ROAD[i+1],dx=b[0]-a[0],dz=b[1]-a[1],t=clamp(((x-a[0])*dx+(z-a[1])*dz)/(dx*dx+dz*dz),0,1);m=Math.min(m,Math.hypot(x-a[0]-dx*t,z-a[1]-dz*t));}return m;}
 const PONDS=[[-70,-190,34,0],[235,-125,28,0],[-300,-70,40,0],[335,-300,30,0],[95,-345,26,0],[-175,175,32,0],[300,130,30,0]];
 function pondAt(x,z){for(const p of PONDS)if(Math.hypot(x-p[0],z-p[1])<p[2]*1.7)return p;return null;}
-function hRaw(x,z){const r=Math.hypot(x,z);const rd=Math.abs(fbm(x/1100+5.5,z/1100+1.5,3)-.5)*2;return 120*(fbm(x/560+3.1,z/560+7.7,4)-.46)+26*(fbm(x/140+1.3,z/140+4.2,3)-.44)+.5*(vn(x/14,z/14)-.5)+smooth(clamp((r-800)/2600,0,1))*(40+330*Math.pow(1-rd,2.2)*(.35+fbm(x/2300,z/2300,2)));}
+function hRaw(x,z){const r=Math.hypot(x,z);const rd=Math.abs(fbm(x/1100+5.5,z/1100+1.5,3)-.5)*2;return 120*(fbm(x/560+3.1,z/560+7.7,4)-.46)+26*(fbm(x/140+1.3,z/140+4.2,3)-.44)+.5*(vn(x/14,z/14)-.5)+smooth(clamp((r-760)/2000,0,1))*(60+620*Math.pow(1-rd,2.2)*(.35+fbm(x/2300,z/2300,2))+150*Math.pow(1-Math.abs(fbm(x/430+2.2,z/430+9.1,3)-.5)*2,2)*smooth(clamp((r-1200)/1500,0,1)));}
 for(const s of SITES)s[4]=hRaw(s[0],s[1]);for(const q of PONDS)q[3]=hRaw(q[0],q[1])-1.2;
 const GN=170,GS=10,G0=-850,HG=new Float32Array((GN+1)*(GN+1));
 for(let j=0;j<=GN;j++)for(let i=0;i<=GN;i++)HG[j*(GN+1)+i]=h0(G0+i*GS,G0+j*GS);
@@ -163,7 +162,7 @@ landMat.onBeforeCompile=s=>{s.uniforms.tDry={value:A0.dry};s.uniforms.tSoil={val
     vec3 g1=texture2D(map,wp/5.3).rgb;vec3 g2=texture2D(map,wp/31.).rgb;vec3 gr=g1*(.55+1.1*g2);
     vec3 dr=texture2D(tDry,q/6.1).rgb*vec3(1.25,1.12,.8);vec3 so=texture2D(tSoil,vec2(q.x/4.7,q.y/4.7)).rgb*vec3(.8,.72,.66);
     float kd=step(.4,fr)*step(fr,.6)*inF,ks=step(.6,fr)*step(fr,.72)*inF,kw=step(.72,fr)*inF;float farK=smoothstep(1100.,2200.,length(wp));
-    vec3 gc=mix(mix(mix(gr,dr,kd),so,ks),gr*vec3(.62,.66,.5),kw);float wood=smoothstep(.5,.62,texture2D(map,wp/2900.).g+.25*texture2D(map,wp/700.).r);gc=mix(gc,mix(gr,vec3(.16,.2,.11),wood*.85),farK);float rd=1e9;${ROAD.slice(0,-1).map((a,i)=>seg(a,ROAD[i+1])).join('')}
+    vec3 gc=mix(mix(mix(gr,dr,kd),so,ks),gr*vec3(.62,.66,.5),kw);float wood=smoothstep(.5,.62,texture2D(map,wp/2900.).g+.25*texture2D(map,wp/700.).r);gc=mix(gc,mix(gr,vec3(.16,.2,.11),wood*.85),farK);{float hh_=vFogWorld.y+40.*g2.g;vec3 rock=mix(vec3(.3,.29,.27),vec3(.42,.4,.37),g1.r)*(.7+.6*g2.r);gc=mix(gc,rock,smoothstep(150.,300.,hh_)*farK);gc=mix(gc,vec3(.86,.88,.92),smoothstep(430.,520.,hh_)*farK*.9);}float rd=1e9;${ROAD.slice(0,-1).map((a,i)=>seg(a,ROAD[i+1])).join('')}
     vec3 tar=texture2D(tSoil,wp/3.3).rgb*vec3(.5,.5,.52)+.05;float town=min(1.-smoothstep(70.,115.,length(wp-vec2(150.,300.))),1.)*.75+(1.-smoothstep(40.,75.,length(wp-vec2(-480.,-640.))))*.8+(1.-smoothstep(35.,60.,length(wp-vec2(420.,-560.))))*.7;
     gc=mix(gc,so*vec3(.95,.9,.82),(1.-smoothstep(4.5,7.5,rd))*.6);gc=mix(gc,tar,max(1.-smoothstep(2.8,3.6,rd+.6*(g1.g-.4)),town*smoothstep(.2,.5,g2.r+.3)));
     float cl=texture2D(map,wp/1700.+vec2(uT*.0021,uT*.0009)).g*.6+texture2D(map,wp/640.-vec2(uT*.003,0.)).r*.4;gc*=mix(.55,1.08,smoothstep(.3,.56,cl))*vec3(.9,.93,.9);gc*=mix(vec3(.26,.33,.5),vec3(1.),shadeAt(vFogWorld));
@@ -176,15 +175,16 @@ landMat.onBeforeCompile=s=>{s.uniforms.tDry={value:A0.dry};s.uniforms.tSoil={val
   g.setAttribute('color',new T.BufferAttribute(col,3));g.computeVertexNormals();
   const m=new T.Mesh(g,landMat);m.receiveShadow=true;land.add(m);
   // the far land out to the horizon, coarse
-  const RN=40,RS=120,rp=[],rc=[],ru=[],ri=[];
+  const RN=58,RS=190,rp=[],rc=[],ru=[],ri=[];
   for(let j=0;j<=RN;j++){const r=820+Math.pow(j/RN,1.7)*6600;for(let i=0;i<=RS;i++){const a=i/RS*Math.PI*2,x=Math.cos(a)*r,z=Math.sin(a)*r;rp.push(x,h0(x,z)-(j===0?2.5:0),z);ru.push(x/4.1,z/4.1);const c=[0,0,0];tint(x,z,c,0);rc.push(c[0],c[1],c[2]);}}
   for(let j=0;j<RN;j++)for(let i=0;i<RS;i++){const a=j*(RS+1)+i,b=a+RS+1;ri.push(a,a+1,b,b,a+1,b+1);}
   const fg=new T.BufferGeometry();fg.setAttribute('position',new T.Float32BufferAttribute(rp,3));fg.setAttribute('uv',new T.Float32BufferAttribute(ru,2));fg.setAttribute('color',new T.Float32BufferAttribute(rc,3));fg.setIndex(ri);fg.computeVertexNormals();
   const far=new T.Mesh(fg,landMat);far.frustumCulled=false;land.add(far);
 })();
-// trees and hedges: each a pair of crossed cards drawn from the real tree
+//@include trees.js
+// trees and hedges: each a pair of crossed cards drawn from one of THE MARKET's trees
 const solids=[],ITEMS=[],TREEL=[];
-const TSCALE=[4.9,6,7.4,5.3,1.2,1.7];
+const TSCALE=[1,1,1,1,1,1],TREEJ={},TCARD=[];renderer.xr.enabled=false;TREES.forEach((n,k)=>{const b=MTREE.bake(n[0],n[1]);TCARD[k]=b.tex;TREEJ[k]={w:b.w*n[2],h:n[2]};});renderer.xr.enabled=true;
 (function buildTrees(){
   const r=rng(1944),spots=TREES.map(()=>[]);const put=(k,x,z,s)=>{if(Math.hypot(x,z)<30||Math.hypot(x,z)>1700||roadDist(x,z)<9||Math.hypot(x-150,z-300)<150||Math.hypot(x+480,z+640)<95||Math.hypot(x-420,z+560)<70||Math.hypot(x,z)<55||pondAt(x,z)&&Math.hypot(x-pondAt(x,z)[0],z-pondAt(x,z)[1])<pondAt(x,z)[2]*1.05)return;spots[k].push([x,z,s*(.75+r()*.5)*(k<4&&r()<.12?1.6:1),Math.atan2(SUN.x,SUN.z)+(r()-.5)*1.2+(r()<.5?Math.PI:0)]);};
   for(let cx=-9;cx<=9;cx++)for(let cz=-12;cz<=12;cz++){
@@ -197,9 +197,9 @@ const TSCALE=[4.9,6,7.4,5.3,1.2,1.7];
   for(const q of PONDS)for(let i=0;i<26;i++){const a=r()*6.28,d=q[2]*(1.08+r()*.5);put(r()<.75?5:3,q[0]+Math.cos(a)*d,q[1]+Math.sin(a)*d,r()<.75?1.3:1);}
   for(let i=0;i<1500;i++){const a2=r()*6.28,d=1700+Math.pow(r(),1.4)*2600,x=Math.cos(a2)*d,z=Math.sin(a2)*d;if(fbm(x/700+3,z/700+8,2)<.5)continue;spots[Math.floor(r()*4)].push([x,z,2.2+r()*1.6,Math.atan2(SUN.x,SUN.z)+(r()-.5)]);}
   const dm=new T.Object3D();let n_=0;
-  TREES.forEach((n,k)=>{const J=TREEJ[n],S=TSCALE[k],all=spots[k];if(!all.length)return;const near=all.filter(t=>Math.hypot(t[0],t[1])<620),far=all.filter(t=>Math.hypot(t[0],t[1])>=620);
-    for(let v=0;v<2;v++)for(const[list,sh]of v?[[near,true]]:[[near,true],[far,false]]){if(!list.length)continue;const g=new T.PlaneGeometry(J.w*S,J.h*S,1,3);g.translate(0,J.h*S/2-.15,0);{const ps=g.attributes.position,c=new Float32Array(ps.count*3);for(let i=0;i<ps.count;i++){const k=.42+.75*clamp(ps.getY(i)/(J.h*S),0,1);c[i*3]=k*1.04;c[i*3+1]=k;c[i*3+2]=k*.9;}g.setAttribute('color',new T.BufferAttribute(c,3));}if(v)g.rotateY(Math.PI/2);
-      const mat=new T.MeshLambertMaterial({map:A0.cards[k][v][0],vertexColors:true,alphaTest:.42,side:T.DoubleSide,color:new T.Color(.8,.84,.7),emissive:new T.Color(.1,.11,.08),emissiveMap:A0.cards[k][v][0]});
+  TREES.forEach((n,k)=>{const J=TREEJ[k],S=TSCALE[k],all=spots[k];if(!all.length)return;const near=all.filter(t=>Math.hypot(t[0],t[1])<620),far=all.filter(t=>Math.hypot(t[0],t[1])>=620);
+    for(let v=0;v<2;v++)for(const[list,sh]of v?[[near,true]]:[[near,true],[far,false]]){if(!list.length)continue;const g=new T.PlaneGeometry(J.w*S,J.h*S*1.03,1,3);g.translate(0,J.h*S*1.03/2-J.h*S*.01-.1,0);{const ps=g.attributes.position,c=new Float32Array(ps.count*3);for(let i=0;i<ps.count;i++){const k=.42+.75*clamp(ps.getY(i)/(J.h*S),0,1);c[i*3]=k*1.04;c[i*3+1]=k;c[i*3+2]=k*.9;}g.setAttribute('color',new T.BufferAttribute(c,3));}if(v)g.rotateY(Math.PI/2);
+      const mat=new T.MeshLambertMaterial({map:TCARD[k][v],vertexColors:true,alphaTest:.5,side:T.DoubleSide,color:new T.Color(1.5,1.5,1.4),emissive:new T.Color(.12,.13,.1),emissiveMap:TCARD[k][v]});
       const im=new T.InstancedMesh(g,mat,list.length);list.forEach((t,i)=>{dm.position.set(t[0],hAt(t[0],t[1]),t[1]);dm.rotation.set(0,t[3],0);dm.scale.setScalar(t[2]);dm.updateMatrix();im.setMatrixAt(i,dm.matrix);if(list===near)(t.im||(t.im=[])).push(im,i);});
       if(list===near)im.instanceColor=new T.InstancedBufferAttribute(new Float32Array(list.length*3).fill(1),3);
       im.frustumCulled=false;im.castShadow=sh;land.add(im);n_+=list.length;}

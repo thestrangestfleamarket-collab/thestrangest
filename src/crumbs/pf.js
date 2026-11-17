@@ -8,10 +8,11 @@ const F32 = s => new Float32Array(B64(s).buffer), I16 = s => new Int16Array(B64(
 const DEC = new Map(), M4 = new THREE.Matrix4();
 const srgb = c => { c /= 255; return c <= 0.04045 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4); };
 const hex3 = h => { h = typeof h === 'number' ? h : parseInt(String(h).replace('#', ''), 16); return [(h >> 16) & 255, (h >> 8) & 255, h & 255]; };
-PF.has = k => !!(window.PFDATA && window.PFDATA[k]);
+PF.has = k => !!(window.PFDATA && window.PFDATA[k] && (!window.PFDATA[k].of || window.PFDATA[window.PFDATA[k].of]));
 function dec(k) {
-  let D = DEC.get(k); if (D) return D; const S = window.PFDATA[k], M = S.mesh, q = I16(M.p), p = new Float32Array(q.length);
+  let D = DEC.get(k); if (D) return D; const B = window.PFDATA[k].of ? window.PFDATA[k] : null, S = window.PFDATA[B ? B.of : k], M = S.mesh, q = I16(M.p), p = new Float32Array(q.length);
   for (let i = 0; i < q.length; i++) p[i] = (q[i] + 32500) * M.sc + M.lo[i % 3];
+  if (B && B.p) { const d = new Int8Array(B64(B.p).buffer); for (let i = 0; i < p.length; i++) p[i] += d[i] * B.s; }   // a breed: its base animal's corners moved (the squirrel on the rat)
   D = { S, p, c: B64(M.c), i: U16(M.i), j: M.j ? B64(M.j) : null, w: M.w ? B64(M.w) : null, z: M.z ? B64(M.z) : null, clips: null }; DEC.set(k, D); return D;
 }
 function rig(S) {

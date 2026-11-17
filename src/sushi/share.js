@@ -19,7 +19,7 @@ export function buildShare(live) {
   const say = (p) => [r2(p.root.position.x), r2(p.root.position.z), r2(p.root.rotation.y), pose(p), code(p), p.talkT > 0 ? 1 : 0, look(p)];
   if (B) for (const h of B.people) watch(h.p);
   const mine = () => { const cs = []; for (const c of G.game.customers) { if (c.guest || !c.p || !c.p.root.parent) continue; watch(c.p); const k = c.nb ? 'b' + c.nb.n : (c._sk ||= 'c' + (++S.seq).toString(36)); cs.push([k, String(c.p.style || ''), ...say(c.p), c.seat]); } return cs; };
-  const out = () => { const w = { r: S.rank, sx: live.sx, t: r2(G.t) }; if (S.lead && B) w.p = B.people.filter((h) => !h.taken && !h.hidden && h.p.root.visible).map((h) => [h.n, ...say(h.p)]); if (live.slot >= 0 && !G.guest) w.c = mine(); if (S.lead && G.outbreak) { const o = G.outbreak.out(); if (o) w.o = o; } else if (G.outbreak?.hits?.length) w.oh = G.outbreak.hits.splice(0); return w; };   // (the night's turned: outbreak.js)
+  const out = () => { const w = { r: S.rank, sx: live.sx, t: r2(G.t) }; if (S.lead && B) w.p = B.people.filter((h) => !h.taken && !h.hidden && h.p.root.visible).map((h) => [h.n, ...say(h.p)]); if (live.slot >= 0 && !G.guest) w.c = mine(); return w; };
 
   // the rest of the line: the cooks the section knows (their cart's slot, since when) and the guests (since when), each heard within a few seconds
   S.rankOf = () => (live.slot >= 0 && !G.guest ? [0, live.slot, live.ks || 0] : [1, S.since, live.me || '~']);
@@ -60,6 +60,6 @@ export function buildShare(live) {
   S.list = () => { const o = {}; if (B) for (const h of B.people) if (h.p.root.visible && !h.hidden) o['b' + h.n] = [r2(h.p.root.position.x), r2(h.p.root.position.z), h.p.pose];
     for (const c of G.game.customers) if (!c.guest && c.p.root.parent) o[c.nb ? 'b' + c.nb.n : c._sk || 'c?'] = [r2(c.p.root.position.x), r2(c.p.root.position.z), c.p.pose];
     for (const [k, d] of S.drawn) o[k.split('/').pop()] = [r2(d.p.root.position.x), r2(d.p.root.position.z), d.p.pose]; return o; };
-  S.update = (dt) => { S.decide(); draw(dt, G.t); if (!S.lead) G.outbreak?.follow(S.lanes.get(S.by)?.w.o); else for (const [id, L] of S.lanes) if (L.w.oh) { G.outbreak?.guestHits(id, L.w.oh); L.w.oh = null; } if ((S.t += dt) < 0.1) return; S.t = 0; if (!live.seen()) return; const w = out(); if (w.p || w.c || w.oh) live.send({ t: 'yt', d: { w } }); };
+  S.update = (dt) => { S.decide(); draw(dt, G.t); if ((S.t += dt) < 0.1) return; S.t = 0; if (!live.seen()) return; const w = out(); if (w.p || w.c) live.send({ t: 'yt', d: { w } }); };
   return S;
 }

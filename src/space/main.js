@@ -1,7 +1,7 @@
 // SPACE FLEET: a fleet battle on a field that floats in your room (passthrough) or in open space, for a Quest headset in its browser; two players, or one against the bot. This file is the headset, the hands, the lights and the glue; the battle is sim.js, its picture view.js
 import * as THREE from 'three';
 import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
-import { Sim, read, table, NAVY, TYPES, DT, MOTHER, FIGHTER, FRIGATE, CRUISER, BX, BY, BZ } from './sim.js';
+import { Sim, read, table, NAVY, TYPES, DT, MOTHER, FIGHTER, FRIGATE, CRUISER, MINE, BX, BY, BZ } from './sim.js';
 import { Bot } from './bot.js';
 import { View, loadModels, BASE, LEN } from './view.js';
 import { Panel, Banner, Guide } from './hud.js';
@@ -13,7 +13,7 @@ import { initAudio, sfx, loop, listen } from './audio.js';
 const $ = (id) => document.getElementById(id), Q = new URLSearchParams(location.search), SIM = Q.has('sim'), FAST = SIM ? +Q.get('fast') || 1 : 1;   // ?sim: the check's way in, no headset; ?fast=n runs the battle n times as fast
 const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, powerPreference: 'high-performance' });
 renderer.setPixelRatio(Math.min(devicePixelRatio, 2)); renderer.setSize(innerWidth, innerHeight); renderer.setClearColor(0x000000, 0);
-renderer.toneMapping = THREE.ACESFilmicToneMapping; renderer.toneMappingExposure = 1.15; renderer.outputColorSpace = THREE.SRGBColorSpace;
+renderer.toneMapping = THREE.ACESFilmicToneMapping; renderer.toneMappingExposure = 0.95; renderer.outputColorSpace = THREE.SRGBColorSpace;
 renderer.shadowMap.enabled = true; renderer.shadowMap.type = THREE.PCFShadowMap;
 renderer.xr.enabled = true; renderer.xr.setReferenceSpaceType('local-floor'); renderer.xr.setFoveation(0.7);
 document.body.appendChild(renderer.domElement);
@@ -22,9 +22,9 @@ addEventListener('resize', () => { if (renderer.xr.isPresenting) return; camera.
 
 // the field: everything of the battle is inside this group, which your grips move, turn and size
 const arena = new THREE.Group(); scene.add(arena);
-// one hard sun, fixed in the sky (turn the field and the shadows turn on the hulls), and a little fill
-const SUN = new THREE.Vector3(0.55, 0.62, 0.56).normalize(), sun = new THREE.DirectionalLight(0xfff4e6, 3.6), fill = new THREE.HemisphereLight(0x8fa8d0, 0x1a1410, 0.1);
-const rim = new THREE.DirectionalLight(0x6f9cff, 0.55); scene.add(rim, rim.target); sun.castShadow = true; sun.shadow.mapSize.set(SIM ? 2048 : 1024, SIM ? 2048 : 1024); scene.add(sun, sun.target, fill);
+// space light: one hard sun, fixed in the sky (turn the field and the shadows turn on the hulls); the side away from it is near black, with only a trace of fill and of light off the galaxy, and nothing is lit past white
+const SUN = new THREE.Vector3(0.55, 0.62, 0.56).normalize(), sun = new THREE.DirectionalLight(0xfff4e6, 3.8), fill = new THREE.HemisphereLight(0x8fa8d0, 0x1a1410, 0.05);
+const rim = new THREE.DirectionalLight(0x6f9cff, 0.22); scene.add(rim, rim.target); sun.castShadow = true; sun.shadow.mapSize.set(SIM ? 2048 : 1024, SIM ? 2048 : 1024); scene.add(sun, sun.target, fill);
 let shadowS = 0;
 function fitLight() { const s = arena.scale.x; sun.target.position.copy(arena.position); rim.target.position.copy(arena.position); rim.position.copy(arena.position).addScaledVector(SUN, -3 * s); rim.position.y += 1.5 * s; sun.position.copy(arena.position).addScaledVector(SUN, 3 * s);
   if (s !== shadowS) { shadowS = s; const c = sun.shadow.camera; c.left = c.bottom = -1.75 * s; c.right = c.top = 1.75 * s; c.near = 0.8 * s; c.far = 5.2 * s; c.updateProjectionMatrix(); sun.shadow.bias = -0.0006; sun.shadow.normalBias = 0.004 * s; } }
@@ -35,11 +35,11 @@ let cosmos = null;
 fetch(BASE + 'stars.json').then(r => r.json()).then(cat => { cosmos = buildCosmos(cat, SUN); space.add(cosmos); }).catch(() => {});
 // what the hulls' metal mirrors: a plain lit room, dim in open space so the sun does the work
 { const pm = new THREE.PMREMGenerator(renderer); scene.environment = pm.fromScene(new RoomEnvironment(), 0.04).texture; pm.dispose(); }
-const panel = new Panel(), banner = new Banner(), guide = new Guide(), post = new Post(renderer), HUD = 3; scene.add(banner.mesh, guide.mesh);
+const panel = new Panel(), banner = new Banner(), guide = new Guide(), post = new Post(renderer), HUD = 3; scene.add(banner.mesh, guide.mesh, panel.mesh);
 for (const m of [panel.mesh, banner.mesh, guide.mesh]) m.layers.set(HUD); camera.layers.enable(HUD);   // what the lens must leave sharp is on its own layer, drawn after it
-const G = { state: 'load', me: 0, sim: null, bots: [], view: null, net: null, host: false, peer: false, acc: 0, ar: false, canAR: false, over: false, placed: -1, alarm: 0, last: 0, paused: false, tOff: 0, fx: !Q.has('nofx'), fwd: new THREE.Vector3(0, 0, -1), fac: Q.get('navy') === '1' ? 1 : 0, peerFac: 1 };
+const G = { state: 'load', me: 0, sim: null, bots: [], view: null, net: null, host: false, peer: false, acc: 0, ar: false, canAR: false, over: false, placed: -1, alarm: 0, last: 0, paused: false, tOff: 0, fx: Q.has('fx') || (() => { try { return localStorage.getItem('spaceLens') === '1'; } catch (e) { return false; } })(), fwd: new THREE.Vector3(0, 0, -1), fac: Q.get('navy') === '1' ? 1 : 0, peerFac: 1 };
 const gnow = () => performance.now() - G.tOff;   // the battle's own clock: it stands still while the battle is paused
-function setView(ar) { post.rest(); G.ar = ar && G.canAR; space.visible = !G.ar; fill.intensity = G.ar ? 0.7 : 0.1; scene.environmentIntensity = G.ar ? 0.8 : 0.4; if (SIM) scene.background = null; }
+function setView(ar) { post.rest(); G.ar = ar && G.canAR; space.visible = !G.ar; fill.intensity = G.ar ? 0.45 : 0.05; scene.environmentIntensity = G.ar ? 0.45 : 0.16; if (SIM) scene.background = null; }
 const _v = new THREE.Vector3(), _w = new THREE.Vector3(), _d = new THREE.Vector3(), _o = new THREE.Vector3(), _q = new THREE.Quaternion(), _m = new THREE.Matrix4(), _m2 = new THREE.Matrix4(), _up = new THREE.Vector3();
 const world = (p) => arena.localToWorld(_w.copy(p));
 
@@ -63,6 +63,7 @@ function online() {
     ps: (m) => { if (G.host) return; G.paused = !!m.on; banner.set(G.paused ? 'PAUSED\nclick a thumbstick to go on' : ''); },
     o: (m) => { if (G.host && G.sim && G.peer) G.sim.order(1, m.ids, m.k, m.p, m.tid, m.a); },
     b: (m) => { if (G.host && G.sim && G.peer) G.sim.build(1, m.u); },
+    fl: (m) => { if (!(G.host && G.sim && G.peer)) return; if (m.id) G.sim.fly(1, m.id, { x: m.d[0], y: m.d[1], z: m.d[2], thr: m.th, fire: m.f }); else for (const u of G.sim.units) if (u.side === 1 && u.fly) G.sim.fly(1, u.id, null); },
     again: () => { if (G.host && G.over) newGame(); },
     full: () => solo('THE ROOM IS FULL\nyou play the bot'),
     down: () => { if (G.state === 'wait') solo('NO LINE TO THE ROOM\nyou play the bot'); else if (!G.host) takeover(); else if (G.sim && G.peer) { G.peer = false; G.bots = [new Bot(G.sim, 1, mind)]; } },
@@ -87,6 +88,37 @@ const cmd = {
   all() { G.view.sel.clear(); for (const u of G.view.units.values()) if (u.side === G.me && (u.type === FIGHTER || u.type === FRIGATE || u.type === CRUISER)) G.view.sel.add(u.id); if (G.view.sel.size > 1) guide.mark('multi'); sfx('select', null, 0.5); },
 };
 
+// ---- CONTROL: fly one of your ships yourself. The field grows round you until you sit on that ship's back; it does not turn with the ship (you turn, a spinning chair is ideal), the ship's nose and its guns follow where you point
+const PILOT_S = 260, pilot = { id: 0, M: new THREE.Matrix4(), anchor: new THREE.Vector3(), dir: new THREE.Vector3(0, 0, -1), o: new THREE.Vector3(), thr: 0.5, fire: false, sent: 0, ar: false, pct: -1, lock: 0, in: null };
+const sight = new THREE.Mesh(new THREE.RingGeometry(0.82, 1, 40), new THREE.MeshBasicMaterial({ color: 0x7dffd8, transparent: true, opacity: 0.9, depthTest: false, depthWrite: false, toneMapped: false, side: THREE.DoubleSide })), lockBox = new THREE.Mesh(new THREE.RingGeometry(0.9, 1, 4), new THREE.MeshBasicMaterial({ color: 0xffd24a, transparent: true, opacity: 0.95, depthTest: false, depthWrite: false, toneMapped: false, side: THREE.DoubleSide }));
+for (const m of [sight, lockBox]) { m.visible = false; m.renderOrder = 30; m.layers.set(HUD); scene.add(m); }
+function takeControl(id) {
+  const u = G.view.units.get(id); if (!u || u.side !== G.me || G.state !== 'play' || G.over) return sfx('ui_deny', null, 0.5); if (pilot.id) leaveControl();
+  arena.updateMatrix(); pilot.M.copy(arena.matrix); pilot.id = id; pilot.ar = G.ar; if (G.ar) setView(false); camera.getWorldPosition(pilot.anchor); pilot.thr = 0.5; pilot.fire = false; pilot.pct = -1; pilot.sent = 0; G.view.sel.clear(); if (guide.on) guide.stop();
+  for (const h of hands) { h.mode = null; h.grip = false; h.carry = false; h.trig = false; h.dot.visible = h.bub.visible = h.lines.visible = false; G.view.hover[h.i] = 0; } sfx('select', null, 0.7);
+}
+function leaveControl(note) {
+  if (!pilot.id) return; const id = pilot.id; pilot.id = 0; if (G.sim) G.sim.fly(G.me, id, null); else G.net && G.net.send({ t: 'fl', id: 0 });
+  pilot.M.decompose(arena.position, arena.quaternion, arena.scale); fitLight(); if (pilot.ar) setView(true); sight.visible = lockBox.visible = false; for (const h of hands) { h.trig = false; h.lines.visible = h.on; } panel.key = ''; banner.set(note || '', '#ffd766', note ? 3 : 0); regrab();
+}
+function flyFrame(dt, real) {
+  const V = G.view, u = V.units.get(pilot.id); if (!u || G.state !== 'play' || G.over) return leaveControl(u ? '' : 'YOUR SHIP IS LOST'); const T = TYPES[u.type];
+  // the pilot's word: the right hand points (the left if it is the only one, your eyes if neither), any trigger fires, the left stick is the thrust
+  if (pilot.in) { pilot.dir.fromArray(pilot.in.dir).normalize(); pilot.thr = pilot.in.thr; pilot.fire = !!pilot.in.fire; pilot.o.copy(pilot.anchor); }
+  else { const h = hands.find(x => x.on && x.src && x.src.handedness === 'right') || hands.find(x => x.on); if (h) { h.c.getWorldPosition(pilot.o); pilot.dir.set(0, 0, -1).applyQuaternion(h.c.getWorldQuaternion(_q)); } else { camera.getWorldPosition(pilot.o); camera.getWorldDirection(pilot.dir); }
+    pilot.fire = hands.some(x => x.on && x.trig); let ay = 0; for (const x of hands) { const gp = x.on && x.src && x.src.gamepad; if (gp && gp.axes.length > 3 && x.src.handedness === 'left' && Math.abs(gp.axes[3]) > 0.15) ay = gp.axes[3]; } pilot.thr = THREE.MathUtils.clamp(0.5 - ay * 0.5, 0, 1); }
+  _d.copy(pilot.dir).applyQuaternion(_q.copy(arena.quaternion).invert()); const c = { x: _d.x, y: _d.y, z: _d.z, thr: pilot.thr, fire: pilot.fire };
+  if (G.sim) G.sim.fly(G.me, pilot.id, c); else if (real - pilot.sent > 90) { pilot.sent = real; G.net && G.net.send({ t: 'fl', id: pilot.id, d: [c.x, c.y, c.z], th: c.thr, f: c.fire ? 1 : 0 }); }
+  // the field round you: your seat on the ship's back stays where you are
+  arena.scale.setScalar(PILOT_S); _v.copy(u.pos); _v.y += LEN[u.type] * 0.24; _v.multiplyScalar(PILOT_S).applyQuaternion(arena.quaternion); arena.position.copy(pilot.anchor).sub(_v); arena.position.y -= 0.35; arena.updateMatrixWorld(true); fitLight();
+  // the sight along your aim, a box on what the guns will take
+  const reach = T.range * 1.5; let best = null, bc = 0.955; for (const e of V.units.values()) { if (e.side === G.me) continue; _w.copy(e.pos).sub(u.pos); const d = _w.length() || 1e-6, r = TYPES[e.type].r; if (d - r > reach || (e.type === MINE && d - r > 0.12)) continue; const k = _w.dot(_d) / d + Math.min(0.04, r / d * 0.5); if (k > bc) { bc = k; best = e; } }
+  pilot.lock = best ? best.id : 0; sight.visible = true; sight.position.copy(pilot.o).addScaledVector(pilot.dir, 40); sight.scale.setScalar(0.7); sight.lookAt(_o); sight.material.color.setHex(best ? 0xff5548 : 0x7dffd8);
+  lockBox.visible = !!best; if (best) { world(best.pos); lockBox.position.copy(_w); lockBox.scale.setScalar(Math.max(TYPES[best.type].r * PILOT_S * 1.5, _w.distanceTo(_o) * 0.03)); lockBox.lookAt(_o); lockBox.rotateZ(Math.PI / 4); }
+  const pct = Math.round(u.hp * 20) * 5; if (pct !== pilot.pct) { pilot.pct = pct; banner.set(T.name + '  ' + pct + '%\npoint: steer   trigger: fire   left stick: thrust   grip: leave', pct < 35 ? '#ff6a5a' : '#ffd766'); }
+  if (SIM) { camera.position.copy(pilot.anchor); camera.lookAt(_v.copy(pilot.anchor).add(pilot.dir)); }
+}
+
 // ---- where the field sits: an arm's length in front of you, your mothership nearest -------------------------
 function place() {
   if (G.placed === G.me) return; G.placed = G.me;
@@ -96,18 +128,21 @@ function place() {
 }
 
 // ---- hands -------------------------------------------------------------------------------------------------
-const ray = new THREE.Raycaster(), hands = [0, 1].map((i) => {
+const ray = new THREE.Raycaster(); ray.layers.enableAll();   // the console is on the lens's sharp layer; the pointer must still reach it
+const hands = [0, 1].map((i) => {
   const c = renderer.xr.getController(i), g = renderer.xr.getControllerGrip(i); scene.add(c, g);
   const pos = new Float32Array(18), geo = new THREE.BufferGeometry(); geo.setAttribute('position', new THREE.BufferAttribute(pos, 3).setUsage(THREE.DynamicDrawUsage));
   const lines = new THREE.LineSegments(geo, new THREE.LineBasicMaterial({ color: 0x9fd0ff, transparent: true, opacity: 0.7, depthWrite: false, toneMapped: false })); lines.frustumCulled = false; lines.visible = false; scene.add(lines);
   const dot = new THREE.Mesh(new THREE.SphereGeometry(1, 12, 8), new THREE.MeshBasicMaterial({ color: 0x66ff99, transparent: true, opacity: 0.9, depthWrite: false, toneMapped: false })); dot.visible = false; scene.add(dot);
   const bub = new THREE.Mesh(new THREE.SphereGeometry(1, 24, 16), new THREE.MeshBasicMaterial({ color: 0x66ccff, transparent: true, opacity: 0.14, depthWrite: false, toneMapped: false })); bub.visible = false; scene.add(bub);
   for (const m of [lines, dot, bub]) m.layers.set(HUD);
-  const h = { i, c, g, pos, lines, dot, bub, src: null, on: false, mode: null, d: 0.4, t0: 0, id: 0, ui: -1, grip: false, g0: new THREE.Vector3(), o: new THREE.Vector3(), dir: new THREE.Vector3(), cur: new THREE.Vector3(), c0: new THREE.Vector3(), start: new THREE.Vector3(), lo: new THREE.Vector3(), ld: new THREE.Vector3(), lc: new THREE.Vector3(), btn: [false, false, false] };
-  c.addEventListener('connected', (e) => { h.src = e.data; h.on = true; lines.visible = true; if (e.data.handedness === 'left') g.add(panel.mesh); });
+  const h = { i, c, g, pos, lines, dot, bub, src: null, on: false, mode: null, d: 0.4, t0: 0, id: 0, ui: -1, grip: false, g0: new THREE.Vector3(), o: new THREE.Vector3(), dir: new THREE.Vector3(), cur: new THREE.Vector3(), c0: new THREE.Vector3(), start: new THREE.Vector3(), lo: new THREE.Vector3(), ld: new THREE.Vector3(), lc: new THREE.Vector3(), btn: [false, false, false], onPanel: false, carry: false, off: new THREE.Matrix4() };
+  c.addEventListener('connected', (e) => { h.src = e.data; h.on = true; lines.visible = true;  });
   c.addEventListener('disconnected', () => { h.src = null; h.on = false; lines.visible = dot.visible = bub.visible = false; h.mode = null; h.grip = false; regrab(); });
   c.addEventListener('selectstart', () => press(h)); c.addEventListener('selectend', () => release(h));
-  c.addEventListener('squeezestart', () => { h.grip = true; regrab(); }); c.addEventListener('squeezeend', () => { h.grip = false; regrab(); });
+  // a grip on the console carries the console; anywhere else it takes hold of the field
+  c.addEventListener('squeezestart', () => { if (pilot.id) { buzz(h, 0.8, 60); return leaveControl(); } if (h.onPanel) { h.carry = true; c.updateMatrixWorld(); panel.mesh.updateMatrixWorld(); h.off.copy(c.matrixWorld).invert().multiply(panel.mesh.matrixWorld); buzz(h); return; } h.grip = true; regrab(); });
+  c.addEventListener('squeezeend', () => { if (h.carry) { h.carry = false; panel.pinned = true; return; } h.grip = false; regrab(); });
   return h; });
 const buzz = (h, a = 0.4, ms = 25) => { try { h.src?.gamepad?.hapticActuators?.[0]?.pulse(a, ms); } catch {} };
 const M0 = new THREE.Matrix4();
@@ -121,13 +156,16 @@ function grabWorld() {
   _m.decompose(arena.position, arena.quaternion, arena.scale); fitLight(); if (_v.copy(arena.position).applyMatrix4(_m2.copy(M0).invert()).lengthSq() > 0.0004) guide.mark('moved');
 }
 function press(h) {
-  if (h.ui >= 0) { const b = panel.btn[h.ui]; buzz(h); if (!b) return; if (b.id === 'ar') { if (G.canAR) { setView(!G.ar); sfx('ui_click', null, 0.6); } else sfx('ui_deny', null, 0.5); } else if (b.id === 'all') cmd.all(); else if (b.id === 'pause') cmd.pause(); else if (b.id === 'guide') { sfx('ui_click', null, 0.6); if (guide.on) guide.stop(); else guide.start(); } else if (b.id === 'fx') { G.fx = !G.fx; post.rest(); sfx('ui_click', null, 0.6); } else if (b.id === 'x') { sfx('ui_click', null, 0.6); if (G.state === 'wait') solo(); else cmd.again(); } else cmd.build(+b.id.slice(1)); return; }
+  if (pilot.id) { h.trig = true; return; }
+  if (h.onPanel && h.ui < 0) return;   // on the console but between its buttons: nothing, and not a bubble behind it
+  if (h.ui >= 0) { const b = panel.btn[h.ui]; buzz(h, 0.8, 40); panel.press(h.ui); G.last = 0; if (!b) return; if (b.id === 'ar') { if (G.canAR) { setView(!G.ar); sfx('ui_click', null, 0.6); } else sfx('ui_deny', null, 0.5); } else if (b.id === 'all') cmd.all(); else if (b.id === 'pause') cmd.pause(); else if (b.id === 'fly') { const V = G.view, one = V.sel.size === 1 ? [...V.sel][0] : 0; if (one) takeControl(one); else { sfx('ui_deny', null, 0.5); banner.set('PICK ONE OF YOUR SHIPS\nthen press CONTROL to fly it yourself', '#ffd766', 3); } } else if (b.id === 'guide') { sfx('ui_click', null, 0.6); if (guide.on) guide.stop(); else guide.start(); } else if (b.id === 'fx') { G.fx = !G.fx; try { localStorage.setItem('spaceLens', G.fx ? '1' : '0'); } catch (e) {} post.rest(); sfx('ui_click', null, 0.6); } else if (b.id === 'x') { sfx('ui_click', null, 0.6); if (G.state === 'wait') solo(); else cmd.again(); } else cmd.build(+b.id.slice(1)); return; }
   guide.mark('go'); if (G.state !== 'play') return; const V = G.view, u = V.units.get(V.hover[h.i]);
   if (u && u.side === G.me) { if (h.tap === u.id && performance.now() - h.t0 < 450) { h.tap = 0; cmd.stop(V.sel.has(u.id) ? [...V.sel] : [u.id]); buzz(h, 0.8, 60); return; } h.tap = u.id; if (!V.sel.has(u.id)) { V.sel.clear(); V.sel.add(u.id); } h.mode = 'drag'; h.id = u.id; h.d = world(u.pos).distanceTo(h.o); h.t0 = performance.now(); h.c0.copy(h.o).addScaledVector(h.dir, h.d); buzz(h); sfx('select', world(u.pos), 0.6); }
   else if (u && V.sel.size) { cmd.order([...V.sel], 1, null, u.id, true); buzz(h, 0.7, 40); }
   else { h.mode = 'marq'; h.d = THREE.MathUtils.clamp(_v.copy(arena.position).sub(h.o).dot(h.dir), 0.25, 3); h.start.copy(h.o).addScaledVector(h.dir, h.d); arena.worldToLocal(h.start); }
 }
 function release(h) {
+  h.trig = false; if (pilot.id) return;
   const V = G.view, mode = h.mode; h.mode = null; h.dot.visible = h.bub.visible = false; if (!mode || G.state !== 'play') return;
   if (mode === 'drag') { if (performance.now() - h.t0 < 300 && h.cur.distanceTo(h.c0) < 0.04) return; const ids = [...V.sel], foe = V.near(h.lc, 1 - G.me, 0.03 / arena.scale.x);
     if (foe) cmd.order(ids, 1, null, foe, true); else cmd.order(ids, 0, h.lc.clone(), 0, true); buzz(h, 0.7, 40); }
@@ -144,11 +182,11 @@ function hand(h, dt) {
         fitLight(); guide.mark('moved'); if (hands.some(x => x.grip)) regrab(); } }
     if (h.mode && gp.axes.length > 3 && Math.abs(gp.axes[3]) > 0.15) h.d = THREE.MathUtils.clamp(h.d - gp.axes[3] * dt * 1.3, 0.08, 5); }
   // the panel, then the field
-  h.ui = -1; let len = 0.35;
-  if (!h.mode && panel.mesh.parent && panel.mesh.parent !== h.g) { ray.set(h.o, h.dir); ray.far = 1.5; const hit = ray.intersectObject(panel.mesh, false)[0]; if (hit && hit.uv) { h.ui = panel.at(hit.uv); len = hit.distance; } }
-  if (panel.mesh.parent && panel.mesh.parent !== h.g) panel.hot = h.ui;
+  h.ui = -1; h.onPanel = false; let len = 0.35;
+  if (h.carry) { h.c.updateMatrixWorld(); _m.multiplyMatrices(h.c.matrixWorld, h.off).decompose(panel.mesh.position, panel.mesh.quaternion, _v); panel.t.copy(panel.mesh.position); }
+  else if (!h.mode) { ray.set(h.o, h.dir); ray.far = 2.5; const hit = ray.intersectObject(panel.mesh, false)[0]; if (hit && hit.uv) { h.onPanel = true; h.ui = panel.at(hit.uv); len = hit.distance; } }
   arena.worldToLocal(h.lo.copy(h.o)); _q.copy(arena.quaternion).invert(); h.ld.copy(h.dir).applyQuaternion(_q);
-  V.hover[h.i] = !h.mode && h.ui < 0 && G.state === 'play' ? V.pick(h.lo, h.ld, s, 4 / s) : 0;
+  V.hover[h.i] = !h.mode && !h.onPanel && !h.carry && G.state === 'play' ? V.pick(h.lo, h.ld, s, 4 / s) : 0;
   if (V.hover[h.i] && !h.mode) { const u = V.units.get(V.hover[h.i]); len = world(u.pos).distanceTo(h.o); if (u.side === G.me) guide.mark('hover'); }
   h.cur.copy(h.o).addScaledVector(h.dir, h.mode ? h.d : len); arena.worldToLocal(h.lc.copy(h.cur));
   P[0] = h.o.x; P[1] = h.o.y; P[2] = h.o.z; P[3] = h.cur.x; P[4] = h.cur.y; P[5] = h.cur.z; for (let k = 6; k < 18; k++) P[k] = 0;
@@ -157,7 +195,9 @@ function hand(h, dt) {
       h.dot.visible = true; h.dot.position.copy(_w); h.dot.scale.setScalar(0.008); h.dot.material.color.set(foe ? 0xff4030 : 0x66ff99);
       P[6] = _w.x; P[7] = _w.y; P[8] = _w.z; world(u.pos); P[9] = _w.x; P[10] = _w.y; P[11] = _w.z;
       world(h.lc); P[12] = _w.x; P[13] = _w.y; P[14] = _w.z; world(_v.set(h.lc.x, 0, h.lc.z)); P[15] = _w.x; P[16] = _w.y; P[17] = _w.z; } }
+  else if (h.onPanel) { h.dot.visible = true; h.dot.position.copy(h.cur); h.dot.scale.setScalar(0.007); h.dot.material.color.set(h.ui >= 0 ? 0xffffff : 0x8090a8); }
   else if (h.mode === 'marq') { _v.addVectors(h.lc, h.start).multiplyScalar(0.5); const r = h.lc.distanceTo(h.start) / 2; world(_v); h.bub.visible = r * s > 0.01; h.bub.position.copy(_w); h.bub.scale.setScalar(r * s); }
+  if (!h.mode && !h.onPanel) h.dot.visible = false;
   h.lines.geometry.attributes.position.needsUpdate = true;
 }
 
@@ -175,16 +215,16 @@ function wire(V) { V.onEvent = (kind, a, b) => {
 let prev = 0;
 function frame(time) {
   const real = performance.now(), dt = Math.min(0.05, (time - prev) / 1000 || 0.011); if (G.paused) G.tOff += Math.max(0, time - prev) || 0; prev = time; const now = gnow(), V = G.view; if (!V) return renderer.render(scene, camera);
-  if (G.state !== 'lobby') { step(dt, now); grabWorld(); for (const h of hands) hand(h, dt); }
+  if (G.state !== 'lobby') { step(dt, now); if (pilot.id) { camera.getWorldPosition(_o); flyFrame(dt, real); } else { grabWorld(); for (const h of hands) hand(h, dt); panel.hot = hands[0].on ? hands[0].ui : -1; panel.hot2 = hands[1].on ? hands[1].ui : -1; } }
   V.draw(now, G.paused ? 0 : dt, camera);
   // the end, the alarm, the engines' voice
   if (G.state === 'play' && V.winner >= 0 && !G.over) { G.over = true; const won = V.winner === G.me; banner.set(V.winner === 2 ? 'DRAW' : won ? 'VICTORY' : 'DEFEAT', won ? '#6fe0a0' : '#ff6a5a'); sfx(won ? 'win' : 'lose', null, 0.8); }
   let thr = 0, n = 0, mine = 0; for (const u of V.units.values()) { thr += u.thr; n++; if (u.side === G.me && u.type !== MOTHER) mine++; if (u.type === MOTHER && u.side === G.me && now - u.hit < 300 && now - G.alarm > 14000 && !G.over) { G.alarm = now; sfx('alarm', null, 0.5); banner.set('MOTHERSHIP UNDER ATTACK', '#ff6a5a', 2.5); } }
   loop('engine', n ? 0.06 + 0.2 * thr / n : 0); loop('ambience', G.state === 'lobby' ? 0 : 0.3);
   camera.getWorldPosition(_o); camera.getWorldDirection(_d); _up.set(0, 1, 0).applyQuaternion(camera.getWorldQuaternion(_q)); listen({ position: _o }, _d, _up);
-  shell.position.copy(_o); G.fwd.copy(_d).setY(0); if (G.fwd.lengthSq() < 1e-4) G.fwd.set(0, 0, -1); G.fwd.normalize(); guide.tick(real, _o, G.fwd);
-  banner.tick(real); banner.mesh.position.copy(arena.position); banner.mesh.position.y += 0.62 * arena.scale.x; banner.mesh.scale.setScalar(Math.max(0.6, arena.scale.x * 1.6)); banner.mesh.lookAt(_o);
-  if (now - G.last > 200) { G.last = now; panel.draw({ credits: V.credits[G.me], income: V.income[G.me], count: mine, queue: V.queue[G.me] || [], me: G.me, ar: G.ar, canAR: G.canAR, state: G.over ? 'over' : G.state, costs: table(V.fac[G.me]), paused: G.paused, fx: G.fx, guide: guide.on, extra: G.state === 'wait' ? 'PLAY THE BOT' : G.over ? 'PLAY AGAIN' : '' }); }
+  shell.position.copy(_o); G.fwd.copy(_d).setY(0); if (G.fwd.lengthSq() < 1e-4) G.fwd.set(0, 0, -1); G.fwd.normalize(); guide.tick(real, _o, G.fwd); panel.mesh.visible = G.state !== 'lobby' && !pilot.id; if (G.state !== 'lobby' && !pilot.id && !hands.some(h => h.carry)) panel.follow(_o, G.fwd);
+  banner.tick(real); if (pilot.id) { banner.mesh.position.copy(_o).addScaledVector(G.fwd, 2.4); banner.mesh.position.y -= 0.75; banner.mesh.scale.setScalar(2.2); } else { banner.mesh.position.copy(arena.position); banner.mesh.position.y += 0.62 * arena.scale.x; banner.mesh.scale.setScalar(Math.max(0.6, arena.scale.x * 1.6)); } banner.mesh.lookAt(_o);
+  if (real - G.last > 150) { G.last = real; panel.draw({ credits: V.credits[G.me], income: V.income[G.me], count: mine, queue: V.queue[G.me] || [], me: G.me, ar: G.ar, canAR: G.canAR, state: G.over ? 'over' : G.state, costs: table(V.fac[G.me]), paused: G.paused, fx: G.fx, guide: guide.on, fly: V.sel.size === 1, extra: G.state === 'wait' ? 'PLAY THE BOT' : G.over ? 'PLAY AGAIN' : '' }); }
   // open space goes through the lens, focused on the ship nearest the middle of your sight (the field's middle when there is none); your room does not
   if (!G.ar && G.fx) { let best = 0.9, f = Math.max(0.3, _v.copy(arena.position).sub(_o).length()); for (const u of V.units.values()) { world(u.pos).sub(_o); const d = _w.length(), c = _w.dot(_d) / (d || 1); if (c > best) { best = c; f = d; } } post.render(scene, camera, f); }
   else renderer.render(scene, camera);
@@ -198,15 +238,15 @@ async function enter(two) {
   G.canAR = kind === 'immersive-ar'; setView(G.canAR); await renderer.xr.setSession(session); $('lobby').classList.add('hidden');
   try { const r = session.supportedFrameRates; if (r && session.updateTargetFrameRate) session.updateTargetFrameRate(Array.from(r).includes(90) ? 90 : Math.max(...r)); } catch {}
   G.placed = -1; G.state = 'wait'; setTimeout(() => { if (!renderer.xr.isPresenting) return; place(); if (two) online(); else solo(); }, 350);
-  session.addEventListener('end', () => { if (G.net) { G.net.close(); G.net = null; } G.sim = null; G.bots = []; G.state = 'lobby'; G.paused = false; guide.on = false; guide.mesh.visible = false; post.rest(); G.view.reset(); banner.set(''); $('lobby').classList.remove('hidden'); });
+  session.addEventListener('end', () => { leaveControl(); if (G.net) { G.net.close(); G.net = null; } G.sim = null; G.bots = []; G.state = 'lobby'; G.paused = false; guide.on = false; guide.mesh.visible = false; post.rest(); G.view.reset(); banner.set(''); $('lobby').classList.remove('hidden'); });
 }
 (async () => {
   const st = $('status'), two = $('two'), bot = $('bot'); let models;
   try { models = await loadModels((f) => { st.textContent = 'Loading the fleet... ' + Math.round(f * 100) + '%'; }); } catch (e) { st.textContent = 'The fleet did not load: ' + e.message; return; }
   G.view = new View(arena, models, scene); wire(G.view); G.state = 'lobby'; fitLight(); setView(false); renderer.setAnimationLoop(frame);
-  if (SIM) { $('lobby').classList.add('hidden'); G.state = 'wait'; G.placed = -1; if (Q.has('local')) online(); else { solo(); if (Q.has('watch')) G.bots.push(new Bot(G.sim, 0)); } window.__space = { G, cmd, arena, camera, hands, panel, banner, guide, post, setView, setPause, TYPES, LEN, sun, scene, renderer, cosmos: () => cosmos }; return; }
+  if (SIM) { $('lobby').classList.add('hidden'); G.state = 'wait'; G.placed = -1; if (Q.has('local')) online(); else { solo(); if (Q.has('watch')) G.bots.push(new Bot(G.sim, 0)); } window.__space = { G, cmd, arena, camera, hands, panel, banner, guide, post, setView, setPause, TYPES, LEN, sun, scene, renderer, cosmos: () => cosmos, pilot, takeControl, leaveControl }; return; }
   const ok = navigator.xr && ((await navigator.xr.isSessionSupported('immersive-ar').catch(() => false)) || (await navigator.xr.isSessionSupported('immersive-vr').catch(() => false)));
   if (!ok) { st.textContent = 'Open this page in the browser of a Meta Quest headset.'; return; }
   for (const f of [0, 1]) $('navy' + f).onclick = () => { G.fac = f; $('navy0').classList.toggle('on', !f); $('navy1').classList.toggle('on', !!f); }; $('navy' + G.fac).click();
-  st.textContent = ''; two.disabled = bot.disabled = false; two.onclick = () => enter(true); bot.onclick = () => enter(false); window.__space = { G, cmd, arena, camera, hands, panel, banner, guide, post, setView, setPause };
+  st.textContent = ''; two.disabled = bot.disabled = false; two.onclick = () => enter(true); bot.onclick = () => enter(false); window.__space = { G, cmd, arena, camera, hands, panel, banner, guide, post, setView, setPause, pilot, takeControl, leaveControl };
 })();

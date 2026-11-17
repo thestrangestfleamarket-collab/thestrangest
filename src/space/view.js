@@ -10,11 +10,65 @@ const _m = new THREE.Matrix4(), _q = new THREE.Quaternion(), _e = new THREE.Eule
 const Z = new THREE.Vector3(0, 0, 1), ZERO = new THREE.Matrix4().makeScale(0, 0, 0);
 const lerpA = (a, b, t) => a + Math.atan2(Math.sin(b - a), Math.cos(b - a)) * t;
 
+// hull detail as real geometry: plates, blocks, pipes, hatches and masts standing on the hull where its surface is, lying along it fore and aft, each a solid thing the sun shades (k: how big they are for this kind of ship)
+function greeble(parts, n, k, seed) {
+  let sd = seed; const rnd = () => (sd = sd * 16807 % 2147483647) / 2147483647, G = parts.map(p => (p.geo.index ? p.geo.toNonIndexed() : p.geo.clone())), A = new THREE.Vector3(), B = new THREE.Vector3(), C = new THREE.Vector3(), X = new THREE.Vector3(), Y = new THREE.Vector3(), Z = new THREE.Vector3(), O = new THREE.Vector3(), c = [0, 1, 2, 3].map(() => new THREE.Vector3()), nn = new THREE.Vector3();
+  const cum = G.map(g => { const P = g.attributes.position.array, a = new Float32Array(P.length / 9); let t = 0; for (let i = 0; i < a.length; i++) { A.fromArray(P, i * 9); B.fromArray(P, i * 9 + 3).sub(A); C.fromArray(P, i * 9 + 6).sub(A); t += B.cross(C).length() * 0.5; a[i] = t; } return a; }), tot = cum.reduce((s, a) => s + (a[a.length - 1] || 0), 0) || 1;
+  return parts.map((p, pi) => { const g = G[pi], P = g.attributes.position.array, N = g.attributes.normal.array, U = g.attributes.uv ? g.attributes.uv.array : null, a = cum[pi], pos = [], nor = [], uv = []; let u = 0, v = 0;
+    // one flat face of a detail, wound to face the way it looks
+    const quad = (p0, p1, p2, p3) => { nn.subVectors(p1, p0).cross(A.subVectors(p2, p0)).normalize(); [p0, p1, p2, p0, p2, p3].forEach((q, j) => { pos.push(q.x, q.y, q.z); nor.push(nn.x, nn.y, nn.z); uv.push(u + (j === 1 || j === 2 || j === 4 ? 0.004 : 0), v + (j === 2 || j === 4 || j === 5 ? 0.004 : 0)); }); };
+    const box = (o, x, y, z, hx, hy, hz) => { const V = (sx, sy, sz, out) => out.copy(o).addScaledVector(x, sx * hx).addScaledVector(y, sy * hy).addScaledVector(z, sz * hz);
+      quad(V(-1, -1, 1, c[0]), V(1, -1, 1, c[1]), V(1, 1, 1, c[2]), V(-1, 1, 1, c[3])); quad(V(1, -1, -1, c[0]), V(1, 1, -1, c[1]), V(1, 1, 1, c[2]), V(1, -1, 1, c[3])); quad(V(-1, 1, -1, c[0]), V(-1, -1, -1, c[1]), V(-1, -1, 1, c[2]), V(-1, 1, 1, c[3]));
+      quad(V(1, 1, -1, c[0]), V(-1, 1, -1, c[1]), V(-1, 1, 1, c[2]), V(1, 1, 1, c[3])); quad(V(-1, -1, -1, c[0]), V(1, -1, -1, c[1]), V(1, -1, 1, c[2]), V(-1, -1, 1, c[3])); };
+    // a round one: its axis ax, r across, h long, capped at both ends
+    const cyl = (o, ax, e1, e2, r, h, sides) => { for (let i = 0; i < sides; i++) { const a0 = i / sides * 6.2832, a1 = (i + 1) / sides * 6.2832, R = (an, s, out) => out.copy(o).addScaledVector(e1, Math.cos(an) * r).addScaledVector(e2, Math.sin(an) * r).addScaledVector(ax, s * h);
+        quad(R(a0, -1, c[0]), R(a1, -1, c[1]), R(a1, 1, c[2]), R(a0, 1, c[3])); quad(c[0].copy(o).addScaledVector(ax, h), R(a0, 1, c[1]), R(a1, 1, c[2]), c[3].copy(c[0])); quad(c[0].copy(o).addScaledVector(ax, -h), R(a1, -1, c[1]), R(a0, -1, c[2]), c[3].copy(c[0])); } };
+    const m = Math.round(n * (a[a.length - 1] || 0) / tot);
+    for (let i = 0; i < m; i++) { const r = rnd() * a[a.length - 1]; let lo = 0, hi = a.length - 1; while (lo < hi) { const md = (lo + hi) >> 1; if (a[md] < r) lo = md + 1; else hi = md; } const t = lo * 9; let b0 = rnd(), b1 = rnd(); if (b0 + b1 > 1) { b0 = 1 - b0; b1 = 1 - b1; } const b2 = 1 - b0 - b1;
+      O.set(P[t] * b0 + P[t + 3] * b1 + P[t + 6] * b2, P[t + 1] * b0 + P[t + 4] * b1 + P[t + 7] * b2, P[t + 2] * b0 + P[t + 5] * b1 + P[t + 8] * b2); Z.set(N[t] + N[t + 3] + N[t + 6], N[t + 1] + N[t + 4] + N[t + 7], N[t + 2] + N[t + 5] + N[t + 8]).normalize();
+      if (U) { const q = lo * 6; u = U[q] * b0 + U[q + 2] * b1 + U[q + 4] * b2; v = U[q + 1] * b0 + U[q + 3] * b1 + U[q + 5] * b2; }
+      X.set(0, 0, 1); if (Math.abs(Z.z) > 0.9) X.set(1, 0, 0); X.addScaledVector(Z, -X.dot(Z)).normalize(); Y.crossVectors(Z, X); if (rnd() < 0.5) { A.copy(X); X.copy(Y); Y.copy(A).negate(); }
+      A.fromArray(P, t); B.fromArray(P, t + 3); C.fromArray(P, t + 6); const edge = Math.min(A.distanceTo(B), B.distanceTo(C), C.distanceTo(A)), s = k * (0.6 + rnd() * 0.8), w = edge < 0.03 * s ? 0.5 + rnd() * 0.5 : rnd();
+      if (w < 0.5) { const hz = (0.0007 + rnd() * 0.0016) * s; box(O.addScaledVector(Z, hz * 0.7), X, Y, Z, (0.005 + rnd() * 0.012) * s, (0.003 + rnd() * 0.006) * s, hz); }   // a plate
+      else if (w < 0.72) { const hz = (0.0015 + rnd() * 0.004) * s; box(O.addScaledVector(Z, hz * 0.8), X, Y, Z, (0.002 + rnd() * 0.004) * s, (0.002 + rnd() * 0.004) * s, hz); }   // a block
+      else if (w < 0.86) { const rr = (0.0006 + rnd() * 0.0008) * s; cyl(O.addScaledVector(Z, rr * 0.9), X, Y, Z, rr, (0.006 + rnd() * 0.016) * s, 7); }   // a pipe along the hull
+      else if (w < 0.95) { const rr = (0.002 + rnd() * 0.003) * s, h = (0.0006 + rnd() * 0.0008) * s; cyl(O.addScaledVector(Z, h * 0.6), Z, X, Y, rr, h, 10); }   // a round hatch
+      else if (w < 0.985) { const hz = (0.001 + rnd() * 0.002) * s; box(O.addScaledVector(Z, hz * 0.8), X, Y, Z, (0.008 + rnd() * 0.01) * s, 0.0012 * s, hz); } else { const h = (0.006 + rnd() * 0.01) * s; box(O.addScaledVector(Z, h * 0.9), X, Y, Z, 0.0005 * s, 0.0005 * s, h); } }   // a mast
+    const n0 = P.length, geo = new THREE.BufferGeometry(), PP = new Float32Array(n0 + pos.length), NN = new Float32Array(n0 + nor.length), UU = new Float32Array(n0 / 3 * 2 + uv.length); PP.set(P); PP.set(pos, n0); NN.set(N); NN.set(nor, n0); if (U) UU.set(U); UU.set(uv, n0 / 3 * 2);
+    geo.setAttribute('position', new THREE.BufferAttribute(PP, 3)); geo.setAttribute('normal', new THREE.BufferAttribute(NN, 3)); geo.setAttribute('uv', new THREE.BufferAttribute(UU, 2)); return { geo, mat: p.mat }; });
+}
+// the hull's fine surface, with depth: a real panel set's height map laid over the hull along its own axes; each pixel is traced down into the relief from where you look (so panels stand proud and seams sink, and one edge hides another), then shaded by the set's own normals, roughness and hollows. It fades out when a panel is smaller than a few pixels
+const DETOF = new WeakMap();
+function detail(mat, tex, scale, depth) { DETOF.set(mat, [tex, scale, depth]); mat.customProgramCacheKey = () => 'hulldetail'; mat.onBeforeCompile = (sh) => {
+  Object.assign(sh.uniforms, { tDetN: { value: tex.n }, tDetH: { value: tex.h }, uDetS: { value: scale }, uDetD: { value: depth } });
+  sh.vertexShader = sh.vertexShader.replace('#include <common>', '#include <common>\nvarying vec3 vDP; varying vec3 vDN; varying vec3 vDV; varying mat3 vD2V;').replace('#include <begin_vertex>', `#include <begin_vertex>
+  vDP = position; vDN = normal;
+  #ifdef USE_INSTANCING
+  mat4 dM = modelMatrix * instanceMatrix; mat3 dI = mat3(instanceMatrix);
+  #else
+  mat4 dM = modelMatrix; mat3 dI = mat3(1.0);
+  #endif
+  vDV = (inverse(dM) * vec4(cameraPosition, 1.0)).xyz - position; vD2V = normalMatrix * mat3(normalize(dI[0]), normalize(dI[1]), normalize(dI[2]));`);
+  sh.fragmentShader = sh.fragmentShader.replace('#include <common>', '#include <common>\nvarying vec3 vDP; varying vec3 vDN; varying vec3 vDV; varying mat3 vD2V; uniform sampler2D tDetN, tDetH; uniform float uDetS, uDetD;').replace('#include <normal_fragment_maps>', `#include <normal_fragment_maps>
+  { vec3 dn = normalize(vDN), an = abs(dn), dV = normalize(vDV), dP = vDP * uDetS; float lod = max(0.0, log2(max(length(dFdx(dP)), length(dFdy(dP))) * 1024.0)), fade = clamp(4.5 - lod, 0.0, 1.0);
+    if (fade > 0.0) { vec2 uv; vec3 T, B; float nz;
+      if (an.x >= an.y && an.x >= an.z) { float s = sign(dn.x); T = vec3(0.0, 0.0, -s); B = vec3(0.0, 1.0, 0.0); uv = vec2(-s * dP.z, dP.y); nz = abs(dV.x); }
+      else if (an.y >= an.z) { float s = sign(dn.y); T = vec3(1.0, 0.0, 0.0); B = vec3(0.0, 0.0, -s); uv = vec2(dP.x, -s * dP.z); nz = abs(dV.y); }
+      else { float s = sign(dn.z); T = vec3(s, 0.0, 0.0); B = vec3(0.0, 1.0, 0.0); uv = vec2(s * dP.x, dP.y); nz = abs(dV.z); }
+      vec2 du = vec2(dot(dV, T), dot(dV, B)) / max(nz, 0.35) * uDetD * fade / 12.0; float cur = 0.0, dep = 1.0 - textureLod(tDetH, uv, lod).r;
+      for (int i = 0; i < 12; i++) { if (cur >= dep) break; uv -= du; cur += 1.0 / 12.0; dep = 1.0 - textureLod(tDetH, uv, lod).r; }
+      float aft = dep - cur, bef = (1.0 - textureLod(tDetH, uv + du, lod).r) - cur + 1.0 / 12.0; uv += du * clamp(aft / (aft - bef - 1e-5), 0.0, 1.0);
+      vec3 hra = textureLod(tDetH, uv, lod).rgb, tn = textureLod(tDetN, uv, lod).xyz * 2.0 - 1.0;
+      float lod2 = lod + 2.585, fade2 = clamp(4.5 - lod2, 0.0, 1.0) * 0.85; vec2 uv2 = uv.yx * 6.0 + 0.37; vec3 hr2 = textureLod(tDetH, uv2, lod2).rgb, tn2 = textureLod(tDetN, uv2, lod2).yxz * 2.0 - 1.0;   // the same set again, six times finer and turned: small panels inside the big ones
+      normal = normalize(normal + vD2V * ((T * tn.x + B * tn.y) * 1.1 * fade + (T * tn2.x + B * tn2.y) * 0.7 * fade2)); roughnessFactor = clamp(mix(roughnessFactor, hra.g * mix(1.0, 0.7 + 0.6 * hr2.r, fade2), 0.55 * fade), 0.04, 1.0);
+      diffuseColor.rgb *= mix(1.0, hra.b * (0.5 + 0.85 * hra.r), fade) * mix(1.0, hr2.b * (0.72 + 0.5 * hr2.r), fade2); } }`); }; return mat; }
 async function loadModels(onStep) {
   const L = new GLTFLoader(), out = {}, names = [...FILES, ...FILES.map(f => f + '2'), 'relay', 'rock1', 'rock2', 'rock3']; let n = 0;
   await Promise.all(names.map(async name => { let g; try { g = await L.loadAsync(BASE + 'm/' + name + '.glb'); } catch (e) { if (name.endsWith('2')) return; throw e; } const parts = [];
     g.scene.updateMatrixWorld(true); g.scene.traverse(o => { if (o.isMesh) { const geo = o.geometry.clone(); geo.applyMatrix4(o.matrixWorld); parts.push({ geo, mat: o.material }); } });
-    out[name] = parts; onStep && onStep(++n / names.length); }));
+    const ti = FILES.indexOf(name.replace(/2$/, '')); out[name] = ti >= 0 && ti !== MINE ? greeble(parts, [2200, 240, 520, 1000, 320][ti], [0.5, 1.8, 1.1, 0.75, 1.5][ti], 7 + ti * 13 + name.length) : parts; onStep && onStep(++n / names.length); }));
+  const TL = new THREE.TextureLoader(), tex = (f) => TL.loadAsync(BASE + 'tex/' + f + '.jpg').then(t => { t.wrapS = t.wrapT = THREE.RepeatWrapping; return t; });
+  try { out.__det = await Promise.all([0, 1].map(async fc => ({ n: await tex('hull' + fc + '_n'), h: await tex('hull' + fc + '_h') }))); } catch (e) { out.__det = null; }
   return out;
 }
 
@@ -34,27 +88,25 @@ function fracture(parts, k) {
 }
 
 // a glow with no hard edge: bright where you look into it, fading to nothing at its rim (so a fireball or an engine flame reads as light, not as a painted ball)
-function soft(mat, power, rim) { mat.onBeforeCompile = (sh) => {
+function soft(mat, power, rim) { mat.customProgramCacheKey = () => 'soft' + power + (rim ? 'r' : ''); mat.onBeforeCompile = (sh) => {
   sh.vertexShader = sh.vertexShader.replace('#include <common>', '#include <common>\nvarying float vGlow;').replace('#include <project_vertex>', '#include <project_vertex>\n#ifdef USE_INSTANCING\nvec3 gN = normalize(normalMatrix * (mat3(instanceMatrix) * normal));\n#else\nvec3 gN = normalize(normalMatrix * normal);\n#endif\nvGlow = abs(dot(gN, normalize(-mvPosition.xyz)));');
   sh.fragmentShader = sh.fragmentShader.replace('#include <common>', '#include <common>\nvarying float vGlow;').replace('#include <color_fragment>', '#include <color_fragment>\ndiffuseColor.rgb *= pow(' + (rim ? '1.0 - vGlow' : 'vGlow') + ', ' + power.toFixed(1) + ');'); }; return mat; }
 function dotTex() { const c = document.createElement('canvas'); c.width = c.height = 32; const x = c.getContext('2d'), g = x.createRadialGradient(16, 16, 0, 16, 16, 16); g.addColorStop(0, '#fff'); g.addColorStop(0.3, 'rgba(255,255,255,0.6)'); g.addColorStop(1, 'rgba(255,255,255,0)'); x.fillStyle = g; x.fillRect(0, 0, 32, 32); return new THREE.CanvasTexture(c); }
 
-// fire: hot gas as points, each thrown with its own speed, swelling and cooling from white through yellow and red to nothing
+// fire: hot gas as balls of light in the field's own space (no flat picture turned to face you: each is a glowing body, seen from any side or from inside the blast), each thrown with its own speed, swelling and cooling from white through yellow and red to nothing
 class Fire {
   constructor(arena, n = 700) { this.n = n; this.i = 0; this.P = new Float32Array(n * 3); this.C = new Float32Array(n * 3); this.S = new Float32Array(n); this.V = new Float32Array(n * 3); this.A = new Float32Array(n).fill(9); this.L = new Float32Array(n).fill(1); this.Z = new Float32Array(n); this.H = new Float32Array(n);
-    const g = new THREE.BufferGeometry(); g.setAttribute('position', new THREE.BufferAttribute(this.P, 3).setUsage(THREE.DynamicDrawUsage)); g.setAttribute('tint', new THREE.BufferAttribute(this.C, 3).setUsage(THREE.DynamicDrawUsage)); g.setAttribute('size', new THREE.BufferAttribute(this.S, 1).setUsage(THREE.DynamicDrawUsage));
-    this.u = { uS: { value: 1 }, uH: { value: 500 } }; const vp = new THREE.Vector4();
-    this.mesh = new THREE.Points(g, new THREE.ShaderMaterial({ uniforms: this.u, blending: THREE.AdditiveBlending, transparent: true, depthWrite: false,
-      vertexShader: 'attribute vec3 tint; attribute float size; varying vec3 vC; uniform float uS, uH; void main(){ vC = tint; vec4 mv = modelViewMatrix * vec4(position, 1.0); gl_Position = projectionMatrix * mv; gl_PointSize = size * uS * projectionMatrix[1][1] * uH / max(0.01, -mv.z); }',
-      fragmentShader: 'varying vec3 vC; void main(){ float a = smoothstep(0.5, 0.0, length(gl_PointCoord - 0.5)); gl_FragColor = vec4(vC * a * a, 1.0);\n#include <colorspace_fragment>\n}' }));
-    this.mesh.frustumCulled = false; this.mesh.onBeforeRender = (r) => { r.getCurrentViewport(vp); this.u.uH.value = vp.w * 0.5; }; arena.add(this.mesh); }
+    this.mesh = new THREE.InstancedMesh(new THREE.IcosahedronGeometry(1, 1), soft(new THREE.MeshBasicMaterial({ blending: THREE.AdditiveBlending, transparent: true, depthWrite: false, toneMapped: false }), 5), n);
+    this.mesh.instanceMatrix.setUsage(THREE.DynamicDrawUsage); this.M = this.mesh.instanceMatrix.array; this.M.fill(0); this.mesh.setColorAt(0, new THREE.Color(0, 0, 0)); this.mesh.instanceColor.setUsage(THREE.DynamicDrawUsage); this.K = this.mesh.instanceColor.array; this.K.fill(0);
+    this.mesh.frustumCulled = false; arena.add(this.mesh); }
   emit(p, vx, vy, vz, size, life, heat) { const k = this.i; this.i = (k + 1) % this.n; this.P[k * 3] = p.x; this.P[k * 3 + 1] = p.y; this.P[k * 3 + 2] = p.z; this.V[k * 3] = vx; this.V[k * 3 + 1] = vy; this.V[k * 3 + 2] = vz; this.Z[k] = size; this.L[k] = life; this.A[k] = 0; this.H[k] = heat; }
   burst(p, n, speed, size, life, vx = 0, vy = 0, vz = 0) { for (let i = 0; i < n; i++) { const a = Math.random() * 6.283, z = Math.random() * 2 - 1, r = Math.sqrt(1 - z * z), v = speed * Math.cbrt(Math.random()); _p.set(p.x + Math.cos(a) * r * size * 0.3, p.y + z * size * 0.3, p.z + Math.sin(a) * r * size * 0.3); this.emit(_p, vx + Math.cos(a) * r * v, vy + z * v, vz + Math.sin(a) * r * v, size * (0.5 + Math.random() * 0.7), life * (0.5 + Math.random() * 0.8), 1); } }
-  step(dt, scale) { this.u.uS.value = scale; const d = 1 - Math.min(0.9, dt * 1.6);
-    for (let k = 0; k < this.n; k++) { if (this.A[k] >= this.L[k]) continue; const a = (this.A[k] += dt) / this.L[k], i = k * 3; if (a >= 1) { this.S[k] = 0; continue; }
+  step(dt) { const d = 1 - Math.min(0.9, dt * 1.6), M = this.M, K = this.K;
+    for (let k = 0; k < this.n; k++) { if (this.A[k] >= this.L[k]) continue; const a = (this.A[k] += dt) / this.L[k], i = k * 3, j = k * 16; if (a >= 1) { this.S[k] = 0; M[j] = M[j + 5] = M[j + 10] = 0; continue; }
       this.P[i] += this.V[i] * dt; this.P[i + 1] += this.V[i + 1] * dt; this.P[i + 2] += this.V[i + 2] * dt; this.V[i] *= d; this.V[i + 1] *= d; this.V[i + 2] *= d;
-      const T = this.H[k] * (1 - a), f = Math.min(1, a * 8) * 0.32; this.S[k] = this.Z[k] * (0.55 + 1.3 * a); this.C[i] = Math.min(1, T * 2.4) * f; this.C[i + 1] = Math.max(0, Math.min(1, T * 1.9 - 0.5)) * f; this.C[i + 2] = Math.max(0, Math.min(1, T * 2.6 - 1.75)) * f; }
-    const g = this.mesh.geometry.attributes; g.position.needsUpdate = g.tint.needsUpdate = g.size.needsUpdate = true; }
+      const T = this.H[k] * (1 - a), f = Math.min(1, a * 8) * 0.32, r = (this.S[k] = this.Z[k] * (0.55 + 1.3 * a)) * 0.8; K[i] = this.C[i] = Math.min(1, T * 2.4) * f; K[i + 1] = this.C[i + 1] = Math.max(0, Math.min(1, T * 1.9 - 0.5)) * f; K[i + 2] = this.C[i + 2] = Math.max(0, Math.min(1, T * 2.6 - 1.75)) * f;
+      M[j] = M[j + 5] = M[j + 10] = r; M[j + 12] = this.P[i]; M[j + 13] = this.P[i + 1]; M[j + 14] = this.P[i + 2]; M[j + 15] = 1; }
+    this.mesh.instanceMatrix.needsUpdate = true; this.mesh.instanceColor.needsUpdate = true; }
 }
 
 // a pool of instances that are born, live a while and go
@@ -68,7 +120,7 @@ class View {
     this.arena = arena; this.scene = scene; this.units = new Map(); this.tSnap = 0; this.tick = 0; this.winner = -1; this.credits = [0, 0]; this.income = [0, 0]; this.queue = [[], []];
     this.nodes = NODES.map(() => ({ owner: -1, prog: 0 })); this.sel = new Set(); this.plan = new Map(); this.hover = [0, 0]; this.me = 0; this.onEvent = null; this.time = 0; this.shake = 0;
     // ships: an InstancedMesh for each part of each kind for each side
-    this.fac = [0, 1]; this.shipsF = [0, 1].map(fc => FILES.map((f, type) => [0, 1].map(side => (models[f + (fc ? '2' : '')] || models[f]).map(p => { const mat = p.mat.clone(); mat.color.multiply(TINT[side]); if (mat.emissiveMap) { mat.emissive.set(0xffffff); mat.emissiveIntensity = 1.6; } mat.metalness = Math.min(mat.metalness, 0.55); mat.color.multiplyScalar(fc ? 0.95 : 1.6);   // the Admiralty's hulls are near black as they come
+    this.fac = [0, 1]; this.shipsF = [0, 1].map(fc => FILES.map((f, type) => [0, 1].map(side => (models[f + (fc ? '2' : '')] || models[f]).map(p => { const mat = p.mat.clone(); mat.color.multiply(TINT[side]); if (mat.emissiveMap) { mat.emissive.set(0xffffff); mat.emissiveIntensity = 1.25; } mat.metalness = Math.min(mat.metalness, 0.55); mat.color.multiplyScalar(fc ? 0.9 : 1.45); if (models.__det && type !== MINE) detail(mat, models.__det[fc], 5 + 46 * LEN[type], 0.09);   // the Admiralty's hulls are near black as they come
       const im = new THREE.InstancedMesh(p.geo, mat, type === MOTHER ? 1 : MAXU); im.castShadow = im.receiveShadow = true; im.frustumCulled = false; im.count = 0; im.instanceMatrix.setUsage(THREE.DynamicDrawUsage); arena.add(im); return im; }))));
     // engine glow, one soft flame a ship
     const add = (geo, color, n, opt = {}) => { const im = new THREE.InstancedMesh(geo, new THREE.MeshBasicMaterial({ color, blending: THREE.AdditiveBlending, transparent: true, depthWrite: false, toneMapped: false, ...opt }), n); im.frustumCulled = false; im.instanceMatrix.setUsage(THREE.DynamicDrawUsage);
@@ -93,7 +145,7 @@ class View {
     const sg = new THREE.BufferGeometry(); sg.setAttribute('position', new THREE.BufferAttribute(this.spP, 3).setUsage(THREE.DynamicDrawUsage)); sg.setAttribute('color', new THREE.BufferAttribute(this.spC, 3).setUsage(THREE.DynamicDrawUsage));
     this.sparks = new THREE.Points(sg, new THREE.PointsMaterial({ size: 0.007, map: dotTex(), vertexColors: true, blending: THREE.AdditiveBlending, transparent: true, depthWrite: false, toneMapped: false, sizeAttenuation: true })); this.sparks.frustumCulled = false; arena.add(this.sparks);
     // the flash of a blast on the hulls around it
-    this.flash = [0, 1].map(() => { const l = new THREE.PointLight(0xffb070, 0, 0.6, 0); l.t = 1; arena.add(l); return l; }); this.flashI = 0;
+    this.flash = [0, 1].map(() => { const l = new THREE.PointLight(0xffb070, 0, 0.6, 2); l.t = 1; arena.add(l); return l; }); this.flashI = 0;
     // rings round what you have picked and what you point at, and hull bars over the damaged
     const ring = new THREE.RingGeometry(0.92, 1, 40); ring.rotateX(-Math.PI / 2);
     this.rings = add(ring, 0xffffff, MAXU + 4, { side: THREE.DoubleSide, blending: THREE.NormalBlending, opacity: 0.9 }); this.rings.count = 0;
@@ -152,6 +204,7 @@ class View {
     for (let i = 0; i < ev.length;) { const k = ev[i];
       if (k === 1) { const tg = this.units.get(ev[i + 2]); this.shot(this.units.get(ev[i + 1]), tg, ev[i + 3] & 7); if (tg && ev[i + 3] & 8) { const f = this.fields.take(); f.uid = tg.id; f.life = 0.5; this.onEvent && this.onEvent('field', tg.pos, 0); } i += 4; }
       else if (k === 2) { const u = this.units.get(ev[i + 1]); if (u) this.blast(u, ev[i + 2]); i += 4; }
+      else if (k === 5) { this.miss(this.units.get(ev[i + 1]), ev[i + 2] / 100, ev[i + 3] / 100, ev[i + 4] / 100); i += 5; }
       else if (k === 3) { this.onEvent && this.onEvent('built', ev[i + 1], ev[i + 2]); i += 3; }
       else if (k === 4) { this.onEvent && this.onEvent('relay', ev[i + 2], ev[i + 1]); i += 3; }
       else break; }
@@ -163,6 +216,8 @@ class View {
     const o = this.bolts.take(); o.a.copy(_a); o.b.copy(_b); o.w = w; o.life = w === 2 ? 0.45 : w === 1 ? 0.22 : 0.12; o.c.copy(c); if (w === 2) o.c.lerp(_c.set(0xffffff), 0.35);
     o.tid = b.id; o.hitDone = false; this.onEvent && this.onEvent('shot', a, w);
   }
+  // a hand-flown ship's shot that found nothing: a bolt out along its pilot's aim
+  miss(a, x, y, z) { if (!a) return; const T = TYPES[a.type], o = this.bolts.take(); o.a.copy(a.pos).addScaledVector(_p.set(x, y, z), LEN[a.type] * 0.3); o.b.copy(a.pos).addScaledVector(_p, T.range * 1.5); o.w = T.w; o.life = T.w === 2 ? 0.45 : T.w === 1 ? 0.22 : 0.12; o.c.copy(GLOW[a.side]); o.tid = 0; o.hitDone = true; this.onEvent && this.onEvent('shot', a, T.w); }
   spark(p, n, sp, c, life) { for (let i = 0; i < n; i++) { const k = this.spI; this.spI = (k + 1) % this.spN; const a = Math.random() * 6.283, z = Math.random() * 2 - 1, r = Math.sqrt(1 - z * z), v = sp * (0.3 + Math.random());
       this.spP[k * 3] = p.x; this.spP[k * 3 + 1] = p.y; this.spP[k * 3 + 2] = p.z; this.spV[k * 3] = Math.cos(a) * r * v; this.spV[k * 3 + 1] = z * v; this.spV[k * 3 + 2] = Math.sin(a) * r * v; this.spC[k * 3] = c.r; this.spC[k * 3 + 1] = c.g; this.spC[k * 3 + 2] = c.b; this.spL[k] = life * (0.5 + Math.random()); } }
   ball(p, r, life, c, delay = 0) { const o = this.balls.take(); o.p.copy(p); o.r = r; o.life = life; o.c.copy(c); o.t = -delay; }
@@ -237,13 +292,13 @@ class View {
       if (!b.kind) { b.im.setMatrixAt(b.i, _m); continue; } _c.setRGB(1 + b.hot * 0.35, 1 + b.hot * 0.08, 1); if (b.kind === 1 && b.hot > 0.2 && Math.random() < dt * 9) this.fire.emit(b.p, b.v.x * 0.6, b.v.y * 0.6, b.v.z * 0.6, b.r * 0.9, 0.4, Math.min(1, b.hot * 1.4));
       if (b.kind === 2) { if (ns < 120) { this.shards.setMatrixAt(ns, _m); this.shards.setColorAt(ns++, _c); } continue; }
       for (const pc of this.fragF[b.fac][b.type][b.cell].pieces) { const key = b.fac * 100000 + b.type * 10000 + b.side * 5000 + b.cell * 10 + pc.pi; let im = this.fragIM.get(key);
-        if (!im) { const src = this.shipsF[b.fac][b.type][b.side][pc.pi].material, mat = src.clone(); mat.side = THREE.DoubleSide; im = new THREE.InstancedMesh(pc.geo, mat, b.type === MOTHER ? 1 : TYPES[b.type].cls ? 4 : 8); im.castShadow = im.receiveShadow = true; im.frustumCulled = false; im.count = 0; im.setColorAt(0, _c); this.arena.add(im); this.fragIM.set(key, im); this.fragOn.push(im); }
+        if (!im) { const src = this.shipsF[b.fac][b.type][b.side][pc.pi].material, mat = src.clone(); mat.side = THREE.DoubleSide; { const d = DETOF.get(src); if (d) detail(mat, d[0], d[1], d[2]); } im = new THREE.InstancedMesh(pc.geo, mat, b.type === MOTHER ? 1 : TYPES[b.type].cls ? 4 : 8); im.castShadow = im.receiveShadow = true; im.frustumCulled = false; im.count = 0; im.setColorAt(0, _c); this.arena.add(im); this.fragIM.set(key, im); this.fragOn.push(im); }
         if (im.count < im.instanceMatrix.count) { im.setMatrixAt(im.count, _m); im.setColorAt(im.count++, _c); } } }
     for (const im of this.fragOn) { im.visible = im.count > 0; if (im.visible) { im.instanceMatrix.needsUpdate = true; im.instanceColor.needsUpdate = true; } }
     for (const im of this.rockIM) im.instanceMatrix.needsUpdate = true; this.shards.count = ns; this.shards.instanceMatrix.needsUpdate = true; this.shards.instanceColor.needsUpdate = true;
     for (let k = 0; k < this.spN; k++) { if (this.spL[k] <= 0) continue; this.spL[k] -= dt; const i = k * 3; if (this.spL[k] <= 0) { this.spP[i + 1] = 1e4; continue; } this.spP[i] += this.spV[i] * dt; this.spP[i + 1] += this.spV[i + 1] * dt; this.spP[i + 2] += this.spV[i + 2] * dt; const d = 1 - dt * 2.2; this.spC[i] *= d; this.spC[i + 1] *= d * d; this.spC[i + 2] *= d * d * d; }
     this.sparks.geometry.attributes.position.needsUpdate = true; this.sparks.geometry.attributes.color.needsUpdate = true;
-    for (const l of this.flash) { if (l.t >= 1) { l.intensity = 0; continue; } l.t += dt * 1.6; l.intensity = l.power * Math.max(0, 1 - l.t) ** 2; }
+    for (const l of this.flash) { if (l.t >= 1) { l.intensity = 0; continue; } l.t += dt * 1.6; l.intensity = l.power * 0.03 * this.arena.scale.x ** 2 * Math.max(0, 1 - l.t) ** 2; }
     let np = 0; for (const [id, L] of this.plan) { const u = this.units.get(id); if (!u) { this.plan.delete(id); continue; }
       while (L.length && (L[0].tid ? !this.units.has(L[0].tid) : u.pos.distanceTo(L[0].p) < 0.045)) L.shift(); if (L.length && u.k === 0 && now - L[L.length - 1].at > 1500) L.length = 0; if (!L.length || !this.sel.has(id)) continue;
       _a.copy(u.pos); for (const o of L) { if (np >= 120) break; _b.copy(o.tid ? this.units.get(o.tid).pos : o.p); const k = np++ * 6; this.pathP[k] = _a.x; this.pathP[k + 1] = _a.y; this.pathP[k + 2] = _a.z; this.pathP[k + 3] = _b.x; this.pathP[k + 4] = _b.y; this.pathP[k + 5] = _b.z; _a.copy(_b); } }

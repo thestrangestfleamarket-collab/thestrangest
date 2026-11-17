@@ -8,7 +8,7 @@ const noise = (t) => { const i = Math.floor(t), f = t - i, u = f * f * (3 - 2 * 
 // the weather at a share of the run (0 the morning, 1 the dawn after): { cloud, rain, mist, wind } each 0..1
 export function weatherAt(f) {
   const cloud = clamp(0.08 + 0.1 * sm(0.18, 0.3, f) + 0.25 * sm(0.3, 0.45, f) + 0.3 * sm(0.45, 0.6, f) - 0.45 * sm(0.78, 0.95, f) + 0.06 * (noise(f * 40) - 0.5), 0.04, 0.92);
-  const rain = clamp(0.32 * sm(0.53, 0.6, f) * (1 - sm(0.72, 0.8, f)) * (0.75 + 0.5 * noise(f * 90 + 3)), 0, 1);   // a drizzle, never a storm, through the worst of the night
+  const rain = clamp(0.32 * sm(0.53, 0.6, f) * (1 - sm(0.72, 0.8, f)) * (0.75 + 0.5 * noise(f * 90 + 3)), 0, 1);   // a drizzle, never a storm, through the middle of the night
   const mist = clamp(0.06 + 0.2 * sm(0.32, 0.42, f) + 0.12 * sm(0.62, 0.8, f) + 0.45 * sm(0.84, 0.93, f) * (1 - 0.6 * sm(0.97, 1, f)), 0, 1);   // haze at dusk, mist over the fields before the sun
   const wind = clamp(0.22 + 0.1 * sm(0.3, 0.5, f) + 0.12 * sm(0.5, 0.62, f) * (1 - sm(0.75, 0.88, f)) - 0.12 * sm(0.85, 0.95, f) + 0.1 * (noise(f * 60 + 9) - 0.5), 0.05, 0.6);
   return { cloud, rain, mist, wind };

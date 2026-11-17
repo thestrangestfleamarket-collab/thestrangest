@@ -169,7 +169,7 @@ function pubLife() {
   W.patrons = [];
   // patrons: the house's other night folk, sat on the stools and at the booth, each idling in its own time
   const CAST = (MC.CAST || []).filter(c => !c.regular), by = w => CAST.filter(c => c.where === w);
-  const sit = (c, x, y, z, ry) => { if (!c || !MC.pf || !MC.pf.has(c.pf)) return null; const P = MC.pf.build(c.pf, { len: c.len, colors: c.colors }); P.root.position.set(x, y, z); P.root.rotation.y = ry; P.mesh.castShadow = false; W.group.add(P.root); P.cast = c; P.pos = new V3(x, y + 0.4, z); W.patrons.push(P); return P; };
+  const sit = (c, x, y, z, ry) => { if (!c || !MC.pf || !MC.pf.has(c.pf)) return null; const P = MC.pf.build(c.pf, { len: c.len, colors: c.colors, smooth: true, mat: { roughness: 0.95, clearcoat: 0, envMapIntensity: 0.5 } }); P.root.position.set(x, y, z); P.root.rotation.y = ry; P.mesh.castShadow = false; W.group.add(P.root); P.cast = c; P.pos = new V3(x, y + 0.4, z); W.patrons.push(P); return P; };
   const T = [[-12.5, -20.5], [-8, -15.5], [-12.2, -11.6]], seated = by('table');
   let ki = 0; for (const [tx, tz] of T) for (let k = 0; k < 3; k++) { const a = k * 2.1 + tx, sx = tx + Math.cos(a) * 1.9, sz = tz + Math.sin(a) * 1.9; sit(seated[ki++], sx, 0.87, sz, Math.atan2(tx - sx, tz - sz)); }
   for (const [tx, tz] of T) for (let k = 0; k < 3; k++) { const a = k * 2.1 + 1 + tx; lathe([[0, 0], [0.16, 0], [0.19, 0.3], [0.17, 0.3], [0.14, 0.03], [0, 0.03]], M.glass, tx + Math.cos(a) * 0.75, 1.78, tz + Math.sin(a) * 0.75, { seg: 10, cast: false }); cyl(tx + Math.cos(a) * 0.75, tz + Math.sin(a) * 0.75, 0.13, 1.8, 2.0, M.flat(0xc98a2a, 0.3), { solid: false, cast: false, seg: 8 }); }

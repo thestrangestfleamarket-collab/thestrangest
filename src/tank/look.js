@@ -13,7 +13,7 @@ const LOOK=(()=>{
     const g=new T.InstancedBufferGeometry();g.setAttribute('position',new T.Float32BufferAttribute(bp,3));g.setIndex(bi);const ao=new Float32Array(N*N*3);
     for(let i=0;i<N;i++)for(let j=0;j<N;j++){const k=(i*N+j)*3;ao[k]=(i+r())*sp;ao[k+1]=(j+r())*sp;ao[k+2]=r();}
     g.setAttribute('aO',new T.InstancedBufferAttribute(ao,3));g.instanceCount=N*N;
-    const mat=new T.MeshLambertMaterial({side:T.DoubleSide});
+    const mat=new T.MeshLambertMaterial({side:T.DoubleSide,color:new T.Color(2.1,2.05,1.9)});
     mat.onBeforeCompile=s=>{Object.assign(s.uniforms,{uT:L.uT,uCam:L.uCam,uWind:L.uWind,tH:{value:tH},tGS:{value:WORLD.tex},tG:{value:A0.grass.d},tDry:{value:A0.dry},tShade:landMat.userData.tShade,uShadeM:landMat.userData.uShadeM});
       s.vertexShader=s.vertexShader.replace('#include <common>',`#include <common>
 attribute vec3 aO;uniform float uT;uniform vec2 uCam;uniform vec3 uWind;uniform sampler2D tH,tGS,tG,tDry,tShade;uniform mat4 uShadeM;varying vec3 vGc;
@@ -34,18 +34,18 @@ float pondD(vec2 p){float m=9.;${PONDS.map(q=>`m=min(m,(length(p-vec2(${q[0]}.,$
   float ph=dot(w,uWind.xy)*.22-uT*1.7,gu=.55+.45*sin(ph)*(.65+.35*sin(ph*.37+1.3));vec2 dv=uWind.z*(uWind.xy*gu+.22*vec2(sin(uT*2.3+w.x*1.7),sin(uT*2.1+w.y*1.7)))*(1.-down);
   p.xz+=dv*h*h*sz*.6;p.y-=.3*dot(dv,dv)*h*h*sz;
   vec3 transformed=vec3(w.x,hgt-.03,w.y)+p*sc;
-  vec3 g1=texture2D(tG,w/5.3).rgb,g2=texture2D(tG,w/31.).rgb;vec3 gr=g1*(.55+1.1*g2);vec3 dr=texture2D(tDry,q/6.1).rgb*vec3(1.25,1.12,.8);vec3 gc=mix(mix(gr,dr,kd),gr*vec3(.62,.66,.5),kw);
-  float cl=texture2D(tG,w/1700.+vec2(uT*.0021,uT*.0009)).g*.6+texture2D(tG,w/640.-vec2(uT*.003,0.)).r*.4;gc*=mix(.34,1.08,smoothstep(.3,.56,cl))*vec3(.9,.93,.9);
-  {vec4 c4=uShadeM*vec4(transformed,1.);vec3 sq=c4.xyz*.5+.5;float lit=(sq.x<0.||sq.x>1.||sq.y<0.||sq.y>1.)?1.:step(sq.z-.0016,unpackRGBAToDepth(texture2D(tShade,sq.xy)));gc*=mix(vec3(.34,.38,.46),vec3(1.),lit);}
+  vec3 g1=texture2D(tG,w/5.3).rgb,g2=texture2D(tG,w/31.).rgb;vec3 gr=g1*(.55+1.1*g2);vec3 dr=texture2D(tDry,q/6.1).rgb*vec3(1.25,1.12,.8);vec3 gc=mix(mix(gr*vec3(.72,1.18,.5)*1.2,dr,kd),gr*vec3(.5,.8,.4),kw);
+  float cl=texture2D(tG,w/1700.+vec2(uT*.0021,uT*.0009)).g*.6+texture2D(tG,w/640.-vec2(uT*.003,0.)).r*.4;gc*=mix(.55,1.08,smoothstep(.3,.56,cl))*vec3(.9,.93,.9);
+  {vec4 c4=uShadeM*vec4(transformed,1.);vec3 sq=c4.xyz*.5+.5;float lit=(sq.x<0.||sq.x>1.||sq.y<0.||sq.y>1.)?1.:step(sq.z-.0016,unpackRGBAToDepth(texture2D(tShade,sq.xy)));gc*=mix(vec3(.26,.33,.5),vec3(1.),lit);}
   gc*=mix(1.,.2,gs.r)*mix(.62,1.3,h)*(.85+.3*fh(aO.xy));vGc=gc;`);
       s.vertexShader=s.vertexShader.replace('#include <packing>','');if(s.vertexShader.indexOf('unpackRGBAToDepth')>=0&&s.vertexShader.indexOf('float unpackRGBAToDepth')<0)s.vertexShader=s.vertexShader.replace('attribute vec3 aO;','const vec4 UnB=vec4(1.)/vec4(16581375.,65025.,255.,1.)*vec4(1.,1.,1.,1.);float unpackRGBAToDepth(vec4 v){return dot(v,vec4(255./256./(256.*256.*256.),255./256./(256.*256.),255./256./256.,255./256.));}\nattribute vec3 aO;');
       s.fragmentShader=s.fragmentShader.replace('#include <common>','#include <common>\nvarying vec3 vGc;').replace('#include <map_fragment>','diffuseColor.rgb*=vGc;');};
     const m=new T.Mesh(g,mat);m.frustumCulled=false;m.receiveShadow=false;m.castShadow=false;scene.add(m);return m;}
   L.grass=[ring(72,.46,0,.62,5),ring(80,1.15,13,.95,4)];
   // the trees' crowns and the hedges move with the same wind
-  land.traverse(o=>{if(!o.isInstancedMesh||!o.instanceColor||!o.material.alphaTest||!o.material.vertexColors)return;const mt=o.material,hgt=o.geometry.boundingBox||(o.geometry.computeBoundingBox(),o.geometry.boundingBox);
-    mt.onBeforeCompile=s=>{s.uniforms.uT=L.uT;s.uniforms.uWind=L.uWind;s.vertexShader=s.vertexShader.replace('#include <common>','#include <common>\nuniform float uT;uniform vec3 uWind;').replace('#include <begin_vertex>',`#include <begin_vertex>
-  {float h=max(position.y,0.)/${hgt.max.y.toFixed(2)};vec3 ip=instanceMatrix[3].xyz;float ph=ip.x*.31+ip.z*.17;float g=(.7+.3*sin(uT*.23+ph))*uWind.z*2.;transformed.x+=sin(uT*1.6+ph)*h*h*.22*g;transformed.z+=sin(uT*1.2+ph*1.7)*h*h*.16*g;}`);};mt.needsUpdate=true;});
+  land.traverse(o=>{if(!o.isInstancedMesh||!o.instanceColor||!(o.userData.sway||o.material.alphaTest&&o.material.vertexColors))return;const mt=o.material,hgt=o.geometry.boundingBox||(o.geometry.computeBoundingBox(),o.geometry.boundingBox);
+    const was=mt.onBeforeCompile;mt.customProgramCacheKey=()=>'sway'+(was?was.toString().length:0)+hgt.max.y.toFixed(2);mt.onBeforeCompile=s=>{if(was)was(s);s.uniforms.uT=L.uT;s.uniforms.uWind=L.uWind;s.vertexShader=s.vertexShader.replace('#include <common>','#include <common>\nuniform float uT;uniform vec3 uWind;').replace('#include <begin_vertex>',`#include <begin_vertex>
+  {float h=max(position.y,0.)/${hgt.max.y.toFixed(2)};vec3 ip=instanceMatrix[3].xyz;float ph=ip.x*.31+ip.z*.17;float g=(.7+.3*sin(uT*.23+ph))*uWind.z*2.;float am=${(hgt.max.y*.024).toFixed(3)}*g;transformed.x+=sin(uT*1.6+ph)*h*h*am;transformed.z+=sin(uT*1.2+ph*1.7)*h*h*am*.7;transformed.x+=sin(uT*3.1+ph*2.3+position.y*.9)*h*am*.18;}`);};mt.needsUpdate=true;});
   // the ponds: wind ripples, and rings that run out from whatever hits the water
   const rings=[];for(let i=0;i<8;i++)rings.push(new T.Vector4(0,0,-99,0));
   land.traverse(o=>{if(!o.isMesh||!o.material.isMeshStandardMaterial||!o.geometry||o.geometry.type!=='CircleGeometry'||o.material.userData.water)return;const mt=o.material;mt.userData.water=1;mt.roughness=.04;mt.envMapIntensity=1.7;
@@ -60,7 +60,7 @@ float wn(vec2 p){vec2 i=floor(p),f=fract(p);f=f*f*(3.-2.*f);return mix(mix(wh(i)
    normal=normalize(normal+mat3(viewMatrix)*vec3(dn.x,0.,dn.y));}`);};mt.needsUpdate=true;});
   let wakeT=0;
   L.update=dt=>{L.uT.value=time;camera.getWorldPosition(va);L.uCam.value.set(va.x,va.z);L.uWind.value.z=.35+.25*Math.sin(time*.11)+.12*Math.sin(time*.37);
-    const far=!SET.grass||SET.grass>1;L.grass[0].visible=SET.grass!==0;L.grass[1].visible=SET.grass!==0&&far;
+    const far=!SET.grass||SET.grass>1;L.grass[0].visible=SET.grass!==0;L.grass[1].visible=SET.grass!==0&&far&&!xrActive;L.grass[0].geometry.instanceCount=xrActive?72*44:72*72;
     WORLD.rings.forEach((r,i)=>rings[i].set(r.x,r.z,r.t,r.a));for(let i=WORLD.rings.length;i<8;i++)rings[i].z=-99;
     wakeT-=dt;if(wakeT<=0&&Math.abs(P.v)>1&&WORLD.wetAt(P.x,P.z)){wakeT=.45;WORLD.rings.push({x:P.x,z:P.z,t:time,a:.5});if(WORLD.rings.length>8)WORLD.rings.shift();puff(P.x+Math.sin(P.yaw)*3,P.y+.6,P.z+Math.cos(P.yaw)*3,{c:[.75,.8,.82],s0:1.5,s1:5,life:1,vy:2.5,op:.5});}};
   return L;

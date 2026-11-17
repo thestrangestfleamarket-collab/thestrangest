@@ -37,6 +37,7 @@ Each is at `https://sketchfab.com/3d-models/<id>`.
 | Bus stop | `m/busstop.glb` | "Simple Bus Stop", Vagabondare | ac13a4bade94409fa688f1c4185f126d |
 | Broken wall | `m/brokenwall.glb` | "Damaged Wall", Philipp Busse (WoTiger) | 11616746d0ea4bd59a2d9cf9a2b2fdfa |
 | Rubble | `m/rubble.glb` | "Rubble Pile (Game Ready / 2K PBR)", Meerschaum Digital | 0e6f85da3433468db226866bd43a43e7 |
+| The land's trees | `m/tree_oak.glb`, `m/tree_beech.glb`, `m/tree_birch.glb`, `m/tree_maple.glb`, `m/tree_elm.glb`, `m/tree_willow.glb`, `m/tree_pine.glb`, `m/tree_spruce.glb`, `m/tree_fir.glb` | "Oak tree", "Beech tree", "Birch tree", "Maple Tree", "Elm tree", "Willow", "Pine Tree", "Spruce", "Fir tree", evolveduk | 6468dd4d3eb240ef902b9057d9913606, 0983d8933531491f9be71c669e8a907b, aa842dffd9654d33b8b91170ce83c172, b5e945e7abcc471da6547c04e314774c, f36443d3e59946bfa38b3f5cb90ea5fa, 422de2372f3d46dfb314a0cd5da512fe, d45218a3fab349e5b1de040f29e7b6f9, a50a5df3164246a5af97992cec33a143, 3f39aa5485e94477a36b435f7a1a8b54 |
 | Rock crag | `m/crag.glb` | "Valley Gray Cliff", Maksim Batyrev | e6b9729834dc4fdf99a8c932bc3c6a24 |
 | Dead tree and fallen logs | `m/deadtree.glb` | "Old tree", evolveduk | 3cb4d59eb4844dc4802480e9ee53785e |
 | Sandbags | `m/sandbags.glb` | "Sand Bag Pile", Finley Searle | 232b9407f5ad46f68764093f134591f4 |

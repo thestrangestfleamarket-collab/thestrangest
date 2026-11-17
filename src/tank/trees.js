@@ -79,11 +79,11 @@ const TREEGEN={};
 }
 // a market tree drawn from two sides into pictures for a pair of crossed cards: its width for a height of one, and the two pictures
 const MTREE={n:0,bake(set,i){
-  const rec=A0.MT[set][i],m=rec.sum?TREEGEN.cards(rec.sum,rec.tr,7+i*13+set.length,true,0):TREEGEN.get(set,i),H=rec.sum?m.H:1,g=new T.BufferGeometry(),p=new Float32Array(m.p.length),c=new Float32Array(m.c.length);
+  const rec=A0.MT[set][i],m=rec.sum?TREEGEN.cards(rec.sum,rec.tr,7+i*13+set.length,false,0):TREEGEN.get(set,i),H=rec.sum?m.H:1,g=new T.BufferGeometry(),p=new Float32Array(m.p.length),c=new Float32Array(m.c.length);
   let wd=0;for(let k=0;k<p.length;k+=3){p[k]=m.p[k]/H;p[k+1]=m.p[k+1]/H;p[k+2]=m.p[k+2]/H;wd=Math.max(wd,Math.abs(p[k]),Math.abs(p[k+2]));}for(let k=0;k<c.length;k++)c[k]=Math.pow(m.c[k]/255,2.2);
-  g.setAttribute('position',new T.BufferAttribute(p,3));g.setAttribute('normal',new T.BufferAttribute(m.n,3));g.setAttribute('color',new T.BufferAttribute(c,3));if(rec.sum)g.setAttribute('uv',new T.BufferAttribute(m.uv,2));
-  const mat=new T.MeshLambertMaterial({vertexColors:true,side:T.DoubleSide,map:rec.sum?TREEGEN.leaf():null,alphaTest:rec.sum?.5:0}),sc=new T.Scene(),mesh=new T.Mesh(g,mat);sc.add(mesh);
+  g.setAttribute('position',new T.BufferAttribute(p,3));g.setAttribute('normal',new T.BufferAttribute(m.n,3));g.setAttribute('color',new T.BufferAttribute(c,3));{const uv=new Float32Array(m.uv);if(!rec.sum)for(let t=0;t<m.k.length;t++)for(let v=0;v<3;v++){const q=(t*3+v)*2;if(m.k[t]){uv[q]=.97;uv[q+1]=.5;}else uv[q]*=.44;}g.setAttribute('uv',new T.BufferAttribute(uv,2));}
+  const mat=new T.MeshLambertMaterial({vertexColors:true,side:T.DoubleSide,map:TREEGEN.leaf(),alphaTest:.5}),sc=new T.Scene(),mesh=new T.Mesh(g,mat);sc.add(mesh);
   const sun=new T.DirectionalLight(0xfff0d8,2.6);sun.position.set(.6,.9,.7);sc.add(sun,new T.HemisphereLight(0xbfd4ff,0x4a4030,1.5));
   const w=Math.max(.2,wd*2.06),cam=new T.OrthographicCamera(-w/2,w/2,.52,-.51,.1,20),tm=renderer.toneMapping,cc=renderer.getClearColor(new T.Color()).clone(),ca=renderer.getClearAlpha(),tex=[],rts=[];renderer.toneMapping=T.NoToneMapping;renderer.setClearColor(0x2a3a1c,0);
-  for(const a of[0,Math.PI/2]){const rt=new T.WebGLRenderTarget(256,256,{depthBuffer:true});rt.texture.generateMipmaps=true;rt.texture.minFilter=T.LinearMipmapLinearFilter;rt.texture.anisotropy=4;cam.position.set(Math.sin(a)*8,.5,Math.cos(a)*8);cam.lookAt(0,.5,0);renderer.setRenderTarget(rt);renderer.clear();renderer.render(sc,cam);tex.push(rt.texture);rts.push(rt);}
+  for(const a of[0,Math.PI/2]){const rt=new T.WebGLRenderTarget(512,512,{depthBuffer:true});rt.texture.generateMipmaps=true;rt.texture.minFilter=T.LinearMipmapLinearFilter;rt.texture.anisotropy=4;cam.position.set(Math.sin(a)*8,.5,Math.cos(a)*8);cam.lookAt(0,.5,0);renderer.setRenderTarget(rt);renderer.clear();renderer.render(sc,cam);tex.push(rt.texture);rts.push(rt);}
   renderer.setRenderTarget(null);renderer.toneMapping=tm;renderer.setClearColor(cc,ca);g.dispose();mat.dispose();MTREE.n++;return{w,tex,rts};}};

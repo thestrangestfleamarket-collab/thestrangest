@@ -144,7 +144,7 @@ export function buildAlley(scene, o = {}) {
     const hl = new THREE.Sprite(lampHalos); hl.position.set(0, 1.95, 0); hl.scale.set(2.6, 2.6, 1); hl.userData.nopick = true; g.add(hl);
     const puffs = []; for (let k = 0; k < 4; k++) { const s = new THREE.Sprite(new THREE.SpriteMaterial({ map: smokeT, color: 0x6a6460, transparent: true, opacity: 0, depthWrite: false, fog: true })); s.userData = { t: k / 4, nopick: true }; g.add(s); puffs.push(s); }
     braz.push({ fl, puffs, ph: i * 2.1, l }); });
-  const _mp = new THREE.Vector3(), fogC = new THREE.Color(), tmp = new THREE.Color(), tmp2 = new THREE.Color(), MOONC = new THREE.Color(0x9ab0e8), NIGHTF = new THREE.Color(0x4a5c8c), DAYF = new THREE.Color(0xbcd0ec), EARTH = new THREE.Color(0x6a5a40);
+  const _mp = new THREE.Vector3(), fogC = new THREE.Color(), tmp = new THREE.Color(), tmp2 = new THREE.Color(), MOONC = new THREE.Color(0x9ab0e8), NIGHTF = new THREE.Color(0x5468a0), DAYF = new THREE.Color(0xbcd0ec), EARTH = new THREE.Color(0x6a5a40);
   let lit = 0, skyT = 0, wet = 0, lastH = -1; const api = {};
   const sm = (a, b, x) => { const t = clamp((x - a) / (b - a), 0, 1); return t * t * (3 - 2 * t); };
   const paint = () => { const K = G.clock, h = K ? K.hour : 11, w = G.weather ? G.weather.now : weatherAt(K ? K.frac : 0), jd = city.jd(h);
@@ -161,7 +161,7 @@ export function buildAlley(scene, o = {}) {
     AIR.sun[0] = _mp.x; AIR.sun[1] = _mp.y; AIR.sun[2] = _mp.z; const glow = sm(-3, 3, e) * (0.35 + 0.65 * (1 - clamp((e - 5) / 25, 0, 1))) * 0.16 * (1 - 0.7 * w.cloud);
     tmp.copy(Sk.sunC).multiplyScalar(glow).lerp(tmp2.copy(MOONC).multiplyScalar(0.03 * mk), f); AIR.sunC[0] = tmp.r; AIR.sunC[1] = tmp.g; AIR.sunC[2] = tmp.b;
     fill.color.copy(NIGHTF).lerp(DAYF, day).lerp(Sk.sunC, 0.22 * day * (1 - clamp(e / 20, 0, 1))).lerp(tmp2.setRGB(0.6, 0.62, 0.66), 0.3 * w.cloud * day); fill.groundColor.copy(EARTH).multiplyScalar(0.25 + 0.75 * day);
-    fill.intensity = (0.72 + 0.6 * day + 0.3 * mk) * (S.easy ? 1.2 : 1);
+    fill.intensity = (0.9 + 0.42 * day + 0.3 * mk) * (S.easy ? 1.2 : 1);
     if (G.renderer) G.renderer.toneMappingExposure = 1.15 + 0.7 * (1 - day);   // the eye opens in the dark: night dark but readable
     paddyW.emissive.copy(Sk.zen).lerp(Sk.horizon, 0.5).lerp(fogC, 0.3); paddyW.emissiveIntensity = 0.3 + 0.45 * day;
     if (G.weather) G.weather.rain.material.color.setHex(0x8a98a8).multiplyScalar(0.16 + 0.84 * day + 0.25 * lit);

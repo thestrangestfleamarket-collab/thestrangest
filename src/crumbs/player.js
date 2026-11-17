@@ -91,7 +91,7 @@ PL.startGrip = function (h, g, point) {
 };
 PL.endGrip = function (h) {
   const g = h.grip; if (!g) return; h.grip = null;
-  if (activeGrip()) return;
+  if (activeGrip()) { if (!mantleTarget(h, g)) return; for (const o of PL.hands) if (o.grip) o.grip = null; }   // let go of the top with one paw while the other still holds: still hop over
   PL.peak = rig.position.y;
   const m = mantleTarget(h, g);
   if (m) { rig.position.x += m.px - m.head.x; rig.position.z += m.pz - m.head.z; PL.camLift -= m.top - rig.position.y; rig.position.y = m.top; PL.peak = m.top; PL.vel.set(0, 0, 0); S.hop(); if (isXR()) { PL.fade = 1; PL.buzz(h, 0.6, 60); } MC.emit('mantle'); }
@@ -102,11 +102,14 @@ function mantleTarget(h, g) {
   if (g.line) return null;
   const head = headW(), sx = g.max.x - g.min.x, sy = g.max.y - g.min.y, sz = g.max.z - g.min.z; let nx = 0, nz = 0;
   if (sx <= sy && sx <= sz) nx = Math.sign(head.x - (g.min.x + g.max.x) / 2); else if (sz <= sy) nz = Math.sign(head.z - (g.min.z + g.max.z) / 2);
-  const px = h.anchor.x - nx * 0.5, pz = h.anchor.z - nz * 0.5;
-  const top = groundAt(px, pz, head.y + 0.2)[0], cur = groundAt(head.x, head.z, head.y - 0.2)[0];
-  return top > cur + 0.36 ? { px, pz, top, head } : null;
+  const cur = groundAt(head.x, head.z, head.y - 0.2)[0];
+  for (const d of [0.95, 0.5]) {   // land well inside the ledge, not on its lip (a narrow top takes the shorter hop)
+    const px = h.anchor.x - nx * d, pz = h.anchor.z - nz * d, top = groundAt(px, pz, head.y + 0.3)[0];   // a head a little under the top still pulls itself over
+    if (top > cur + 0.36 && Math.abs(groundAt(px + nx * 0.3, pz + nz * 0.3, head.y + 0.3)[0] - top) < 0.05) return { px, pz, top, head };
+  }
+  return null;
 }
-PL.mantleReady = () => { const ag = activeGrip(); return !!(ag && PL.hands.filter(h => h.grip).length === 1 && mantleTarget(ag, ag.grip)); };
+PL.mantleReady = () => PL.hands.some(h => h.grip && mantleTarget(h, h.grip));
 
 // ---------- targeting (desktop + bot) ----------
 function segRay(o, d, a, b) { // closest approach between ray and segment -> {t, s, dist}
@@ -196,11 +199,19 @@ PL.buzz = function (h, v, ms) {
 };
 function wristNote(force) {
   const G = MC.game, w = PL.wrist, text = force ? force : G.mode !== 'play' ? '' : PL.mantleReady() ? 'Let go: hop onto the ledge' : MC.events.state === 'seen' ? 'SEEN: stop moving!' : G.msgT > 0 ? G.msg : (G.tip || '');
-  w.mesh.visible = !!text; if (!text) return;
+  w.mesh.visible = !!text; if (!text) { w.mesh.userData.on = false; return; }
   if (text !== w.key) { w.key = text; const g = w.c.getContext('2d'); g.clearRect(0, 0, 512, 160); g.fillStyle = 'rgba(250,240,215,0.96)'; g.beginPath(); g.roundRect ? g.roundRect(4, 4, 504, 152, 18) : g.rect(4, 4, 504, 152); g.fill();
     g.fillStyle = '#3a2414'; g.textAlign = 'center'; let fs = 32, lines; do { g.font = '600 ' + fs + 'px sans-serif'; lines = []; let line = ''; for (const wd of text.split(' ')) { if (g.measureText(line + wd).width > 470 && line) { lines.push(line); line = ''; } line += wd + ' '; } lines.push(line); fs -= 2; } while (lines.length * (fs + 6) > 140 && fs > 14);
     const lh = fs + 6, y0 = 80 - (lines.length - 1) * lh / 2 + fs * 0.35; lines.forEach((l, k) => g.fillText(l.trim(), 256, y0 + k * lh)); w.tex.needsUpdate = true; }
-  const where = MC.opt.captions || 'left';
+  const where = MC.opt.captions || 'float';
+  if (where === 'float') {   // a card floating ahead, low and a little to the left: it eases after your head only when you turn well away
+    const yaw = Math.atan2(PL.fwdFull.x, PL.fwdFull.z); if (w.yaw == null || !w.mesh.userData.on) w.yaw = yaw;
+    let d = yaw - w.yaw; d = Math.atan2(Math.sin(d), Math.cos(d)); if (Math.abs(d) > 0.5) w.yaw += d * Math.min(1, 0.06);
+    const s = MC.rig.scale.x, fx = Math.sin(w.yaw), fz = Math.cos(w.yaw), want = new V3(PL.head.x + fx * 1.0 * s + fz * 0.28 * s, PL.head.y - 0.42 * s, PL.head.z + fz * 1.0 * s - fx * 0.28 * s);
+    if (!w.mesh.userData.on) w.mesh.position.copy(want); else w.mesh.position.lerp(want, 0.08); w.mesh.userData.on = true;
+    w.mesh.scale.setScalar(s * 1.15); w.mesh.lookAt(PL.head); return;
+  }
+  w.mesh.userData.on = false; w.mesh.scale.setScalar(1);
   if (where === 'head') { w.mesh.position.copy(PL.head).addScaledVector(PL.fwdFull, 0.8).add(new V3(0, -0.28, 0)); w.mesh.quaternion.copy(MC.camera.getWorldQuaternion(new THREE.Quaternion())); return; }
   const paw = PL.hands[where === 'right' ? 1 : 0].paw.pos; w.mesh.position.copy(paw).add(new V3(0, 0.16, 0)); w.mesh.lookAt(PL.head);
 }
@@ -302,7 +313,7 @@ PL.update = function (dt) {
       const l = Math.hypot(pu[0], pu[1]); if (l > 1e-6) { const nx = pu[0] / l, nz = pu[1] / l, vn = PL.vel.x * nx + PL.vel.z * nz; if (vn < 0) { PL.vel.x -= vn * nx; PL.vel.z -= vn * nz; } }
     }
     // ledge grace: while standing, you can lean or step ~0.28 m past an edge before you drop (peering over is free)
-    const h = headW(), [g, gs] = groundAt(h.x, h.z, Math.max(h.y - 0.2, rig.position.y + 0.4), PL.grounded ? 0.28 : 0);
+    const h = headW(), [g, gs] = groundAt(h.x, h.z, Math.max(h.y - 0.2, rig.position.y + 0.4), PL.grounded ? (xr ? 0.55 : 0.28) : 0);
     if (rig.position.y <= g) {
       if (!PL.grounded) {
         const drop = PL.peak - g, soft = gs && gs.soft;

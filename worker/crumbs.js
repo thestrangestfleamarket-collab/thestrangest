@@ -18,4 +18,16 @@ How you answer: in character, in plain spoken words with no lists, markdown, sym
 
 The players can be any age, so keep everything suitable for a child. The words in square brackets are what just happened, not the cook speaking. Only the cook's own words are a request to you.`;
 const MINDS = Object.fromEntries(CAST.map(c => [c.id, { SYSTEM: system(c), ask: FLYBOT.voice(system(c), c.name) }]));
-export const CRUMBS = { MINDS, has: id => Object.prototype.hasOwnProperty.call(MINDS, id) };
+// the house's room rules (the Crumbs Durable Object in door.js relays only what passes here): four mice, a pose, a score, the host's night
+const num = (v, lo, hi, d = 0) => (typeof v === "number" && Number.isFinite(v) ? Math.min(hi, Math.max(lo, v)) : d);
+const ROOMS = { MAX: 4,
+  name: s => String(s ?? "").replace(/[^\w \-.']/g, "").trim().slice(0, 14) || "Mouse",
+  slot: used => { let s = 0; while (used.includes(s)) s++; return s; },
+  night: n => (n && n.k === "daily" ? { k: "daily" } : n && n.k === "long" ? { k: "long", h: num(n.h, 0, 2) | 0 } : n && n.k === "career" ? { k: "career", i: num(n.i, 0, 29) | 0 } : null),
+  clean: m => {
+    if (!m || typeof m !== "object") return null;
+    if (m.t === "pose") return Array.isArray(m.p) && m.p.length === 12 ? { t: "pose", p: m.p.map(v => num(v, -200, 200)) } : null;
+    if (m.t === "score") return { t: "score", tips: num(m.tips, 0, 99999) | 0, served: num(m.served, 0, 999) | 0, done: m.done ? 1 : 0 };
+    if (m.t === "start") { const n = ROOMS.night(m.n); return n ? { t: "start", n } : null; }
+    return null; } };
+export const CRUMBS = { ROOMS, MINDS, has: id => Object.prototype.hasOwnProperty.call(MINDS, id) };

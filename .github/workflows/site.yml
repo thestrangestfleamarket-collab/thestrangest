@@ -71,12 +71,14 @@ jobs:
           k zombie  'src/zombie/|data/zombie/|worker/zombie|tools/zombie|tests/zombie\.cjs'
           k holmes  'src/holmes/|data/holmes/|worker/holmes|tools/holmes|tests/holmes\.cjs'
           k jam     'src/jam/|data/jam/|tools/jam\.cjs|tests/jam\.cjs'
+          k drums   'src/drums/|data/drums/|tools/drums\.cjs|tests/drums\.cjs|src/jam/(avatars|textures)\.js'
           k shoot   'src/shoot/|tools/shoot\.cjs|tests/shoot\.cjs'
           k edge    'src/edge/|tools/edge\.cjs|tests/edge\.cjs'
           k tank    'src/tank/|data/tank/|tools/edge\.cjs|tools/tank|tests/tank\.cjs'
           k sniper  'src/sniper/|data/sniper/|tools/sniper|tests/sniper\.cjs'
           k duel    'src/duel/|data/duel/|tools/duel\.cjs|tests/duel\.cjs'
           k laser   'src/laser/|worker/laser|tools/laser\.cjs|tests/laser\.cjs'
+          k fleet   'src/space/|data/space/|worker/space|tools/space|tests/fleet\.cjs'
           k vrbody  'src/162c|src/111b|vrbody\.cjs'
           k riders  'src/117a|src/009c|riders\.cjs'
           k loopmap 'src/159c|src/009b|loopmap\.cjs'
@@ -276,6 +278,10 @@ jobs:
         timeout-minutes: 15
         if: contains(steps.f.outputs.run, ' jam')
         run: node tests/jam.cjs dist/jam.html
+      - name: The Garage (the drum kit at /drums; the keys and a click play it, then the sticks, triggers and grip in an emulated Quest 3)
+        timeout-minutes: 15
+        if: contains(steps.f.outputs.run, ' drums')
+        run: node tests/drums.cjs dist/drums.html
       - name: Halcyon Greens (mini golf at /golf; it loads, a putt rolls, a putt holes out)
         timeout-minutes: 15
         if: contains(steps.f.outputs.run, ' golf')
@@ -316,6 +322,10 @@ jobs:
         timeout-minutes: 15
         if: contains(steps.f.outputs.run, ' laser')
         run: node tests/laser.cjs dist/laser.html
+      - name: Space Fleet (the fleet battle at /space; the rules, the bot, two linked headsets' pages, an emulated Quest 3)
+        timeout-minutes: 15
+        if: contains(steps.f.outputs.run, ' fleet')
+        run: node tests/fleet.cjs dist/space.html
       - name: The headset (VR on an emulated Quest 3)
         timeout-minutes: 45
         if: contains(steps.f.outputs.run, ' vr')

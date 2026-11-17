@@ -4,6 +4,7 @@ import { DISH, DISHK } from "./dish.js";
 import { JAM } from "./jam.js";
 import { LASER } from "./laser.js";
 import { TANK } from "./tank.js";
+import { SPACE } from "./space.js";
 import { MAPPATCH } from "./mappatch.js";
 import { FOLKSIM } from "./folk.js";
 import { MOBSIM } from "./dunmobs.js";
@@ -32,7 +33,9 @@ const APPF = /^\/(app\.webmanifest|icon-(192|512)\.png)$/;   // the installable 
 const EDMAP = /^\/edmap\/t\d{1,2}_\d{1,2}\.jpg$/;
 const SCAREA = /^\/scare-assets\/[a-z0-9_-]+\.glb$/;   // VESPER WARD's models: to anyone
 const SNIPA = /^\/sniper-assets\/(sky|tex|m|snd|p)\/[A-Za-z0-9_-]+\.(glb|json|mp3|jpg|webp)$/, SNIPT = { glb: "model/gltf-binary", json: "application/json", mp3: "audio/mpeg", jpg: "image/jpeg", webp: "image/webp" };   // COLD BORE's skies, surfaces, models and sounds: to anyone
+const SPCA = /^\/space-assets\/((m|snd)\/[A-Za-z0-9_-]+\.(glb|mp3)|stars\.json)$/;   // SPACE FLEET's models, sky and sounds: to anyone
 const JAMA = /^\/jam-assets\/[a-z0-9_-]+\.(glb|json|mp3)$/, JAMT = { glb: "model/gltf-binary", json: "application/json", mp3: "audio/mpeg" };   // STADIUM JAM's avatars, hands and samples: to anyone
+const DRUMA = /^\/drums-assets\/(?:(?:tex|m)\/)?[a-z0-9_-]+\.(glb|json|mp3|jpg)$/, DRUMT = { glb: "model/gltf-binary", json: "application/json", mp3: "audio/mpeg", jpg: "image/jpeg" };   // THE GARAGE's recorded kit, models and surfaces: to anyone
 const SAYNO = new Map();
 const GOLFA = /^\/(golf|duel|cantina|hide|zombie|sushi|tank|saloon)-assets\/(?!.*\.\.)[A-Za-z0-9_.\/-]+\.(jpg|json|txt|glb|mp3|hdr|fbx|webp|mp4)$/;   // HALCYON GREENS' pictures and models, AR DUEL's pictures, THE CANTINA's models and pictures, DEAD END's pictures, models and sounds, EYES DOWN's pictures and models, HULL DOWN's sky, surfaces, models and sounds, RAMEN's: to anyone
 const BOOK = /^\/book\/(\d{1,6})\.txt$/, FILM = /^\/film\/([A-Za-z0-9_.-]{1,80})\/([A-Za-z0-9_.-]{1,120}\.mp4)$/, IA = /^\/ia\/([A-Za-z0-9_.-]{1,80})\.jpg$/, YT = /^\/yt\/([A-Za-z0-9_-]{11})\.jpg$/, BLANK = "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYGD4DwABBAEAHnOcQAAAAABJRU5ErkJggg==";
@@ -90,6 +93,11 @@ export default {
     if ((request.method === "GET" || request.method === "HEAD") && JAMA.test(p)) {
       const r = await env.ASSETS.fetch(new Request(url.origin + p)); if (!r.ok) return new Response("not found", { status: 404 });
       const out = new Response(r.body, r); out.headers.set("content-type", JAMT[p.split(".").pop()]); out.headers.set("cache-control", "public, max-age=86400"); out.headers.set("x-robots-tag", "noindex"); return out; }
+    // THE GARAGE (src/drums/): a drum kit in a garage, its own page at /drums, to anyone with the link; its recorded kit, models and surfaces under /drums-assets/
+    if ((request.method === "GET" || request.method === "HEAD") && p === "/drums") return page(env, url, "/drums", request, "no-cache");
+    if ((request.method === "GET" || request.method === "HEAD") && DRUMA.test(p)) {
+      const r = await env.ASSETS.fetch(new Request(url.origin + p)); if (!r.ok) return new Response("not found", { status: 404 });
+      const out = new Response(r.body, r); out.headers.set("content-type", DRUMT[p.split(".").pop()]); out.headers.set("cache-control", "public, max-age=86400"); out.headers.set("x-robots-tag", "noindex"); return out; }
     // COLD BORE (src/sniper/): its own page at /sniper, to anyone with the link; its skies, surfaces, models and sounds under /sniper-assets/
     if ((request.method === "GET" || request.method === "HEAD") && p === "/sniper") return page(env, url, "/sniper", request, "no-cache");
     if ((request.method === "GET" || request.method === "HEAD") && SNIPA.test(p)) {
@@ -106,6 +114,17 @@ export default {
     // HALCYON GREENS (src/golf/): its own page at /golf, to anyone with the link; its pictures under /golf-assets/
     if ((request.method === "GET" || request.method === "HEAD") && p === "/golf") return page(env, url, "/golf", request, "no-cache");
     if (p === "/golf/") return Response.redirect(url.origin + "/golf" + url.search, 301);
+    // SPACE FLEET (src/space/): a fleet battle in a headset, its own page at /space, to anyone with the link; its models, sky and sounds under /space-assets/; its one public room is the Space Durable Object
+    if ((request.method === "GET" || request.method === "HEAD") && p === "/space") return page(env, url, "/space", request, "no-cache");
+    if (p === "/space/") return Response.redirect(url.origin + "/space" + url.search, 301);
+    if ((request.method === "GET" || request.method === "HEAD") && SPCA.test(p)) {
+      const r = await env.ASSETS.fetch(new Request(url.origin + p)); if (!r.ok) return new Response("not found", { status: 404 });
+      const out = new Response(r.body, r); out.headers.set("content-type", SNIPT[p.split(".").pop()]); out.headers.set("cache-control", "public, max-age=86400"); out.headers.set("x-robots-tag", "noindex"); return out; }
+    // SPACE FLEET's enemy admiral (worker/space.js): Claude Haiku commands the bot's fleet for anyone who plays; a daily count for each player
+    if (request.method === "POST" && p === "/space/mind") { if (request.headers.get("Origin") !== url.origin && !(dev && !request.headers.get("Origin"))) return json({ why: "not from the game's page" }, 403);
+      const id = await who(env, request, dev).catch(() => null), key = id || "ip:" + (request.headers.get("CF-Connecting-IP") || "?"); let body; try { body = await request.json(); } catch (e) { body = {}; } if (!body || typeof body !== "object") body = {};
+      if (!env.ANTHROPIC_API_KEY) return json({ why: "the website has no ANTHROPIC_API_KEY secret yet" }); if (tooMany("space:" + key, 24)) return json({ why: "too much at once, wait a minute" }, 429);
+      const H = homeOf(env); return json(await SPACE.think(env, { get: () => H.botGet("space:" + key), put: v => H.botPut("space:" + key, v) }, body)); }
     // LASER TAG (src/laser/): its own page at /laser, to anyone with the link; its one public room is the Laser Durable Object
     if ((request.method === "GET" || request.method === "HEAD") && p === "/laser") return page(env, url, "/laser", request, "no-cache");
     if (p === "/laser/") return Response.redirect(url.origin + "/laser" + url.search, 301);
@@ -208,9 +227,10 @@ export default {
       return skyFeed(sky[1], request); }
     if (p.startsWith("/parties/")) return (await routePartykitRequest(request, env, {
       onBeforeConnect: async (req, { party, name }) => {
-        const room = party === "block" || party === "jam" ? ROOM.test(name) : party === "laser" || party === "tank" ? name === "public" : party === "dish" && name === "petri";   // the dish: one for the whole market, the arcade's PETRI; LASER TAG: one public room
+        const room = party === "block" || party === "jam" || party === "crumbs" ? ROOM.test(name) : party === "laser" || party === "tank" || party === "space" ? name === "public" : party === "dish" && name === "petri";   // the dish: one for the whole market, the arcade's PETRI; LASER TAG: one public room
         if (!room || (request.headers.get("Origin") !== url.origin && !dev)) return new Response("not found", { status: 404 });
-        if (party === "laser" || party === "tank") { const r = new Request(req); r.headers.set("x-partykit-room", name); return r; }   // LASER TAG's room: to anyone with the link, like its page
+        if (party === "laser" || party === "tank" || party === "space") { const r = new Request(req); r.headers.set("x-partykit-room", name); return r; }   // LASER TAG's room: to anyone with the link, like its page
+        if (party === "crumbs") { const r = new Request(req); r.headers.set("x-partykit-room", name); return r; }   // MIDNIGHT CRUMBS' houses: to anyone with the link, like its page
         if (party === "jam") { const r = new Request(req); r.headers.set("x-partykit-room", name); return r; }   // STADIUM JAM's rooms: to anyone with the link, like its page
         const id = await who(env, request, dev); if (!id) return new Response("login", { status: 401 });
         const r = new Request(req); r.headers.set("x-tsfm-id", id); r.headers.set("x-partykit-room", name); if (dev) r.headers.set("x-tsfm-dev", "1"); return r; },
@@ -1082,6 +1102,23 @@ export class Laser extends Server {
   onError(c) { this.onClose(c); }
 }
 
+// SPACE FLEET's room: the one public battle, two players; the first in is the host, whose pictures of the battle go to the other, whose orders come back (worker/space.js says what passes)
+export class Space extends Server {
+  static options = { hibernate: false };
+  peers(not) { const a = []; for (const o of this.getConnections()) if (o.id !== not && o.state) a.push({ id: o.id, ...o.state }); return a; }
+  onMessage(c, raw) {
+    if (typeof raw !== "string" || raw.length > 12000) return; let m; try { m = JSON.parse(raw); } catch (e) { return; }
+    const now = Date.now(), rl = c.rl || (c.rl = { t: now, n: 0 }); if (now - rl.t > 1000) { rl.t = now; rl.n = 0; } if (++rl.n > 40) return;
+    if (m && m.t === "join") { if (c.state) return; const peers = this.peers(c.id);
+      if (peers.length >= SPACE.MAX) { c.send('{"t":"full"}'); return c.close(4002, "full"); }
+      const st = { slot: SPACE.slot(peers.map(q => q.slot)) }; c.setState(st);
+      c.send(JSON.stringify({ t: "welcome", id: c.id, slot: st.slot, peers })); return this.broadcast(JSON.stringify({ t: "peer-join", id: c.id, ...st }), [c.id]); }
+    if (!c.state) return; const out = SPACE.clean(m, c.state.slot); if (!out) return;
+    out.id = c.id; this.broadcast(JSON.stringify(out), [c.id]); }
+  onClose(c) { if (c.state) this.broadcast(JSON.stringify({ t: "peer-leave", id: c.id }), [c.id]); }
+  onError(c) { this.onClose(c); }
+}
+
 // HULL DOWN's room: the one public lobby, four players; the first one in runs the mission for the rest, and it passes each tank's pose, shots and hits on to the others (worker/tank.js says what passes)
 export class Tank extends Server {
   static options = { hibernate: false };
@@ -1112,6 +1149,25 @@ export class Jam extends Server {
       c.send(JSON.stringify({ t: "welcome", id: c.id, slot: st.slot, room: this.name, peers })); return this.broadcast(JSON.stringify({ t: "peer-join", id: c.id, ...st }), [c.id]); }
     if (!c.state) return; const out = JAM.clean(m, c.state); if (!out) return;
     if (out.t === "state") c.setState({ ...c.state, inst: out.inst, tone: out.tone, ky: out.ky });
+    out.id = c.id; this.broadcast(JSON.stringify(out), [c.id]); }
+  onClose(c) { if (c.state) this.broadcast(JSON.stringify({ t: "peer-leave", id: c.id }), [c.id]); }
+  onError(c) { this.onClose(c); }
+}
+
+// MIDNIGHT CRUMBS' houses: up to four mice in a room, each told the others' poses and tips; the first in picks the night (worker/crumbs.js)
+export class Crumbs extends Server {
+  static options = { hibernate: false };
+  peers(not) { const a = []; for (const o of this.getConnections()) if (o.id !== not && o.state) a.push({ id: o.id, ...o.state }); return a; }
+  onMessage(c, raw) {
+    if (typeof raw !== "string" || raw.length > 1024) return; let m; try { m = JSON.parse(raw); } catch (e) { return; }
+    const now = Date.now(), rl = c.rl || (c.rl = { t: now, n: 0 }); if (now - rl.t > 1000) { rl.t = now; rl.n = 0; } if (++rl.n > 40) return;
+    const R = CRUMBS.ROOMS;
+    if (m && m.t === "join") { if (c.state) return; const peers = this.peers(c.id);
+      if (peers.length >= R.MAX) { c.send('{"t":"full"}'); return c.close(4002, "full"); }
+      const st = { slot: R.slot(peers.map(q => q.slot)), name: R.name(m.name) }; c.setState(st);
+      c.send(JSON.stringify({ t: "welcome", id: c.id, slot: st.slot, peers })); return this.broadcast(JSON.stringify({ t: "peer-join", id: c.id, ...st }), [c.id]); }
+    if (!c.state) return; const out = R.clean(m); if (!out) return;
+    if (out.t === "start" && this.peers(c.id).some(q => q.slot < c.state.slot)) return;   // only the first mouse in opens a night
     out.id = c.id; this.broadcast(JSON.stringify(out), [c.id]); }
   onClose(c) { if (c.state) this.broadcast(JSON.stringify({ t: "peer-leave", id: c.id }), [c.id]); }
   onError(c) { this.onClose(c); }

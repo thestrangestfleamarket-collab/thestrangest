@@ -114,6 +114,7 @@ subprocess.run(['node', 'tools/scare.cjs'], check=True)   # VESPER WARD (src/sca
 subprocess.run(['node', 'tools/hide.cjs'], check=True)   # DEAD END (src/hide/): its own page, dist/hide.html, and its pictures, models and sounds, dist/hide-assets/
 subprocess.run(['node', 'tools/zombie.cjs'], check=True)   # EYES DOWN (src/zombie/): its own page, dist/zombie.html, and its pictures and models, dist/zombie-assets/
 subprocess.run(['node', 'tools/jam.cjs'], check=True)   # STADIUM JAM (src/jam/): its own page, dist/jam.html, and its avatars, hands and samples, dist/jam-assets/
+subprocess.run(['node', 'tools/drums.cjs'], check=True)   # THE GARAGE (src/drums/): its own page, dist/drums.html, and its recorded kit, models and surfaces, dist/drums-assets/
 subprocess.run(['node', 'tools/sniper.cjs'], check=True)   # COLD BORE (src/sniper/): its own page, dist/sniper.html, and its skies, surfaces, models and sounds, dist/sniper-assets/
 subprocess.run(['node', 'tools/edge.cjs'], check=True)   # EDGE OF 88 (src/edge/) and HULL DOWN (src/tank/): their own pages, dist/edge.html, dist/tank.html
 subprocess.run(['node', 'tools/shoot.cjs'], check=True)   # BREACHLINE (src/shoot/): its own page, dist/shoot.html
@@ -121,6 +122,7 @@ subprocess.run(['node', 'tools/golf.cjs'], check=True)   # HALCYON GREENS (src/g
 subprocess.run(['node', 'tools/crumbs.cjs'], check=True)   # MIDNIGHT CRUMBS (src/crumbs/): its own page, dist/crumbs.html, its creatures from data/pets/
 subprocess.run(['node', 'tools/duel.cjs'], check=True)   # AR DUEL (src/duel/): its own page, dist/duel.html, and its pictures, dist/duel-assets/
 subprocess.run(['node', 'tools/laser.cjs'], check=True)   # LASER TAG (src/laser/): its own page, dist/laser.html
+subprocess.run(['node', 'tools/space.cjs'], check=True)   # SPACE FLEET (src/space/): its own page, dist/space.html, and its models, sky and sounds, dist/space-assets/
 for f in sorted(set(re.findall(r'__FILE__\("([^"]+)"\)', body))):
     o = 'dist/g/' + os.path.basename(f); shutil.copy(f, o); names[f] = json.dumps('/g/' + hashed(o))
 body = re.sub(r'__FILE__\("([^"]+)"\)', lambda m: names[m.group(1)], body)

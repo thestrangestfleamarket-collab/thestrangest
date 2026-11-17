@@ -17,5 +17,6 @@ data/full/copies/img/
 !src/door/icon-*.png
 !data/full/sfx/shared/
 data/full/tank/
+data/full/space/
 data/full/sushi/snd/
 .site-wrangler.jsonc

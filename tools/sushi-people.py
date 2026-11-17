@@ -287,7 +287,7 @@ def cloth_tex(d, seed):   # the clothes' own picture, painted: the robe (with it
     vr = lambda a, b: (v >= a) & (v < b)
     # the robe's rows (v: 0 at the collar, 0.62 at the hem): the collar band down the front, the obi at the waist
     col = hexc(d['collar']); front = np.abs(u - 0.5) < 0.5
-    ang = (u - 0.5) * 2 * math.pi   # 0 at the front
+    ang = (((u + 0.5) % 1) - 0.5) * 2 * math.pi   # 0 at the front (the rings start there)
     lap = np.abs(np.sin(ang / 2)) < (0.07 + np.clip(0.26 - v * 1.2, 0, 1) * 0.45)
     collar = (np.abs(np.abs(ang) - np.clip(0.55 - v * 2.6, 0.0, 1)) < 0.11) & (v < 0.24) & ~(np.abs(ang) > 2.6)
     px[collar & robe] = col

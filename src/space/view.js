@@ -228,7 +228,6 @@ class View {
     for (let i = 0; i < ev.length;) { const k = ev[i];
       if (k === 1) { const tg = this.units.get(ev[i + 2]), v = ev[i + 3], secs = (v >> 5) * STEP; this.shot(this.units.get(ev[i + 1]), tg, v & 7, !!(v & 16), secs); if (tg && v & 8 && !(v & 16)) { const f = this.fields.take(); f.uid = tg.id; f.life = 0.5; f.t = -secs; this.onEvent && this.onEvent('field', tg.pos, 0); } i += 4; }
       else if (k === 2) { const u = this.units.get(ev[i + 1]); if (u) this.blast(u, ev[i + 2]); i += 4; }
-      else if (k === 5) { this.miss(this.units.get(ev[i + 1]), ev[i + 2] / 100, ev[i + 3] / 100, ev[i + 4] / 100); i += 5; }
       else if (k === 3) { this.onEvent && this.onEvent('built', ev[i + 1], ev[i + 2]); i += 3; }
       else if (k === 4) { this.onEvent && this.onEvent('relay', ev[i + 2], ev[i + 1]); i += 3; }
       else break; }
@@ -241,8 +240,6 @@ class View {
     const o = this.bolts.take(); o.a.copy(_a); o.b.copy(_b); o.w = w; o.life = w === 2 ? 0.45 : Math.max(0.12, secs || 0); o.miss = miss; if (miss) { _p.subVectors(_b, _a).normalize(); _b.addScaledVector(_p, 0.07 + Math.random() * 0.08).add(_x.set(Math.random() - 0.5, Math.random() - 0.5, Math.random() - 0.5).multiplyScalar(Math.max(TYPES[b.type].r, LEN[b.type] * 0.3) * 2.2)); o.b.copy(_b); } o.c.copy(c); if (w === 2) o.c.lerp(_c.set(0xffffff), 0.35);
     o.tid = b.id; o.hitDone = false; this.onEvent && this.onEvent('shot', a, w);
   }
-  // a hand-flown ship's shot that found nothing: a bolt out along its pilot's aim
-  miss(a, x, y, z) { if (!a) return; const T = TYPES[a.type], o = this.bolts.take(); o.a.copy(a.pos).addScaledVector(_p.set(x, y, z), LEN[a.type] * 0.3); o.b.copy(a.pos).addScaledVector(_p, T.range * 1.5); o.w = T.w; o.life = T.w === 2 ? 0.45 : T.w === 1 ? 0.22 : 0.12; o.c.copy(GLOW[this.ci(a.side)]); o.tid = 0; o.hitDone = true; this.onEvent && this.onEvent('shot', a, T.w); }
   spark(p, n, sp, c, life) { for (let i = 0; i < n; i++) { const k = this.spI; this.spI = (k + 1) % this.spN; const a = Math.random() * 6.283, z = Math.random() * 2 - 1, r = Math.sqrt(1 - z * z), v = sp * (0.3 + Math.random());
       this.spP[k * 3] = p.x; this.spP[k * 3 + 1] = p.y; this.spP[k * 3 + 2] = p.z; this.spV[k * 3] = Math.cos(a) * r * v; this.spV[k * 3 + 1] = z * v; this.spV[k * 3 + 2] = Math.sin(a) * r * v; this.spC[k * 3] = c.r; this.spC[k * 3 + 1] = c.g; this.spC[k * 3 + 2] = c.b; this.spL[k] = life * (0.5 + Math.random()); } }
   ball(p, r, life, c, delay = 0) { const o = this.balls.take(); o.p.copy(p); o.r = r; o.life = life; o.c.copy(c); o.t = -delay; }

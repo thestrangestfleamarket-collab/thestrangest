@@ -276,9 +276,9 @@ E.list.ants = {
   update(a, dt) {
     const C = MC.cook, hole = W.st.diner.hole, home = new V3(hole.x, 0, hole.z + 0.9), over = a.t > 30; let alive = 0;
     for (const n of a.ants) {
-      if (n.done) continue; alive++; if (n.wait > 0) { n.wait -= dt; continue; } n.g.visible = true; const p = n.g.position;
+      if (n.done) continue; alive++; if (n.wait > 0) { n.wait -= dt; continue; } n.g.visible = true; const p = n.g.position; if (!isFinite(p.x + p.z)) p.set(home.x, 0, home.z);
       const goto = (t, sp) => { n.re -= dt; if (!n.path || n.re <= 0) { const r = P.path(p.x, p.z, t.x, t.z); n.path = r ? r.pts.concat([[t.x, t.z]]) : [[t.x, t.z]]; n.pi = 0; n.re = 1.5; }
-        const w = n.path[Math.min(n.pi, n.path.length - 1)], dx = w[0] - p.x, dz = w[1] - p.z, d = Math.hypot(dx, dz); if (d < 0.2) { n.pi++; return n.pi >= n.path.length; } p.x += dx / d * sp * dt; p.z += dz / d * sp * dt; n.g.rotation.y = Math.atan2(dx, dz) + Math.PI; p.y = Math.abs(Math.sin(a.t * 30 + p.x)) * 0.02; return false; };
+        const w = n.path[Math.min(n.pi, n.path.length - 1)], dx = w[0] - p.x, dz = w[1] - p.z, d = Math.hypot(dx, dz); if (!(d >= 0.2)) { n.pi++; return n.pi >= n.path.length; } p.x += dx / d * sp * dt; p.z += dz / d * sp * dt; n.g.rotation.y = Math.atan2(dx, dz) + Math.PI; p.y = Math.abs(Math.sin(a.t * 30 + p.x)) * 0.02; return false; };
       const near = Math.hypot(PL.head.x - p.x, PL.head.z - p.z) < 1.5 && PL.rigY < 1.5;
       if (near && n.state !== 'flee') { if (n.it) { C.free(n.it, new V3(p.x, 0.3, p.z)); n.it.quietT = 1; n.it = null; S.pick(p); } n.state = 'flee'; n.fear = 3.5; n.path = null; S.skit(p); }
       if (n.state === 'flee') { n.fear -= dt; if (goto(home, 4.5) || n.fear <= 0) { if (over) { n.done = true; n.g.visible = false; } else if (n.fear <= 0) { n.state = 'seek'; n.path = null; } } }

@@ -302,7 +302,9 @@ export default {
         if (tooMany("bot:" + id, 12)) return json({ why: "too much at once, wait a minute" }, 429);
         const H = homeOf(env), k = id + "~crumbs", day = new Date().toISOString().slice(0, 10), D = (await H.botGet(k)) || {}, max = +env.BOT_DAILY || FLYBOT.DAY;
         if (D.day === day && D.n >= max) return json({ why: "the counter has talked enough for one night; come back tomorrow" });
-        const out = await CRUMBS.MINDS[c].ask(env, { get: () => H.botGet(k + "~" + c), put: v => H.botPut(k + "~" + c, v) }, { say: body.say, state: body.state, name: await H.nameGet(id) });
+        const past = (await H.botGet(k + "~" + c)) || {}, ago = past.day ? Math.round((Date.parse(day) - Date.parse(past.day)) / 864e5) : -1, talks = past.all | 0;   // what this one remembers of the cook: when they last spoke, how often
+        const seen = ago < 0 ? "you have never spoken with this cook before" : (ago === 0 ? "you already spoke with the cook earlier tonight" : "you last spoke with the cook " + ago + (ago === 1 ? " night" : " nights") + " ago") + ", " + talks + " talks in all";
+        const out = await CRUMBS.MINDS[c].ask(env, { get: () => H.botGet(k + "~" + c), put: v => H.botPut(k + "~" + c, { ...v, all: talks + 1 }) }, { say: body.say, state: String(body.state || "").slice(0, 480) + ", " + seen, name: await H.nameGet(id) });
         if (out.say) await H.botPut(k, { day, n: D.day === day ? D.n + 1 : 1 });
         return json(out); }
       if (p === "/bot") { if (!env.ANTHROPIC_API_KEY) return json({ why: "the website has no ANTHROPIC_API_KEY secret yet" });

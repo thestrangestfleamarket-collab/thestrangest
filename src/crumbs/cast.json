@@ -9,7 +9,10 @@
 "hobby": "Polishing his mandibles; CB radio",
 "favorites": "Cheese toast, plain toast, the feast, anything piping hot",
 "secret": "He has never actually left the kitchen; the route is in his head.",
-"voice": "Booming trucker talk, short sentences, \"chief\", road slang."
+"voice": "Booming trucker talk, short sentences, \"chief\", road slang.",
+"spk": "zeus",
+"rate": 0.95,
+"regular": true
 },
 {
 "id": "moth",
@@ -21,7 +24,10 @@
 "hobby": "Free verse about flames",
 "favorites": "Charred crumb, pea soup, soup with croutons",
 "secret": "She is afraid of the candle she writes about.",
-"voice": "Soft, poetic, trailing off into ellipses, wistful imagery."
+"voice": "Soft, poetic, trailing off into ellipses, wistful imagery.",
+"spk": "luna",
+"rate": 1.1,
+"regular": true
 },
 {
 "id": "joe",
@@ -33,7 +39,10 @@
 "hobby": "Collecting dew drops",
 "favorites": "Pea soup, mash on toast, noodles",
 "secret": "He is faster than he lets on.",
-"voice": "Very slow, few words, gentle pauses marked with \"\u2026\"."
+"voice": "Very slow, few words, gentle pauses marked with \"\u2026\".",
+"spk": "angus",
+"rate": 0.9,
+"regular": true
 },
 {
 "id": "antony",
@@ -45,7 +54,10 @@
 "hobby": "Drilling recruits; marching songs",
 "favorites": "Toast, roasted peas, charred crumb",
 "secret": "He writes letters home to the queen and never sends them.",
-"voice": "Clipped military orders, \"On the double!\", short bursts."
+"voice": "Clipped military orders, \"On the double!\", short bursts.",
+"spk": "perseus",
+"rate": 1.12,
+"regular": true
 },
 {
 "id": "web",
@@ -57,7 +69,10 @@
 "hobby": "Watching; counting flies he chose not to eat",
 "favorites": "Charred crumb, cheesy peas",
 "secret": "He is vegetarian and ashamed of it.",
-"voice": "Low, deadpan, few words, dark humour."
+"voice": "Low, deadpan, few words, dark humour.",
+"spk": "orpheus",
+"rate": 0.94,
+"regular": true
 },
 {
 "id": "dot",
@@ -69,7 +84,10 @@
 "hobby": "Crossword puzzles",
 "favorites": "The cheese plate, mash on toast, egg toast",
 "secret": "She has a soft spot for messy food.",
-"voice": "Crisp, correct, precise words, \"precisely\", \"as written\"."
+"voice": "Crisp, correct, precise words, \"precisely\", \"as written\".",
+"spk": "stella",
+"rate": 1.12,
+"regular": true
 },
 {
 "id": "fidd",
@@ -81,7 +99,10 @@
 "hobby": "Composing chirp songs",
 "favorites": "Roasted peas, toast, fondue",
 "secret": "He cannot read music.",
-"voice": "Musical, upbeat, little rhythms, \"encore!\""
+"voice": "Musical, upbeat, little rhythms, \"encore!\"",
+"spk": "helios",
+"rate": 1.15,
+"regular": true
 },
 {
 "id": "buzz",
@@ -93,7 +114,10 @@
 "hobby": "Gossip",
 "favorites": "Toast, roasted peas",
 "secret": "He saves every tip for a trip to the sugar bowl.",
-"voice": "Fast, repeated words, \"quick quick quick\", breathless."
+"voice": "Fast, repeated words, \"quick quick quick\", breathless.",
+"spk": "arcas",
+"rate": 1.3,
+"regular": true
 },
 {
 "id": "rollo",
@@ -105,7 +129,10 @@
 "hobby": "Tidying",
 "favorites": "Pea soup, cheese toast, mac",
 "secret": "He once rolled all the way under the fridge and liked it.",
-"voice": "Timid, stammering, quiet \"\u2026h-hello\", grateful."
+"voice": "Timid, stammering, quiet \"\u2026h-hello\", grateful.",
+"spk": "orion",
+"rate": 1.12,
+"regular": true
 },
 {
 "id": "lumen",
@@ -117,7 +144,10 @@
 "hobby": "Light shows",
 "favorites": "Cheesy peas, gratin, soup with croutons",
 "secret": "Her light is dimming with age.",
-"voice": "Sunny, warm, light puns."
+"voice": "Sunny, warm, light puns.",
+"spk": "asteria",
+"rate": 1.12,
+"regular": true
 },
 {
 "id": "pinch",
@@ -129,7 +159,10 @@
 "hobby": "Ledgers; correcting other people's maths",
 "favorites": "The cheese plate, fondue, noodles",
 "secret": "He leaves anonymous tips in the cook's jar.",
-"voice": "Prim, dry, monocled, \"I shall be counting\"."
+"voice": "Prim, dry, monocled, \"I shall be counting\".",
+"spk": "hera",
+"rate": 1.0,
+"regular": true
 },
 {
 "id": "gregor",
@@ -141,6 +174,327 @@
 "hobby": "Reviewing everything",
 "favorites": "Only the VIP dish of the night",
 "secret": "He started as a dishwasher in this very kitchen.",
-"voice": "Grandiose critic, flowery French-tinged pronouncements, \"little cook\"."
+"voice": "Grandiose critic, flowery French-tinged pronouncements, \"little cook\".",
+"spk": "athena",
+"rate": 0.92,
+"regular": true
+},
+{
+"id": "marge",
+"name": "Marge",
+"kind": "wood ant",
+"pf": "ant",
+"len": 1.0,
+"spk": "hera",
+"rate": 1.15,
+"job": "Barmaid; pulls the dew and keeps the slate",
+"personality": "Brisk, motherly, misses nothing, calls everyone \"love\".",
+"relationships": "Sgt. Antony is her little brother and she never lets him forget it. Sweet on Bram.",
+"hobby": "Knitting with spider silk Webster sells her",
+"favorites": "A thimble of elderflower dew",
+"secret": "She waters the dew when the keg runs low.",
+"voice": "Warm northern barmaid, quick, \"love\", \"pet\".",
+"hello": "What can I get you, love?",
+"where": "table"
+},
+{
+"id": "bram",
+"name": "Bram",
+"kind": "ladybird",
+"pf": "ladybird",
+"len": 0.9,
+"spk": "orion",
+"rate": 1.05,
+"job": "Carpenter; built the bar out of a matchbox",
+"personality": "Gentle, slow to speak, proud of his joinery.",
+"relationships": "Dot is his cousin and corrects his sums. Courting Marge, badly.",
+"hobby": "Whittling toothpicks into chair legs",
+"favorites": "Cheese toast, a quiet corner",
+"secret": "He cannot swim and the sink terrifies him.",
+"voice": "Soft, steady, a craftsman's short sentences.",
+"hello": "Mind the bar, I only just oiled it.",
+"where": "table"
+},
+{
+"id": "tully",
+"name": "Old Tully",
+"kind": "stag beetle",
+"pf": "beetle",
+"len": 1.25,
+"spk": "angus",
+"rate": 0.85,
+"job": "Retired sailor of the bathtub; tells the same three stories",
+"personality": "Gruff, generous, loud when the dew is in him.",
+"relationships": "Sailed with Bo's father. Owes Pinch four crumbs and pretends not to.",
+"hobby": "Knots; model boats from walnut shells",
+"favorites": "Charred crumb, anything salty",
+"secret": "He has never seen the sea, only the bath.",
+"voice": "Rolling old sea-dog voice, \"aye\", tall tales.",
+"hello": "Aye, sit, I'll tell you about the Great Plughole.",
+"where": "table",
+"colors": {
+"body": "#2a3140",
+"chestnut": "#4a2a1a"
+}
+},
+{
+"id": "nan",
+"name": "Nan Pillow",
+"kind": "woodlouse",
+"pf": "woodlouse",
+"len": 1.1,
+"spk": "athena",
+"rate": 1.0,
+"job": "Herbalist; dries thyme from the windowsill pots",
+"personality": "Kind, unhurried, a little deaf, knows everyone's ailments.",
+"relationships": "Rollo's grandmother. Trades herbs with the cook for soup.",
+"hobby": "Pressing flowers",
+"favorites": "Pea soup, weak tea",
+"secret": "She put the sleeping herbs in the cat's dish, twice.",
+"voice": "Old, gentle, a bit hard of hearing, \"eh?\", \"dearie\".",
+"hello": "Eh? Speak up, dearie.",
+"where": "table"
+},
+{
+"id": "skip",
+"name": "Skip",
+"kind": "grasshopper",
+"pf": "hopper",
+"len": 1.2,
+"spk": "arcas",
+"rate": 1.2,
+"job": "Messenger between the walls and the garden",
+"personality": "Restless, boastful, friendly, cannot sit still.",
+"relationships": "Fidd's younger brother; envies his music. Races Buzz and loses.",
+"hobby": "Long jump over the butter dish",
+"favorites": "Roasted peas",
+"secret": "He is afraid of the dark between the walls.",
+"voice": "Quick, bouncy, young, lots of \"right?\" and \"watch this\".",
+"hello": "Bet I can clear this table. Watch!",
+"where": "table",
+"colors": {
+"body": "#6a7a3a"
+}
+},
+{
+"id": "agnes",
+"name": "Agnes",
+"kind": "garden snail",
+"pf": "snail",
+"len": 1.1,
+"spk": "luna",
+"rate": 0.88,
+"job": "Keeps the pub's ledger of gossip; has seen forty winters",
+"personality": "Wry, patient, loves a scandal told slowly.",
+"relationships": "Slow Joe's sister; they have not finished an argument begun in spring.",
+"hobby": "Watching the door",
+"favorites": "Mash on toast",
+"secret": "She knows who really ate the humans' wedding cake.",
+"voice": "Slow, dry, amused, long pauses.",
+"hello": "Sit\u2026 and tell me\u2026 everything.",
+"where": "table"
+},
+{
+"id": "wick",
+"name": "Wick",
+"kind": "firefly",
+"pf": "firefly",
+"len": 1.1,
+"spk": "helios",
+"rate": 1.1,
+"job": "Lamplighter; lights the bulbs along the joists each dusk",
+"personality": "Cheerful, proud of the lights, a worrier about the candles.",
+"relationships": "Lumen's nephew, hoping to shine half as bright. Looks up to the cook.",
+"hobby": "Counting the bulbs",
+"favorites": "Cheesy peas",
+"secret": "He once let the hearth go out and blamed a draught.",
+"voice": "Bright young voice, eager, \"right you are\".",
+"hello": "Evening! All the bulbs are lit, I counted.",
+"where": "table"
+},
+{
+"id": "dolly",
+"name": "Dolly",
+"kind": "wood ant",
+"pf": "ant",
+"len": 0.9,
+"spk": "stella",
+"rate": 1.2,
+"job": "Seamstress; makes the hats the regulars wear",
+"personality": "Sharp-tongued, stylish, loyal.",
+"relationships": "Made Bo's cap and Mothilda's beret. Rival of the laundry moths.",
+"hobby": "Hat design",
+"favorites": "Fondue",
+"secret": "She sewed a hidden pocket in Pinch's coat and takes a crumb a week from it.",
+"voice": "Crisp, fashionable, teasing.",
+"hello": "That apron does nothing for you, cook.",
+"where": "table",
+"colors": {
+"chitin": "#3a2a22",
+"gaster": "#15110f"
+}
+},
+{
+"id": "pip",
+"name": "Pip",
+"kind": "yellow ladybird",
+"pf": "ladybird",
+"len": 0.85,
+"spk": "asteria",
+"rate": 1.3,
+"job": "Pot-washer at the pub; wants to be a cook",
+"personality": "Shy, eager, asks endless questions about recipes.",
+"relationships": "Looks up to the cook; scared of Chef Gregor. Nan Pillow minds her.",
+"hobby": "Collecting recipe scraps",
+"favorites": "Whatever the cook made last",
+"secret": "She has been practising on the stoves at dawn.",
+"voice": "Small, young, breathless, hopeful.",
+"hello": "Is it true you can char a crumb on purpose?",
+"where": "table",
+"colors": {
+"shell": "#d9a02a"
+}
+},
+{
+"id": "reed",
+"name": "Reed",
+"kind": "field cricket",
+"pf": "hopper",
+"len": 1.4,
+"spk": "orpheus",
+"rate": 1.0,
+"job": "Fiddler in the pub band",
+"personality": "Moody, romantic, lives for the last song of the night.",
+"relationships": "Plays with Shelley. Old friend and rival of Fidd.",
+"hobby": "Writing slow airs",
+"favorites": "Toast, and silence after a song",
+"secret": "He wrote a song for Mothilda and never played it.",
+"voice": "Low, musical, wistful.",
+"hello": "Any requests? Something slow, maybe.",
+"where": "band",
+"colors": {
+"body": "#4a3a1c",
+"wing": "#2e2210"
+}
+},
+{
+"id": "shelley",
+"name": "Shelley",
+"kind": "snail",
+"pf": "snail",
+"len": 1.0,
+"spk": "luna",
+"rate": 1.0,
+"job": "Drummer in the pub band; taps on her own shell",
+"personality": "Dry, deadpan, keeps time and keeps Reed humble.",
+"relationships": "Plays with Reed. Agnes is her aunt.",
+"hobby": "Collecting bottle caps for cymbals",
+"favorites": "Noodles",
+"secret": "She is the one who writes Reed's best tunes.",
+"voice": "Deadpan, short, rhythmic.",
+"hello": "We take requests. He takes the credit.",
+"where": "band"
+},
+{
+"id": "hob",
+"name": "Hob",
+"kind": "stag beetle",
+"pf": "beetle",
+"len": 1.0,
+"spk": "zeus",
+"rate": 1.0,
+"job": "Coalman; keeps the hearth in matchsticks",
+"personality": "Solid, quiet, laughs rarely and loudly.",
+"relationships": "Old Tully's nephew. Brings logs for Marge first.",
+"hobby": "Arm wrestling",
+"favorites": "Roasted peas by the fire",
+"secret": "He is afraid of fire.",
+"voice": "Deep, slow, few words.",
+"hello": "Fire's good tonight.",
+"where": "booth",
+"colors": {
+"body": "#3a2a1a"
+}
+},
+{
+"id": "mossy",
+"name": "Mossy",
+"kind": "woodlouse",
+"pf": "woodlouse",
+"len": 0.9,
+"spk": "perseus",
+"rate": 1.05,
+"job": "Night watch at the mousehole; says who comes and goes",
+"personality": "Suspicious, loyal, loves rules.",
+"relationships": "Serves under Sgt. Antony. Thinks Skip is a security risk.",
+"hobby": "Polishing his plates",
+"favorites": "Cheese toast",
+"secret": "He falls asleep on watch most nights.",
+"voice": "Clipped, official, slightly pompous.",
+"hello": "State your business. Oh. It's you, cook.",
+"where": "booth",
+"colors": {
+"shell": "#6a5a66"
+}
+},
+{
+"id": "fen",
+"name": "Fen",
+"kind": "wood ant",
+"pf": "ant",
+"len": 1.0,
+"spk": "arcas",
+"rate": 1.1,
+"job": "Potboy; carries mugs between the tables",
+"personality": "Cheeky, quick, knows every order by heart.",
+"relationships": "Marge's son. Idolises Skip.",
+"hobby": "Juggling crumbs",
+"favorites": "Leftover fondue",
+"secret": "He drinks the dregs.",
+"voice": "Young, cheeky, fast.",
+"hello": "Mind your tail, coming through!",
+"where": "walk"
+},
+{
+"id": "ivy",
+"name": "Ivy",
+"kind": "ladybird",
+"pf": "ladybird",
+"len": 0.9,
+"spk": "stella",
+"rate": 1.05,
+"job": "Flower seller from the window box",
+"personality": "Sunny, chatty, sells petals and news.",
+"relationships": "Dot's niece. Sweet on Wick.",
+"hobby": "Arranging petals",
+"favorites": "Egg toast",
+"secret": "Half her petals come from the humans' vase.",
+"voice": "Bright, friendly, market-stall patter.",
+"hello": "Petal for your bar, cook? Fresh tonight.",
+"where": "walk",
+"colors": {
+"shell": "#c0392b"
+}
+},
+{
+"id": "grub",
+"name": "Mr. Grubb",
+"kind": "stag beetle",
+"pf": "beetle",
+"len": 1.1,
+"spk": "angus",
+"rate": 0.95,
+"job": "Landlord's agent; collects the pub's rent in crumbs",
+"personality": "Fussy, self-important, softer than he acts.",
+"relationships": "Answers to nobody anyone has met. Wary of Chef Gregor. Fond of Nan Pillow's tea.",
+"hobby": "Counting",
+"favorites": "The cheese plate, on the house",
+"secret": "There is no landlord; he keeps the rent in a jar for the pub's roof.",
+"voice": "Pompous, nasal, clears his throat.",
+"hello": "Ahem. The rent is due on the new moon, cook.",
+"where": "walk",
+"colors": {
+"body": "#1d2a22"
+}
 }
 ]

@@ -34,27 +34,25 @@ function fracture(parts, k) {
 }
 
 // a glow with no hard edge: bright where you look into it, fading to nothing at its rim (so a fireball or an engine flame reads as light, not as a painted ball)
-function soft(mat, power, rim) { mat.onBeforeCompile = (sh) => {
+function soft(mat, power, rim) { mat.customProgramCacheKey = () => 'soft' + power + (rim ? 'r' : ''); mat.onBeforeCompile = (sh) => {
   sh.vertexShader = sh.vertexShader.replace('#include <common>', '#include <common>\nvarying float vGlow;').replace('#include <project_vertex>', '#include <project_vertex>\n#ifdef USE_INSTANCING\nvec3 gN = normalize(normalMatrix * (mat3(instanceMatrix) * normal));\n#else\nvec3 gN = normalize(normalMatrix * normal);\n#endif\nvGlow = abs(dot(gN, normalize(-mvPosition.xyz)));');
   sh.fragmentShader = sh.fragmentShader.replace('#include <common>', '#include <common>\nvarying float vGlow;').replace('#include <color_fragment>', '#include <color_fragment>\ndiffuseColor.rgb *= pow(' + (rim ? '1.0 - vGlow' : 'vGlow') + ', ' + power.toFixed(1) + ');'); }; return mat; }
 function dotTex() { const c = document.createElement('canvas'); c.width = c.height = 32; const x = c.getContext('2d'), g = x.createRadialGradient(16, 16, 0, 16, 16, 16); g.addColorStop(0, '#fff'); g.addColorStop(0.3, 'rgba(255,255,255,0.6)'); g.addColorStop(1, 'rgba(255,255,255,0)'); x.fillStyle = g; x.fillRect(0, 0, 32, 32); return new THREE.CanvasTexture(c); }
 
-// fire: hot gas as points, each thrown with its own speed, swelling and cooling from white through yellow and red to nothing
+// fire: hot gas as balls of light in the field's own space (no flat picture turned to face you: each is a glowing body, seen from any side or from inside the blast), each thrown with its own speed, swelling and cooling from white through yellow and red to nothing
 class Fire {
   constructor(arena, n = 700) { this.n = n; this.i = 0; this.P = new Float32Array(n * 3); this.C = new Float32Array(n * 3); this.S = new Float32Array(n); this.V = new Float32Array(n * 3); this.A = new Float32Array(n).fill(9); this.L = new Float32Array(n).fill(1); this.Z = new Float32Array(n); this.H = new Float32Array(n);
-    const g = new THREE.BufferGeometry(); g.setAttribute('position', new THREE.BufferAttribute(this.P, 3).setUsage(THREE.DynamicDrawUsage)); g.setAttribute('tint', new THREE.BufferAttribute(this.C, 3).setUsage(THREE.DynamicDrawUsage)); g.setAttribute('size', new THREE.BufferAttribute(this.S, 1).setUsage(THREE.DynamicDrawUsage));
-    this.u = { uS: { value: 1 }, uH: { value: 500 } }; const vp = new THREE.Vector4();
-    this.mesh = new THREE.Points(g, new THREE.ShaderMaterial({ uniforms: this.u, blending: THREE.AdditiveBlending, transparent: true, depthWrite: false,
-      vertexShader: 'attribute vec3 tint; attribute float size; varying vec3 vC; uniform float uS, uH; void main(){ vC = tint; vec4 mv = modelViewMatrix * vec4(position, 1.0); gl_Position = projectionMatrix * mv; gl_PointSize = size * uS * projectionMatrix[1][1] * uH / max(0.01, -mv.z); }',
-      fragmentShader: 'varying vec3 vC; void main(){ float a = smoothstep(0.5, 0.0, length(gl_PointCoord - 0.5)); gl_FragColor = vec4(vC * a * a, 1.0);\n#include <colorspace_fragment>\n}' }));
-    this.mesh.frustumCulled = false; this.mesh.onBeforeRender = (r) => { r.getCurrentViewport(vp); this.u.uH.value = vp.w * 0.5; }; arena.add(this.mesh); }
+    this.mesh = new THREE.InstancedMesh(new THREE.IcosahedronGeometry(1, 1), soft(new THREE.MeshBasicMaterial({ blending: THREE.AdditiveBlending, transparent: true, depthWrite: false, toneMapped: false }), 5), n);
+    this.mesh.instanceMatrix.setUsage(THREE.DynamicDrawUsage); this.M = this.mesh.instanceMatrix.array; this.M.fill(0); this.mesh.setColorAt(0, new THREE.Color(0, 0, 0)); this.mesh.instanceColor.setUsage(THREE.DynamicDrawUsage); this.K = this.mesh.instanceColor.array; this.K.fill(0);
+    this.mesh.frustumCulled = false; arena.add(this.mesh); }
   emit(p, vx, vy, vz, size, life, heat) { const k = this.i; this.i = (k + 1) % this.n; this.P[k * 3] = p.x; this.P[k * 3 + 1] = p.y; this.P[k * 3 + 2] = p.z; this.V[k * 3] = vx; this.V[k * 3 + 1] = vy; this.V[k * 3 + 2] = vz; this.Z[k] = size; this.L[k] = life; this.A[k] = 0; this.H[k] = heat; }
   burst(p, n, speed, size, life, vx = 0, vy = 0, vz = 0) { for (let i = 0; i < n; i++) { const a = Math.random() * 6.283, z = Math.random() * 2 - 1, r = Math.sqrt(1 - z * z), v = speed * Math.cbrt(Math.random()); _p.set(p.x + Math.cos(a) * r * size * 0.3, p.y + z * size * 0.3, p.z + Math.sin(a) * r * size * 0.3); this.emit(_p, vx + Math.cos(a) * r * v, vy + z * v, vz + Math.sin(a) * r * v, size * (0.5 + Math.random() * 0.7), life * (0.5 + Math.random() * 0.8), 1); } }
-  step(dt, scale) { this.u.uS.value = scale; const d = 1 - Math.min(0.9, dt * 1.6);
-    for (let k = 0; k < this.n; k++) { if (this.A[k] >= this.L[k]) continue; const a = (this.A[k] += dt) / this.L[k], i = k * 3; if (a >= 1) { this.S[k] = 0; continue; }
+  step(dt) { const d = 1 - Math.min(0.9, dt * 1.6), M = this.M, K = this.K;
+    for (let k = 0; k < this.n; k++) { if (this.A[k] >= this.L[k]) continue; const a = (this.A[k] += dt) / this.L[k], i = k * 3, j = k * 16; if (a >= 1) { this.S[k] = 0; M[j] = M[j + 5] = M[j + 10] = 0; continue; }
       this.P[i] += this.V[i] * dt; this.P[i + 1] += this.V[i + 1] * dt; this.P[i + 2] += this.V[i + 2] * dt; this.V[i] *= d; this.V[i + 1] *= d; this.V[i + 2] *= d;
-      const T = this.H[k] * (1 - a), f = Math.min(1, a * 8) * 0.32; this.S[k] = this.Z[k] * (0.55 + 1.3 * a); this.C[i] = Math.min(1, T * 2.4) * f; this.C[i + 1] = Math.max(0, Math.min(1, T * 1.9 - 0.5)) * f; this.C[i + 2] = Math.max(0, Math.min(1, T * 2.6 - 1.75)) * f; }
-    const g = this.mesh.geometry.attributes; g.position.needsUpdate = g.tint.needsUpdate = g.size.needsUpdate = true; }
+      const T = this.H[k] * (1 - a), f = Math.min(1, a * 8) * 0.32, r = (this.S[k] = this.Z[k] * (0.55 + 1.3 * a)) * 0.8; K[i] = this.C[i] = Math.min(1, T * 2.4) * f; K[i + 1] = this.C[i + 1] = Math.max(0, Math.min(1, T * 1.9 - 0.5)) * f; K[i + 2] = this.C[i + 2] = Math.max(0, Math.min(1, T * 2.6 - 1.75)) * f;
+      M[j] = M[j + 5] = M[j + 10] = r; M[j + 12] = this.P[i]; M[j + 13] = this.P[i + 1]; M[j + 14] = this.P[i + 2]; M[j + 15] = 1; }
+    this.mesh.instanceMatrix.needsUpdate = true; this.mesh.instanceColor.needsUpdate = true; }
 }
 
 // a pool of instances that are born, live a while and go
@@ -152,6 +150,7 @@ class View {
     for (let i = 0; i < ev.length;) { const k = ev[i];
       if (k === 1) { const tg = this.units.get(ev[i + 2]); this.shot(this.units.get(ev[i + 1]), tg, ev[i + 3] & 7); if (tg && ev[i + 3] & 8) { const f = this.fields.take(); f.uid = tg.id; f.life = 0.5; this.onEvent && this.onEvent('field', tg.pos, 0); } i += 4; }
       else if (k === 2) { const u = this.units.get(ev[i + 1]); if (u) this.blast(u, ev[i + 2]); i += 4; }
+      else if (k === 5) { this.miss(this.units.get(ev[i + 1]), ev[i + 2] / 100, ev[i + 3] / 100, ev[i + 4] / 100); i += 5; }
       else if (k === 3) { this.onEvent && this.onEvent('built', ev[i + 1], ev[i + 2]); i += 3; }
       else if (k === 4) { this.onEvent && this.onEvent('relay', ev[i + 2], ev[i + 1]); i += 3; }
       else break; }
@@ -163,6 +162,8 @@ class View {
     const o = this.bolts.take(); o.a.copy(_a); o.b.copy(_b); o.w = w; o.life = w === 2 ? 0.45 : w === 1 ? 0.22 : 0.12; o.c.copy(c); if (w === 2) o.c.lerp(_c.set(0xffffff), 0.35);
     o.tid = b.id; o.hitDone = false; this.onEvent && this.onEvent('shot', a, w);
   }
+  // a hand-flown ship's shot that found nothing: a bolt out along its pilot's aim
+  miss(a, x, y, z) { if (!a) return; const T = TYPES[a.type], o = this.bolts.take(); o.a.copy(a.pos).addScaledVector(_p.set(x, y, z), LEN[a.type] * 0.3); o.b.copy(a.pos).addScaledVector(_p, T.range * 1.5); o.w = T.w; o.life = T.w === 2 ? 0.45 : T.w === 1 ? 0.22 : 0.12; o.c.copy(GLOW[a.side]); o.tid = 0; o.hitDone = true; this.onEvent && this.onEvent('shot', a, T.w); }
   spark(p, n, sp, c, life) { for (let i = 0; i < n; i++) { const k = this.spI; this.spI = (k + 1) % this.spN; const a = Math.random() * 6.283, z = Math.random() * 2 - 1, r = Math.sqrt(1 - z * z), v = sp * (0.3 + Math.random());
       this.spP[k * 3] = p.x; this.spP[k * 3 + 1] = p.y; this.spP[k * 3 + 2] = p.z; this.spV[k * 3] = Math.cos(a) * r * v; this.spV[k * 3 + 1] = z * v; this.spV[k * 3 + 2] = Math.sin(a) * r * v; this.spC[k * 3] = c.r; this.spC[k * 3 + 1] = c.g; this.spC[k * 3 + 2] = c.b; this.spL[k] = life * (0.5 + Math.random()); } }
   ball(p, r, life, c, delay = 0) { const o = this.balls.take(); o.p.copy(p); o.r = r; o.life = life; o.c.copy(c); o.t = -delay; }

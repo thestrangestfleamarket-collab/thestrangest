@@ -18,7 +18,7 @@ const Q = new URLSearchParams(location.search), LOW = Q.has('low');
 const $ = (id) => document.getElementById(id);
 const LINES = +Q.get('lines') || 360; // a screen is drawn this many lines tall and stretched soft, as an old console on a tube was
 const SAVE = 'drums1';
-const set = Object.assign({ tilt: 0, height: 0, lead: 0, bpm: 100 }, (() => { try { return JSON.parse(localStorage.getItem(SAVE)) || {}; } catch (e) { return {}; } })());
+const set = Object.assign({ tilt: 0, height: 0, lead: 0, bpm: 100, body: 0 }, (() => { try { return JSON.parse(localStorage.getItem(SAVE)) || {}; } catch (e) { return {}; } })());
 const keep = () => { try { localStorage.setItem(SAVE, JSON.stringify(set)); } catch (e) { /* private window */ } };
 
 const canvas = $('view');
@@ -88,7 +88,7 @@ function card(lines, w = 0.86) {
   m.renderOrder = 19;
   return m;
 }
-const VR_GUIDE = [['RIGHT TRIGGER', 'kick drum'], ['LEFT TRIGGER', 'open the hi-hat'], ['GRIP ON A CYMBAL', 'choke it'], ['RIGHT STICK  ↕', 'stick angle'], ['LEFT STICK  ↕', 'seat height'],
+const VR_GUIDE = [['RIGHT TRIGGER', 'kick drum'], ['LEFT TRIGGER', 'open the hi-hat'], ['GRIP ON A CYMBAL', 'choke it'], ['RIGHT STICK  ↕', 'stick angle'], ['RIGHT GRIP + STICK  ↕', 'body forward / back'], ['LEFT STICK  ↕', 'seat height'],
   ['LEFT STICK  ↔', 'timing: earlier / later'], ['RIGHT STICK  ↔ / CLICK', 'metronome tempo / on-off'], ['LEFT STICK  CLICK', 'garage door up / down'], ['HOLD A', 'talk to a neighbour'], ['HOLD X', 'sit me at the kit again'], ['B or Y', 'hide this guide']];
 
 // a small readout that shows only while a setting is being changed
@@ -282,7 +282,9 @@ function vrInput(dt, now) {
       kit.setPedal(trig);
       if (trig > 0.33 && !P.down) { P.down = true; kick(Math.min(1, Math.max(0.2, Math.pow(Math.max(0, (trig - (P.trig || 0)) / Math.max(dt, 0.004) - 2) / 34, 0.7)))); }
       if (trig < 0.2) P.down = false;
-      if (Math.abs(sy) > 0.5) { set.tilt = Math.max(-0.9, Math.min(0.9, set.tilt - sy * dt * 0.5)); readout.show('STICK ANGLE ' + Math.round(set.tilt * 57.3) + '°', now); keep(); }
+      // with the grip held, the same stick slides your body forward or back under your head
+      if (sq > 0.6 && Math.abs(sy) > 0.5) { set.body = Math.max(-0.3, Math.min(0.3, set.body + sy * dt * 0.15)); readout.show('BODY ' + (set.body > 0 ? 'BACK ' : 'FORWARD ') + Math.abs(Math.round(set.body * 100)) + ' cm', now); keep(); }
+      else if (Math.abs(sy) > 0.5) { set.tilt = Math.max(-0.9, Math.min(0.9, set.tilt - sy * dt * 0.5)); readout.show('STICK ANGLE ' + Math.round(set.tilt * 57.3) + '°', now); keep(); }
       if (Math.abs(sx) > 0.6 && Math.abs(sy) < 0.4) { set.bpm = Math.max(40, Math.min(240, set.bpm + sx * dt * 30)); readout.show('TEMPO ' + Math.round(set.bpm), now); keep(); }
       if (th && !P.th) toggleMetro(now);
     } else {
@@ -466,7 +468,9 @@ renderer.setAnimationLoop(() => {
   // your body: seated, the arms ending at the hands on the sticks
   const cam = vr ? renderer.xr.getCamera() : camera;
   cam.getWorldPosition(head.pos); cam.getWorldQuaternion(head.quat);
+  // your hips sit under your own neck, wherever your chair is, so the body is upright; set.body slides it forward or back
   seat.copy(SEAT); seat.y += 0.04;
+  if (vr) { _a.set(0, 0, 0.04 + set.body).applyAxisAngle(UP, Math.atan2(-_b.set(0, 0, -1).applyQuaternion(head.quat).x, -_b.z)); seat.x = head.pos.x + _a.x; seat.z = head.pos.z + _a.z; }
   for (let k = 0; k < 2; k++) { seat.feet[k].copy(FEET[k]); seat.feet[k].y += kit.foot[k]; }
   sticks.left.obj.updateMatrixWorld(true); sticks.right.obj.updateMatrixWorld(true);
   for (const s of ['left', 'right']) { const h = hands[s]; h.kick = Math.max(0, (h.kick || 0) - dt * 7); if (h.ready) { h.curl(h.kick); h.update(); } }

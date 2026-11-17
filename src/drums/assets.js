@@ -13,12 +13,12 @@ export const MODELS = ['steel_frame_shelves_01', 'steel_frame_shelves_02', 'meta
   'tool_cart', 'cassette_player', 'potted_plant_01', 'potted_plant_04', 'planter_box_01', 'worn_metal_rack', 'industrial_wall_lamp', 'can_rusted', 'multi_cleaner_bottle', 'armchair_01', 'coffeetable_01', 'painted_wooden_cabinet', 'dartboard', 'wooden_bookshelf_worn', 'car', 'street_lamp_01', 'fire_hydrant'];
 export const PEOPLE = ['Male_Adult_03', 'Male_Adult_05', 'Male_Adult_06', 'Male_Adult_08', 'Female_Adult_01', 'Female_Adult_02', 'Female_Adult_04', 'Female_Adult_09', 'Security_Male_01'];
 // the street's people (Microsoft Rocketbox avatars) and their recorded motion, and the car's five paints
-export const P = { body: {}, clip: { m: {}, f: {} }, car: [] };
+export const P = { body: {}, clip: { m: {}, f: {} }, car: [], trees: {} };
 const FACE = /Eye|Jaw|lip|Tongue|Mouth|Masseter|Caninus|Cheek|Nose|Finger|Toe|Footsteps|Nub/i;
 
 const one = (url, srgb, aniso) => TL.loadAsync(url).then((t) => { t.wrapS = t.wrapT = THREE.RepeatWrapping; t.colorSpace = srgb ? THREE.SRGBColorSpace : THREE.NoColorSpace; t.anisotropy = aniso; return t; }).catch(() => null);
 export async function loadAssets(onProgress = () => { }, aniso = 4) {
-  let n = 0; const all = TEX.length + MODELS.length + PEOPLE.length + 11, tick = (v) => { onProgress(++n / all); return v; };
+  let n = 0; const all = TEX.length + MODELS.length + PEOPLE.length + 14, tick = (v) => { onProgress(++n / all); return v; };
   await Promise.all([
     ...TEX.map((k) => Promise.all([one(`${BASE}tex/${k}_c.jpg`, true, aniso), one(`${BASE}tex/${k}_n.jpg`, false, aniso), k === 'road' ? null : one(`${BASE}tex/${k}_r.jpg`, false, aniso)]).then((t) => { sets[k] = t; }).then(tick)),
     ...MODELS.map((k) => GL.loadAsync(`${BASE}m/${k}.glb`).then((d) => {
@@ -27,10 +27,12 @@ export async function loadAssets(onProgress = () => { }, aniso = 4) {
     }).catch((e) => console.warn('no model', k, e)).then(tick)),
     // each avatar sized to 1.76 m; each motion kept as turns of the body's bones and the hips' rise, its walk held in place
     ...PEOPLE.map((n) => GL.loadAsync(`${BASE}p/${n}.glb`).then((g) => { g.scene.updateMatrixWorld(true); const b = new THREE.Box3().setFromObject(g.scene); g.scene.traverse((m) => { if (m.isMesh && m.material.transparent) { m.material.transparent = false; m.material.alphaTest = 0.4; } }); P.body[n] = { scene: g.scene, fit: 1.76 / (b.max.y - b.min.y) }; }).catch((e) => console.warn('no person', n, e)).then(tick)),
-    ...['m', 'f'].flatMap((s) => ['walk', 'idle', 'talk'].map((c) => GL.loadAsync(`${BASE}p/a_${s}_${c}.glb`).then((g) => { const clip = g.animations[0], keep = [];
+    ...['m', 'f'].flatMap((s) => ['walk', 'idle', 'talk', 'run'].map((c) => GL.loadAsync(`${BASE}p/a_${s}_${c}.glb`).then((g) => { const clip = g.animations[0], keep = [];
       for (const t of clip.tracks) { if (FACE.test(t.name)) continue; if (t.name.endsWith('.quaternion')) keep.push(t); else if (/Pelvis\.position$/.test(t.name)) { const v = t.values, n = v.length / 3; for (let a = 0; a < 3; a++) { const d = v[(n - 1) * 3 + a] - v[a]; if (Math.abs(d) > 8) for (let i = 0; i < n; i++) v[i * 3 + a] = v[a] + (v[i * 3 + a] - v[a] - d * i / (n - 1)); } keep.push(t); } }
       clip.tracks = keep; clip.name = c; P.clip[s][c] = clip; }).catch((e) => console.warn('no motion', s, c, e)).then(tick))),
-    ...[0, 1, 2, 3, 4].map((i) => TL.loadAsync(`${BASE}tex/car_${i}.jpg`).then((t) => { t.colorSpace = THREE.SRGBColorSpace; t.flipY = false; P.car[i] = t; }).catch(() => null).then(tick)),
+    // HULL DOWN's trees: each species' size and its two views
+    fetch(BASE + 'trees.json').then((r) => r.json()).then((d) => Promise.all(Object.keys(d).map((k) => Promise.all([0, 1].map((i) => TL.loadAsync(`${BASE}tex/${k}_${i}_d.webp`).then((t) => { t.colorSpace = THREE.SRGBColorSpace; return t; }))).then((v) => { P.trees[k] = { ...d[k], v }; })))).catch((e) => console.warn('no trees', e)).then(tick),
+    ...[0, 1, 2, 3, 4].map((i) => TL.loadAsync(`${BASE}tex/car_${i}.jpg`).then((t) => { t.colorSpace = THREE.SRGBColorSpace; t.flipY = false; t.wrapS = t.wrapT = THREE.RepeatWrapping; P.car[i] = t; }).catch(() => null).then(tick)),
   ]);
 }
 

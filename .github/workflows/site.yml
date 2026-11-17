@@ -71,7 +71,7 @@ jobs:
           k zombie  'src/zombie/|data/zombie/|worker/zombie|tools/zombie|tests/zombie\.cjs'
           k holmes  'src/holmes/|data/holmes/|worker/holmes|tools/holmes|tests/holmes\.cjs'
           k jam     'src/jam/|data/jam/|tools/jam\.cjs|tests/jam\.cjs'
-          k drums   'src/drums/|data/drums/|data/sniper/(p|m)/|tools/drums\.cjs|tests/drums\.cjs|worker/drums|src/jam/(avatars|textures)\.js'
+          k drums   'src/drums/|data/drums/|data/sniper/(p|m|tex)/|src/sushi/(sky|ephem|air)\.js|tools/drums\.cjs|tests/drums\.cjs|worker/drums|src/jam/(avatars|textures)\.js'
           k shoot   'src/shoot/|tools/shoot\.cjs|tests/shoot\.cjs'
           k edge    'src/edge/|tools/edge\.cjs|tests/edge\.cjs'
           k tank    'src/tank/|data/tank/|tools/edge\.cjs|tools/tank|tests/tank\.cjs'

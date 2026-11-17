@@ -1,14 +1,17 @@
 // THE GARAGE's day: the hour going round, the street's people and what they think of you, talking with them (Claude Haiku and a spoken voice for a login, their own written lines otherwise), and what is kept of it all
 import * as THREE from 'three';
 import { buildStreet, relWord } from './street.js';
+import { buildWeather } from './weather.js';
+import { dressLand } from './land.js';
 import CAST from './cast.json';
 
 const post = (url, body) => fetch(url, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(body) });
 const LOCAL = 'drums-street';
 
 export function startLife({ scene, garage, sound, low, Q, readout, $ }) {
-  const street = buildStreet(scene, low);
-  const L = { street, garage, login: false, hour: 12, energy: 0, lastHit: -99, loud: 0, playing: false, said: [], spoken: 0, ear: null, listening: false };
+  const street = buildStreet(scene, low), weather = buildWeather(scene, low, Q.has('hold') ? 0.2 : undefined);
+  const land = dressLand(scene, street, garage, low);
+  const L = { street, garage, land, login: false, hour: 12, energy: 0, lastHit: -99, loud: 0, playing: false, said: [], spoken: 0, ear: null, listening: false };
   // one game hour a real minute, from the hour on your own clock
   const d0 = new Date(), start = Q.has('hour') ? +Q.get('hour') : d0.getHours() + d0.getMinutes() / 60, hold = Q.has('hold');
   let offset = 0, t0 = null, dirty = 0, lastDay = 0;
@@ -79,13 +82,16 @@ export function startLife({ scene, garage, sound, low, Q, readout, $ }) {
   L.note = (vel) => { L.energy += vel; L.lastHit = L.now; };
   L.skip = () => { offset += 1; readout.show('AN HOUR ON', L.now); };
   L.now = 0; L.days = 0;
-  L.update = (dt, now) => {
+  L.weather = weather;
+  L.update = (dt, now, cam) => {
     L.now = now; if (t0 === null) t0 = now;
     L.hour = (start + offset + (hold ? 0 : (now - t0) / 60)) % 24;
     const day = Math.floor((start + offset + (hold ? 0 : (now - t0) / 60)) / 24);
     if (day !== lastDay) { lastDay = day; street.dayN = day; L.days++; dirty = 1; }
     L.energy *= Math.exp(-dt / 6); L.loud = Math.min(1, L.energy / 9); L.playing = now - L.lastHit < 8;
-    garage.setHour(L.hour, now);
+    weather.update(dt, now, L.hour, day, cam || garage.ear);
+    garage.setHour(L.hour, now, weather.now);
+    land.update(dt, now, garage.sunV, garage.day, garage.dim, weather.now);
     street.update(dt, now, L.hour, { loud: L.loud, playing: L.playing, door: garage.door.open, day: garage.day });
     for (const e of street.events.splice(0)) {
       if (e.t === 'say') speak(e.p, e.text);

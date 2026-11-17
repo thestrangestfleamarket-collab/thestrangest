@@ -1,7 +1,9 @@
 // THE GARAGE's garage: a one-car garage turned man cave with the kit in it, a sectional door that runs up its tracks, real windows onto a real yard, its light turning with the hour
 import * as THREE from 'three';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
-import { Sky } from 'three/addons/objects/Sky.js';
+import { buildSky } from '../sushi/sky.js';
+import * as EPH from '../sushi/ephem.js';
+import { AIR } from '../sushi/air.js';
 import { pbr, plain, slabGeo, model, canvasTex } from './assets.js';
 
 // the room: x left to right, z from the garage door (-) to the back wall (+), the drummer at the origin facing the door
@@ -12,14 +14,10 @@ const WIN = [{ z: -2.3, w: 1, y0: 1.12, y1: 1.9 }, { z: -0.4, w: 1, y0: 1.12, y1
 export const POSTERS = [{ at: [ROOM.x0 + 0.006, 1.68, -1.35], ry: Math.PI / 2, w: 0.5, h: 0.72 }, { at: [ROOM.x1 - 0.006, 1.72, -2.5], ry: -Math.PI / 2, w: 0.62, h: 0.86 },
   { at: [ROOM.x1 - 0.006, 1.72, -1.55], ry: -Math.PI / 2, w: 0.62, h: 0.86 }, { at: [-1.75, 1.75, ROOM.z1 - 0.006], ry: Math.PI, w: 0.56, h: 0.8 }];
 
-// the sun by the hour: up in the front-right at six, over the door at one, down in the front-left at eight
-export function sunAt(hour, out) {
-  const a = (hour - 6) / 14 * Math.PI;
-  return out.set(Math.cos(a) * 0.8, Math.sin(a) * 0.78 + 0.02, -0.55).normalize();
-}
 const ss = (a, b, x) => { const t = Math.min(1, Math.max(0, (x - a) / (b - a))); return t * t * (3 - 2 * t); };
 
 export function buildGarage(scene, low) {
+  const G0 = {}, G = G0;
   const group = new THREE.Group();
   scene.add(group);
   const { x0, x1, z0, z1, h: H, wall: W } = ROOM;
@@ -189,6 +187,16 @@ export function buildGarage(scene, low) {
   const screen = new THREE.Mesh(new THREE.PlaneGeometry(0.39, 0.3), tvM);
   screen.position.set(tx - 0.225, 0.578 + 0.27, tz - 0.31); screen.rotation.y = -Math.PI / 2;
   group.add(screen);
+  // the film: Night of the Living Dead (1968, in the public domain), from the Internet Archive; the set's own channels until it comes, or if it never does
+  const tv = { on: true, dead: false, film: null, tex: null, gain: null, at: new THREE.Vector3(tx - 0.225, 0.848, tz - 0.31) };
+  G0.tvStart = (sound) => {
+    if (tv.film) { if (tv.on && !tv.dead) tv.film.play().catch(() => { }); return; }
+    const v = document.createElement('video'); v.crossOrigin = 'anonymous'; v.loop = true; v.playsInline = true; v.preload = 'auto';
+    v.src = 'https://archive.org/cors/Night.Of.The.Living.Dead_1080p/NightOfTheLivingDead_1080p_512kb.mp4';
+    tv.film = v; tv.tex = new THREE.VideoTexture(v); tv.tex.colorSpace = THREE.SRGBColorSpace;
+    try { tv.gain = sound.ctx.createGain(); tv.gain.gain.value = 0; sound.ctx.createMediaElementSource(v).connect(tv.gain).connect(sound.out); } catch (e) { tv.gain = null; }
+    v.play().catch(() => { });
+  };
   const tvL = new THREE.PointLight(0x9bb8ff, 1.2, 4.5, 2);
   tvL.position.set(tx - 0.6, 0.9, tz - 0.3);
   group.add(tvL);
@@ -286,9 +294,8 @@ export function buildGarage(scene, low) {
   model('planter_box_01', x0 - 0.75, 0, WIN[0].z + 0.1, Math.PI / 2, { h: 0.42, shadow: false }, out);
   model('potted_plant_01', x0 - 0.8, 0.3, WIN[0].z - 0.2, 0.4, { h: 1.35, shadow: false }, out);
   model('potted_plant_01', x0 - 1.5, 0, WIN[1].z + 0.4, 2.2, { h: 1.6, shadow: false }, out);
-  model('potted_plant_01', x0 - 2.6, 0, WIN[0].z + 1.0, 4.0, { h: 1.9, shadow: false }, out);
+  model('potted_plant_01', x0 - 2.6, 0, WIN[0].z + 1.0, 4.0, { h: 1.5, shadow: false }, out);
   model('planter_box_01', 2.9, 0, z0 - 1.2, 0, { h: 0.42, shadow: false }, out);
-  for (const [x, z, hh, ry] of [[x0 - 5.6, -2.5, 4.6, 0], [x0 - 6.5, 3.2, 4, 1.3], [-6.5, z0 - 6, 4.2, 2.1], [7.2, z0 - 6.5, 5, 3.3]]) model('potted_plant_01', x, -0.25 * hh / 1.33, z, ry, { h: hh, shadow: false }, out);
 
   for (const [mat, list] of bins) {
     const same = list.every((g) => !!g.index === !!list[0].index);
@@ -298,20 +305,17 @@ export function buildGarage(scene, low) {
   }
 
   // ---- the sky, the stars and the light ----
-  const SUN = new THREE.Vector3(), MOON = new THREE.Vector3(-0.35, 0.75, -0.55).normalize();
-  const sky = new Sky();
-  sky.scale.setScalar(55);
-  const U = sky.material.uniforms;
-  U.turbidity.value = 4.5; U.rayleigh.value = 1.6; U.mieCoefficient.value = 0.006; U.mieDirectionalG.value = 0.82;
-  sky.material.fog = false;
-  group.add(sky);
-  const sp = new Float32Array(500 * 3);
-  for (let i = 0; i < 500; i++) { const a = Math.random() * 6.283, e = Math.asin(Math.random() * 0.95 + 0.04); sp.set([Math.cos(a) * Math.cos(e) * 50, Math.sin(e) * 50, Math.sin(a) * Math.cos(e) * 50], i * 3); }
-  const starsG = new THREE.BufferGeometry(); starsG.setAttribute('position', new THREE.BufferAttribute(sp, 3));
-  const stars = new THREE.Points(starsG, new THREE.PointsMaterial({ color: 0xdfe6ff, size: 1.6, sizeAttenuation: false, transparent: true, opacity: 0, fog: false, depthWrite: false }));
-  group.add(stars);
-  scene.fog = new THREE.FogExp2(0xb7c6d2, 0.019);
-
+  // THE MARKET's sky (RAMEN's copy): the real sun and moon, the stars turning, cloud at the weather's cover
+  const SUN = new THREE.Vector3(), MOON = new THREE.Vector3(), sky = buildSky(scene);
+  scene.fog = new THREE.FogExp2(0xb7c6d2, 0.011);
+  // far off, two ridges of mountains, the farther paler: the air between is in their colour, not drawn over them
+  const ridge = (R, hgt, seed, haze) => {
+    const N = 96, pos = [], idx = [], n1 = (a) => { let v = 0, f = 1, k = 0.5; for (let o = 0; o < 5; o++) { v += k * Math.sin(a * f * 3 + seed * (o + 1) * 1.7) * Math.cos(a * f * 1.3 + seed * o); f *= 2.1; k *= 0.5; } return v; };
+    for (let i = 0; i <= N; i++) { const a = i / N * Math.PI * 2, h = hgt * (0.55 + 0.45 * Math.abs(n1(a)) + 0.25 * n1(a * 2.7)); pos.push(Math.cos(a) * R, -6, Math.sin(a) * R, Math.cos(a) * R, Math.max(4, h), Math.sin(a) * R); if (i < N) idx.push(i * 2, i * 2 + 1, i * 2 + 2, i * 2 + 1, i * 2 + 3, i * 2 + 2); }
+    const g = new THREE.BufferGeometry(); g.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3)); g.setIndex(idx);
+    const m = new THREE.Mesh(g, new THREE.MeshBasicMaterial({ color: 0x556070, fog: false, side: THREE.DoubleSide })); m.frustumCulled = false; m.renderOrder = -8; m.userData.haze = haze; group.add(m); return m;
+  };
+  const ridges = [ridge(360, 70, 3.1, 0.78), ridge(250, 38, 7.7, 0.55)], rockC = new THREE.Color(0x3d4a44), tC = new THREE.Color();
   const sun = new THREE.DirectionalLight(0xfff0d8, 10);
   sun.castShadow = true;
   sun.shadow.mapSize.setScalar(low ? 1024 : 2048);
@@ -395,14 +399,16 @@ export function buildGarage(scene, low) {
   for (let i = 0; i < N; i++) seed.push({ o: beams[i % beams.length], a: Math.random() * 2 - 1, b: Math.random() * 2 - 1, t: Math.random(), s: 0.01 + Math.random() * 0.02, p: Math.random() * 6.28 });
   const dustG = new THREE.BufferGeometry();
   dustG.setAttribute('position', new THREE.BufferAttribute(dp, 3));
-  const dust = new THREE.Points(dustG, new THREE.PointsMaterial({ color: 0xfff2d8, size: 0.006, transparent: true, opacity: 0.4, blending: THREE.AdditiveBlending, depthWrite: false, sizeAttenuation: true }));
+  const dust = new THREE.Points(dustG, new THREE.PointsMaterial({ color: 0xfff2d8, size: 0.004, transparent: true, opacity: 0.22, blending: THREE.AdditiveBlending, depthWrite: false, sizeAttenuation: true }));
   dust.frustumCulled = false;
   group.add(dust);
-  const tmp = new THREE.Vector3(), down = new THREE.Vector3(), cDay = new THREE.Color(0xb7c6d2), cDusk = new THREE.Color(0xd9a98a), cNight = new THREE.Color(0x070a12), cWarm = new THREE.Color(0xff9a52), cWhite = new THREE.Color(0xfff0d8), cMoon = new THREE.Color(0x8fa6d8), fogC = new THREE.Color();
+  const tmp = new THREE.Vector3(), down = new THREE.Vector3(), cDay = new THREE.Color(0xb7c6d2), cDusk = new THREE.Color(0xd9a98a), cNight = new THREE.Color(0x070a12), cWarm = new THREE.Color(0xff9a52), cWhite = new THREE.Color(0xfff0d8), cMoon = new THREE.Color(0x8fa6d8), fogC = new THREE.Color(), cGrey = new THREE.Color();
   let lastSun = -9, tvT0 = 0;
 
-  const G = {
-    group, sun, lamp, sky, M, cord, haloM, door, posters, swing: 0, hour: 12, day: 1, lean: false,
+  Object.assign(G0, {
+    group, out, sun, lamp, sky, M, cord, haloM, door, posters, tv, ear: new THREE.Vector3(), sunV: SUN, dim: 1,
+    tvToggle() { tv.on = !tv.on; if (tv.film) { if (tv.on && !tv.dead) tv.film.play().catch(() => { }); else tv.film.pause(); } },
+    tvShot() { tv.dead = true; if (tv.film) tv.film.pause(); }, swing: 0, hour: 12, day: 1, lean: false,
     // a headset that still cannot keep up loses the two softest lights, never the sun or the lamp
     thin() { G.lean = true; fills[1][0].visible = fills[2][0].visible = false; hemi.intensity *= 2; },
     // a loud hit sets the lamp going on its cord
@@ -410,23 +416,27 @@ export function buildGarage(scene, low) {
     toggleDoor() { door.want = door.want > 0.5 ? 0 : 1; },
     setDoor(v) { door.open = door.want = v; setDoor(); for (const [l] of fills) l.shadow.needsUpdate = true; sun.shadow.needsUpdate = true; },
     // the hour sets where the sun is, how much of it there is and what colour, and what the sky and the air look like
-    setHour(hour, time) {
+    // the hour (and the weather) set where the sun and moon really are, how much light there is and what colour, the sky and the air
+    setHour(hour, time, wx = { cloud: 0.2, rain: 0, mist: 0.1 }) {
       G.hour = hour;
-      sunAt(hour, SUN);
-      const up = SUN.y, day = ss(-0.04, 0.22, up), low2 = 1 - ss(0.05, 0.5, up), cloud = 0.82 + 0.18 * Math.sin(time * 0.11) * Math.sin(time * 0.043 + 1.3);
-      G.day = day;
-      const dir = day > 0.02 ? SUN : MOON;
+      const d = new Date(), jd = EPH.jdOf(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()) + (hour - EPH.LON / 15) * 3600e3);
+      const Sk = sky.set(jd, wx, null, 0.55), e = Sk.e, day = ss(-5, 9, e), low2 = 1 - ss(3, 26, e), dim = 1 - 0.8 * ss(0.45, 0.95, wx.cloud), moonUp = Sk.moonAlt > 2;
+      SUN.copy(Sk.sunDir); MOON.copy(Sk.moonDir); G.day = day; G.sunE = e; G.dim = dim;
+      const dir = e > -1 ? SUN : moonUp ? MOON : tmp.set(-0.3, 0.8, -0.5).normalize();
       sun.position.copy(dir).multiplyScalar(16).add(sun.target.position);
-      sun.color.copy(day > 0.02 ? cWhite : cMoon).lerp(cWarm, day > 0.02 ? low2 * 0.75 : 0);
-      sun.intensity = day > 0.02 ? 10 * day * (0.3 + 0.7 * Math.max(0, up)) * cloud : 0.35;
-      U.sunPosition.value.copy(SUN);
-      for (const [l, p] of fills) l.intensity = p * (0.03 + 0.97 * day) * cloud;
-      bounce.intensity *= Math.max(0, up) * 1.4;
+      sun.color.copy(e > -1 ? cWhite : cMoon).lerp(cWarm, e > -1 ? low2 * 0.75 : 0);
+      sun.intensity = e > -1 ? 10 * ss(-1, 6, e) * (0.35 + 0.65 * Math.max(0, SUN.y)) * dim : (moonUp ? 0.12 + 0.4 * Sk.moonLit : 0.06) * dim;
+      for (const [l, p] of fills) l.intensity = p * (0.03 + 0.97 * day) * (0.55 + 0.45 * dim);
+      bounce.intensity *= Math.max(0, SUN.y) * 1.6 * dim;
       hemi.intensity = (G.lean ? 0.4 : 0.22) * (0.2 + 0.8 * day);
-      fogC.copy(cNight).lerp(cDusk, ss(0, 0.5, day)).lerp(cDay, ss(0.4, 1, day) * (1 - low2 * 0.5));
+      fogC.copy(Sk.horizon).lerp(cGrey.setRGB(0.5, 0.53, 0.57).multiplyScalar(0.1 + 0.9 * day), 0.25 + 0.5 * wx.cloud);
       scene.fog.color.copy(fogC); if (scene.background && scene.background.isColor) scene.background.copy(fogC);
-      stars.material.opacity = 1 - ss(0, 0.35, day);
-      dust.material.opacity = 0.4 * day;
+      scene.fog.density = 0.008 + 0.012 * wx.rain + 0.008 * wx.mist;
+      AIR.mist[0] = 0.0015 + 0.02 * wx.mist; AIR.mist[1] = 1 / (1.8 + 2.4 * wx.mist); AIR.mist[2] = -0.1;
+      AIR.sun[0] = dir.x; AIR.sun[1] = dir.y; AIR.sun[2] = dir.z; const glow = ss(-3, 3, e) * (1 - ss(5, 30, e) * 0.65) * 0.07 * dim;
+      AIR.sunC[0] = Sk.sunC.r * glow; AIR.sunC[1] = Sk.sunC.g * glow; AIR.sunC[2] = Sk.sunC.b * glow;
+      for (const m of ridges) m.material.color.copy(tC.copy(rockC).multiplyScalar(0.08 + 0.92 * day * (0.5 + 0.5 * dim))).lerp(fogC, m.userData.haze + 0.2 * wx.mist);
+      dust.material.opacity = 0.22 * day * dim;
       down.copy(SUN).negate();
       // the sun's shadows are drawn again only once it has moved enough to see, or the door is running
       if (Math.abs(hour - lastSun) > 0.08 || door.moving) { lastSun = hour; sun.shadow.needsUpdate = true; }
@@ -439,7 +449,13 @@ export function buildGarage(scene, low) {
       door.moving = Math.abs(door.want - door.open) > 0.001;
       if (door.moving) { door.open += Math.sign(door.want - door.open) * Math.min(Math.abs(door.want - door.open), dt * 0.32); setDoor(); for (const [l] of fills) l.shadow.needsUpdate = true; sun.shadow.needsUpdate = true; }
       // the television: its picture rolls and its light with it
-      if (time - tvT0 > 0.1) {
+      const film = tv.film && tv.film.readyState >= 2 && !tv.film.paused;
+      if (tvM.map !== (film ? tv.tex : tvT)) { tvM.map = film ? tv.tex : tvT; tvM.needsUpdate = true; }
+      tvM.color.setHex(tv.on && !tv.dead ? 0xbbbbbb : 0x050505);
+      if (tv.gain) tv.gain.gain.value = tv.on && !tv.dead ? Math.min(0.9, 0.5 / Math.max(0.6, G.ear.distanceToSquared(tv.at) * 0.35)) : 0;
+      if (!tv.on || tv.dead) tvL.intensity = 0;
+      else if (film) { tvL.color.setHex(0xcfd6e6); tvL.intensity = (0.8 + 0.5 * Math.abs(Math.sin(time * 5.3) * Math.sin(time * 1.7))) * (1.6 - 0.9 * G.day); }
+      else if (time - tvT0 > 0.1) {
         tvT0 = time;
         const ph = Math.floor(time / 9) % 3, k = (time * 30) | 0;
         if (ph === 0) { for (let i = 0; i < 7; i++) { tvX.fillStyle = ['#c9c9c9', '#c9c93a', '#3ac9c9', '#3ac93a', '#c93ac9', '#c93a3a', '#3a3ac9'][i]; tvX.fillRect(i * 9.2, 0, 10, 48); } }
@@ -460,7 +476,12 @@ export function buildGarage(scene, low) {
       }
       dustG.attributes.position.needsUpdate = true;
     },
-  };
+  });
+  const { x0: X0, x1: X1, z0: Z0, z1: Z1 } = ROOM, T = 0.25;
+  G.solids = [[X0 - T, Z0 - T, X0, Z1 + T], [X1, Z0 - T, X1 + T, Z1 + T], [X0 - T, Z1, X1 + T, Z1 + T], [X0 - T, Z0 - T, -DOOR.w / 2 + 0.05, Z0], [DOOR.w / 2 - 0.05, Z0 - T, X1 + T, Z0],
+    [-0.85, -1.6, 1.15, -0.3], [X0, 0.4, X0 + 0.85, 2.5], [-1.7, 0.95, -0.7, 1.95], [X1 - 0.6, 0.55, X1, 2.15], [1.0, Z1 - 0.65, 2.5, Z1], [-1.75, Z1 - 0.7, -0.2, Z1], [0.3, 1.85, 1.2, 2.75], [X1 - 0.62, -0.85, X1, -0.25],
+    [X1 - 0.6, -3.3, X1, -1.2], [-2.3, -3.5, -1.5, -2.9], [X0, -3.6, X0 + 0.5, -3.0], [-1.8, -2.1, -1.4, -1.7], [X0 - 3.5, -8, X0 - 3.3, 9]];
+  G.doorGap = [-DOOR.w / 2, Z0 - T, DOOR.w / 2, Z0];
   G.setHour(12, 0);
   return G;
 }

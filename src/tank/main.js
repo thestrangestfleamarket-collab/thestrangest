@@ -536,9 +536,9 @@ function explode(x,y,z,big,dirt,noScar){if(!noScar)WORLD.scar(x,y,z,big,dirt);fl
   if(near){
     for(let i=0;i<(big?9:5);i++){const a=Math.random()*6.28,v=6+Math.random()*(big?16:10);puff(x,y+.4,z,{add:true,c:[3,1.6,.5],s0:.35,s1:.15,life:.5+Math.random()*.6,vx:Math.cos(a)*v,vz:Math.sin(a)*v,vy:5+Math.random()*(big?14:8),g:14,wk:0});}
     if(!wet)for(let i=0;i<(big?10:6);i++){const a=i/(big?10:6)*6.28+Math.random()*.4,v=(big?11:7)*(.7+Math.random()*.5);puff(x,y+.3,z,{c:dirt?[.42,.37,.28]:[.3,.29,.27],s0:1.5,s1:(big?9:6)+Math.random()*3,life:2.4+Math.random()*1.6,vx:Math.cos(a)*v,vz:Math.sin(a)*v,vy:.6,g:1.2,heat:0,op:.6});}
-    for(let i=0;i<(big?9:5);i++){const a=Math.random()*6.28,v=Math.random()*(big?3:2);puff(x+(Math.random()-.5)*2,y+.6,z+(Math.random()-.5)*2,{c:dirt?[.24,.21,.16]:[.06,.06,.06],s0:2,s1:(big?13:8)+Math.random()*5,life:3.5+Math.random()*3.5,vx:Math.cos(a)*v,vz:Math.sin(a)*v,vy:2+Math.random()*3,heat:(big?7:4)+Math.random()*3,op:.85});}
+    for(let i=0;i<(big?14:8);i++){const a=Math.random()*6.28,v=Math.random()*(big?3:2),hh=i/(big?14:8);puff(x+(Math.random()-.5)*2.5,y+.6+hh*(big?5:3),z+(Math.random()-.5)*2.5,{c:dirt?[.3,.27,.21]:[.1,.1,.1],s0:1.5,s1:(big?7:4.5)+Math.random()*4,life:3+Math.random()*4,vx:Math.cos(a)*v,vz:Math.sin(a)*v,vy:1+Math.random()*2.5,heat:(big?3.2:2)+Math.random()*2,op:.7});}
     if(dirt&&!wet)for(let i=0;i<(big?7:4);i++){const a=Math.random()*6.28,v=2+Math.random()*(big?7:4);puff(x,y+.3,z,{c:[.36,.31,.22],s0:1,s1:4+Math.random()*3,life:1.6+Math.random()*1.2,vx:Math.cos(a)*v,vz:Math.sin(a)*v,vy:(big?13:8)+Math.random()*6,g:16,heat:0,op:.8});}
-    puff(x,y+2,z,{c:dirt?[.5,.46,.38]:[.3,.3,.3],s0:big?10:6,s1:big?42:24,life:big?16:10,vy:.3,heat:.4,op:.22});}
+    puff(x,y+2.5,z,{c:dirt?[.58,.54,.46]:[.4,.4,.4],s0:big?7:4,s1:big?22:13,life:big?12:8,vy:.3,heat:.3,op:.1});}
   else for(let i=0;i<4;i++)puff(x,y+.5,z,{c:dirt?[.3,.26,.19]:[.07,.07,.07],s0:3,s1:(big?16:9),life:4+Math.random()*2,vy:3,op:.8});
   play(d<150?'boom':'boom_far',clamp(1.3/(1+d/70),0,1.2),'out',d/340,.9+Math.random()*.2);if(d<45&&state==='play'){const k=(1-d/45)*(big?1:.6);P.shake=Math.max(P.shake,k);haptic(k,200+200*k);if(!P.headIn&&k>.3)deafen(k);}
 }

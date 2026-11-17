@@ -1,25 +1,9 @@
-// the people: Polyfork's (polyfork.dev) bodies on their 15 bones and their recorded motion (data/sushi/cast.json, from tools/sushi-cast.cjs), as THE SPECKLED BAND's are, with what the cart asks of them: walking, standing, sitting on a stool, hands that talk, a nod, a head shake, a laugh, a wave from the shoulder, a blow taken as it really lands (the struck limb and what it hangs from knocked about their joints and sprung back, a step back or a fall past what the feet can hold, a hand to where it hurts, a duck), marks on their clothes, chopsticks to the mouth, a head that turns to what it looks at, eyes that blink
+// Polyfork's (polyfork.dev) people on their 15 bones and their recorded motion (a game's cast.json, from tools/sushi-cast.cjs), as THE SPECKLED BAND's are; THE LAST CHANCE's (src/saloon/) since RAMEN's became Rocketbox's (rb.js), with what the cart asks of them: walking, standing, sitting on a stool, hands that talk, a nod, a head shake, a laugh, a wave from the shoulder, a blow taken as it really lands (the struck limb and what it hangs from knocked about their joints and sprung back, a step back or a fall past what the feet can hold, a hand to where it hurts, a duck), marks on their clothes, chopsticks to the mouth, a head that turns to what it looks at, eyes that blink
 import * as THREE from 'three';
 import { mat } from './ctx.js';
 
-// who can be at the cart: [sex, voice, pitch, youngest, oldest, what they do] (the voice names are worker/door.js's /sushi/say)
-export const PF = {
-  carving_chef: ['m', 'zeus', 0.96, 45, 60, 'the cook'],
-  // the village's people, in the dress of the 1860s: Polyfork's Japanese villagers as they are, and the nearest of its other bodies with their clothes dyed to period colours (DRESS below)
-  hanga_roa_fisherman: ['m', 'zeus', 0.95, 48, 58, 'a fishmonger who carries the morning catch up from the coast in two baskets on a pole'],
-  townswoman_medieval_japan: ['f', 'hera', 0.98, 30, 50, 'a townswoman who keeps a shop on the street'],
-  male_villager: ['m', 'arcas', 0.96, 50, 65, 'a potter with a kiln behind his house'],
-  farmer_medieval_japan: ['m', 'angus', 0.96, 30, 50, 'a rice farmer in from the paddies east of the village'],
-  buddhist_monk: ['m', 'orion', 0.94, 45, 65, 'a monk from the temple up behind the shrine'],
-  townswoman_frontier_town: ['f', 'asteria', 1.03, 20, 28, 'a geisha of the teahouse on the street'],
-  samurai_warrior: ['m', 'perseus', 0.97, 28, 40, 'a ronin, a masterless samurai, two swords at his belt'],
-  ashigaru_foot_soldier: ['m', 'helios', 0.98, 25, 45, 'a foot soldier of the domain on his way through'],
-  village_child: ['m', 'orpheus', 1.18, 8, 11, 'a village boy sent out for a bowl'],
-  grandmother_in_a_rebozo: ['f', 'luna', 0.95, 62, 75, 'an old woman who has lived on this street all her life'],
-  farmer_cozy_farm: ['m', 'angus', 0.97, 35, 55, 'a peddler of needles, combs and medicines on the road between villages'],
-  village_gardener: ['m', 'arcas', 0.96, 30, 55, 'a woodcutter down from the hills with a load of firewood'],
-  daimyo_lord: ['m', 'zeus', 0.95, 40, 55, ''],
-};
+// who: [sex, voice, pitch, youngest, oldest, what they do]
+export const PF = {};   // filled by the game that uses them (THE LAST CHANCE: src/saloon/cast.js)
 // the dye for a body that came in later clothes: its cloth (everything that is not skin or hair) recoloured by shade into a period palette: [dark, middle, light]
 export const DRESS = {
   carving_chef: [0x1c2440, 0x2c3a62, 0xd8d0bc], hanga_roa_fisherman: [0x2a2a30, 0x3a4a6a, 0xc8bca0], male_villager: [0x2e2620, 0x5a4a38, 0xb8a888],
@@ -31,7 +15,6 @@ export function dye(C, pal, keep) { if (!pal) return C; const P = pal.map((x) =>
   for (let i = 0; i < C.length; i += 3) { if (keep && keep(i / 3)) continue; _c.setRGB(C[i], C[i + 1], C[i + 2]); _c.getHSL(_h); const skin = _h.h > 0.015 && _h.h < 0.12 && _h.s > 0.2 && _h.s < 0.8 && _h.l > 0.08 && _h.l < 0.75, hair = _h.l < 0.035;
     if (skin || hair) continue; const k = Math.min(1, _h.l / 0.45), c = k < 0.5 ? P[0].clone().lerp(P[1], k * 2) : P[1].clone().lerp(P[2], (k - 0.5) * 2); C[i] = c.r; C[i + 1] = c.g; C[i + 2] = c.b; }
   return C; }
-export const CUSTOMERS = Object.keys(PF).filter((k) => PF[k][5] && k !== 'carving_chef' && k !== 'village_child');
 
 const b64 = (s) => Uint8Array.from(atob(s), (c) => c.charCodeAt(0)), i16 = (s) => new Int16Array(b64(s).buffer), u16 = (s) => new Uint16Array(b64(s).buffer);
 const lin = (C, n) => { const out = new Float32Array(n), c = new THREE.Color(); for (let i = 0; i < n; i += 3) { c.setRGB(C[i] / 255, C[i + 1] / 255, C[i + 2] / 255, THREE.SRGBColorSpace); out[i] = c.r; out[i + 1] = c.g; out[i + 2] = c.b; } return out; };

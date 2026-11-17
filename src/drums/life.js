@@ -1,16 +1,21 @@
 // THE GARAGE's day: the hour going round, the street's people and what they think of you, talking with them (Claude Haiku and a spoken voice for a login, their own written lines otherwise), and what is kept of it all
 import * as THREE from 'three';
 import { buildStreet, relWord } from './street.js';
+import { buildWeather } from './weather.js';
+import { dressLand } from './land.js';
 import CAST from './cast.json';
 
 const post = (url, body) => fetch(url, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(body) });
 const LOCAL = 'drums-street';
 
 export function startLife({ scene, garage, sound, low, Q, readout, $ }) {
-  const street = buildStreet(scene, low);
-  const L = { street, garage, login: false, hour: 12, energy: 0, lastHit: -99, loud: 0, playing: false, said: [], spoken: 0, ear: null, listening: false };
-  // one game hour a real minute, from the hour on your own clock
-  const d0 = new Date(), start = Q.has('hour') ? +Q.get('hour') : d0.getHours() + d0.getMinutes() / 60, hold = Q.has('hold');
+  const street = buildStreet(scene, low), weather = buildWeather(scene, low, Q.has('hold') ? 0.2 : undefined);
+  const land = dressLand(scene, street, garage, low);
+  const L = { street, garage, land, login: false, hour: 12, energy: 0, lastHit: -99, loud: 0, playing: false, said: [], spoken: 0, ear: null, listening: false };
+  // it is always dusk, evening or night here (owner, 17 Nov 2026): the clock runs from the low sun before it sets to the last dark before first light, then comes round to dusk again, one game hour a real minute
+  let dusk = 16.5, dawn = 29; for (let h = 12; h < 24; h += 0.05) if (garage.altAt(h) < 7) { dusk = h; break; } for (let h = 26; h < 34; h += 0.05) if (garage.altAt(h) > -14) { dawn = h; break; }
+  const span = dawn - dusk, d0 = new Date(), real = d0.getHours() + d0.getMinutes() / 60, into = (h) => { let k = h < dusk ? h + 24 : h; return k >= dusk && k < dawn ? k - dusk : null; };
+  const start = Q.has('hour') ? (into(+Q.get('hour')) ?? 0.5) : (into(real) ?? 0.5), hold = Q.has('hold');
   let offset = 0, t0 = null, dirty = 0, lastDay = 0;
 
   // ---- what is kept: how you stand with each neighbour; a login's on the website, anyone else's in this browser ----
@@ -78,14 +83,22 @@ export function startLife({ scene, garage, sound, low, Q, readout, $ }) {
 
   L.note = (vel) => { L.energy += vel; L.lastHit = L.now; };
   L.skip = () => { offset += 1; readout.show('AN HOUR ON', L.now); };
+  // to an hour of the evening or night (kept inside the window)
+  L.to = (h) => { offset = (into(h) ?? 0.5) - start - (hold || t0 === null ? 0 : (L.now - t0) / 60); while (offset < 0) offset += span; };
+  L.dusk = dusk; L.dawn = dawn;
   L.now = 0; L.days = 0;
-  L.update = (dt, now) => {
+  L.weather = weather;
+  L.update = (dt, now, cam) => {
     L.now = now; if (t0 === null) t0 = now;
-    L.hour = (start + offset + (hold ? 0 : (now - t0) / 60)) % 24;
-    const day = Math.floor((start + offset + (hold ? 0 : (now - t0) / 60)) / 24);
+    const run = start + offset + (hold ? 0 : (now - t0) / 60);
+    L.hour = (dusk + (run % span)) % 24;
+    const day = Math.floor(run / span);
     if (day !== lastDay) { lastDay = day; street.dayN = day; L.days++; dirty = 1; }
     L.energy *= Math.exp(-dt / 6); L.loud = Math.min(1, L.energy / 9); L.playing = now - L.lastHit < 8;
-    garage.setHour(L.hour, now);
+    weather.update(dt, now, L.hour, day, cam || garage.ear);
+    garage.setHour(L.hour, now, weather.now);
+    land.update(dt, now, garage.sunV, garage.day, garage.dim, weather.now);
+    if (now - (L.nearT || -9) > 0.5) { L.nearT = now; const c = cam || garage.ear; land.near(c.x, c.z); }
     street.update(dt, now, L.hour, { loud: L.loud, playing: L.playing, door: garage.door.open, day: garage.day });
     for (const e of street.events.splice(0)) {
       if (e.t === 'say') speak(e.p, e.text);

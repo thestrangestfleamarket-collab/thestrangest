@@ -37,7 +37,7 @@ fetch(BASE + 'stars.json').then(r => r.json()).then(cat => { cosmos = buildCosmo
 { const pm = new THREE.PMREMGenerator(renderer); scene.environment = pm.fromScene(new RoomEnvironment(), 0.04).texture; pm.dispose(); }
 const panel = new Panel(), banner = new Banner(), guide = new Guide(), post = new Post(renderer), HUD = 3; scene.add(banner.mesh, guide.mesh, panel.mesh);
 for (const m of [panel.mesh, banner.mesh, guide.mesh]) m.layers.set(HUD); camera.layers.enable(HUD);   // what the lens must leave sharp is on its own layer, drawn after it
-const G = { state: 'load', me: 0, sim: null, bots: [], view: null, net: null, host: false, peer: false, acc: 0, ar: false, canAR: false, over: false, placed: -1, alarm: 0, last: 0, paused: false, tOff: 0, fx: Q.has('fx') || (() => { try { return localStorage.getItem('spaceLens') === '1'; } catch (e) { return false; } })(), fwd: new THREE.Vector3(0, 0, -1), fac: Q.get('navy') === '1' ? 1 : 0, peerFac: 1 };
+const G = { state: 'load', me: 0, sim: null, bots: [], view: null, net: null, host: false, peer: false, acc: 0, ar: false, canAR: false, over: false, placed: -1, alarm: 0, last: 0, paused: false, tOff: 0, mode: 0, fx: Q.has('fx') || (() => { try { return localStorage.getItem('spaceLens') === '1'; } catch (e) { return false; } })(), fwd: new THREE.Vector3(0, 0, -1), fac: Q.get('navy') === '1' ? 1 : 0, peerFac: 1 };
 const gnow = () => performance.now() - G.tOff;   // the battle's own clock: it stands still while the battle is paused
 function setView(ar) { post.rest(); G.ar = ar && G.canAR; space.visible = !G.ar; fill.intensity = G.ar ? 0.45 : 0.05; scene.environmentIntensity = G.ar ? 0.45 : 0.16; if (SIM) scene.background = null; }
 const _v = new THREE.Vector3(), _w = new THREE.Vector3(), _d = new THREE.Vector3(), _o = new THREE.Vector3(), _q = new THREE.Quaternion(), _m = new THREE.Matrix4(), _m2 = new THREE.Matrix4(), _up = new THREE.Vector3();
@@ -61,7 +61,8 @@ function online() {
     s: (m) => { if (G.host) return; const o = read(m.a); if (!o) return; if (G.state !== 'play') { G.view.reset(); G.view.me = G.me; G.state = 'play'; G.over = false; place(); banner.set('BATTLE STATIONS', '#ffffff', 2.5); firstGuide(); } if (G.over && o.winner < 0) { G.over = false; G.view.reset(); } G.view.apply(o, gnow()); },
     p: () => { if (G.host && G.peer) setPause(!G.paused); },
     ps: (m) => { if (G.host) return; G.paused = !!m.on; banner.set(G.paused ? 'PAUSED\nclick a thumbstick to go on' : ''); },
-    o: (m) => { if (G.host && G.sim && G.peer) G.sim.order(1, m.ids, m.k, m.p, m.tid, m.a); },
+    o: (m) => { if (G.host && G.sim && G.peer) G.sim.order(1, m.ids, m.k, m.p, m.tid, m.a, m.m); },
+    m: (m) => { if (G.host && G.sim && G.peer) G.sim.stance(1, m.ids, m.m); },
     b: (m) => { if (G.host && G.sim && G.peer) G.sim.build(1, m.u); },
     fl: (m) => { if (!(G.host && G.sim && G.peer)) return; if (m.id) G.sim.fly(1, m.id, { x: m.d[0], y: m.d[1], z: m.d[2], thr: m.th, fire: m.f }); else for (const u of G.sim.units) if (u.side === 1 && u.fly) G.sim.fly(1, u.id, null); },
     again: () => { if (G.host && G.over) newGame(); },
@@ -73,15 +74,19 @@ function online() {
 // the host is gone: carry the battle on here from the last picture, the bot in their place
 function takeover() { G.paused = false; if (G.sim) return; const n = G.net; G.net = null; n && n.close(); if (G.state !== 'play' || G.over) return solo('OPPONENT LEFT\nyou play the bot'); G.sim = Sim.from(G.view); G.bots = [new Bot(G.sim, 1 - G.me, mind)]; banner.set('OPPONENT LEFT\nthe bot takes their fleet', '#ffd766', 4); }
 function step(dt, now) {
-  if (!G.sim || G.paused) return; G.acc = Math.min(G.acc + dt * FAST, DT * 3 * FAST); const hold = guide.on && guide.i < 5 && !G.peer;   // the bot waits while you are shown the first things
+  if (!G.sim || G.paused) return; G.acc = Math.min(G.acc + dt * FAST, DT * 3 * FAST); const hold = guide.on && guide.i < 6 && !G.peer;   // the bot waits while you are shown the first things
   while (G.acc >= DT) { G.acc -= DT; if (!hold) for (const b of G.bots) b.step(); G.sim.step(); const a = G.sim.snap(); G.view.apply(read(a), now); if (G.net && G.host && G.peer) G.net.send({ t: 's', a }); }
 }
 const cmd = {
   // add: after what those ships are already doing (their mission grows); without it, in its place
-  order(ids, k, p, tid, add) { if (!ids.length || G.state !== 'play' || G.over) return; const P = p ? [p.x, p.y, p.z] : [0, 0, 0]; if (G.sim) G.sim.order(G.me, ids, k, P, tid | 0, add); else G.net && G.net.send({ t: 'o', ids: ids.slice(0, 40), k, p: P, tid: tid | 0, a: add ? 1 : 0 });
+  order(ids, k, p, tid, add, mode = G.mode) { if (!ids.length || G.state !== 'play' || G.over) return; const P = p ? [p.x, p.y, p.z] : [0, 0, 0]; if (G.sim) G.sim.order(G.me, ids, k, P, tid | 0, add, mode); else G.net && G.net.send({ t: 'o', ids: ids.slice(0, 40), k, p: P, tid: tid | 0, a: add ? 1 : 0, m: mode });
     const tg = k ? G.view.units.get(tid) : null; G.view.order(ids, tg ? tg.pos : p, !!tg, add, tid | 0, gnow()); guide.mark(k ? 'attacked' : 'ordered'); sfx('order', world(tg ? tg.pos : p), 0.5, 1, 120); },
+  // how you want ships to go about their orders from now on (0 attack, 1 defend, 2 sneak); the ships you have picked take it up at once
+  stance(m) { G.mode = m; guide.mark('mode'); const ids = [...G.view.sel]; if (!ids.length || G.state !== 'play' || G.over) return; if (G.sim) G.sim.stance(G.me, ids, m); else G.net && G.net.send({ t: 'm', ids: ids.slice(0, 40), m }); },
+  // pull ships out of the fight: the ones you have picked (all your warships when none are) go back to your mothership and hold there
+  home() { const V = G.view; if (!V.sel.size) cmd.all(); let mz = 0; for (const u of V.units.values()) if (u.type === MOTHER && u.side === G.me) mz = u.pos.z; cmd.order([...V.sel], 0, new THREE.Vector3(0, 0, mz * 0.6), 0, false, 1); guide.mark('mode'); },
   // drop a ship's mission: it holds where it is
-  stop(ids) { for (const id of ids) { const u = G.view.units.get(id); if (u && u.type !== MOTHER) cmd.order([id], 0, u.pos.clone(), 0, false); } },
+  stop(ids) { for (const id of ids) { const u = G.view.units.get(id); if (u && u.type !== MOTHER) cmd.order([id], 0, u.pos.clone(), 0, false, u.m === 3 ? 2 : u.m); } },
   build(t) { const T = table(G.view.fac[G.me])[t]; if (G.state !== 'play' || G.over || G.view.credits[G.me] < T.cost) return sfx('ui_deny', null, 0.5); if (G.sim) { if (!G.sim.build(G.me, t)) return sfx('ui_deny', null, 0.5); } else G.net && G.net.send({ t: 'b', u: t }); guide.mark('built'); sfx('ui_click', null, 0.6); },
   pause() { if (G.state !== 'play' || G.over) return; if (G.net && !G.host) G.net.send({ t: 'p' }); else setPause(!G.paused); },
   again() { if (!G.over) return; if (G.sim && (!G.net || G.host)) { const b = G.bots.length; newGame(); if (b || !G.peer) G.bots = [new Bot(G.sim, 1 - G.me, mind)]; } else G.net && G.net.send({ t: 'again' }); },
@@ -158,7 +163,7 @@ function grabWorld() {
 function press(h) {
   if (pilot.id) { h.trig = true; return; }
   if (h.onPanel && h.ui < 0) return;   // on the console but between its buttons: nothing, and not a bubble behind it
-  if (h.ui >= 0) { const b = panel.btn[h.ui]; buzz(h, 0.8, 40); panel.press(h.ui); G.last = 0; if (!b) return; if (b.id === 'ar') { if (G.canAR) { setView(!G.ar); sfx('ui_click', null, 0.6); } else sfx('ui_deny', null, 0.5); } else if (b.id === 'all') cmd.all(); else if (b.id === 'pause') cmd.pause(); else if (b.id === 'fly') { const V = G.view, one = V.sel.size === 1 ? [...V.sel][0] : 0; if (one) takeControl(one); else { sfx('ui_deny', null, 0.5); banner.set('PICK ONE OF YOUR SHIPS\nthen press CONTROL to fly it yourself', '#ffd766', 3); } } else if (b.id === 'guide') { sfx('ui_click', null, 0.6); if (guide.on) guide.stop(); else guide.start(); } else if (b.id === 'fx') { G.fx = !G.fx; try { localStorage.setItem('spaceLens', G.fx ? '1' : '0'); } catch (e) {} post.rest(); sfx('ui_click', null, 0.6); } else if (b.id === 'x') { sfx('ui_click', null, 0.6); if (G.state === 'wait') solo(); else cmd.again(); } else cmd.build(+b.id.slice(1)); return; }
+  if (h.ui >= 0) { const b = panel.btn[h.ui]; buzz(h, 0.8, 40); panel.press(h.ui); G.last = 0; if (!b) return; if (b.id === 'ar') { if (G.canAR) { setView(!G.ar); sfx('ui_click', null, 0.6); } else sfx('ui_deny', null, 0.5); } else if (b.id === 'all') cmd.all(); else if (b.id === 'pause') cmd.pause(); else if (b.id[0] === 'm') { cmd.stance(+b.id[1]); sfx('ui_click', null, 0.6); } else if (b.id === 'home') cmd.home(); else if (b.id === 'fly') { const V = G.view, one = V.sel.size === 1 ? [...V.sel][0] : 0; if (one) takeControl(one); else { sfx('ui_deny', null, 0.5); banner.set('PICK ONE OF YOUR SHIPS\nthen press CONTROL to fly it yourself', '#ffd766', 3); } } else if (b.id === 'guide') { sfx('ui_click', null, 0.6); if (guide.on) guide.stop(); else guide.start(); } else if (b.id === 'fx') { G.fx = !G.fx; try { localStorage.setItem('spaceLens', G.fx ? '1' : '0'); } catch (e) {} post.rest(); sfx('ui_click', null, 0.6); } else if (b.id === 'x') { sfx('ui_click', null, 0.6); if (G.state === 'wait') solo(); else cmd.again(); } else cmd.build(+b.id.slice(1)); return; }
   guide.mark('go'); if (G.state !== 'play') return; const V = G.view, u = V.units.get(V.hover[h.i]);
   if (u && u.side === G.me) { if (h.tap === u.id && performance.now() - h.t0 < 450) { h.tap = 0; cmd.stop(V.sel.has(u.id) ? [...V.sel] : [u.id]); buzz(h, 0.8, 60); return; } h.tap = u.id; if (!V.sel.has(u.id)) { V.sel.clear(); V.sel.add(u.id); } h.mode = 'drag'; h.id = u.id; h.d = world(u.pos).distanceTo(h.o); h.t0 = performance.now(); h.c0.copy(h.o).addScaledVector(h.dir, h.d); buzz(h); sfx('select', world(u.pos), 0.6); }
   else if (u && V.sel.size) { cmd.order([...V.sel], 1, null, u.id, true); buzz(h, 0.7, 40); }
@@ -192,7 +197,7 @@ function hand(h, dt) {
   P[0] = h.o.x; P[1] = h.o.y; P[2] = h.o.z; P[3] = h.cur.x; P[4] = h.cur.y; P[5] = h.cur.z; for (let k = 6; k < 18; k++) P[k] = 0;
   if (h.mode === 'drag') { const u = V.units.get(h.id); if (!u) { h.mode = null; h.dot.visible = false; } else {
       h.lc.set(THREE.MathUtils.clamp(h.lc.x, -BX, BX), THREE.MathUtils.clamp(h.lc.y, -BY, BY), THREE.MathUtils.clamp(h.lc.z, -BZ, BZ)); world(h.lc); const foe = V.near(h.lc, 1 - G.me, 0.03 / s); V.hover[h.i] = foe;
-      h.dot.visible = true; h.dot.position.copy(_w); h.dot.scale.setScalar(0.008); h.dot.material.color.set(foe ? 0xff4030 : 0x66ff99);
+      h.dot.visible = true; h.dot.position.copy(_w); h.dot.scale.setScalar(0.008); h.dot.material.color.set(foe ? 0xff4030 : [0x66ff99, 0x66aaff, 0xc080ff][G.mode]);
       P[6] = _w.x; P[7] = _w.y; P[8] = _w.z; world(u.pos); P[9] = _w.x; P[10] = _w.y; P[11] = _w.z;
       world(h.lc); P[12] = _w.x; P[13] = _w.y; P[14] = _w.z; world(_v.set(h.lc.x, 0, h.lc.z)); P[15] = _w.x; P[16] = _w.y; P[17] = _w.z; } }
   else if (h.onPanel) { h.dot.visible = true; h.dot.position.copy(h.cur); h.dot.scale.setScalar(0.007); h.dot.material.color.set(h.ui >= 0 ? 0xffffff : 0x8090a8); }
@@ -222,9 +227,9 @@ function frame(time) {
   let thr = 0, n = 0, mine = 0; for (const u of V.units.values()) { thr += u.thr; n++; if (u.side === G.me && u.type !== MOTHER) mine++; if (u.type === MOTHER && u.side === G.me && now - u.hit < 300 && now - G.alarm > 14000 && !G.over) { G.alarm = now; sfx('alarm', null, 0.5); banner.set('MOTHERSHIP UNDER ATTACK', '#ff6a5a', 2.5); } }
   loop('engine', n ? 0.06 + 0.2 * thr / n : 0); loop('ambience', G.state === 'lobby' ? 0 : 0.3);
   camera.getWorldPosition(_o); camera.getWorldDirection(_d); _up.set(0, 1, 0).applyQuaternion(camera.getWorldQuaternion(_q)); listen({ position: _o }, _d, _up);
-  shell.position.copy(_o); G.fwd.copy(_d).setY(0); if (G.fwd.lengthSq() < 1e-4) G.fwd.set(0, 0, -1); G.fwd.normalize(); guide.tick(real, _o, G.fwd); panel.mesh.visible = G.state !== 'lobby' && !pilot.id; if (G.state !== 'lobby' && !pilot.id && !hands.some(h => h.carry)) panel.follow(_o, G.fwd);
+  shell.position.copy(_o); G.fwd.copy(_d).setY(0); if (G.fwd.lengthSq() < 1e-4) G.fwd.set(0, 0, -1); G.fwd.normalize(); guide.tick(real, _o, G.fwd); panel.mesh.visible = G.state !== 'lobby' && !pilot.id; if (G.state !== 'lobby' && !pilot.id && !hands.some(h => h.carry)) panel.follow(_o, G.fwd, dt, hands.some(h => h.on && h.onPanel));
   banner.tick(real); if (pilot.id) { banner.mesh.position.copy(_o).addScaledVector(G.fwd, 2.4); banner.mesh.position.y -= 0.75; banner.mesh.scale.setScalar(2.2); } else { banner.mesh.position.copy(arena.position); banner.mesh.position.y += 0.62 * arena.scale.x; banner.mesh.scale.setScalar(Math.max(0.6, arena.scale.x * 1.6)); } banner.mesh.lookAt(_o);
-  if (real - G.last > 150) { G.last = real; panel.draw({ credits: V.credits[G.me], income: V.income[G.me], count: mine, queue: V.queue[G.me] || [], me: G.me, ar: G.ar, canAR: G.canAR, state: G.over ? 'over' : G.state, costs: table(V.fac[G.me]), paused: G.paused, fx: G.fx, guide: guide.on, fly: V.sel.size === 1, extra: G.state === 'wait' ? 'PLAY THE BOT' : G.over ? 'PLAY AGAIN' : '' }); }
+  if (real - G.last > 150) { G.last = real; panel.draw({ credits: V.credits[G.me], income: V.income[G.me], count: mine, queue: V.queue[G.me] || [], me: G.me, col: V.ci(G.me), mode: G.mode, ar: G.ar, canAR: G.canAR, state: G.over ? 'over' : G.state, costs: table(V.fac[G.me]), paused: G.paused, fx: G.fx, guide: guide.on, fly: V.sel.size === 1, extra: G.state === 'wait' ? 'PLAY THE BOT' : G.over ? 'PLAY AGAIN' : '' }); }
   // open space goes through the lens, focused on the ship nearest the middle of your sight (the field's middle when there is none); your room does not
   if (!G.ar && G.fx) { let best = 0.9, f = Math.max(0.3, _v.copy(arena.position).sub(_o).length()); for (const u of V.units.values()) { world(u.pos).sub(_o); const d = _w.length(), c = _w.dot(_d) / (d || 1); if (c > best) { best = c; f = d; } } post.render(scene, camera, f); }
   else renderer.render(scene, camera);

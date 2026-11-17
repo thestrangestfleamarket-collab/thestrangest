@@ -1,4 +1,4 @@
-// what the people make of what the cook does to them: a touch, a punch, a blow with what is in hand, a cut, soup splashed, food or a bowl thrown, each as hard as the impulse measured on their limbs (limbs.js); their bodies take it (pf.js: the struck limb knocked about, a step back or a fall, a duck, a mark on their clothes) and so do they: a shout, anger or fear, leaving unpaid, a grudge the regulars keep all night and pass on, the beat cop called over
+// what the people make of what the cook does to them: a touch, a punch, a blow with what is in hand, a cut, soup splashed, food or a bowl thrown, each as hard as the impulse measured on their limbs (limbs.js); their bodies take it (rb.js: the struck limb knocked about, a step back or a fall, a duck, a mark on their clothes) and so do they: a shout, anger or fear, leaving unpaid, a grudge the regulars keep all night and pass on, the beat cop called over
 import { G, V3 } from './ctx.js';
 import { PH } from './physics.js';
 import { buildLimbs } from './limbs.js';

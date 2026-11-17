@@ -14,7 +14,7 @@ const STAGES = [
   { menu: ['shoyu', 'shio', 'miso', 'tonkotsu'], mods: true, drinks: true, max: 3, pat: 1.15, guests: 10, note: '+ TONKOTSU, SPECIAL REQUESTS', next: 'a busier counter' },
   { menu: ['shoyu', 'shio', 'miso', 'tonkotsu'], mods: true, drinks: true, max: 3, pat: 1.0, guests: 12, note: 'FULL MENU, FULL HOUSE', next: 'more of the same, faster' },
 ];
-STAGES.push({ menu: ['yonaki', 'shoyu', 'miso'], mods: false, drinks: true, night: true, max: 2, pat: 1.6, guests: 6, note: 'NIGHT SERVICE: YONAKI, WARM SAKE, TEA', next: '' });   // the night: a quieter, slower service under the lanterns, late customers and the village's regulars
+STAGES.push({ menu: ['yonaki', 'shoyu', 'miso'], mods: false, drinks: true, night: true, max: 2, pat: 1.6, guests: 16, note: 'NIGHT SERVICE: YONAKI, WARM SAKE, TEA', next: '' });   // the night: a quieter, slower service under the lanterns, late customers and the village's regulars
 const AT = [0.03, 0.09, 0.16];   // how far into the run each next idea comes
 const DAY = { menu: STAGES[3].menu, mods: true, drinks: true, guests: 24 + STAGES[4].guests };   // what the whole run's service, the day's and the night's, is stocked for
 const D_SAKE = 0.24, D_TEA = 0.12, X_CHASHU = 0.16, X_EGG = 0.12 * 0.84; // how often a customer asks for each
@@ -237,7 +237,7 @@ export function buildGame(scene) {
       if (game.spawnT <= 0) {
         const free = game.seats.map((s, i) => (!s.c && !s.dirty ? i : -1)).filter((i) => i >= 0);
         const prog = game.prog(), dusk = K.phase === 'dusk', night = K.phase === 'night';
-        if (free.length && !game.soldOut && game.customers.filter((c) => c.state !== 'leaving').length < (dusk ? 1 : game.cfg().max)) { spawn(pick(free)); game.spawnT = (lerp(26, 13, prog) + rand(0, 10)) * (dusk ? 2.5 : night ? 1.7 : 1); } else game.spawnT = 3;
+        if (free.length && !game.soldOut && game.customers.filter((c) => c.state !== 'leaving').length < (dusk ? 1 : game.cfg().max)) { spawn(pick(free)); game.spawnT = (lerp(26, 13, prog) + rand(0, 10)) * (dusk ? 2.5 : night ? 3 : 1); } else game.spawnT = 3;
       }
     }
     if (game.state === 'closing' && !game.customers.length) { game.state = 'closed'; showSummary(); }
@@ -275,7 +275,7 @@ export function buildGame(scene) {
           if (bw.dead || c.gone > 16) { if (bw.eaten > 0.6) { game.served++; if (K.phase === 'night') game.lateServed++; game.scores.push(Math.max(0, c.result.score - 30)); if (c.result.pay) till.pay(c, c.result.pay, 0); else leave(c, false); } else leave(c, true); }
           continue; }
         if (c.took) { c.took = false; c.gone = 0; c.p.pose = 'eat'; }
-        c.t += dt; const dur = 16; c.bowl.eaten = clamp(c.t / dur, 0, 1); c.bowl.refresh();
+        c.t += dt; const dur = (c.dur ??= K.phase === 'night' ? 26 : 16); c.bowl.eaten = clamp(c.t / dur, 0, 1); c.bowl.refresh();
         if (Math.random() < dt * 0.5) G.audio.play('slurp');
         if (c.t >= dur) {
           const r = c.result; let pay = r.pay, tip = r.tip;

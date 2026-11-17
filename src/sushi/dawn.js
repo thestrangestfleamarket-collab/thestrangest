@@ -10,7 +10,7 @@ export function buildDawn(scene) {
   const again = () => { location.href = location.pathname + location.search; };
   D.rows = () => { const g = G.game || {}, rate = g.rating ? g.rating() : 0;
     return [['Bowls served', g.served || 0], ['Walked out', g.lost || 0], ['Taken in', mon((g.money || 0) + (g.tips || 0))], ['Rating', g.scores && g.scores.length ? '★'.repeat(Math.round(rate)) + ' ' + rate.toFixed(1) : 'none'], ['Late bowls, by lantern light', g.lateServed || 0]]; };
-  D.show = () => { if (D.card || G.guest) return; G.ended = true; G.guideText = ''; G.hoverText = '';
+  D.show = () => { if (D.card || G.guest) return; G.ended = true; G.guideText = ''; G.hoverText = ''; if (G.game && G.game.summary) G.game.summary.visible = false;   // (the morning is to be seen: the day's board is put away)
     const title = 'DAWN', intro = 'The lanterns burn down and the village wakes.', rows = D.rows(), last = G.story && G.story.notes.length ? G.story.notes[G.story.notes.length - 1] : '';
     panel.innerHTML = ''; const box = document.createElement('div'); box.style.cssText = 'background:rgba(10,8,7,0.84);border:1px solid #6a5a48;padding:18px 28px;width:min(440px,88vw);box-sizing:border-box;text-align:center;font-size:15px'; panel.appendChild(box);
     const h = document.createElement('div'); h.style.cssText = 'font-size:34px;letter-spacing:4px;margin-bottom:10px;white-space:nowrap'; h.textContent = title; box.appendChild(h);

@@ -225,6 +225,7 @@ export function buildCart(scene, city) {
     const mark = box(0.012, 0.03, 0.03, black, 0.032, 0, 0, kb);   // the draught door's wooden slide and its pull
     const lt = mesh(new THREE.PlaneGeometry(0.16, 0.035), new THREE.MeshBasicMaterial({ map: T.labelTex(d.label, { w: 256, h: 56, fs: 26, bg: '#3a2414', fg: '#e8e0c8' }) }), -0.699, 0.76, d.z, cart); lt.rotation.y = Math.PI / 2; lt.castShadow = false;
     
+    p.vent = () => bn.on;   // (its brazier's vent open, whether or not the pot stands on it)
     p.setOn = (on) => { bn.on = on; kb.position.z = d.z + (on ? 0.05 : 0); bn.flames.forEach((f) => (f.visible = on)); G.audio.play('knob', _bp4.set(-0.67, 0.7, d.z)); };
     km.userData.button = kb.userData.button = mark.userData.button = { getPos: () => _bp.set(-0.67, 0.7, d.z), r: 0.045, press: () => p.setOn(!bn.on), name: `${d.id} brazier vent` };
     G.buttons.push(km.userData.button);

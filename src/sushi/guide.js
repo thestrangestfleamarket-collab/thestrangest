@@ -22,7 +22,9 @@ export function buildGuide(scene, C) {
   function step() {
     const game = G.game; if (G.ended) return null;
     const need = game.state === 'prep' ? null : game.state === 'open' ? new Set(game.cfg().menu.map((k) => RECIPES[k].broth)) : new Set(), off = C.pots.filter((p) => !p.on && (!need || (p.type ? need.has(p.type) : need.size)));   // a cold brazier matters before opening and for what tonight's menu needs, not once the stall is closing
-    if (off.length) return ['Open a brazier vent', `${off.length} to wake — the braziers, on your left`, new V3(-0.67, 0.78, off[0].z)];
+    const shut = off.filter((p) => !p.vent()), moved = off.find((p) => p.vent() && !p.item.held);
+    if (shut.length) return ['Open a brazier vent', `${shut.length} to wake — the braziers, on your left`, new V3(-0.67, 0.78, shut[0].z)];
+    if (moved) return ['Set the pot back on its brazier', 'Upright, on the left', new V3(moved.x, 1.0, moved.z)];
     if (game.state === 'closed' && !game.serving()) return null;
     if (game.state === 'prep' || game.state === 'closed') return ['Hang the noren: open', 'The peg on the right post, under the slate', G.buttons.find((b) => b.name.startsWith('OPEN')).getPos().clone().add(new V3(0, 0.08, 0))];
     const money = G.till && G.till.step(held); if (money) return money;

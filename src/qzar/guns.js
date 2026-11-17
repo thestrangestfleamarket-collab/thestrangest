@@ -5,7 +5,10 @@ const WCOL = { pip: 0xffd166, needle: 0xdff3ff, scatter: 0xb388ff, drifter: 0x7c
 const OFF = 0x1a2036, H = Math.PI / 2;
 const mats = []; let env = null;
 const metal = (c, o = {}) => { const m = new THREE.MeshStandardMaterial({ color: c, metalness: .78, roughness: .36, envMap: env, envMapIntensity: .8, ...o }); mats.push(m); return m; };
-function setEnv(t) { env = t; for (const m of mats) { m.envMap = t; m.needsUpdate = true; } }
+function setEnv(t, skin) {
+  env = t; for (const m of mats) { m.envMap = t; m.needsUpdate = true; }
+  for (const m of [steel, dark]) { m.normalMap = skin.normalMap; m.normalScale = new THREE.Vector2(.6, .6); m.roughnessMap = skin.roughnessMap; m.roughness = .9; }
+}
 const steel = metal(0x33405f), dark = metal(0x161c30, { roughness: .55 }), bright = metal(0xb4c0e0, { roughness: .2 });
 const rubber = new THREE.MeshStandardMaterial({ color: 0x0b0e18, metalness: .05, roughness: .92 });
 const lit = c => new THREE.MeshBasicMaterial({ color: c });

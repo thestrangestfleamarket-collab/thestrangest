@@ -316,8 +316,7 @@ const crtMat=(map,o={})=>new T.ShaderMaterial({toneMapped:!o.canvas,uniforms:{ma
     #ifdef OVER
     vec4 ov=texture2D(over,u);ov.rgb=pow(ov.rgb,vec3(2.2));col=mix(col,ov.rgb,ov.a);
     #endif
-    col*=tintC;col*=.8+.2*sin(u.y*lines*6.28318);col*=1.-.42*pow(dot(c,c)*.5,1.6);col*=1.-smoothstep(.07,.12,edge);
-    col+=vec3(.012,.016,.014)*(.4+.6*hh(floor(u*vec2(lines*1.33,lines))));
+    col*=tintC;col*=1.-.22*(.5-.5*cos(u.y*lines*6.28318))*clamp(1.-fwidth(u.y*lines)*1.6,0.,1.);col*=1.-.42*pow(dot(c,c)*.5,1.6);col*=1.-smoothstep(.07,.12,edge);col+=vec3(.01,.013,.011);
     float f=pow(1.-max(dot(normalize(vN),normalize(vV)),0.),2.5);col=col*gain+vec3(.05,.055,.05)*f;gl_FragColor=vec4(col,1.);
 #include <tonemapping_fragment>
 #include <encodings_fragment>

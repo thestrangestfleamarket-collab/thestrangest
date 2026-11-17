@@ -34,7 +34,7 @@ class Sim {
   }
   spawn(type, side, p) {
     const u = { id: this.next++, type, side, x: p[0], y: p[1], z: p[2], vx: 0, vy: 0, vz: 0, yaw: side ? 0 : Math.PI, pitch: 0, hp: this.T[side][type].hp, sh: this.T[side][type].sh, calm: 0, cool: 0,
-      k: 0, gx: p[0], gy: p[1], gz: p[2], ax: p[0], ay: p[1], az: p[2], tid: 0 };   // k: 0 guard at a, 1 move to g, 2 attack tid
+      k: 0, gx: p[0], gy: p[1], gz: p[2], ax: p[0], ay: p[1], az: p[2], tid: 0, q: [] };   // q: the rest of its mission, done one after another   // k: 0 guard at a, 1 move to g, 2 attack tid
     this.units.push(u); this.byId.set(u.id, u); return u;
   }
   count(side) { let n = 0; for (const u of this.units) if (u.side === side && u.type !== MOTHER) n++; return n; }
@@ -44,18 +44,21 @@ class Sim {
     if (this.credits[side] < T.cost || q.length >= QMAX || this.count(side) + q.length >= CAP) return false;
     this.credits[side] -= T.cost; q.push({ type, left: T.time }); return true;
   }
-  // k: 0 move to p (the group keeps its shape), 1 attack tid; the mothership moved is the rally point moved
-  order(side, ids, k, p, tid) {
+  // the next thing on a ship's mission, if it has one
+  advance(u) { for (let o; (o = u.q.shift());) { if (o.k === 2) { if (!this.byId.has(o.tid)) continue; u.k = 2; u.tid = o.tid; } else { u.k = 1; u.tid = 0; u.gx = o.x; u.gy = o.y; u.gz = o.z; } return true; } return false; }
+  give(u, o, add) { if (add && (u.k !== 0 || u.q.length)) { if (u.q.length < 6) u.q.push(o); return; } u.q.length = 0; u.q.push(o); this.advance(u); }
+  // k: 0 move to p (the group keeps its shape), 1 attack tid; add: after what the ship is already doing, not in place of it; the mothership moved is the rally point moved
+  order(side, ids, k, p, tid, add) {
     if (this.winner >= 0) return; const us = [];
     for (const id of ids) { const u = this.byId.get(id); if (u && u.side === side) us.push(u); }
     if (!us.length) return;
-    if (k === 1) { const t = this.byId.get(tid); if (!t || t.side === side) return; for (const u of us) if (u.type !== MOTHER) { u.k = 2; u.tid = tid; } return; }
+    if (k === 1) { const t = this.byId.get(tid); if (!t || t.side === side) return; for (const u of us) if (u.type !== MOTHER) this.give(u, { k: 2, tid }, add); return; }
     const g = [clamp(p[0], -BX, BX), clamp(p[1], -BY, BY), clamp(p[2], -BZ, BZ)];
     let cx = 0, cy = 0, cz = 0, n = 0; for (const u of us) if (u.type !== MOTHER) { cx += u.x; cy += u.y; cz += u.z; n++; }
     if (!n) { this.rally[side] = g; return; }
     cx /= n; cy /= n; cz /= n;
     for (const u of us) { if (u.type === MOTHER) continue; let ox = u.x - cx, oy = u.y - cy, oz = u.z - cz; const l = Math.hypot(ox, oy, oz), m = l > 0.15 ? 0.15 / l : 1;
-      u.k = 1; u.tid = 0; u.gx = clamp(g[0] + ox * m, -BX, BX); u.gy = clamp(g[1] + oy * m, -BY, BY); u.gz = clamp(g[2] + oz * m, -BZ, BZ); }
+      this.give(u, { k: 1, x: clamp(g[0] + ox * m, -BX, BX), y: clamp(g[1] + oy * m, -BY, BY), z: clamp(g[2] + oz * m, -BZ, BZ) }, add); }
   }
   // the nearest enemy this ship should shoot, within reach d (mines are seen only from close)
   pick(u, d) {
@@ -71,8 +74,8 @@ class Sim {
         const r = this.rally[s]; u.k = 1; u.gx = clamp(r[0] + Math.cos(a) * 0.07, -BX, BX); u.gy = clamp(r[1] + Math.sin(a * 1.3) * 0.04, -BY, BY); u.gz = clamp(r[2] + Math.sin(a) * 0.07, -BZ, BZ); this.ev.push(3, s, it.type); } }
     for (const u of US) {
       if (u.hp <= 0) continue; const T = this.T[u.side][u.type]; let tx = u.x, ty = u.y, tz = u.z, go = false, tgt = null;
-      if (u.k === 2) { tgt = this.byId.get(u.tid); if (!tgt || tgt.hp <= 0) { tgt = null; u.k = 0; u.ax = u.x; u.ay = u.y; u.az = u.z; } }
-      if (u.k === 1) { tx = u.gx; ty = u.gy; tz = u.gz; go = true; if (Math.hypot(tx - u.x, ty - u.y, tz - u.z) < 0.02) { u.k = 0; u.ax = tx; u.ay = ty; u.az = tz; go = false; } }
+      if (u.k === 2) { tgt = this.byId.get(u.tid); if (!tgt || tgt.hp <= 0) { tgt = null; u.k = 0; u.ax = u.x; u.ay = u.y; u.az = u.z; if (this.advance(u) && u.k === 2) tgt = this.byId.get(u.tid) || null; } }
+      if (u.k === 1) { tx = u.gx; ty = u.gy; tz = u.gz; go = true; if (Math.hypot(tx - u.x, ty - u.y, tz - u.z) < 0.02) { u.k = 0; u.ax = tx; u.ay = ty; u.az = tz; go = false; this.advance(u); } }
       // on guard a ship takes on what comes near and goes back to its post; told to move it only shoots what it passes
       let foe = tgt; const mine = u.type === MINE;
       if (!foe) foe = this.pick(u, u.k === 1 ? T.range : mine ? 0.15 : Math.max(T.range * 1.5, 0.3));

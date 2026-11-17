@@ -4,17 +4,26 @@ import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { TYPES, NODES, NODE_R, BX, BZ, MOTHER, FIGHTER, MINE } from './sim.js';
 
 const BASE = '/space-assets/', FILES = ['mother', 'fighter', 'frigate', 'cruiser', 'turret', 'mine'], LEN = [0.5, 0.05, 0.11, 0.2, 0.07, 0.026];
-const TINT = [new THREE.Color(0.74, 0.88, 1.12), new THREE.Color(1.12, 0.84, 0.68)], GLOW = [new THREE.Color(0.25, 0.7, 1.0), new THREE.Color(1.0, 0.42, 0.12)], TEAM = [new THREE.Color(0.2, 0.62, 1), new THREE.Color(1, 0.36, 0.14)];
+// the two fleets' colours, light blue and light green: the hulls' paint, their engines' and shots' light, their rings
+const HULL = [new THREE.Color(0.36, 0.62, 1.0), new THREE.Color(0.4, 0.9, 0.5)], GLOW = [new THREE.Color(0.25, 0.7, 1.0), new THREE.Color(0.35, 1.0, 0.45)], TEAM = [new THREE.Color(0.3, 0.66, 1), new THREE.Color(0.35, 0.95, 0.5)];
 const MAXU = 40, STEP = 0.1, CELLS = [22, 5, 8, 12, 6, 4], FLING = [0.07, 0.3, 0.18, 0.11, 0.15, 0.25], _x = new THREE.Vector3();
 const _m = new THREE.Matrix4(), _q = new THREE.Quaternion(), _e = new THREE.Euler(0, 0, 0, 'YXZ'), _p = new THREE.Vector3(), _s = new THREE.Vector3(), _a = new THREE.Vector3(), _b = new THREE.Vector3(), _c = new THREE.Color(), _q2 = new THREE.Quaternion();
 const Z = new THREE.Vector3(0, 0, 1), ZERO = new THREE.Matrix4().makeScale(0, 0, 0);
 const lerpA = (a, b, t) => a + Math.atan2(Math.sin(b - a), Math.cos(b - a)) * t;
 
+// one model's parts; each part's picture is measured (how bright it is all over) so every hull can be painted to the same lightness
+async function loadOne(L, name) { const g = await L.loadAsync(BASE + 'm/' + name + '.glb'), parts = [], cv = document.createElement('canvas'); cv.width = cv.height = 16; const x = cv.getContext('2d', { willReadFrequently: true });
+  g.scene.updateMatrixWorld(true); g.scene.traverse(o => { if (!o.isMesh) return; const geo = o.geometry.clone(); geo.applyMatrix4(o.matrixWorld); let lum = 0.5;
+    try { const im = o.material.map && o.material.map.image; if (im) { x.drawImage(im, 0, 0, 16, 16); const d = x.getImageData(0, 0, 16, 16).data; let t = 0; for (let i = 0; i < d.length; i += 4) t += Math.pow((0.299 * d[i] + 0.587 * d[i + 1] + 0.114 * d[i + 2]) / 255, 2.2); lum = t / 256; } } catch (e) {}
+    parts.push({ geo, mat: o.material, gain: Math.min(5, Math.max(0.6, 0.3 / Math.max(0.02, lum))) }); });
+  return parts; }
+// the hull's file for a navy's kind of ship: each kind has three hulls
+const hullName = (fc, type, v) => (v ? FILES[type] + '-' + fc + '-' + (v + 1) : FILES[type] + (fc ? '2' : ''));
 async function loadModels(onStep) {
   const L = new GLTFLoader(), out = {}, names = [...FILES, ...FILES.map(f => f + '2'), 'relay', 'rock1', 'rock2', 'rock3']; let n = 0;
-  await Promise.all(names.map(async name => { let g; try { g = await L.loadAsync(BASE + 'm/' + name + '.glb'); } catch (e) { if (name.endsWith('2')) return; throw e; } const parts = [];
-    g.scene.updateMatrixWorld(true); g.scene.traverse(o => { if (o.isMesh) { const geo = o.geometry.clone(); geo.applyMatrix4(o.matrixWorld); parts.push({ geo, mat: o.material }); } });
-    out[name] = parts; onStep && onStep(++n / names.length); }));
+  await Promise.all(names.map(async name => { try { out[name] = await loadOne(L, name); } catch (e) { if (!name.endsWith('2')) throw e; } onStep && onStep(++n / names.length); }));
+  // the other two hulls of every kind come in behind the start; a ship launched before its hull has come flies the first
+  out.more = (async () => { for (let v = 1; v < 3; v++) for (let type = 0; type < FILES.length; type++) for (const fc of [0, 1]) { const name = hullName(fc, type, v); try { out[name] = await loadOne(L, name); } catch (e) {} } })();
   return out;
 }
 
@@ -68,8 +77,7 @@ class View {
     this.arena = arena; this.scene = scene; this.units = new Map(); this.tSnap = 0; this.tick = 0; this.winner = -1; this.credits = [0, 0]; this.income = [0, 0]; this.queue = [[], []];
     this.nodes = NODES.map(() => ({ owner: -1, prog: 0 })); this.sel = new Set(); this.plan = new Map(); this.hover = [0, 0]; this.me = 0; this.onEvent = null; this.time = 0; this.shake = 0;
     // ships: an InstancedMesh for each part of each kind for each side
-    this.fac = [0, 1]; this.shipsF = [0, 1].map(fc => FILES.map((f, type) => [0, 1].map(side => (models[f + (fc ? '2' : '')] || models[f]).map(p => { const mat = p.mat.clone(); mat.color.multiply(TINT[side]); if (mat.emissiveMap) { mat.emissive.set(0xffffff); mat.emissiveIntensity = 1.6; } mat.metalness = Math.min(mat.metalness, 0.55); mat.color.multiplyScalar(fc ? 0.95 : 1.6);   // the Admiralty's hulls are near black as they come
-      const im = new THREE.InstancedMesh(p.geo, mat, type === MOTHER ? 1 : MAXU); im.castShadow = im.receiveShadow = true; im.frustumCulled = false; im.count = 0; im.instanceMatrix.setUsage(THREE.DynamicDrawUsage); arena.add(im); return im; }))));
+    this.fac = [0, 1]; this.models = models; this.hulls = new Map(); this.hullOn = []; this.frags = new Map(); this.tintU = [{ value: HULL[0].clone() }, { value: HULL[1].clone() }];
     // engine glow, one soft flame a ship
     const add = (geo, color, n, opt = {}) => { const im = new THREE.InstancedMesh(geo, new THREE.MeshBasicMaterial({ color, blending: THREE.AdditiveBlending, transparent: true, depthWrite: false, toneMapped: false, ...opt }), n); im.frustumCulled = false; im.instanceMatrix.setUsage(THREE.DynamicDrawUsage);
       im.setColorAt(0, _c.set(0)); im.instanceColor.setUsage(THREE.DynamicDrawUsage); arena.add(im); return im; };
@@ -83,7 +91,7 @@ class View {
     this.bolts = new Pool(add(bolt, 0xffffff, 96), 96);
     this.balls = new Pool(add(new THREE.IcosahedronGeometry(1, 3), 0xffffff, 64), 64); soft(this.balls.mesh.material, 3.2);
     // loose things, each a body with its own mass, way and spin: rocks, the pieces of blown ships, hot splinters. Nothing here is played back; step() moves them by what hits them
-    this.bodies = []; this.grp = 0; this.waves = []; this.fragF = models.__frag || (models.__frag = [0, 1].map(fc => FILES.map((f, t) => fracture(models[f + (fc ? '2' : '')] || models[f], CELLS[t])))); this.fragIM = new Map(); this.fragOn = [];
+    this.bodies = []; this.grp = 0; this.waves = []; this.fragIM = new Map(); this.fragOn = [];
     const shard = new THREE.TetrahedronGeometry(1, 0); shard.scale(1, 0.35, 0.7);
     this.shards = new THREE.InstancedMesh(shard, new THREE.MeshStandardMaterial({ color: 0x8a8f96, metalness: 0.6, roughness: 0.5 }), 120); this.shards.castShadow = true; this.shards.frustumCulled = false; this.shards.setColorAt(0, _c.set(0xffffff)); this.shards.count = 0; arena.add(this.shards);
     for (const b of this.bolts.it) { b.a = new THREE.Vector3(); b.b = new THREE.Vector3(); b.c = new THREE.Color(); }
@@ -121,6 +129,19 @@ class View {
     const dg = new THREE.BufferGeometry(); dg.setAttribute('position', new THREE.BufferAttribute(dp, 3));
     this.dust = new THREE.Points(dg, new THREE.PointsMaterial({ size: 0.004, map: dotTex(), color: 0x9fb0c8, transparent: true, opacity: 0.5, depthWrite: false, sizeAttenuation: true })); this.dust.frustumCulled = false; arena.add(this.dust);
   }
+  // which colour a side flies: its navy's, or its own side's when both players chose the same navy
+  ci(side) { return this.fac[0] === this.fac[1] ? side : this.fac[side]; }
+  // a hull's own paint is kept only as light and dark (its panels, wear and grime) and laid over the fleet's colour
+  paint(part, side) { const mat = part.mat.clone(), U = this.tintU[side], gain = part.gain; if (mat.emissiveMap) { mat.emissive.set(0xffffff); mat.emissiveIntensity = 1.6; } mat.metalness = Math.min(mat.metalness, 0.55);
+    mat.onBeforeCompile = (sh) => { sh.uniforms.uTint = U; sh.uniforms.uGain = { value: gain }; sh.fragmentShader = sh.fragmentShader.replace('#include <common>', '#include <common>\nuniform vec3 uTint; uniform float uGain;').replace('#include <map_fragment>', '#include <map_fragment>\n{ vec3 own = diffuseColor.rgb * uGain; float l = dot(own, vec3(0.299, 0.587, 0.114)); diffuseColor.rgb = mix(own, uTint * (0.12 + min(l, 0.75) * 1.7), 0.88); }'); };
+    mat.customProgramCacheKey = () => 'fleet' + side; return mat; }
+  // the hull a ship flies: one of its kind's three, by the ship's number (the same on both headsets)
+  variant(fc, type, id) { const v = id % 3; return this.models[hullName(fc, type, v)] ? v : 0; }
+  parts(fc, type, v) { return this.models[hullName(fc, type, v)] || this.models[FILES[type]]; }
+  hull(fc, type, v, side) { const key = fc * 1000 + type * 100 + v * 10 + side; let H = this.hulls.get(key);
+    if (!H) { H = this.parts(fc, type, v).map(p => { const im = new THREE.InstancedMesh(p.geo, this.paint(p, side), type === MOTHER ? 1 : Math.ceil(MAXU / 2)); im.castShadow = im.receiveShadow = true; im.frustumCulled = false; im.count = 0; im.instanceMatrix.setUsage(THREE.DynamicDrawUsage); this.arena.add(im); this.hullOn.push(im); return im; }); this.hulls.set(key, H); }
+    return H; }
+  frag(fc, type, v) { const key = fc * 100 + type * 10 + v; let F = this.frags.get(key); if (!F) this.frags.set(key, F = fracture(this.parts(fc, type, v), CELLS[type])); return F; }
   body(kind, p, r, m) { const b = { kind, p: new THREE.Vector3().copy(p), v: new THREE.Vector3(), q: new THREE.Quaternion(), w: new THREE.Vector3(), r, m, t: 0, life: 10, hot: 0, grp: 0, s: 1 }; this.bodies.push(b); return b; }
   // a blast's push on every loose thing near it: an impulse that falls off with the square of the distance, off-centre so things spin
   wave(p, E, grp) { for (const b of this.bodies) { if (grp && b.grp === grp && b.t < 0.05) continue; _a.subVectors(b.p, p); const d2 = _a.lengthSq(); if (d2 > 0.5) continue; const d = Math.sqrt(d2) || 1e-4, dv = Math.min(0.6, E / (d2 + 0.0004) / b.m); _a.divideScalar(d);
@@ -141,26 +162,27 @@ class View {
   reset() { this.plan.clear(); this.bodies = this.bodies.filter(b => !b.kind); this.waves.length = 0; this.units.clear(); this.sel.clear(); this.winner = -1; this.tick = 0; for (const r of this.relays) r.shown = 999; }
   // take a picture from the host: every ship's place a step from now, and what happened since the last
   apply(o, now) {
-    this.tick = o.tick; this.fac = o.fac; this.winner = o.winner; this.credits = o.credits; this.income = o.income; this.queue = o.queue; this.tSnap = now;
+    this.tick = o.tick; if (o.fac[0] !== this.fac[0] || o.fac[1] !== this.fac[1] || !this.tinted) { this.fac = o.fac; this.tinted = true; for (const sd of [0, 1]) this.tintU[sd].value.copy(HULL[this.ci(sd)]); } this.winner = o.winner; this.credits = o.credits; this.income = o.income; this.queue = o.queue; this.tSnap = now;
     o.nodes.forEach((d, i) => { if (this.nodes[i]) { this.nodes[i].owner = d.owner; this.nodes[i].prog = d.prog; } });
     const seen = this._seen || (this._seen = new Set()); seen.clear();
     for (const n of o.units) { seen.add(n.id); let u = this.units.get(n.id);
-      if (!u) { u = { id: n.id, type: n.type, side: n.side, x: n.x, y: n.y, z: n.z, yaw: n.yaw, pitch: n.pitch, px: n.x, py: n.y, pz: n.z, pyaw: n.yaw, ppitch: n.pitch, hp: n.hp, roll: 0, thr: 0, ph: (n.id * 2.399) % 6.283, born: now, warp: this.tick > 20 ? 1 : 0, hit: 0, pos: new THREE.Vector3(n.x, n.y, n.z), fwd: new THREE.Vector3(0, 0, 1), quat: new THREE.Quaternion(), k: 0 }; this.units.set(n.id, u); }
+      if (!u) { u = { id: n.id, type: n.type, side: n.side, x: n.x, y: n.y, z: n.z, yaw: n.yaw, pitch: n.pitch, px: n.x, py: n.y, pz: n.z, pyaw: n.yaw, ppitch: n.pitch, hp: n.hp, roll: 0, thr: 0, ph: (n.id * 2.399) % 6.283, born: now, warp: this.tick > 20 ? 1 : 0, v: this.variant(this.fac[n.side], n.type, n.id), hit: 0, pos: new THREE.Vector3(n.x, n.y, n.z), fwd: new THREE.Vector3(0, 0, 1), quat: new THREE.Quaternion(), k: 0, m: 0, seen: true }; this.units.set(n.id, u); }
       else { u.px = u.x; u.py = u.y; u.pz = u.z; u.pyaw = u.yaw; u.ppitch = u.pitch; }
-      if (n.hp < u.hp - 0.0005) u.hit = now; u.x = n.x; u.y = n.y; u.z = n.z; u.yaw = n.yaw; u.pitch = n.pitch; u.hp = n.hp; u.k = n.k; }
+      if (n.hp < u.hp - 0.0005) u.hit = now; u.x = n.x; u.y = n.y; u.z = n.z; u.yaw = n.yaw; u.pitch = n.pitch; u.hp = n.hp; u.k = n.k; u.m = n.m; }
     const ev = o.ev;
     for (let i = 0; i < ev.length;) { const k = ev[i];
-      if (k === 1) { const tg = this.units.get(ev[i + 2]); this.shot(this.units.get(ev[i + 1]), tg, ev[i + 3] & 7); if (tg && ev[i + 3] & 8) { const f = this.fields.take(); f.uid = tg.id; f.life = 0.5; this.onEvent && this.onEvent('field', tg.pos, 0); } i += 4; }
+      if (k === 1) { const tg = this.units.get(ev[i + 2]), v = ev[i + 3], secs = (v >> 5) * STEP; this.shot(this.units.get(ev[i + 1]), tg, v & 7, !!(v & 16), secs); if (tg && v & 8 && !(v & 16)) { const f = this.fields.take(); f.uid = tg.id; f.life = 0.5; f.t = -secs; this.onEvent && this.onEvent('field', tg.pos, 0); } i += 4; }
       else if (k === 2) { const u = this.units.get(ev[i + 1]); if (u) this.blast(u, ev[i + 2]); i += 4; }
       else if (k === 3) { this.onEvent && this.onEvent('built', ev[i + 1], ev[i + 2]); i += 3; }
       else if (k === 4) { this.onEvent && this.onEvent('relay', ev[i + 2], ev[i + 1]); i += 3; }
       else break; }
     for (const id of this.units.keys()) if (!seen.has(id)) { this.units.delete(id); this.sel.delete(id); }
   }
-  shot(a, b, w) {
-    if (!a || !b) return; const T = TYPES[a.type], c = GLOW[a.side];
+  // a shot on its way for secs; one that misses flies on past its target
+  shot(a, b, w, miss, secs) {
+    if (!a || !b) return; const T = TYPES[a.type], c = GLOW[this.ci(a.side)];
     _a.copy(a.pos).addScaledVector(a.fwd, LEN[a.type] * 0.3); _b.copy(b.pos).add(_p.set(Math.sin(a.id + this.tick) * 0.4, Math.cos(a.id * 3 + this.tick) * 0.3, Math.sin(a.id * 7 + this.tick) * 0.4).multiplyScalar(TYPES[b.type].r));
-    const o = this.bolts.take(); o.a.copy(_a); o.b.copy(_b); o.w = w; o.life = w === 2 ? 0.45 : w === 1 ? 0.22 : 0.12; o.c.copy(c); if (w === 2) o.c.lerp(_c.set(0xffffff), 0.35);
+    const o = this.bolts.take(); o.a.copy(_a); o.b.copy(_b); o.w = w; o.life = w === 2 ? 0.45 : Math.max(0.12, secs || 0); o.miss = miss; if (miss) { _p.subVectors(_b, _a).normalize(); _b.addScaledVector(_p, 0.07 + Math.random() * 0.08).add(_x.set(Math.random() - 0.5, Math.random() - 0.5, Math.random() - 0.5).multiplyScalar(Math.max(TYPES[b.type].r, LEN[b.type] * 0.3) * 2.2)); o.b.copy(_b); } o.c.copy(c); if (w === 2) o.c.lerp(_c.set(0xffffff), 0.35);
     o.tid = b.id; o.hitDone = false; this.onEvent && this.onEvent('shot', a, w);
   }
   spark(p, n, sp, c, life) { for (let i = 0; i < n; i++) { const k = this.spI; this.spI = (k + 1) % this.spN; const a = Math.random() * 6.283, z = Math.random() * 2 - 1, r = Math.sqrt(1 - z * z), v = sp * (0.3 + Math.random());
@@ -173,10 +195,10 @@ class View {
     this.spark(u.pos, 14 + big * 22, 0.12 + big * 0.06, _c.set(1, 0.7, 0.3), 0.7 + big * 0.3);
     const l = this.flash[this.flashI ^= 1]; l.position.copy(u.pos); l.t = 0; l.power = 0.8 + big * 0.5; l.distance = (0.25 + big * 0.2) * this.arena.scale.x;
     // the ship comes apart: each piece of its hull leaves from where it sat, with the ship's own way and turn, thrown by a blast set a little off its centre
-    const L = LEN[u.type], fc = this.fac[u.side], cells = this.fragF[fc][u.type], grp = ++this.grp, vx = (u.x - u.px) / STEP, vy = (u.y - u.py) / STEP, vz = (u.z - u.pz) / STEP, yr = Math.atan2(Math.sin(u.yaw - u.pyaw), Math.cos(u.yaw - u.pyaw)) / STEP;
+    const L = LEN[u.type], fc = this.fac[u.side], cells = this.frag(fc, u.type, u.v), grp = ++this.grp, vx = (u.x - u.px) / STEP, vy = (u.y - u.py) / STEP, vz = (u.z - u.pz) / STEP, yr = Math.atan2(Math.sin(u.yaw - u.pyaw), Math.cos(u.yaw - u.pyaw)) / STEP;
     _x.set(Math.random() - 0.5, Math.random() - 0.5, Math.random() - 0.5).multiplyScalar(L * 0.3).applyQuaternion(u.quat).add(u.pos); let mm = 0; for (const c of cells) mm += (c.r * L * 0.55) ** 3; mm /= cells.length;
     const E = FLING[u.type] * mm * ((0.3 * L) ** 2 + 0.0004) * (size === 3 ? 1.6 : 1);
-    cells.forEach((c, ci) => { _p.copy(c.c).multiplyScalar(L).applyQuaternion(u.quat); const b = this.body(1, _a.copy(u.pos).add(_p), c.r * L * 0.55, (c.r * L * 0.55) ** 3); b.q.copy(u.quat); b.type = u.type; b.side = u.side; b.fac = fc; b.cell = ci; b.s = L; b.grp = grp; b.life = (u.type === MOTHER ? 30 : 14) + Math.random() * 8; b.hot = 0.6;
+    cells.forEach((c, ci) => { _p.copy(c.c).multiplyScalar(L).applyQuaternion(u.quat); const b = this.body(1, _a.copy(u.pos).add(_p), c.r * L * 0.55, (c.r * L * 0.55) ** 3); b.q.copy(u.quat); b.type = u.type; b.side = u.side; b.fac = fc; b.hv = u.v; b.cell = ci; b.s = L; b.grp = grp; b.life = (u.type === MOTHER ? 30 : 14) + Math.random() * 8; b.hot = 0.6;
       b.v.set(vx, vy, vz).add(_b.set(0, yr, 0).cross(_p)); b.w.set(0, yr, 0); });
     for (let i = 0, ns = this.bodies.reduce((n, b) => n + (b.kind === 2), 0); i < 4 + big * 5 && ns + i < 70; i++) { const b = this.body(2, _a.set(Math.random() - 0.5, Math.random() - 0.5, Math.random() - 0.5).multiplyScalar(L * 0.4).add(u.pos), L * 0.04, (L * 0.03) ** 3); b.s = L * (0.03 + Math.random() * 0.06); b.life = 5 + Math.random() * 5; b.v.set(vx, vy, vz); b.grp = grp; }
     this.wave(_x, E, 0); this.fire.burst(u.pos, 12 + big * 12, 0.07 + big * 0.04, r * 0.4, 0.6 + big * 0.3, vx, vy, vz);
@@ -191,7 +213,7 @@ class View {
   // draw: every ship between its last two places, floating on its own slow sway, banking into its turns
   draw(now, dt, camera) {
     this.time += dt; const t = this.time, al = Math.min(1.3, (now - this.tSnap) / (STEP * 1000));
-    for (const nv of this.shipsF) for (const row of nv) for (const side of row) for (const im of side) im.count = 0;
+    for (const im of this.hullOn) im.count = 0;
     let nf = 0, nr = 0, nb = 0; camera.getWorldQuaternion(_q2); this.arena.getWorldQuaternion(_q); _q2.premultiply(_q.invert());
     for (const u of this.units.values()) { const T = TYPES[u.type], L = LEN[u.type];
       const yaw = lerpA(u.pyaw, u.yaw, al), pitch = u.ppitch + (u.pitch - u.ppitch) * al, yr = Math.atan2(Math.sin(u.yaw - u.pyaw), Math.cos(u.yaw - u.pyaw)) / STEP;
@@ -202,32 +224,34 @@ class View {
       _e.set(-pitch + Math.sin(t * 0.5 + u.ph) * 0.03 * still, u.type === MOTHER ? (u.side ? 0 : Math.PI) + Math.sin(t * 0.05 + u.ph) * 0.08 : u.type === MINE ? t * 0.8 + u.ph : yaw, u.roll + Math.sin(t * 0.4 + u.ph * 3) * 0.05 * still); _q.setFromEuler(_e); u.quat.copy(_q);
       u.fwd.set(0, 0, 1).applyQuaternion(_q);
       // a new ship drops out of warp: a long streak that closes up into the hull, and a flash where it stops
-      if (u.warp) { const g = Math.min(1, (now - u.born) / 650), w = (1 - g) * (1 - g); if (g >= 1) { u.warp = 0; this.ball(u.pos, L * 0.8, 0.35, _c.copy(GLOW[u.side])); this.onEvent && this.onEvent('warp', u.pos, 0); } _p.copy(u.pos).addScaledVector(u.fwd, -L * w * 7); _m.compose(_p, _q, _s.set(L * (1 - w * 0.6), L * (1 - w * 0.6), L * (1 + w * 14))); }
+      if (u.warp) { const g = Math.min(1, (now - u.born) / 650), w = (1 - g) * (1 - g); if (g >= 1) { u.warp = 0; this.ball(u.pos, L * 0.8, 0.35, _c.copy(GLOW[this.ci(u.side)])); this.onEvent && this.onEvent('warp', u.pos, 0); } _p.copy(u.pos).addScaledVector(u.fwd, -L * w * 7); _m.compose(_p, _q, _s.set(L * (1 - w * 0.6), L * (1 - w * 0.6), L * (1 + w * 14))); }
       else _m.compose(u.pos, _q, _s.setScalar(L));
       // a ship with its hull failing burns
       if (u.hp < 0.45 && Math.random() < dt * (4 + 22 * (0.45 - u.hp))) { _p.set(Math.random() - 0.5, Math.random() - 0.5, Math.random() - 0.5).multiplyScalar(L * 0.55).applyQuaternion(_q).add(u.pos); this.fire.emit(_p, (u.x - u.px) / STEP * 0.4, (u.y - u.py) / STEP * 0.4 + 0.004, (u.z - u.pz) / STEP * 0.4, L * (T.cls ? 0.1 : 0.2), 0.5, 0.9); }
-      for (const im of this.shipsF[this.fac[u.side]][u.type][u.side]) if (im.count < im.instanceMatrix.count) im.setMatrixAt(im.count++, _m);
+      // the other fleet's sneaking ships are not seen until one of yours is close, or they give themselves away
+      u.seen = true; if (u.side !== this.me && u.m === 3 && now - u.hit > 3000) { u.seen = false; for (const o of this.units.values()) if (o.side === this.me && (o.x - u.x) ** 2 + (o.y - u.y) ** 2 + (o.z - u.z) ** 2 < 0.0324) { u.seen = true; break; } if (!u.seen) continue; }
+      for (const im of this.hull(this.fac[u.side], u.type, u.v, u.side)) if (im.count < im.instanceMatrix.count) im.setMatrixAt(im.count++, _m);
       if (T.speed && u.type !== MINE && u.type !== 4) { const fl = 0.85 + Math.sin(t * 40 + u.ph * 9) * 0.15, w = L * (T.cls === 0 ? 0.1 : 0.12) * (0.6 + u.thr * 0.4); _p.copy(u.pos).addScaledVector(u.fwd, -L * 0.46);
-        _m.compose(_p, _q, _s.set(w, w, L * (0.2 + u.thr * 0.8) * fl)); this.flames.setMatrixAt(nf, _m); this.flames.setColorAt(nf++, _c.copy(GLOW[u.side]).multiplyScalar(0.8 + u.thr * 2.2)); }
+        _m.compose(_p, _q, _s.set(w, w, L * (0.2 + u.thr * 0.8) * fl)); this.flames.setMatrixAt(nf, _m); this.flames.setColorAt(nf++, _c.copy(GLOW[this.ci(u.side)]).multiplyScalar((0.8 + u.thr * 2.2) * (u.m >= 2 ? 0.25 : 1))); }
       const sel = this.sel.has(u.id), hov = this.hover[0] === u.id || this.hover[1] === u.id;
-      if (sel || hov) { _m.compose(u.pos, _q.identity(), _s.setScalar(Math.max(T.r * 1.5, L * 0.62))); this.rings.setMatrixAt(nr, _m); this.rings.setColorAt(nr++, sel ? _c.set(0.3, 1, 0.5) : u.side === this.me ? _c.set(1, 1, 1) : _c.set(1, 0.3, 0.2)); }
+      if (sel || hov) { _m.compose(u.pos, _q.identity(), _s.setScalar(Math.max(T.r * 1.5, L * 0.62))); this.rings.setMatrixAt(nr, _m); this.rings.setColorAt(nr++, sel ? _c.set(1, 0.9, 0.3) : u.side === this.me ? _c.set(1, 1, 1) : _c.set(1, 0.3, 0.2)); }
       if (u.hp < 0.999 && (sel || hov || now - u.hit < 3000 || u.type === MOTHER)) { const w = Math.max(0.03, L * 0.8), up = Math.max(T.r, L * 0.3) + 0.012;
         _p.copy(u.pos); _p.y += up; _m.compose(_p, _q2, _s.set(w, 0.004, 1)); this.bars.setMatrixAt(nb, _m); this.bars.setColorAt(nb++, _c.set(0.06, 0.06, 0.06));
         _b.set(-(1 - u.hp) * w * 0.5, 0, 0.0005).applyQuaternion(_q2).add(_p); _m.compose(_b, _q2, _s.set(w * u.hp, 0.004, 1)); this.bars.setMatrixAt(nb, _m); this.bars.setColorAt(nb++, u.hp > 0.5 ? _c.set(0.2, 0.9, 0.3) : u.hp > 0.25 ? _c.set(1, 0.75, 0.1) : _c.set(1, 0.2, 0.1)); } }
-    for (const nv of this.shipsF) for (const row of nv) for (const side of row) for (const im of side) { im.visible = im.count > 0; im.instanceMatrix.needsUpdate = true; }
+    for (const im of this.hullOn) { im.visible = im.count > 0; im.instanceMatrix.needsUpdate = true; }
     this.flames.count = nf; this.flames.instanceMatrix.needsUpdate = true; this.flames.instanceColor.needsUpdate = true;
     this.rings.count = nr; this.rings.instanceMatrix.needsUpdate = true; this.rings.instanceColor.needsUpdate = true;
     this.bars.count = nb; this.bars.instanceMatrix.needsUpdate = true; this.bars.instanceColor.needsUpdate = true;
     // shots
-    for (const o of this.bolts.it) { if (o.life <= 0 || o.t >= o.life) { if (o.life > 0) { this.bolts.mesh.setMatrixAt(o.k, ZERO); o.life = 0; } continue; } o.t += dt; const f = o.t / o.life; _b.copy(o.b); const tg = this.units.get(o.tid); if (tg && o.w !== 2) _b.lerp(tg.pos, 0.6);
+    for (const o of this.bolts.it) { if (o.life <= 0 || o.t >= o.life) { if (o.life > 0) { this.bolts.mesh.setMatrixAt(o.k, ZERO); o.life = 0; } continue; } o.t += dt; const f = o.t / o.life; _b.copy(o.b); const tg = this.units.get(o.tid); if (tg && o.w !== 2 && !o.miss) _b.lerp(tg.pos, 0.6);
       _p.subVectors(_b, o.a); const len = _p.length() || 1e-4; _q.setFromUnitVectors(Z, _p.divideScalar(len));
       if (o.w === 2) { const w = 0.006 * (1 - f) * (0.7 + Math.random() * 0.6); _m.compose(o.a, _q, _s.set(w, w, len)); _c.copy(o.c).multiplyScalar(2 * (1 - f)); }
       else { const tl = Math.min(len, o.w === 1 ? 0.07 : 0.045), w = o.w === 1 ? 0.0035 : 0.002; _a.copy(o.a).addScaledVector(_p, Math.max(0, f * len - tl * 0.5)); _m.compose(_a, _q, _s.set(w, w, tl)); _c.copy(o.c).multiplyScalar(1.6); }
       this.bolts.mesh.setMatrixAt(o.k, _m); this.bolts.mesh.setColorAt(o.k, _c);
-      if (!o.hitDone && (o.w === 2 ? o.t > 0.05 : f > 0.85)) { o.hitDone = true; this.ball(_b, o.w === 2 ? 0.02 : o.w === 1 ? 0.011 : 0.006, 0.18, _c.set(1, 0.85, 0.6)); if (o.w) this.fire.burst(_b, o.w === 2 ? 5 : 2, 0.05, o.w === 2 ? 0.03 : 0.016, 0.4); this.spark(_b, o.w === 2 ? 10 : 3, 0.08, _c.set(1, 0.8, 0.5), 0.35); this.onEvent && this.onEvent('hit', _b, o.w); } }
+      if (!o.hitDone && !o.miss && (o.w === 2 ? o.t > 0.05 : f > 0.85)) { o.hitDone = true; this.ball(_b, o.w === 2 ? 0.02 : o.w === 1 ? 0.011 : 0.006, 0.18, _c.set(1, 0.85, 0.6)); if (o.w) this.fire.burst(_b, o.w === 2 ? 5 : 2, 0.05, o.w === 2 ? 0.03 : 0.016, 0.4); this.spark(_b, o.w === 2 ? 10 : 3, 0.08, _c.set(1, 0.8, 0.5), 0.35); this.onEvent && this.onEvent('hit', _b, o.w); } }
     this.bolts.mesh.instanceMatrix.needsUpdate = true; this.bolts.mesh.instanceColor.needsUpdate = true; this.fire.step(dt, this.arena.scale.x);
-    for (const o of this.fields.it) { if (o.life <= 0) continue; o.t += dt; const u = this.units.get(o.uid), f = o.t / o.life; if (f >= 1 || !u) { this.fields.mesh.setMatrixAt(o.k, ZERO); o.life = 0; continue; } const L = LEN[u.type], w = Math.max(TYPES[u.type].r, L * 0.3) * 1.1;
-      _m.compose(u.pos, u.quat, _s.set(w, w, Math.max(w, L * 0.6))); this.fields.mesh.setMatrixAt(o.k, _m); this.fields.mesh.setColorAt(o.k, _c.copy(GLOW[u.side]).multiplyScalar(1.6 * (1 - f))); }
+    for (const o of this.fields.it) { if (o.life <= 0) continue; o.t += dt; if (o.t < 0) continue; const u = this.units.get(o.uid), f = o.t / o.life; if (f >= 1 || !u) { this.fields.mesh.setMatrixAt(o.k, ZERO); o.life = 0; continue; } const L = LEN[u.type], w = Math.max(TYPES[u.type].r, L * 0.3) * 1.1;
+      _m.compose(u.pos, u.quat, _s.set(w, w, Math.max(w, L * 0.6))); this.fields.mesh.setMatrixAt(o.k, _m); this.fields.mesh.setColorAt(o.k, _c.copy(GLOW[this.ci(u.side)]).multiplyScalar(1.6 * (1 - f))); }
     this.fields.mesh.instanceMatrix.needsUpdate = true; this.fields.mesh.instanceColor.needsUpdate = true;
     for (const o of this.balls.it) { if (o.life <= 0) continue; o.t += dt; if (o.t < 0) continue; const f = o.t / o.life; if (f >= 1) { this.balls.mesh.setMatrixAt(o.k, ZERO); o.life = 0; continue; }
       _m.compose(o.p, _q.identity(), _s.setScalar(o.r * (0.25 + 0.75 * Math.sqrt(f)))); this.balls.mesh.setMatrixAt(o.k, _m); this.balls.mesh.setColorAt(o.k, _c.copy(o.c).multiplyScalar((1 - f) * (1 - f) * 1.3)); }
@@ -236,8 +260,8 @@ class View {
     for (const b of this.bodies) { const sc = b.s * Math.min(1, (b.life - b.t) / 1.5); _m.compose(b.p, b.q, _s.setScalar(sc));
       if (!b.kind) { b.im.setMatrixAt(b.i, _m); continue; } _c.setRGB(1 + b.hot * 0.35, 1 + b.hot * 0.08, 1); if (b.kind === 1 && b.hot > 0.2 && Math.random() < dt * 9) this.fire.emit(b.p, b.v.x * 0.6, b.v.y * 0.6, b.v.z * 0.6, b.r * 0.9, 0.4, Math.min(1, b.hot * 1.4));
       if (b.kind === 2) { if (ns < 120) { this.shards.setMatrixAt(ns, _m); this.shards.setColorAt(ns++, _c); } continue; }
-      for (const pc of this.fragF[b.fac][b.type][b.cell].pieces) { const key = b.fac * 100000 + b.type * 10000 + b.side * 5000 + b.cell * 10 + pc.pi; let im = this.fragIM.get(key);
-        if (!im) { const src = this.shipsF[b.fac][b.type][b.side][pc.pi].material, mat = src.clone(); mat.side = THREE.DoubleSide; im = new THREE.InstancedMesh(pc.geo, mat, b.type === MOTHER ? 1 : TYPES[b.type].cls ? 4 : 8); im.castShadow = im.receiveShadow = true; im.frustumCulled = false; im.count = 0; im.setColorAt(0, _c); this.arena.add(im); this.fragIM.set(key, im); this.fragOn.push(im); }
+      for (const pc of this.frag(b.fac, b.type, b.hv)[b.cell].pieces) { const key = b.hv * 1000000 + b.fac * 100000 + b.type * 10000 + b.side * 5000 + b.cell * 10 + pc.pi; let im = this.fragIM.get(key);
+        if (!im) { const mat = this.paint(this.parts(b.fac, b.type, b.hv)[pc.pi], b.side); mat.side = THREE.DoubleSide; im = new THREE.InstancedMesh(pc.geo, mat, b.type === MOTHER ? 1 : TYPES[b.type].cls ? 4 : 8); im.castShadow = im.receiveShadow = true; im.frustumCulled = false; im.count = 0; im.setColorAt(0, _c); this.arena.add(im); this.fragIM.set(key, im); this.fragOn.push(im); }
         if (im.count < im.instanceMatrix.count) { im.setMatrixAt(im.count, _m); im.setColorAt(im.count++, _c); } } }
     for (const im of this.fragOn) { im.visible = im.count > 0; if (im.visible) { im.instanceMatrix.needsUpdate = true; im.instanceColor.needsUpdate = true; } }
     for (const im of this.rockIM) im.instanceMatrix.needsUpdate = true; this.shards.count = ns; this.shards.instanceMatrix.needsUpdate = true; this.shards.instanceColor.needsUpdate = true;
@@ -252,15 +276,15 @@ class View {
     this.lines.geometry.attributes.position.needsUpdate = true; this.lines.geometry.attributes.color.needsUpdate = true;
     // relays, rocks, dust
     this.relays.forEach((r, i) => { const d = this.nodes[i]; r.model.rotation.y = t * r.spin; const key = d.owner * 1000 + d.prog;
-      if (key !== r.shown) { r.shown = key; r.ring.material.color.copy(d.owner < 0 ? _c.set(0x8892a0) : TEAM[d.owner]); const a = Math.abs(d.prog) / 100; r.fill.visible = a > 0.01;
-        if (r.fill.visible) { r.fill.geometry.dispose(); r.fill.geometry = new THREE.RingGeometry(NODE_R * 0.86, NODE_R * 0.96, 48, 1, 0, a * Math.PI * 2); r.fill.material.color.copy(TEAM[d.prog < 0 ? 0 : 1]); } } });
+      if (key !== r.shown) { r.shown = key; r.ring.material.color.copy(d.owner < 0 ? _c.set(0x8892a0) : TEAM[this.ci(d.owner)]); const a = Math.abs(d.prog) / 100; r.fill.visible = a > 0.01;
+        if (r.fill.visible) { r.fill.geometry.dispose(); r.fill.geometry = new THREE.RingGeometry(NODE_R * 0.86, NODE_R * 0.96, 48, 1, 0, a * Math.PI * 2); r.fill.material.color.copy(TEAM[this.ci(d.prog < 0 ? 0 : 1)]); } } });
     this.sparks.material.size = 0.007 * this.arena.scale.x; this.dust.material.size = 0.004 * this.arena.scale.x; this.dust.rotation.y = t * 0.004; this.shake = Math.max(0, this.shake - dt * 1.5);
   }
   // the ship a ray points at (o and d in the arena's own space, k the arena's scale); own ships first
   pick(o, d, k, maxT) { let best = 0, bs = 1e9;
-    for (const u of this.units.values()) { _p.subVectors(u.pos, o); const t = _p.dot(d); if (t < 0 || t > maxT) continue; const perp = Math.sqrt(Math.max(0, _p.lengthSq() - t * t)), lim = Math.max(TYPES[u.type].r, LEN[u.type] * 0.4) * 1.25 + (0.01 + t * k * 0.022) / k;
+    for (const u of this.units.values()) { if (!u.seen) continue; _p.subVectors(u.pos, o); const t = _p.dot(d); if (t < 0 || t > maxT) continue; const perp = Math.sqrt(Math.max(0, _p.lengthSq() - t * t)), lim = Math.max(TYPES[u.type].r, LEN[u.type] * 0.4) * 1.25 + (0.01 + t * k * 0.022) / k;
       if (perp > lim) continue; const s = perp / lim + t * 0.05 + (u.side === this.me ? 0 : 0.15); if (s < bs) { bs = s; best = u.id; } }
     return best; }
-  near(p, side, r) { let best = 0, bd = 1e9; for (const u of this.units.values()) { if (u.side !== side) continue; const d = u.pos.distanceTo(p) - Math.max(TYPES[u.type].r, LEN[u.type] * 0.35); if (d < r && d < bd) { bd = d; best = u.id; } } return best; }
+  near(p, side, r) { let best = 0, bd = 1e9; for (const u of this.units.values()) { if (u.side !== side || !u.seen) continue; const d = u.pos.distanceTo(p) - Math.max(TYPES[u.type].r, LEN[u.type] * 0.35); if (d < r && d < bd) { bd = d; best = u.id; } } return best; }
 }
 export { View, loadModels, LEN, TEAM, GLOW, BASE };

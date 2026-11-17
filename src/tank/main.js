@@ -6,7 +6,7 @@ const $ = id => document.getElementById(id);
 const BASE = 'tank-assets/';
 
 // ---------- settings (this browser's own) ----------
-const SET={height:0,bright:1,screen:1.6,calm:true,tunnel:true,look:0};
+const SET={height:0,bright:1,screen:1.6,calm:true,tunnel:true,look:1};
 try{Object.assign(SET,JSON.parse(localStorage.getItem('hulldown-set')||'{}'));}catch(e){}
 const saveSet=()=>{try{localStorage.setItem('hulldown-set',JSON.stringify(SET));}catch(e){}};
 // ---------- helpers ----------

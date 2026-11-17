@@ -82,9 +82,9 @@ const srv = require('http').createServer((q, r) => { const f = path.join(ROOT, d
 
   // the three tanks, and the lobby: multiplayer waits for someone to join, then they fight each other or share a mission
   const ctx = await b.newContext({ viewport: { width: 256, height: 144 } }), page2 = async q => { const p = await ctx.newPage(); watch(p); await p.goto(FILE + q); await p.waitForFunction(() => window.game && game.time > .2, null, { timeout: 600000 }).catch(() => {}); return p; };
-  const A = await page2('?local&slot=0'); await A.click('[data-mode="duel"]'); await A.click('[data-tank="hunter"]'); await A.click('#flatBtn', { timeout: 300000 }); await secs(A, .3);
+  const A = await page2('?local&slot=0'); await A.click('[data-mode="duel"]', { timeout: 300000 }); await A.click('[data-tank="hunter"]', { timeout: 300000 }); await A.click('#flatBtn', { timeout: 300000 }); await secs(A, .3);
   ok(await A.evaluate(() => game.type === 'hunter' && game.P.rounds === 20 && game.G.multi && game.G.wait && game.foes.length === 0 && /Waiting/.test(document.querySelector('#msg p').textContent)), 'MULTIPLAYER with the ARCHER (20 rounds): you wait in the lobby for someone to join');
-  const B = await page2('?local&slot=1'); await B.click('[data-tank="light"]'); await B.click('#flatBtn', { timeout: 300000 }); await secs(B, .6); await secs(A, .6);
+  const B = await page2('?local&slot=1'); await B.click('[data-tank="light"]', { timeout: 300000 }); await B.click('#flatBtn', { timeout: 300000 }); await secs(B, .6); await secs(A, .6);
   s = await A.evaluate(() => ({ peers: game.NET.peers.size, wait: game.G.wait, f: game.friends.length, foes: game.foes.length, rem: game.rem.on, d: Math.hypot(game.rem.x - game.P.x, game.rem.z - game.P.z), mode: game.G.mode }));
   ok(s.peers === 1 && !s.wait && s.f === 0 && s.foes === 0 && s.rem && s.d > 300 && s.mode === 'duel', 'a second player in: the fight against each other starts, the other tank ' + Math.round(s.d) + ' m off');
   ok(await B.evaluate(() => game.NET.peers.size === 1 && game.NET.slot === 1 && game.rem.on && game.type === 'light' && game.G.mode === 'duel' && !game.G.wait), 'the second player is in the same fight, in a SCIMITAR, on the mission the first one in chose');

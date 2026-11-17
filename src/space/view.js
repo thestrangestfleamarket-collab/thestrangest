@@ -66,7 +66,7 @@ class Pool {
 class View {
   constructor(arena, models, scene) {
     this.arena = arena; this.scene = scene; this.units = new Map(); this.tSnap = 0; this.tick = 0; this.winner = -1; this.credits = [0, 0]; this.income = [0, 0]; this.queue = [[], []];
-    this.nodes = NODES.map(() => ({ owner: -1, prog: 0 })); this.sel = new Set(); this.hover = [0, 0]; this.me = 0; this.onEvent = null; this.time = 0; this.shake = 0;
+    this.nodes = NODES.map(() => ({ owner: -1, prog: 0 })); this.sel = new Set(); this.plan = new Map(); this.hover = [0, 0]; this.me = 0; this.onEvent = null; this.time = 0; this.shake = 0;
     // ships: an InstancedMesh for each part of each kind for each side
     this.fac = [0, 1]; this.shipsF = [0, 1].map(fc => FILES.map((f, type) => [0, 1].map(side => (models[f + (fc ? '2' : '')] || models[f]).map(p => { const mat = p.mat.clone(); mat.color.multiply(TINT[side]); if (mat.emissiveMap) { mat.emissive.set(0xffffff); mat.emissiveIntensity = 1.6; } mat.metalness = Math.min(mat.metalness, 0.55); mat.color.multiplyScalar(fc ? 0.95 : 1.6);   // the Admiralty's hulls are near black as they come
       const im = new THREE.InstancedMesh(p.geo, mat, type === MOTHER ? 1 : MAXU); im.castShadow = im.receiveShadow = true; im.frustumCulled = false; im.count = 0; im.instanceMatrix.setUsage(THREE.DynamicDrawUsage); arena.add(im); return im; }))));
@@ -98,6 +98,9 @@ class View {
     const ring = new THREE.RingGeometry(0.92, 1, 40); ring.rotateX(-Math.PI / 2);
     this.rings = add(ring, 0xffffff, MAXU + 4, { side: THREE.DoubleSide, blending: THREE.NormalBlending, opacity: 0.9 }); this.rings.count = 0;
     this.bars = add(new THREE.PlaneGeometry(1, 1), 0xffffff, MAXU * 2 + 2, { side: THREE.DoubleSide, blending: THREE.NormalBlending, depthTest: false }); this.bars.count = 0; this.bars.renderOrder = 5;
+    // the missions of the ships you have picked: a line from each through every place it has been told to go
+    this.pathP = new Float32Array(120 * 6); const pg = new THREE.BufferGeometry(); pg.setAttribute('position', new THREE.BufferAttribute(this.pathP, 3).setUsage(THREE.DynamicDrawUsage));
+    this.paths = new THREE.LineSegments(pg, new THREE.LineBasicMaterial({ color: 0x55e08a, transparent: true, opacity: 0.55, depthWrite: false, toneMapped: false })); this.paths.frustumCulled = false; arena.add(this.paths);
     // order lines: where each ship was sent, fading
     this.lineP = new Float32Array(64 * 6); this.lineC = new Float32Array(64 * 6); this.lineT = new Float32Array(64); this.lineI = 0;
     const lg = new THREE.BufferGeometry(); lg.setAttribute('position', new THREE.BufferAttribute(this.lineP, 3).setUsage(THREE.DynamicDrawUsage)); lg.setAttribute('color', new THREE.BufferAttribute(this.lineC, 3).setUsage(THREE.DynamicDrawUsage));
@@ -135,7 +138,7 @@ class View {
       for (const u of this.units.values()) { const R = a.r + Math.max(TYPES[u.type].r, LEN[u.type] * 0.3); _a.subVectors(a.p, u.pos); const d2 = _a.lengthSq(); if (d2 >= R * R || d2 < 1e-10) continue; const d = Math.sqrt(d2); _a.divideScalar(d); a.p.addScaledVector(_a, R - d);
         const rel = _b.set((u.x - u.px) / STEP, (u.y - u.py) / STEP, (u.z - u.pz) / STEP).sub(a.v).multiplyScalar(-1).dot(_a); if (rel < 0) a.v.addScaledVector(_a, -1.5 * rel); } }
   }
-  reset() { this.bodies = this.bodies.filter(b => !b.kind); this.waves.length = 0; this.units.clear(); this.sel.clear(); this.winner = -1; this.tick = 0; for (const r of this.relays) r.shown = 999; }
+  reset() { this.plan.clear(); this.bodies = this.bodies.filter(b => !b.kind); this.waves.length = 0; this.units.clear(); this.sel.clear(); this.winner = -1; this.tick = 0; for (const r of this.relays) r.shown = 999; }
   // take a picture from the host: every ship's place a step from now, and what happened since the last
   apply(o, now) {
     this.tick = o.tick; this.fac = o.fac; this.winner = o.winner; this.credits = o.credits; this.income = o.income; this.queue = o.queue; this.tSnap = now;
@@ -181,8 +184,10 @@ class View {
     if (big >= 2) for (let i = 0; i < (big === 3 ? 9 : 3); i++) this.waves.push({ t: 0.25 + i * (0.2 + Math.random() * 0.25), p: new THREE.Vector3(Math.random() - 0.5, Math.random() - 0.5, Math.random() - 0.5).multiplyScalar(L * 0.7).applyQuaternion(u.quat).add(u.pos), E: E * 0.5, r: r * (0.4 + Math.random() * 0.5) });
     this.shake = Math.max(this.shake, big * 0.3); this.onEvent && this.onEvent('boom', u, size === 3 ? 4 : big);
   }
-  order(ids, p, target) { const c = target ? _c.set(1, 0.25, 0.2) : _c.set(0.3, 1, 0.5);
+  order(ids, p, target, add, tid, now) { this.note(ids, p, add, tid, now || 0); const c = target ? _c.set(1, 0.25, 0.2) : _c.set(0.3, 1, 0.5);
     for (const id of ids) { const u = this.units.get(id); if (!u) continue; const k = this.lineI; this.lineI = (k + 1) % 64; this.lineP.set([u.pos.x, u.pos.y, u.pos.z, p.x, p.y, p.z], k * 6); this.lineC.set([c.r * 0.2, c.g * 0.2, c.b * 0.2, c.r, c.g, c.b], k * 6); this.lineT[k] = 1.4; } }
+  // what you ordered is kept here too, so a picked ship's mission can be drawn: where it goes next, and after
+  note(ids, p, add, tid, now) { for (const id of ids) { const u = this.units.get(id); if (!u || u.type === MOTHER) continue; let L = this.plan.get(id); if (!L || !add || (u.k === 0 && !L.length)) { L = []; this.plan.set(id, L); } if (L.length < 7) L.push({ p: new THREE.Vector3(p.x, p.y, p.z), tid, at: now }); } }
   // draw: every ship between its last two places, floating on its own slow sway, banking into its turns
   draw(now, dt, camera) {
     this.time += dt; const t = this.time, al = Math.min(1.3, (now - this.tSnap) / (STEP * 1000));
@@ -239,13 +244,17 @@ class View {
     for (let k = 0; k < this.spN; k++) { if (this.spL[k] <= 0) continue; this.spL[k] -= dt; const i = k * 3; if (this.spL[k] <= 0) { this.spP[i + 1] = 1e4; continue; } this.spP[i] += this.spV[i] * dt; this.spP[i + 1] += this.spV[i + 1] * dt; this.spP[i + 2] += this.spV[i + 2] * dt; const d = 1 - dt * 2.2; this.spC[i] *= d; this.spC[i + 1] *= d * d; this.spC[i + 2] *= d * d * d; }
     this.sparks.geometry.attributes.position.needsUpdate = true; this.sparks.geometry.attributes.color.needsUpdate = true;
     for (const l of this.flash) { if (l.t >= 1) { l.intensity = 0; continue; } l.t += dt * 1.6; l.intensity = l.power * Math.max(0, 1 - l.t) ** 2; }
+    let np = 0; for (const [id, L] of this.plan) { const u = this.units.get(id); if (!u) { this.plan.delete(id); continue; }
+      while (L.length && (L[0].tid ? !this.units.has(L[0].tid) : u.pos.distanceTo(L[0].p) < 0.045)) L.shift(); if (L.length && u.k === 0 && now - L[L.length - 1].at > 1500) L.length = 0; if (!L.length || !this.sel.has(id)) continue;
+      _a.copy(u.pos); for (const o of L) { if (np >= 120) break; _b.copy(o.tid ? this.units.get(o.tid).pos : o.p); const k = np++ * 6; this.pathP[k] = _a.x; this.pathP[k + 1] = _a.y; this.pathP[k + 2] = _a.z; this.pathP[k + 3] = _b.x; this.pathP[k + 4] = _b.y; this.pathP[k + 5] = _b.z; _a.copy(_b); } }
+    this.paths.geometry.setDrawRange(0, np * 2); this.paths.geometry.attributes.position.needsUpdate = true;
     for (let k = 0; k < 64; k++) { if (this.lineT[k] <= 0) continue; this.lineT[k] -= dt; const d = this.lineT[k] <= 0 ? 0 : 1 - dt * 1.6; for (let j = 0; j < 6; j++) this.lineC[k * 6 + j] *= d; }
     this.lines.geometry.attributes.position.needsUpdate = true; this.lines.geometry.attributes.color.needsUpdate = true;
     // relays, rocks, dust
     this.relays.forEach((r, i) => { const d = this.nodes[i]; r.model.rotation.y = t * r.spin; const key = d.owner * 1000 + d.prog;
       if (key !== r.shown) { r.shown = key; r.ring.material.color.copy(d.owner < 0 ? _c.set(0x8892a0) : TEAM[d.owner]); const a = Math.abs(d.prog) / 100; r.fill.visible = a > 0.01;
         if (r.fill.visible) { r.fill.geometry.dispose(); r.fill.geometry = new THREE.RingGeometry(NODE_R * 0.86, NODE_R * 0.96, 48, 1, 0, a * Math.PI * 2); r.fill.material.color.copy(TEAM[d.prog < 0 ? 0 : 1]); } } });
-    this.dust.rotation.y = t * 0.004; this.shake = Math.max(0, this.shake - dt * 1.5);
+    this.sparks.material.size = 0.007 * this.arena.scale.x; this.dust.material.size = 0.004 * this.arena.scale.x; this.dust.rotation.y = t * 0.004; this.shake = Math.max(0, this.shake - dt * 1.5);
   }
   // the ship a ray points at (o and d in the arena's own space, k the arena's scale); own ships first
   pick(o, d, k, maxT) { let best = 0, bs = 1e9;

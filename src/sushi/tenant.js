@@ -1,38 +1,50 @@
-// a tenant of THE MARKET as they really are, in period dress: their own figure (a Walker of rigid pieces, or a body on 15 bones) sent once by their market page (146bg), drawn here and moved by their bones' matrices ten times a second, with what they hold (a guitar) where their hands have it
+// a tenant of THE MARKET at the cart, as one of the village's own bodies (rb.js) in the colours they wear and at their own height, their name over them (live.js): their figure, sent once by their market page (146bg), is read for those, and what they hold (a guitar) is drawn where their hands have it, its place sent ten times a second; the body itself walks, stands, sits and eats as the cart's people do
 import * as THREE from 'three';
-import { dye } from './pf.js';
+import { makePerson, avatarsReady } from './avatars.js';
+import { bodyInfo, VISITORS } from './rb.js';
 
 const dec = (s, T) => { const b = atob(s), u = new Uint8Array(b.length); for (let i = 0; i < b.length; i++) u[i] = b.charCodeAt(i); return new T(u.buffer); };
+const _c = new THREE.Color(), _h = {};
+// the colours they wear: the two commonest that are neither skin nor hair (by how many points carry them)
+export function wornColours(c) {
+  const n = new Map(); for (let i = 0; i < c.length; i += 3) { _c.setRGB(c[i] / 255, c[i + 1] / 255, c[i + 2] / 255, THREE.SRGBColorSpace); _c.getHSL(_h); const skin = _h.h > 0.015 && _h.h < 0.12 && _h.s > 0.2 && _h.s < 0.8 && _h.l > 0.15 && _h.l < 0.8; if (skin || _h.l < 0.05) continue;
+    const k = ((c[i] >> 4) << 8) | ((c[i + 1] >> 4) << 4) | (c[i + 2] >> 4); n.set(k, (n.get(k) || 0) + 1); }
+  const top = [...n.entries()].sort((a, b) => b[1] - a[1]).map(([k]) => [((k >> 8) & 15) * 17, ((k >> 4) & 15) * 17, (k & 15) * 17]);
+  const a = top[0] || [58, 74, 106], b = top.find((x) => Math.abs(x[0] - a[0]) + Math.abs(x[1] - a[1]) + Math.abs(x[2] - a[2]) > 90) || a.map((v) => v * 0.55); return [a, b];
+}
+// the body's own pictures with its clothes dyed theirs: the robe and sleeves the first colour, the sash and leggings the second (the weave and pattern kept by shade)
+const dyed = (key, [a, b]) => { const info = bodyInfo(key), img = info && info.tex.image; if (!img) return null; const W = img.width, cv = document.createElement('canvas'); cv.width = cv.height = W; const g = cv.getContext('2d'); g.drawImage(img, 0, 0);
+  const q = W / 1024, x0 = Math.round(520 * q), y0 = Math.round(520 * q), s = 496 * q, d = g.getImageData(x0, y0, Math.round(s), Math.round(s)), p = d.data, w = d.width;
+  const band = (v0, v1, col, k) => { let m = 0, n = 0; for (let y = Math.round(v0 * s); y < Math.round(v1 * s); y++) for (let x = 0; x < w; x++) { const i = (y * w + x) * 4; m += p[i] + p[i + 1] + p[i + 2]; n++; } m = m / Math.max(1, n) || 1;
+    for (let y = Math.round(v0 * s); y < Math.round(v1 * s); y++) for (let x = 0; x < w; x++) { const i = (y * w + x) * 4, l = Math.min(1.6, (p[i] + p[i + 1] + p[i + 2]) / m) * k; p[i] = Math.min(255, col[0] * l); p[i + 1] = Math.min(255, col[1] * l); p[i + 2] = Math.min(255, col[2] * l); } };
+  band(0.02, 0.25, a, 1); band(0.33, 0.6, a, 1); band(0.63, 0.8, a, 1); band(0.25, 0.33, b, 1); band(0.81, 0.9, b, 0.8);
+  g.putImageData(d, x0, y0); const t = new THREE.CanvasTexture(cv); t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = 2; return t; };
+const hash = (s) => { let h = 7; for (let i = 0; i < s.length; i++) h = (h * 31 + s.charCodeAt(i)) >>> 0; return h; };
 
-// their own body and face, but dressed for the village (owner, 16 Nov 2026): what they wear dyed to indigo work clothes, skin and hair kept
-const DRESSED = [0x1c2440, 0x3a4a6a, 0xc8c0a8], _k = new THREE.Color();
-const period = (u) => { const f = new Float32Array(u.length); for (let i = 0; i < u.length; i += 3) { _k.setRGB(u[i] / 255, u[i + 1] / 255, u[i + 2] / 255, THREE.SRGBColorSpace); f[i] = _k.r; f[i + 1] = _k.g; f[i + 2] = _k.b; } dye(f, DRESSED); for (let i = 0; i < u.length; i += 3) { _k.setRGB(f[i], f[i + 1], f[i + 2]); const c = _k.getRGB({}, THREE.SRGBColorSpace); u[i] = c.r * 255; u[i + 1] = c.g * 255; u[i + 2] = c.b * 255; } return u; };
-// D: {kind 'w' | 'b', np matrices, n points, lo, hi, s scale to metres, p points, c colours, b piece or bones, i index, x held things [{n, lo, hi, p, c, i}]}; mirror: -1 when the market's alley runs the other way round
-export function tenantFigure(D, mirror = 1) {
+// D: {kind 'w' | 'b', np matrices, n points, lo, hi, s scale to metres, p points, c colours, b piece or bones, i index, x held things [{n, lo, hi, p, c, i}]}; mirror: -1 when the market's alley runs the other way round; who: their name or id (which body they come as)
+export function tenantFigure(D, mirror = 1, who = '') {
   const n = D.n, q = dec(D.p, Uint16Array), P = new Float32Array(n * 3); for (let i = 0; i < n * 3; i++) { const a = i % 3; P[i] = D.lo[a] + (q[i] / 65535) * (D.hi[a] - D.lo[a]); }
-  const g = new THREE.BufferGeometry(); g.setAttribute('position', new THREE.BufferAttribute(P, 3)); g.setAttribute('color', new THREE.BufferAttribute(period(dec(D.c, Uint8Array)), 3, true));
-  const B = dec(D.b, Uint8Array);
-  if (D.kind === 'w') g.setAttribute('pidx', new THREE.BufferAttribute(Float32Array.from(B), 1));
-  else { const bi = new Float32Array(n * 2), bw = new Float32Array(n); for (let i = 0; i < n; i++) { bi[i * 2] = B[i * 3]; bi[i * 2 + 1] = B[i * 3 + 1]; bw[i] = B[i * 3 + 2] / 255; } g.setAttribute('bi', new THREE.BufferAttribute(bi, 2)); g.setAttribute('bw', new THREE.BufferAttribute(bw, 1)); }
-  if (D.i) g.setIndex(new THREE.BufferAttribute(dec(D.i, Uint16Array), 1)); g.computeVertexNormals(); g.computeBoundingSphere();
-  const np = Math.max(1, D.np | 0), PM = { value: Array.from({ length: np }, () => new THREE.Matrix4()) }, cur = Array.from({ length: np }, () => new THREE.Matrix4()), want = Array.from({ length: np }, () => new THREE.Matrix4());
-  const head = D.kind === 'w' ? `attribute float pidx; uniform mat4 uPM[${np}];` : `attribute vec2 bi; attribute float bw; uniform mat4 uPM[${np}];`, at = D.kind === 'w' ? 'mat4 PM=uPM[int(pidx+0.5)];' : 'mat4 PM=uPM[int(bi.x+.5)]*bw+uPM[int(bi.y+.5)]*(1.-bw);';
-  const mat = new THREE.MeshLambertMaterial({ vertexColors: true, side: THREE.DoubleSide });
-  mat.onBeforeCompile = (sh) => { sh.uniforms.uPM = PM; sh.vertexShader = head + '\n' + sh.vertexShader.replace('#include <beginnormal_vertex>', at + ' vec3 objectNormal=normalize(mat3(PM)*normal);').replace('#include <begin_vertex>', 'vec3 transformed=(PM*vec4(position,1.)).xyz;'); };
-  mat.customProgramCacheKey = () => 'tenant' + D.kind + np;
-  const me = new THREE.Mesh(g, mat); me.frustumCulled = false; me.castShadow = true; me.userData.nopick = true;
-  const root = new THREE.Group(), inner = new THREE.Group(); inner.scale.set(D.s[0] * mirror, D.s[1], D.s[2]); inner.add(me); root.add(inner);
+  const B = dec(D.b, Uint8Array), cols = wornColours(dec(D.c, Uint8Array)), np = Math.max(1, D.np | 0), M = Array.from({ length: np }, () => new THREE.Matrix4());
+  const root = new THREE.Group(), inner = new THREE.Group(); inner.scale.set(D.s[0] * mirror, D.s[1], D.s[2]); root.add(inner);
   const held = (Array.isArray(D.x) ? D.x : []).slice(0, 8).map((x) => { const q = dec(x.p, Uint16Array), P = new Float32Array(x.n * 3); for (let i = 0; i < x.n * 3; i++) { const a = i % 3; P[i] = x.lo[a] + (q[i] / 65535) * (x.hi[a] - x.lo[a]); }
     const g = new THREE.BufferGeometry(); g.setAttribute('position', new THREE.BufferAttribute(P, 3)); g.setAttribute('color', new THREE.BufferAttribute(dec(x.c, Uint8Array), 3, true)); if (x.i) g.setIndex(new THREE.BufferAttribute(dec(x.i, Uint16Array), 1)); g.computeVertexNormals();
     const m = new THREE.Mesh(g, new THREE.MeshLambertMaterial({ vertexColors: true, side: THREE.DoubleSide })); m.matrixAutoUpdate = false; m.visible = false; m.castShadow = true; m.userData.nopick = true; m.frustumCulled = false; inner.add(m); return { m, cur: new THREE.Matrix4(), want: new THREE.Matrix4(), on: false }; });
-  let got = false;
-  return { root, key: '',
-    // the bones as their market page posed them: 12 numbers a matrix
-    pose(m, x) { if (!Array.isArray(m)) return; for (let j = 0; j < held.length; j++) { const H = held[j], a = Array.isArray(x) ? x[j] : null; if (!Array.isArray(a) || a.length < 12) { H.on = H.m.visible = false; continue; } H.want.set(+a[0], +a[3], +a[6], +a[9], +a[1], +a[4], +a[7], +a[10], +a[2], +a[5], +a[8], +a[11], 0, 0, 0, 1); if (!H.on) { H.on = true; H.cur.copy(H.want); H.m.matrix.copy(H.want); H.m.visible = true; } } for (let i = 0; i < np && i * 12 + 11 < m.length; i++) { const k = i * 12, e = want[i].elements; e[0] = +m[k]; e[1] = +m[k + 1]; e[2] = +m[k + 2]; e[3] = 0; e[4] = +m[k + 3]; e[5] = +m[k + 4]; e[6] = +m[k + 5]; e[7] = 0; e[8] = +m[k + 6]; e[9] = +m[k + 7]; e[10] = +m[k + 8]; e[11] = 0; e[12] = +m[k + 9]; e[13] = +m[k + 10]; e[14] = +m[k + 11]; e[15] = 1; } if (!got) { got = true; for (let i = 0; i < np; i++) { cur[i].copy(want[i]); PM.value[i].copy(want[i]); } } },
-    // eased toward the last pose, so ten a second look smooth
-    update(dt) { if (!got) return; const k = Math.min(1, dt * 12); for (let i = 0; i < np; i++) { const a = cur[i].elements, b = want[i].elements, o = PM.value[i].elements; for (let j = 0; j < 16; j++) o[j] = a[j] += (b[j] - a[j]) * k; }
-      for (const H of held) if (H.on) { const a = H.cur.elements, b = H.want.elements; for (let j = 0; j < 16; j++) a[j] += (b[j] - a[j]) * k; H.m.matrix.copy(H.cur); H.m.matrixWorldNeedsUpdate = true; } },
+  // how tall they stand: their points as their rig first poses them (12 numbers a bone)
+  const tall = (m) => { for (let i = 0; i < np && i * 12 + 11 < m.length; i++) { const k = i * 12; M[i].set(+m[k], +m[k + 3], +m[k + 6], +m[k + 9], +m[k + 1], +m[k + 4], +m[k + 7], +m[k + 10], +m[k + 2], +m[k + 5], +m[k + 8], +m[k + 11], 0, 0, 0, 1); }
+    let lo = 1e9, hi = -1e9; const v = new THREE.Vector3(), u = new THREE.Vector3(); for (let j = 0; j < n; j += 3) { v.set(P[j * 3], P[j * 3 + 1], P[j * 3 + 2]); if (D.kind === 'w') v.applyMatrix4(M[Math.min(np - 1, B[j])]); else { const w = B[j * 3 + 2] / 255; u.copy(v).applyMatrix4(M[Math.min(np - 1, B[j * 3 + 1])]).multiplyScalar(1 - w); v.applyMatrix4(M[Math.min(np - 1, B[j * 3])]).multiplyScalar(w).add(u); } lo = Math.min(lo, v.y); hi = Math.max(hi, v.y); }
+    return (hi - lo) * D.s[1]; };
+  const key = VISITORS[hash(String(who) + (D.n | 0)) % VISITORS.length];
+  let got = false, me = null, height = 0, map = null; const sticks = null;
+  const make = () => { if (me || !avatarsReady()) return; const info = bodyInfo(key); if (!info) return; map ||= dyed(key, cols); const sc = height > 0.5 ? THREE.MathUtils.clamp(height / info.height, 0.8, 1.2) : 1;
+    me = makePerson(0, key, { map, scale: sc }); me.root.traverse((o) => { o.userData.nopick = true; if (o.isMesh) o.castShadow = true; }); root.add(me.root); };
+  return { root, key: '', body: key, colours: cols, get person() { return me; },
+    // the bones as their market page posed them: their held things follow; the first standing pose gives their height
+    pose(m, x) { if (!Array.isArray(m)) return; if (!got) { got = true; try { height = tall(m); } catch (e) { height = 0; } make(); }
+      for (let j = 0; j < held.length; j++) { const H = held[j], a = Array.isArray(x) ? x[j] : null; if (!Array.isArray(a) || a.length < 12) { H.on = H.m.visible = false; continue; } H.want.set(+a[0], +a[3], +a[6], +a[9], +a[1], +a[4], +a[7], +a[10], +a[2], +a[5], +a[8], +a[11], 0, 0, 0, 1); if (!H.on) { H.on = true; H.cur.copy(H.want); H.m.matrix.copy(H.want); H.m.visible = true; } } },
+    // how they are (walk, stand, sit, eat), as fast as they go, looking at what they look at
+    update(dt, how = 'stand', speed = 1.3, look = null) { if (!got) return; make(); if (me) { me.pose = how; me.speed = Math.max(0.6, speed); me.look = look; me.update(dt); }
+      const k = Math.min(1, dt * 12); for (const H of held) if (H.on) { const a = H.cur.elements, b = H.want.elements; for (let j = 0; j < 16; j++) a[j] += (b[j] - a[j]) * k; H.m.matrix.copy(H.cur); H.m.matrixWorldNeedsUpdate = true; } },
     held: () => held.filter((H) => H.on).length,
-    posed: () => got, hipY: () => want[0].elements[13],
-    dispose() { root.removeFromParent(); g.dispose(); mat.dispose(); for (const H of held) { H.m.geometry.dispose(); H.m.material.dispose(); } } };
+    posed: () => got, height: () => height, sticks,
+    dispose() { root.removeFromParent(); if (map) map.dispose(); if (me) me.root.traverse((o) => { if (o.isMesh && o.material && o.material.map === map) o.material.dispose(); }); for (const H of held) { H.m.geometry.dispose(); H.m.material.dispose(); } } };
 }

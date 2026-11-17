@@ -89,7 +89,7 @@ function card(lines, w = 0.86) {
   return m;
 }
 const VR_GUIDE = [['RIGHT TRIGGER', 'kick drum'], ['LEFT TRIGGER', 'open the hi-hat'], ['GRIP ON A CYMBAL', 'choke it'], ['RIGHT STICK  ↕', 'stick angle'], ['RIGHT GRIP + STICK  ↕', 'body forward / back'], ['LEFT STICK  ↕', 'seat height'],
-  ['LEFT STICK  ↔', 'timing: earlier / later'], ['RIGHT STICK  ↔ / CLICK', 'metronome tempo / on-off'], ['LEFT STICK  CLICK', 'garage door up / down'], ['HOLD A', 'talk to a neighbour'], ['HOLD X', 'sit me at the kit again'], ['B or Y', 'hide this guide']];
+  ['LEFT STICK  ↔', 'timing: earlier / later'], ['RIGHT STICK  ↔ / CLICK', 'metronome tempo / on-off'], ['LEFT STICK  CLICK', 'garage door up / down'], ['HOLD A', 'talk to a neighbour'], ['HOLD X', 'sit me at the kit again'], ['BOTH TRIGGERS, 3 s', 'send a picture of what you see'], ['B or Y', 'hide this guide']];
 
 // a small readout that shows only while a setting is being changed
 const readout = (() => {
@@ -212,6 +212,26 @@ function onHit(piece, vel, zone, r, lx, lz, side) {
 }
 function kick(vel) { onHit('kick', vel, 'head', 0, 0, 0, null); rumble('right', 0.35 + 0.45 * vel, 0.06); rumble('left', 0.15 + 0.25 * vel, 0.05); }
 
+// ---------- a picture of what you see, sent to the owners' queue (both triggers held three seconds; P on a screen) ----------
+const snapper = { hold: 0, sent: false, busy: false };
+function snap() { // one more look from your eyes into a picture: the headset's own picture cannot be read back
+  const W = 960, H = 600, rt = new THREE.WebGLRenderTarget(W, H), cam = new THREE.PerspectiveCamera(88, W / H, 0.03, 70), x = renderer.xr, was = x.enabled, keepT = renderer.getRenderTarget();
+  rt.texture.colorSpace = THREE.SRGBColorSpace; cam.position.copy(head.pos); cam.quaternion.copy(head.quat); cam.updateMatrixWorld(true);
+  const buf = new Uint8Array(W * H * 4); x.enabled = false;
+  try { renderer.setRenderTarget(rt); renderer.render(scene, cam); renderer.readRenderTargetPixels(rt, 0, 0, W, H, buf); } finally { renderer.setRenderTarget(keepT); x.enabled = was; rt.dispose(); }
+  const c = document.createElement('canvas'); c.width = W; c.height = H; const g = c.getContext('2d'), im = g.createImageData(W, H);
+  for (let y = 0; y < H; y++) im.data.set(buf.subarray((H - 1 - y) * W * 4, (H - y) * W * 4), y * W * 4);
+  g.putImageData(im, 0, 0); return c.toDataURL('image/jpeg', 0.72);
+}
+async function sendPicture(now) {
+  if (snapper.busy) return; snapper.busy = true; readout.show('PICTURE TAKEN, SENDING', now);
+  const jpg = snap(), ctx = { game: 'drums', mode: D.mode, hour: +life.hour.toFixed(1), door: +garage.door.open.toFixed(2), set, hits: stats.hits, last: stats.last || null, slow: Math.round(stats.slow), lamp: lampOn, lean: !!garage.lean, latency: +sound.latency.toFixed(3), near: life.street.nearest()?.id || '', ua: navigator.userAgent.slice(0, 160) };
+  D.lastShot = jpg.length;
+  try { const r = await fetch('/sushi/report', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ jpg, context: ctx }) }), j = r.ok ? await r.json() : null;
+    readout.show(j && j.ok ? 'PICTURE SENT' : r.status === 401 ? 'SIGN IN TO SEND A PICTURE' : 'PICTURE NOT SENT', clock.elapsedTime); } catch (e) { readout.show('PICTURE NOT SENT', clock.elapsedTime); }
+  snapper.busy = false;
+}
+
 // ---------- where you sit ----------
 function placeRig() {
   // the headset's own position inside the rig is taken out, so your eyes are where the drummer's are whatever your chair
@@ -309,6 +329,8 @@ function vrInput(dt, now) {
     P.trig = trig; P.th = th; P.b = b;
   }
   for (const s of ['left', 'right']) if (!any[s]) sticks.set(s, _p, _q, false);
+  // both triggers held three seconds: a picture of what you see goes to the owners
+  if ((xr.prev.left.trig || 0) > 0.8 && (xr.prev.right.trig || 0) > 0.8) { snapper.hold += dt; if (snapper.hold > 0.4 && !snapper.sent) readout.show('PICTURE IN ' + Math.max(1, Math.ceil(3 - snapper.hold)), now); if (snapper.hold >= 3 && !snapper.sent) { snapper.sent = true; sendPicture(now); } } else { snapper.hold = 0; snapper.sent = false; }
 }
 
 // ---------- a screen: keys and the mouse ----------
@@ -344,6 +366,7 @@ addEventListener('keydown', (e) => {
   else if (e.code === 'KeyH') guide.on = !guide.on;
   else if (e.code === 'KeyO') { garage.toggleDoor(); readout.show(garage.door.want > 0.5 ? 'DOOR UP' : 'DOOR DOWN', now); }
   else if (e.code === 'KeyN') life.skip();
+  else if (e.code === 'KeyP') sendPicture(now);
   else if (e.code === 'Enter') { const b = $('say'); b.hidden = false; b.focus(); e.preventDefault(); }
   else if (e.code === 'KeyM') toggleMetro(now);
   else if (e.code === 'BracketLeft' || e.code === 'BracketRight') { set.bpm = Math.max(40, Math.min(240, set.bpm + (e.code === 'BracketLeft' ? -4 : 4))); readout.show('TEMPO ' + set.bpm, now); keep(); }

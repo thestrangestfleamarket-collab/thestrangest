@@ -1,10 +1,10 @@
 // SWIVEL's fight with no screen or sound: your gunship is at the origin (the turret's seat; nose to +z), everything else flies round it; metres and seconds
 export const TYPES = {
-  fighter: { hp: 4, r: 11, speed: 120, turn: 1.5, score: 100, len: 22 },
-  ace: { hp: 7, r: 11, speed: 150, turn: 2.0, score: 250, len: 24 },
-  bomber: { hp: 18, r: 19, speed: 55, turn: 0.7, score: 400, len: 46 },
+  fighter: { hp: 4, r: 13, speed: 120, turn: 1.5, score: 100, len: 30 },
+  ace: { hp: 7, r: 13, speed: 150, turn: 2.0, score: 250, len: 32 },
+  bomber: { hp: 18, r: 22, speed: 55, turn: 0.7, score: 400, len: 58 },
   torp: { hp: 1, r: 6, speed: 75, turn: 1.4, score: 25, len: 6 },
-  drone: { hp: 1, r: 8, speed: 100, turn: 1.7, score: 40, len: 10 },
+  drone: { hp: 1, r: 9, speed: 100, turn: 1.7, score: 40, len: 14 },
   cruiser: { hp: 160, r: 30, speed: 0, turn: 0, score: 2000, len: 300 },
   pod: { hp: 12, r: 12, speed: 0, turn: 0, score: 150, len: 16 },
 };

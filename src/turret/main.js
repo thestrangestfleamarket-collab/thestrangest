@@ -8,7 +8,7 @@ import { Post } from '../space/post.js';
 const $ = id => document.getElementById(id), EYE = 1.2;
 const renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: 'high-performance' });
 const Q = new URLSearchParams(location.search), LINES = +Q.get('lines') || 480, small = () => Math.min(devicePixelRatio, LINES / innerHeight);   // drawn small and soft: 480 lines on a screen, smaller eyes in the headset
-renderer.setPixelRatio(small()); renderer.setSize(innerWidth, innerHeight); renderer.shadowMap.enabled = true; renderer.toneMappingExposure = 0.9;
+renderer.setPixelRatio(small()); renderer.setSize(innerWidth, innerHeight); renderer.shadowMap.enabled = true; renderer.toneMappingExposure = 1.15;
 renderer.toneMapping = THREE.ACESFilmicToneMapping; renderer.outputColorSpace = THREE.SRGBColorSpace;
 renderer.xr.enabled = true; renderer.xr.setReferenceSpaceType('local-floor'); renderer.xr.setFoveation(1); renderer.xr.setFramebufferScaleFactor(0.8);
 document.body.appendChild(renderer.domElement);
@@ -40,7 +40,7 @@ const guide = { step: 0, t: 0, n: 0,
   begin() { let seen = false; try { seen = !!localStorage.getItem('swivel-guide'); } catch { } this.step = seen || Q.has('noguide') ? 0 : 1; this.t = 0; this.n = 0; this.show(); },
   show() { const vr = mode === 'vr', S = [null, ['HOLD THE ' + (vr ? 'TRIGGER' : 'MOUSE BUTTON'), 'the guns fire where you point'], ['AIM AT THE YELLOW RING', 'it is where the ship will be when the bolts arrive'], [vr ? 'SQUEEZE A GRIP' : 'RIGHT CLICK', 'a missile homes on the boxed ship'], ['RED ARROWS: TURN THAT WAY', 'they come from every side']][this.step]; if (S) world.say(S[0], S[1], 1e9); },
   next() { this.step++; this.t = 0; if (this.step > 4) { this.step = 0; world.say('', '', 0); try { localStorage.setItem('swivel-guide', '1'); } catch { } } else this.show(); },
-  on(e) { if (!this.step) return; if (this.step === 1 && e.t === 'fire' && ++this.n >= 8) this.next(); else if (this.step === 2 && e.t === 'boom' && e.pts) this.next(); else if (this.step === 3 && e.t === 'missile') this.next(); else if (e.t === 'over') { this.step = 0; } },
+  on(e) { if (!this.step) return; if (this.step === 1 && e.t === 'fire' && ++this.n >= 8) this.next(); else if (this.step <= 2 && e.t === 'boom' && e.pts) { this.step = 2; this.next(); } else if (this.step === 3 && e.t === 'missile') this.next(); else if (e.t === 'over') { this.step = 0; } },
   tick(dt) { if (!this.step) return; this.t += dt; if (this.step === 3 && this.t > 14 || this.step === 4 && this.t > 6 || this.step === 2 && this.t > 60) this.next(); } };
 function missile(from) {
   let o, d; if (from) { o = from.getWorldPosition(_a); d = _b.set(0, 0, -1).applyQuaternion(from.getWorldQuaternion(_q)); } else { o = aim.o; d = aim.d; }
@@ -55,7 +55,7 @@ addEventListener('pointerup', () => { held = keys.has('Space'); });
 addEventListener('pointermove', e => { if (mode !== 'screen' || !(document.pointerLockElement === cv || e.pointerType !== 'mouse' && e.buttons)) return; look(yaw - e.movementX * 0.0022, pitch - e.movementY * 0.0022); });
 addEventListener('keydown', e => { keys.add(e.code); if (mode !== 'screen') return; if (e.code === 'Space' || e.code === 'Enter') { held = e.code === 'Space'; press(); e.preventDefault(); } if (e.code === 'KeyF') missile(); });
 addEventListener('keyup', e => { keys.delete(e.code); if (e.code === 'Space') held = false; });
-function look(y, p) { yaw = y; pitch = Math.max(-0.35, Math.min(1.45, p)); }
+function look(y, p) { yaw = y; pitch = Math.max(-1.2, Math.min(1.45, p)); }
 
 // which way to turn, as a gunner is told it: by the clock, twelve the ship's nose
 const clock = az => { const h = Math.round(Math.atan2(Math.cos(az), -Math.sin(az)) / (Math.PI / 6)); return ((h % 12) + 12) % 12 || 12; };

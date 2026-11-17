@@ -33,7 +33,7 @@ export class World {
     this.scene = scene; this.camera = camera; this.ships = new Map(); this.t = 0; this.msgT = 0; this.hurtT = 0; this.kick = 0; this.hitT = 0; this.flash = [];
     scene.environment = new THREE.PMREMGenerator(renderer).fromScene(new RoomEnvironment(), 0.04).texture; scene.environmentIntensity = 0.07;
     // the only light out here is the sun; a breath of fill so the dark side is not a hole
-    scene.add(new THREE.HemisphereLight(0x5a6a9a, 0x05060a, 0.15)); const sun = this.sun = new THREE.DirectionalLight(0xfff1dc, 3.3); sun.position.copy(SUN).multiplyScalar(9); scene.add(sun);
+    scene.add(new THREE.HemisphereLight(0x7f90c0, 0x161a26, 0.5)); const sun = this.sun = new THREE.DirectionalLight(0xfff1dc, 3.9); sun.position.copy(SUN).multiplyScalar(9); scene.add(sun);
     sun.castShadow = true; sun.shadow.mapSize.set(1024, 1024); Object.assign(sun.shadow.camera, { left: -3, right: 3, top: 3, bottom: -3, near: 1, far: 18 }); sun.shadow.bias = -0.0006; sun.shadow.normalBias = 0.02;
     this.tex = { soft: glow('rgba(255,255,255,1)', 'rgba(255,255,255,0.35)'), fire: glow('rgba(255,244,214,0.9)', 'rgba(255,128,40,0.4)'), blue: glow('rgba(214,240,255,0.9)', 'rgba(60,150,255,0.35)') };
     this.cockpit(); this.marks(); this.pools(); this.dust();
@@ -56,7 +56,7 @@ export class World {
     const con = new THREE.Group(); con.add(mfd); mfd.scale.setScalar(2); con.position.set(0, -1.17, -0.98); con.rotation.x = -0.5; this.yoke.add(con); this.con = con;
     this.scr.position.set(0, 0.478, 0.332); con.add(this.scr); this.scr.visible = true;
     radio.position.set(-0.78, -1.2, 0.72); radio.rotation.y = 2.4; this.fix.add(radio); sw.position.set(1.0, -1.2, 0.62); sw.rotation.y = -2.1; this.fix.add(sw);
-    for (const g of [this.fix, this.yoke]) g.traverse(o => { if (o.isMesh && o !== this.scr && !o.isSprite) { o.castShadow = o.receiveShadow = true; if (o.material && o.material.envMapIntensity !== undefined) o.material.envMapIntensity = 1; } });
+    for (const g of [this.fix, this.yoke]) g.traverse(o => { if (o.isMesh && o !== this.scr && o !== this.bulb && !o.isSprite) { o.castShadow = o.receiveShadow = true; if (o.material && o.material.envMapIntensity !== undefined) o.material.envMapIntensity = 1; } });
     this.rocks();
   }
   make(name, length) { const g = new THREE.Group(); for (const p of this.parts[name]) g.add(new THREE.Mesh(p.geo, p.mat)); g.scale.setScalar(length); return g; }
@@ -85,7 +85,9 @@ export class World {
     // the display's picture, set on the real unit's glass when it has loaded; its glow is the turret's own light
     const c = this.hudC = document.createElement('canvas'); c.width = 512; c.height = 420; this.hudT = new THREE.CanvasTexture(c); this.hudT.colorSpace = THREE.SRGBColorSpace; this.hudKey = '';
     this.scr = new THREE.Mesh(new THREE.PlaneGeometry(0.3, 0.246), new THREE.MeshBasicMaterial({ map: this.hudT, toneMapped: false, color: 0xb8b8b8 })); this.scr.visible = false; this.scr.layers.set(HUD);
-    const lamp = new THREE.PointLight(0x6fe8c8, 0.5, 2.6, 1.8); lamp.position.set(0, -0.55, -0.8); yoke.add(lamp);
+    const lamp = new THREE.PointLight(0x6fe8c8, 1.1, 3, 1.6); lamp.position.set(0, -0.55, -0.8); yoke.add(lamp);
+    // the turret's work lamp, under the cap: what you see the seat, the floor and the radio by
+    const work = new THREE.PointLight(0xffc38a, 2.2, 5, 1.4); work.position.set(0, 1.3, 0); fix.add(work); const bulb = new THREE.Mesh(new THREE.SphereGeometry(0.035, 10, 8), new THREE.MeshBasicMaterial({ color: 0xffd2a0, toneMapped: false })); bulb.position.set(0, 1.38, 0); fix.add(bulb); this.bulb = bulb;
   }
 
   // ---- marks: the sight, boxes on ships, where to shoot, arrows to what is out of view, words ----
@@ -127,7 +129,8 @@ export class World {
     bm.instanceMatrix.setUsage(THREE.DynamicDrawUsage); bm.setColorAt(0, _c.set(1, 1, 1)); bm.frustumCulled = false; bm.count = 0; this.scene.add(bm);
     const NP = this.NP = 1400, pos = new Float32Array(NP * 3), col = new Float32Array(NP * 3); this.pv = new Float32Array(NP * 3); this.pl = new Float32Array(NP); this.pc = new Float32Array(NP * 4); this.pn = 0;
     const pg = this.pg = new THREE.BufferGeometry(); pg.setAttribute('position', new THREE.BufferAttribute(pos, 3).setUsage(THREE.DynamicDrawUsage)); pg.setAttribute('color', new THREE.BufferAttribute(col, 3).setUsage(THREE.DynamicDrawUsage));
-    const pts = new THREE.Points(pg, new THREE.PointsMaterial({ map: this.tex.soft, size: 3.2, vertexColors: true, blending: THREE.AdditiveBlending, depthWrite: false, transparent: true, toneMapped: false })); pts.frustumCulled = false; this.scene.add(pts);
+    const pm = new THREE.PointsMaterial({ map: this.tex.soft, size: 3.2, vertexColors: true, blending: THREE.AdditiveBlending, depthWrite: false, transparent: true, toneMapped: false }); pm.onBeforeCompile = sh => { sh.vertexShader = sh.vertexShader.replace('#include <fog_vertex>', 'gl_PointSize = min(gl_PointSize, 9.0);\n#include <fog_vertex>'); };
+    const pts = new THREE.Points(pg, pm); pts.frustumCulled = false; this.scene.add(pts);
     this.blasts = Array.from({ length: 28 }, () => { const s = new THREE.Sprite(new THREE.SpriteMaterial({ map: this.tex.fire, blending: THREE.AdditiveBlending, depthWrite: false, transparent: true, toneMapped: false })); s.visible = false; s.userData = { t: 0, life: 1, v: new THREE.Vector3() }; this.scene.add(s); return s; }); this.bn = 0;
     this.rings = Array.from({ length: 4 }, () => { const r = new THREE.Mesh(new THREE.RingGeometry(0.955, 1, 64), new THREE.MeshBasicMaterial({ color: 0xffc890, blending: THREE.AdditiveBlending, depthWrite: false, transparent: true, side: THREE.DoubleSide, toneMapped: false })); r.visible = false; r.userData = { t: 0 }; this.scene.add(r); return r; }); this.rn = 0;
     this.mslG = new THREE.ConeGeometry(0.5, 3.2, 8).rotateX(Math.PI / 2); this.mslM = new THREE.MeshStandardMaterial({ color: 0xd8dde6, metalness: 0.6, roughness: 0.4, emissive: 0x442200 }); this.msls = new Map();
@@ -142,7 +145,7 @@ export class World {
     for (const w of W) { const m = new THREE.Mesh(w.geo, w.mat); m.position.copy(w.c).applyMatrix4(o.g.matrixWorld); m.quaternion.copy(o.g.quaternion); m.scale.copy(o.g.scale); this.scene.add(m);
       const out = _w.copy(m.position).sub(o.g.position); if (out.lengthSq() < 1e-6) out.set(Math.random() - 0.5, Math.random() - 0.5, Math.random() - 0.5); out.normalize();
       this.bits.push({ m, v: out.multiplyScalar(speed * (0.35 + Math.random() * 0.65)).add(v).clone(), ax: new THREE.Vector3(Math.random() - 0.5, Math.random() - 0.5, Math.random() - 0.5).normalize(), w: (Math.random() - 0.5) * 5, life: 5 + Math.random() * 3, s: o.g.scale.x }); } }
-  blast(p, v, size, life, map) { const s = this.blasts[this.bn = (this.bn + 1) % this.blasts.length]; s.material.map = map || this.tex.fire; s.position.copy(p); s.userData.v.copy(v); s.userData.t = 0; s.userData.life = life; s.userData.size = size; s.visible = true; }
+  blast(p, v, size, life, map) { const s = this.blasts[this.bn = (this.bn + 1) % this.blasts.length]; s.material.map = map || this.tex.fire; s.position.copy(p); s.userData.v.copy(v); s.userData.t = 0; s.userData.life = life; s.userData.size = Math.min(size, p.length() * 0.12); s.visible = true; }
   ring(p, size) { const r = this.rings[this.rn = (this.rn + 1) % this.rings.length]; r.position.copy(p); r.lookAt(ZERO); r.userData.t = 0; r.userData.size = size; r.visible = true; }
 
   // what the fight just did, shown
@@ -150,13 +153,13 @@ export class World {
     const p = e.p ? new THREE.Vector3(e.p[0], e.p[1], e.p[2]) : null, v = e.v ? new THREE.Vector3(e.v[0], e.v[1], e.v[2]) : new THREE.Vector3();
     if (e.t === 'fire') { this.kick = 1; this.fireG = 1; }
     else if (e.t === 'hit') { this.spark(p, v, 6, 30, 0.4, 1, 0.8, 0.4); this.hitT = 0.3; }
-    else if (e.t === 'shield') { this.blast(p, v, 14, 0.35, this.tex.blue); this.hurtT = Math.max(this.hurtT, 0.25); }
-    else if (e.t === 'hull') { this.blast(p, v, 12, 0.5); this.spark(p, v, 24, 25, 0.9, 1, 0.6, 0.2); this.hurtT = 0.7; }
+    else if (e.t === 'shield') { this.blast(p, v, 4, 0.3, this.tex.blue); this.spark(p, v, 8, 14, 0.5, 0.5, 0.8, 1); this.hurtT = Math.max(this.hurtT, 0.25); }
+    else if (e.t === 'hull') { this.blast(p, v, 4, 0.4); this.spark(p, v, 24, 25, 0.9, 1, 0.6, 0.2); this.hurtT = 0.7; }
     else if (e.t === 'boom') { const big = { cruiser: 190, bomber: 60, pod: 34, fighter: 36, ace: 38, torp: 16, drone: 20, missile: 14 }[e.type] || 20; v.multiplyScalar(0.5);
       if (e.type !== 'missile') this.shatter(e, v, big * 0.9); if (e.pts) this.pop(p, '+' + e.pts, e.pts >= 400);
       this.blast(p, v, big * 0.6, big > 100 ? 2 : 0.7); this.spark(p, v, Math.min(160, big * 2.5), big * 1.8, 1.6, 1, 0.75, 0.35); this.spark(p, v, 30, big * 0.7, 2.4, 1, 0.35, 0.1);
       if (big > 100) this.ring(p, big * 2.2); if (e.type === 'cruiser') for (let i = 0; i < 7; i++) this.blast(p.clone().add(_w.set(Math.random() - 0.5, (Math.random() - 0.5) * 0.3, Math.random() - 0.5).multiplyScalar(260)), v, 35 + Math.random() * 35, 1 + Math.random() * 1.5); }
-    else if (e.t === 'over') { this.blast(new THREE.Vector3(0, -4, 6), v, 40, 2.5); this.hurtT = 2; }
+    else if (e.t === 'over') { for (let i = 0; i < 5; i++) this.spark(_w.set((Math.random() - 0.5) * 30, -5, (Math.random() - 0.5) * 60), v, 30, 30, 2.2, 1, 0.55, 0.2); this.hurtT = 2; }
   }
 
   rocks() {
@@ -210,13 +213,13 @@ export class World {
     for (; ai < this.arrows.length; ai++) this.arrows[ai].visible = false;
 
     // bolts
-    let n = 0; for (const b of sim.bolts) { if (n >= this.NB) break; V(b.v); const sp = _v.length(); _m.lookAt(_v, ZERO, UP); _q.setFromRotationMatrix(_m); const w = b.mine ? 0.32 : b.heavy ? 1.5 : 0.8, L = b.mine ? 18 : b.heavy ? 12 : 9;
+    let n = 0; for (const b of sim.bolts) { if (n >= this.NB) break; V(b.v); const sp = _v.length(); _m.lookAt(_v, ZERO, UP); _q.setFromRotationMatrix(_m); const near = Math.hypot(b.p[0], b.p[1], b.p[2]); if (b.mine && near < 10) continue; const w = Math.min(b.mine ? 0.32 : b.heavy ? 1.5 : 0.8, 0.04 + near * 0.004), L = Math.min(b.mine ? 18 : b.heavy ? 12 : 9, near * 0.5);
       _m.compose(_w.set(b.p[0], b.p[1], b.p[2]).addScaledVector(_v, -L * 0.5 / sp), _q, _s.set(w, w, L)); this.boltM.setMatrixAt(n, _m); this.boltM.setColorAt(n++, b.mine ? _c.setRGB(0.35, 1, 0.8) : b.heavy ? _c.setRGB(1, 0.25, 0.9) : _c.setRGB(1, 0.32, 0.18)); }
     this.boltM.count = n; this.boltM.instanceMatrix.needsUpdate = true; if (this.boltM.instanceColor) this.boltM.instanceColor.needsUpdate = true;
 
     // missiles
     const ml = new Set(); for (const m of sim.missiles) { ml.add(m.id); let o = this.msls.get(m.id); if (!o) { o = new THREE.Mesh(this.mslG, this.mslM); this.scene.add(o); this.msls.set(m.id, o); }
-      o.position.set(m.p[0], m.p[1], m.p[2]); _m.lookAt(V(m.d), ZERO, UP); o.quaternion.setFromRotationMatrix(_m); this.spark(o.position, _w.set(-m.d[0] * 30, -m.d[1] * 30, -m.d[2] * 30), 2, 4, 0.5, 1, 0.7, 0.3); }
+      o.position.set(m.p[0], m.p[1], m.p[2]); _m.lookAt(V(m.d), ZERO, UP); o.quaternion.setFromRotationMatrix(_m); if (o.position.length() > 40) this.spark(o.position, _w.set(-m.d[0] * 30, -m.d[1] * 30, -m.d[2] * 30), 2, 4, 0.5, 1, 0.7, 0.3); }
     for (const [id, o] of this.msls) if (!ml.has(id)) { this.scene.remove(o); this.msls.delete(id); }
 
     // sparks
@@ -225,7 +228,7 @@ export class World {
       C[k * 3] = this.pc[k * 4] * f; C[k * 3 + 1] = this.pc[k * 4 + 1] * f; C[k * 3 + 2] = this.pc[k * 4 + 2] * f; if (this.pl[k] <= 0) P[k * 3 + 1] = -1e5; }
     this.pg.attributes.position.needsUpdate = true; this.pg.attributes.color.needsUpdate = true;
     for (const s of this.blasts) { if (!s.visible) continue; const u = s.userData; u.t += dt; const f = u.t / u.life; if (f >= 1) { s.visible = false; continue; } s.position.addScaledVector(u.v, dt); s.scale.setScalar(u.size * (0.5 + 1.8 * Math.sqrt(f))); s.material.opacity = (1 - f) * (1 - f); }
-    for (const r of this.rings) { if (!r.visible) continue; const u = r.userData; u.t += dt; const f = u.t / 1.1; if (f >= 1) { r.visible = false; continue; } r.scale.setScalar(u.size * (0.2 + f * 2)); r.material.opacity = (1 - f) * (1 - f) * 0.5; }
+    for (const r of this.rings) { if (!r.visible) continue; const u = r.userData; u.t += dt; const f = u.t / 1.1; if (f >= 1) { r.visible = false; continue; } r.scale.setScalar(Math.min(u.size * (0.2 + f * 2), r.position.length() * 0.6)); r.material.opacity = (1 - f) * (1 - f) * 0.5; }
 
     if (this.bits) { for (const b of this.bits) { b.life -= dt; b.m.position.addScaledVector(b.v, dt); b.m.rotateOnWorldAxis(b.ax, b.w * dt); if (b.life < 1) b.m.scale.setScalar(b.s * Math.max(0, b.life)); if (b.life <= 0) this.scene.remove(b.m); } this.bits = this.bits.filter(b => b.life > 0); }
     for (const s of this.pops) { if (!s.visible) continue; const u = s.userData; u.t += dt; if (u.t > 1.3) { s.visible = false; continue; } s.position.y += dt * s.position.length() * 0.035; s.material.opacity = Math.min(1, (1.3 - u.t) * 2); }

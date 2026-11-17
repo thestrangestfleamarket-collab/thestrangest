@@ -13,6 +13,7 @@ import * as Items from './items.js';
 import { GameAudio } from './audio.js';
 import { loadAvatars, makePerson } from './avatars.js';
 import { RB } from './rb.js';
+import { tenantFigure } from './tenant.js';
 import { buildLife } from './life.js';
 import { buildTalk } from './talk.js';
 import { buildGrit } from './grit.js';
@@ -146,7 +147,7 @@ function frame(now) {
 }
 renderer.setAnimationLoop(frame);
 
-G.debug = { weather, dawn, Items, PH, person: makePerson, RB, city, guide, menu: gameMenu, report, tick, frame, render, input, startDesktop, startVR, THREE, share, guest, tank };
+G.debug = { weather, dawn, Items, PH, person: makePerson, RB, tenant: tenantFigure, city, guide, menu: gameMenu, report, tick, frame, render, input, startDesktop, startVR, THREE, share, guest, tank };
 if (G.guest) { menu.querySelector('h2').textContent = 'RAMEN, as yourself: walk the village street up to the ramen stall, take a stool, order a bowl and pay for it. The cook, the customers and everyone passing are the same people every page in the village sees.'; $('help').innerHTML = '<div><b>Browser</b> WASD walk · mouse look · V first / third person · E sit at a stool or get up · click the menu to order · M settings</div><div><b>VR</b> left stick walk · right stick turn · trigger by a stool to sit · step away to get up · poke the menu to order</div><div><b>Back</b> walk out at the end of the street, or LEAVE, to THE MARKET</div>'; $('keys').textContent = 'WASD walk · V view · E sit / get up · click: order · M settings · Esc: free mouse'; deskBtn.textContent = 'Walk the village in this browser'; }
 window.G = G;
 { const box = $('say'); // on a screen: M the settings board, G the guide, T to type what you say if you would rather not speak it

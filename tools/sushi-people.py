@@ -10,19 +10,19 @@ RAW = 'https://raw.' + 'githubusercontent.com/microsoft/Microsoft-Rocketbox/mast
 # who is who: [Rocketbox avatar, texture prefix, sex, how they are dressed]
 # dress: robe (length: hip, knee, shin, ankle; colours dark/main/light; pattern), sleeve (wide, mid, tied: rolled back to the elbow), legs (momohiki: close leggings, hakama: wide trousers), hat, swords, apron, kesa (a monk's stole), obi, collar
 CAST = {
-  'cook': ['Adults/Male_Adult_05', 'm009', 'm', dict(robe='hip', col=(0x1c2440, 0x26355e, 0x4a5a80), pat='plain', sleeve='tied', legs='momohiki', legc=0x1a2236, obi=0x2a2018, collar=0xe8e2d4, hat='hachimaki', apron=0xe8e0cc)],
-  'fishmonger': ['Professions/Business_Male_07', 'm018', 'm', dict(robe='knee', col=(0x22303e, 0x3a5468, 0x6a8494), pat='stripe', sleeve='tied', legs='momohiki', legc=0x202a36, obi=0x3a2a1a, collar=0xd8d0bc, hat='hachimaki', apron=0x7a5a38)],
+  'cook': ['Adults/Male_Adult_05', 'm009', 'm', dict(robe='knee', col=(0x1c2440, 0x26355e, 0x4a5a80), pat='plain', sleeve='tied', legs='momohiki', legc=0x1a2236, obi=0x2a2018, collar=0xe8e2d4, hat='hachimaki', apron=0xe8e0cc)],
+  'fishmonger': ['Professions/Business_Male_07', 'm018', 'm', dict(robe='knee', col=(0x22303e, 0x3a5468, 0x6a8494), pat='stripe', sleeve='tied', legs='momohiki', legc=0x202a36, obi=0x3a2a1a, collar=0xd8d0bc, apron=0x7a5a38)],
   'tofu_wife': ['Professions/Medical_Female_01', 'f152', 'f', dict(robe='ankle', col=(0x2a2a3a, 0x3e4a5e, 0x6a7a8a), pat='kasuri', sleeve='mid', obi=0x6a3a2a, collar=0xe0d8c8, apron=0xd8d0b8)],
   'potter': ['Adults/Male_Adult_03', 'm004', 'm', dict(robe='shin', col=(0x2e2620, 0x564434, 0x7a6450), pat='plain', sleeve='mid', obi=0x1e1814, collar=0xb8a888)],
-  'farmer': ['Adults/Male_Adult_10', 'm024', 'm', dict(robe='hip', col=(0x2a3040, 0x445470, 0x6a7890), pat='kasuri', sleeve='tied', legs='momohiki', legc=0x2c3448, obi=0x4a4030, collar=0xa89870, hat='kasa')],
+  'farmer': ['Adults/Male_Adult_10', 'm024', 'm', dict(robe='knee', col=(0x2a3040, 0x445470, 0x6a7890), pat='kasuri', sleeve='tied', legs='momohiki', legc=0x2c3448, obi=0x4a4030, collar=0xa89870, hat='kasa')],
   'monk': ['Professions/Business_Male_04', 'm015', 'm', dict(robe='ankle', col=(0x121214, 0x1e1e22, 0x34343a), pat='plain', sleeve='wide', obi=0x1a1a1c, collar=0xd8d0c0, kesa=0x8a6a2a)],
   'geisha': ['Adults/Female_Adult_11', 'f011', 'f', dict(robe='ankle', col=(0x3a0e1a, 0x7a1a32, 0xb84a5a), pat='flowers', sleeve='wide', obi=0xd8b050, collar=0xf0e8dc)],
   'ronin': ['Adults/Male_Adult_09', 'm017', 'm', dict(robe='hip', col=(0x1e1e24, 0x343440, 0x50505e), pat='plain', sleeve='mid', legs='hakama', legc=0x3a3428, obi=0x2a2420, collar=0xc8c0b0, swords=True)],
   'constable': ['Adults/Male_Adult_07', 'm013', 'm', dict(robe='hip', col=(0x1a1c26, 0x2a2e40, 0x464c66), pat='plain', sleeve='mid', legs='hakama', legc=0x4a4434, obi=0x6a5a3a, collar=0xd8d0bc, hat='jingasa', swords='one')],
   'boy': ['Children/Male_Child_01', 'cm001', 'm', dict(robe='knee', col=(0x2a3a4a, 0x4a6478, 0x7a94a4), pat='check', sleeve='tied', obi=0x5a3a22, collar=0xc8c0a8)],
   'old_woman': ['Adults/Female_Adult_06', 'f202', 'f', dict(robe='ankle', col=(0x24202a, 0x3a3440, 0x5a5462), pat='stripe', sleeve='mid', obi=0x2a2a20, collar=0xb8b0a0, scarf=0x2a3450)],
-  'peddler': ['Adults/Male_Adult_17', 'm022', 'm', dict(robe='knee', col=(0x2a2418, 0x4a4030, 0x6e6048), pat='plain', sleeve='tied', legs='momohiki', legc=0x2a2a2a, obi=0x1e1a14, collar=0xa89870, hat='kasa')],
-  'woodcutter': ['Adults/Male_Adult_08', 'm014', 'm', dict(robe='hip', col=(0x2a2e22, 0x3e4a32, 0x5e6a4a), pat='check', sleeve='tied', legs='momohiki', legc=0x262a20, obi=0x3a2a1a, collar=0xa8a080, hat='hachimaki')],
+  'peddler': ['Adults/Male_Adult_20', 'm027', 'm', dict(robe='knee', col=(0x2a2418, 0x4a4030, 0x6e6048), pat='plain', sleeve='tied', legs='momohiki', legc=0x2a2a2a, obi=0x1e1a14, collar=0xa89870, hat='kasa')],
+  'woodcutter': ['Adults/Male_Adult_08', 'm014', 'm', dict(robe='knee', col=(0x2a2e22, 0x3e4a32, 0x5e6a4a), pat='check', sleeve='tied', legs='momohiki', legc=0x262a20, obi=0x3a2a1a, collar=0xa8a080, hat='hachimaki')],
   'townswoman': ['Adults/Female_Adult_03', 'f003', 'f', dict(robe='ankle', col=(0x1e2a2a, 0x2e4a48, 0x5a7a74), pat='kasuri', sleeve='mid', obi=0x8a5a2a, collar=0xe0d8c8)],
   'maid': ['Adults/Female_Adult_05', 'f005', 'f', dict(robe='ankle', col=(0x3a2a14, 0x6a4a22, 0x9a7a4a), pat='check', sleeve='mid', obi=0x2a3a5a, collar=0xe8e0d0, apron=0xd0c8b4)],
 }
@@ -124,7 +124,7 @@ def build_clothes(o, A, d, sex, child):
         base = len(verts); nr, npr = len(rings), len(rings[0][0])
         for r, (ps, w) in enumerate(rings):
             for k, p in enumerate(ps):
-                verts.append(p); uvs.append((uv_rect[0] + (uv_rect[2] - uv_rect[0]) * k / (npr - 1), 1 - (uv_rect[1] + (uv_rect[3] - uv_rect[1]) * r / (nr - 1))));   # (the picture's rows from the top; Blender's v from the bottom) wts.append(w(k) if callable(w) else w)
+                verts.append(p); uvs.append((uv_rect[0] + (uv_rect[2] - uv_rect[0]) * k / (npr - 1), 1 - (uv_rect[1] + (uv_rect[3] - uv_rect[1]) * r / (nr - 1)))); wts.append(w(k) if callable(w) else w)   # (the picture's rows from the top; Blender's v from the bottom)
         for r in range(nr - 1):
             for k in range(npr - 1):
                 a, b = base + r * npr + k, base + (r + 1) * npr + k; faces.append((a, b, b + 1, a + 1))
@@ -134,17 +134,20 @@ def build_clothes(o, A, d, sex, child):
     hem = {'hip': hipY - 0.2 * (hipY - kneeY) - 0.06, 'knee': kneeY - 0.02, 'shin': kneeY - 0.55 * (kneeY - ankY), 'ankle': ankY + 0.035}[d['robe']]
     m = 0.022 if not child else 0.018
     # the robe: from the base of the neck to the hem, round the trunk and both legs; above the hips it moves with the spine, below with the hips and, toward the hem, the legs
-    top = neckY - 0.035; ys = list(np.linspace(top, hem, 34)); prev = None; rings = []
+    top = neckY + 0.015; low = shY - 0.06; ys = list(np.linspace(top, low, 5)) + list(np.linspace(low, hem, 31))[1:]; prev = None; rings = []
+    nk = 0.8 if child else 1.0; na, nb_, nz = 0.072 * nk, 0.068 * nk, J['neck'].z - 0.006
     for i, y in enumerate(ys):
-        e = slice_ext(y, 0.035, TRUNK)
+        e = slice_ext(max(y, low), 0.035, TRUNK)
         if e is None: e = prev
         x0, x1, z0, z1 = e; a = max(abs(x0), abs(x1)) + m; b = (z1 - z0) / 2 + m; cz = (z0 + z1) / 2
+        if y > low:   # the collar close round the neck, opening out to the shoulders
+            t = (top - y) / (top - low); t = t * t * (3 - 2 * t); a = na + (a - na) * t; b = nb_ + (b - nb_) * t; cz = nz + (cz - nz) * t
         if y < hipY: a = max(a, prev_a * 0.995) if prev else a; b = max(b, prev_b * 0.99) if prev else b
         if y < hipY - 0.05: a += 0.012 * (hipY - y); b += 0.03 * (hipY - y)
-        if y > shY - 0.06: a = max(a, abs(J['upperArmL'].x) - 0.01) if y < shY else a
+        if low >= y > shY - 0.1: a = max(a, abs(J['upperArmL'].x) - 0.01)
         prev, prev_a, prev_b = e, a, b
-        dip = 0.07 * max(0, 1 - (top - y) / 0.09) if i < 4 else 0
-        ps = ring_pts((0, y, cz), a, b, N, dip if i == 0 else 0)
+        dip = 0.075 * max(0, 1 - (top - y) / (top - low)) if y > low else 0   # the front crossed lower than the back: a V at the throat
+        ps = ring_pts((0, y, cz), a, b, N, dip)
         def w(k, y=y, ps=ps):
             x = ps[k][0]; zf = ps[k][2] - cz
             if y >= J['torso'].y: return {'torso': 1.0} if y > J['torso'].y + 0.06 else {'torso': 0.6, 'spine1': 0.4}
@@ -202,15 +205,15 @@ def build_clothes(o, A, d, sex, child):
     # sandals and split-toed socks: a rounded block on each foot
     for s in 'LR':
         F, T = J['shoe' + s], toe[s]; fwd = Vector((T.x - F.x, 0, T.z - F.z)).normalized(); side = Vector((0, 1, 0)).cross(fwd)
-        base = len(verts); L = (Vector((T.x, 0, T.z)) - Vector((F.x, 0, F.z))).length + 0.085
-        prof = [(-0.07, 0.0, 0.04), (-0.07, 0.07, 0.045), (0.0, 0.085, 0.05), (L * 0.55, 0.06, 0.05), (L - 0.05, 0.045, 0.045), (L - 0.03, 0.0, 0.04)]
+        base = len(verts); L = (Vector((T.x, 0, T.z)) - Vector((F.x, 0, F.z))).length + 0.06
+        prof = [(-0.05, 0.0, 0.032), (-0.05, 0.06, 0.036), (0.0, 0.075, 0.04), (L * 0.55, 0.05, 0.042), (L - 0.04, 0.035, 0.038), (L - 0.025, 0.0, 0.032)]
         rings = []
         for (f, h, wdt) in prof:
             c = Vector((F.x, 0, F.z)) + fwd * f
             ps = [tuple(c + side * (wdt * math.sin(th)) + Vector((0, 0.006 + h * (0.5 + 0.5 * math.cos(th)), 0))) for th in (2 * math.pi * k / 12 for k in range(13))]
             rings.append((ps, {'shoe' + s: 1.0}))
         strip(rings, (0.0, 0.91, 0.5, 0.95))
-        sole = [(tuple(Vector((F.x, 0, F.z)) + fwd * f + side * (w0 * 1.15) + Vector((0, 0.004, 0))), tuple(Vector((F.x, 0, F.z)) + fwd * f - side * (w0 * 1.15) + Vector((0, 0.004, 0)))) for f, _, w0 in prof]
+        sole = [(tuple(Vector((F.x, 0, F.z)) + fwd * f + side * (w0 * 1.05) + Vector((0, 0.004, 0))), tuple(Vector((F.x, 0, F.z)) + fwd * f - side * (w0 * 1.05) + Vector((0, 0.004, 0)))) for f, _, w0 in prof]
         b0 = len(verts)
         for a, b in sole: verts.extend([a, b]); uvs.extend([(0.55, 0.07), (0.95, 0.07)]); wts.extend([{'shoe' + s: 1.0}] * 2)
         for i in range(len(sole) - 1): faces.append((b0 + 2 * i, b0 + 2 * i + 2, b0 + 2 * i + 3, b0 + 2 * i + 1))
@@ -224,10 +227,10 @@ def build_clothes(o, A, d, sex, child):
             rings.append(([(hc.x + rad * math.sin(th), y, hc.z + rad * math.cos(th)) for th in (2 * math.pi * k / 24 for k in range(25))], {'head': 1.0}))
         strip(rings, (0.0, 0.96, 0.5, 1.0) if d['hat'] == 'kasa' else (0.5, 0.96, 1.0, 1.0))
     if d.get('hat') == 'hachimaki' or d.get('scarf'):
-        ex = slice_ext(headTop - (0.085 if d.get('hat') else 0.07), 0.025, {'head'})
+        ex = slice_ext(headTop - (0.095 if d.get('hat') else 0.07), 0.02, {'head'})
         if ex:
-            a = (ex[1] - ex[0]) / 2 + 0.008; b = (ex[3] - ex[2]) / 2 + 0.008; cz = (ex[2] + ex[3]) / 2
-            rings = [(ring_pts((hc.x, headTop - (0.075 if d.get('hat') else 0.03) - (0.028 if d.get('hat') else 0.09) * r, cz), a + 0.004 * r, b + 0.004 * r, 20), {'head': 1.0}) for r in range(2)]
+            a = (ex[1] - ex[0]) / 2 + (0.004 if d.get('hat') else 0.008); b = (ex[3] - ex[2]) / 2 + (0.004 if d.get('hat') else 0.008); cz = (ex[2] + ex[3]) / 2
+            rings = [(ring_pts((hc.x, headTop - (0.085 if d.get('hat') else 0.03) - (0.022 if d.get('hat') else 0.09) * r, cz), a + 0.002 * r, b + 0.002 * r, 20), {'head': 1.0}) for r in range(2)]
             strip(rings, (0.5, 0.91, 1.0, 0.95))
     # swords: the long and the short at the left hip, through the sash
     if d.get('swords'):
@@ -240,7 +243,7 @@ def build_clothes(o, A, d, sex, child):
             strip(rings, (0.0, 0.96, 0.1, 1.0) if False else (0.25, 0.91, 0.3, 0.95))
     # into Blender's world, as one mesh with the body's groups
     me = bpy.data.meshes.new('clothes'); Ci = C3.transposed(); Mi = M.inverted()
-    me.from_pydata([tuple(Mi @ (Ci @ Vector(p))) for p in verts], [], faces); me.update()
+    me.from_pydata([tuple(Mi @ (Ci @ Vector(p))) for p in verts], [], faces); me.update(); me.shade_smooth()
     co = bpy.data.objects.new('clothes', me); bpy.context.collection.objects.link(co); co.matrix_world = M
     uvl = me.uv_layers.new(name=o.data.uv_layers[0].name)
     for poly in me.polygons:
@@ -288,7 +291,6 @@ def cloth_tex(d, seed):   # the clothes' own picture, painted: the robe (with it
     lap = np.abs(np.sin(ang / 2)) < (0.07 + np.clip(0.26 - v * 1.2, 0, 1) * 0.45)
     collar = (np.abs(np.abs(ang) - np.clip(0.55 - v * 2.6, 0.0, 1)) < 0.11) & (v < 0.24) & ~(np.abs(ang) > 2.6)
     px[collar & robe] = col
-    px[(v < 0.012)] = col
     obi_y = (0.27, 0.33) if d['robe'] in ('hip',) else (0.25, 0.32)
     if d.get('apron'):
         ap = vr(obi_y[1], 0.6) & (np.abs(ang) < 0.95); px[ap] = hexc(d['apron']) * (0.92 + 0.12 * weave[ap][..., None])
@@ -313,7 +315,7 @@ def cloth_tex(d, seed):   # the clothes' own picture, painted: the robe (with it
 
 def recolour_scarf(head, scarf):   # her own headscarf (it is in the head's picture): white cloth to the indigo she wears in the village
     a = np.array(head, np.float32); mx, mn = a.max(2), a.min(2); sat = (mx - mn) / np.maximum(mx, 1); lum = mx / 255
-    h, w = a.shape[:2]; yy, xx = np.mgrid[0:h, 0:w]; m = (sat < 0.12) & (lum > 0.42) & ~((yy > h * 0.55) & (xx < w * 0.45))
+    h, w = a.shape[:2]; yy, xx = np.mgrid[0:h, 0:w]; m = (sat < 0.12) & (lum > 0.42) & ~((yy > h * 0.8) & (xx < w * 0.37))
     c = np.array([(scarf >> 16) & 255, (scarf >> 8) & 255, scarf & 255], np.float32); a[m] = c * (0.55 + 0.6 * lum[m][..., None]); return Image.fromarray(a.astype(np.uint8))
 
 def skin_paint(body, o, keep_tris):   # the forearms bare: the body picture under what the forearm triangles cover painted the hand's skin
@@ -385,7 +387,10 @@ def body(key, spec, fing):
     head = tex(T['head'], 1024)
     if d.get('scarf'): head = recolour_scarf(head, d['scarf'])
     at.paste(quarter(head.convert('RGBA')), Q[1])
-    if 'opacity' in T: at.paste(quarter(tex(T['opacity'], 1024, True)), Q[2])
+    if 'opacity' in T:
+        op = tex(T['opacity'], 1024, True)
+        if d.get('scarf'): rgb = recolour_scarf(op.convert('RGB'), d['scarf']).convert('RGBA'); rgb.putalpha(op.getchannel('A')); op = rgb
+        at.paste(quarter(op), Q[2])
     at.paste(quarter(cloth_tex(d, hash(key) & 0xffff).convert('RGBA')), Q[3])
     at.save(OUT + key + '.webp', 'WEBP', quality=84, method=6)
     qmap = {'body': 0, 'head': 1, 'opacity': 2, 'clothes': 3}

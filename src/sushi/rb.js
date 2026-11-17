@@ -113,7 +113,7 @@ export function rbPerson(key, sticks, o = {}) {
       m.scale.set(r * (0.8 + Math.random() * 0.5), r * (0.7 + Math.random() * 0.4), r * 0.22); m.position.copy(on); m.quaternion.setFromUnitVectors(_t.set(0, 0, 1), n); m.userData.nopick = true; m.updateMatrix(); bn.attach(m);
       stains.push({ m, life: 150 }); if (stains.length > 8) { const o = stains.shift(); o.m.removeFromParent(); o.m.material.dispose(); } return m; },
     stains,
-    gesture(name) { const c = clips[GEST[name] || name]; if (!c) return; if (name === 'wave' && (this.pose !== 'stand' || st.down)) { this.waveT = 1.6; return; } if (this.pose !== 'walk') st.over = { c, t: 0, w: 0, end: Math.min(c.dur, name === 'laugh' ? 3.2 : c.dur) }; },
+    gesture(name) { const c = clips[GEST[name] || name]; if (!c) return; if (name === 'wave' && (this.pose !== 'stand' || st.down)) { this.waveT = 1.6; return; } if (this.pose !== 'walk') { st.over = { c, t: 0, w: 0, end: Math.min(c.dur, name === 'laugh' ? 3.2 : c.dur), wave: name === 'wave' }; if (name === 'wave') this.waveT = st.over.end; } },
     update(dt) {
       const seated = this.pose === 'sit' || this.pose === 'eat';
       this.talkT = Math.max(0, this.talkT - dt); if (st.fold > 0) st.fold -= dt;
@@ -154,7 +154,7 @@ export function rbPerson(key, sticks, o = {}) {
       if (fl > 0) for (const s of ['L', 'R']) reachW(s, spot.set(s === 'L' ? 0.5 : -0.5, 1.45, 0.2), fl * 0.8);
       // a wave where the recorded one cannot be (seated, or knocked about): the upper arm raised to the side of the head, the forearm up, the hand rocking at the wrist; the other arm still
       if (this.waveT > st.wl + 1e-3) st.wd = this.waveT; st.wl = this.waveT = Math.max(0, this.waveT - dt);
-      if (st.wd > 0 && this.waveT > 0 && !st.down) { const e = st.wd - this.waveT, w = sm(e / 0.38) * sm(this.waveT / 0.42), s = Math.sin(e * Math.PI * 2 * 1.8) * sm((e - 0.25) / 0.25), [u, f, h] = ARM.R;
+      if (st.wd > 0 && this.waveT > 0 && !st.down && !(st.over && st.over.wave)) { const e = st.wd - this.waveT, w = sm(e / 0.38) * sm(this.waveT / 0.42), s = Math.sin(e * Math.PI * 2 * 1.8) * sm((e - 0.25) / 0.25), [u, f, h] = ARM.R;
         sv[0].setFromUnitVectors(DIR(u, f), spot.set(-0.78, 0.5, 0.3).normalize()); sv[1].setFromUnitVectors(DIR(f, h), spot.set(-0.1 + s * 0.12, 1, 0.16).normalize()); sv[1].premultiply(qh.setFromAxisAngle(spot, 0.5)); sv[2].copy(sv[1]).premultiply(qh.setFromAxisAngle(ax.set(0, 0, 1), s * 0.42));
         R[u].slerp(sv[0], w); R[f].slerp(sv[1], w); R[h].slerp(sv[2], w); }
       if (this.hands) for (const s of ['L', 'R']) if (this.hands[s]) { body.updateWorldMatrix(true, false); reach(s, body.worldToLocal(_t.copy(this.hands[s]))); }   // hands held where someone's real ones are (the cook: cook.js)

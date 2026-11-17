@@ -44,15 +44,15 @@ function tex(file,o={}){return count(new Promise((ok,no)=>texL.load(BASE+'tex/'+
 const pbr=async(n,rep)=>{const[d,nm,a]=await Promise.all([tex(n+'_d.jpg',{srgb:1}),tex(n+'_n.jpg'),tex(n+'_a.jpg')]);for(const t of[d,nm,a])t.repeat.set(rep,rep);return{d,n:nm,a};};
 const model=n=>count(new Promise((ok,no)=>gltfL.load(BASE+'m/'+n+'.glb',g=>{g.scene.userData.clips=g.animations;ok(g.scene);},null,()=>no(new Error('model '+n)))));
 const jget=f=>count(fetch(BASE+f).then(r=>r.json()));
-const TREES=[['PK','OakTree3',18],['PK','OakTree1',16],['PK','Elder2',15],['PK','Spruce1',23],['PK','Giant1',30],['B',0,2.6],['PK','Willow1',14],['PK','OakTree2',15],['PK','Elder1',16]];
+const TREES=[['T','oak',17],['T','beech',21],['T','maple',16],['T','spruce',24],['T','elm',25],['B',0,2.6],['T','willow',13],['T','birch',18],['T','pine',22],['T','fir',20]];
 let A0;
 try{
-  const names=['hero','ally','foe','seat','console','display','switchbox','radio','helmet','barn','cars','pipes','sconce','ammobox','rocks','h6','row','h9','shop','cork','flats','white','cottage','villa','mill','works','church','watertower','silos','stacks','mast','pylon','pole','stonewall','lamp','hay','brokenwall','rubble','trabant','lada','van','tractor','truck','busstop','hand_l','hand_r','crag','deadtree','sandbags','hedgehog','wreck','grenade','pistol','soldier','breech','mfd','shell','mine','hatch'];
-  const[sky,skyS,SKY,MT,PK,bark,MODJ,grass,dry,soil,plate,paint,leather,models]=await Promise.all([
-    count(new Promise((ok,no)=>texL.load(BASE+'sky/sky.jpg',ok,null,()=>no(new Error('sky'))))),count(new Promise((ok,no)=>texL.load(BASE+'sky/sky_s.jpg',ok,null,()=>no(new Error('sky'))))),jget('sky/sky.json'),jget('trees-market.json'),jget('trees-pack.json'),tex('bark_brown_02_d.jpg',{srgb:1}),jget('models.json'),
+  const names=['hero','ally','foe','seat','console','display','switchbox','radio','helmet','barn','cars','pipes','sconce','ammobox','rocks','h6','row','h9','shop','cork','flats','white','cottage','villa','mill','works','church','watertower','silos','stacks','mast','pylon','pole','stonewall','lamp','hay','brokenwall','rubble','trabant','lada','van','tractor','truck','busstop','hand_l','hand_r','crag','deadtree','sandbags','hedgehog','wreck','grenade','pistol','soldier','breech','mfd','shell','mine','hatch',...TREES.filter(t=>t[0]==='T').map(t=>'tree_'+t[1])];
+  const[sky,skyS,SKY,MT,MODJ,grass,dry,soil,plate,paint,leather,models]=await Promise.all([
+    count(new Promise((ok,no)=>texL.load(BASE+'sky/sky.jpg',ok,null,()=>no(new Error('sky'))))),count(new Promise((ok,no)=>texL.load(BASE+'sky/sky_s.jpg',ok,null,()=>no(new Error('sky'))))),jget('sky/sky.json'),jget('trees-market.json'),jget('models.json'),
     pbr('leafy_grass',1),tex('sparse_grass_d.jpg',{srgb:1}),pbr('farm_soil',1),pbr('metal_plate',1),pbr('green_metal_rust',1),pbr('fabric_leather_02',1),
     Promise.all(names.map(model))]);
-  A0={sky,skyS,SKY,MT,PK,bark,MODJ,grass,dry,soil,plate,paint,leather,M:Object.fromEntries(names.map((n,i)=>[n,models[i]]))};
+  A0={sky,skyS,SKY,MT,MODJ,grass,dry,soil,plate,paint,leather,M:Object.fromEntries(names.map((n,i)=>[n,models[i]]))};
 }catch(e){$('loading').textContent='Could not load the game’s files ('+e.message+'). Reload to try again.';return;}
 const{SKY,MODJ}=A0,M=A0.M;
 
@@ -182,12 +182,11 @@ landMat.onBeforeCompile=s=>{s.uniforms.tDry={value:A0.dry};s.uniforms.tSoil={val
   const far=new T.Mesh(fg,landMat);far.frustumCulled=false;land.add(far);
 })();
 //@include trees.js
-//@include fruit.js
 // trees and hedges: each a pair of crossed cards drawn from one of THE MARKET's trees
 const solids=[],ITEMS=[],TREEL=[];
-const TSCALE=TREES.map(()=>1),TREEJ={},TCARD=[];renderer.xr.enabled=false;TREES.forEach((n,k)=>{const b=n[0]==='PK'?PACK.bake(n[1],true,256):n[0]==='BIG'?BIGT.bake(n[1],k+1):MTREE.bake(n[0],n[1]);TCARD[k]=b.tex;TREEJ[k]={w:b.w*n[2],h:n[2]};});renderer.xr.enabled=true;
+const TSCALE=TREES.map(()=>1),TREEJ={},TCARD=[];renderer.xr.enabled=false;TREES.forEach((n,k)=>{const b=n[0]==='T'?MTREE.shoot(A0.M['tree_'+n[1]]):MTREE.bake(n[0],n[1]);TCARD[k]=b.tex;TREEJ[k]={w:b.w*n[2],h:n[2]};});renderer.xr.enabled=true;
 (function buildTrees(){
-  const r=rng(1944),spots=TREES.map(()=>[]);const put=(k,x,z,s)=>{if(Math.hypot(x,z)<30||Math.hypot(x,z)>1700||roadDist(x,z)<9||Math.hypot(x-150,z-300)<150||Math.hypot(x+480,z+640)<95||Math.hypot(x-420,z+560)<70||Math.hypot(x,z)<55||pondAt(x,z)&&Math.hypot(x-pondAt(x,z)[0],z-pondAt(x,z)[1])<pondAt(x,z)[2]*1.05)return;{const v=r();if(k<3&&v<.3)k=v<.15?7:8;}spots[k].push([x,z,s*(.75+r()*.5)*(k!==5&&k!==6&&r()<.12?1.6:1),Math.atan2(SUN.x,SUN.z)+(r()-.5)*1.2+(r()<.5?Math.PI:0)]);};
+  const r=rng(1944),spots=TREES.map(()=>[]);const put=(k,x,z,s)=>{if(Math.hypot(x,z)<30||Math.hypot(x,z)>1700||roadDist(x,z)<9||Math.hypot(x-150,z-300)<150||Math.hypot(x+480,z+640)<95||Math.hypot(x-420,z+560)<70||Math.hypot(x,z)<55||pondAt(x,z)&&Math.hypot(x-pondAt(x,z)[0],z-pondAt(x,z)[1])<pondAt(x,z)[2]*1.05)return;{const v=r();if(k<3&&v<.3)k=v<.15?7:8;else if(k===3&&v<.45)k=9;}spots[k].push([x,z,s*(.75+r()*.5)*(k!==5&&k!==6&&r()<.1?1.25:1),Math.atan2(SUN.x,SUN.z)+(r()-.5)*1.2+(r()<.5?Math.PI:0)]);};
   for(let cx=-9;cx<=9;cx++)for(let cz=-12;cz<=12;cz++){
     const o=(u,v)=>{const qx=(cx+u)*FW,qz=(cz+v)*FD;return[FCS*qx-FSN*qz,FSN*qx+FCS*qz];},f=field(...o(.5,.5));
     if(f.kind===3){const[mx,mz]=o(.5,.5),n=Math.hypot(mx,mz)<950?34:12;for(let i=0;i<n;i++){const[x,z]=o(.04+r()*.92,.04+r()*.92);put(r()<.25?4:Math.floor(r()*4),x,z,1.1);}for(let i=0;i<n/3;i++){const[x,z]=o(r(),r());put(5,x,z,1.2);}}
@@ -1038,6 +1037,6 @@ drawStat();renderer.setAnimationLoop(frame);
 $('loading').hidden=true;
 if(document.fonts&&document.fonts.load)document.fonts.load('600 40px "IBM Plex Mono"').then(drawStat).catch(()=>{});
 
-window.game={explode,MTREE,TREEGEN,BIGT,FRUIT,PACK,MT:A0.MT,snap,SNAP,throwNade,get hold(){return hold;},get time(){return time;},get state(){return state;},get wave(){return wave;},get cover(){return cover;},get xr(){return xrActive;},get expo(){return expo;},P,foes,shells,WAVES,ROOF,FLOOR,hAt,los,tank,inside,friends,crews,mines,nades,INV,addCrew,takeItem,useItem,NET,get rem(){return NET.peers.values().next().value||noRem;},G,MODES,SET,WORLD,startMission,get mis(){return mis;},isHost,TYPES,setType,get type(){return tyKey;},hands,view,supply:land.userData.supply,fire,trigger,lase,popSmoke,selectAmmo,toggleZoom,toggleThermal,extinguish,hurt:hurtPlayer,toggleHatch,toggleSight,addFoe,live,renderer,camera,rig,sounds:A,
+window.game={explode,MTREE,TREEGEN,MT:A0.MT,snap,SNAP,throwNade,get hold(){return hold;},get time(){return time;},get state(){return state;},get wave(){return wave;},get cover(){return cover;},get xr(){return xrActive;},get expo(){return expo;},P,foes,shells,WAVES,ROOF,FLOOR,hAt,los,tank,inside,friends,crews,mines,nades,INV,addCrew,takeItem,useItem,NET,get rem(){return NET.peers.values().next().value||noRem;},G,MODES,SET,WORLD,startMission,get mis(){return mis;},isHost,TYPES,setType,get type(){return tyKey;},hands,view,supply:land.userData.supply,fire,trigger,lase,popSmoke,selectAmmo,toggleZoom,toggleThermal,extinguish,hurt:hurtPlayer,toggleHatch,toggleSight,addFoe,live,renderer,camera,rig,sounds:A,
   skip(){waveT=0;},kill(e){killFoe(e);P.kills++;}};
 })();

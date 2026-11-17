@@ -59,6 +59,16 @@ const LIST = {
   binos: ['binoculars', '', { size: 0.19, axis: 'x', tris: 4000, tex: 512 }],
   pistol: ['service_pistol', '', { keep: '_a$', fwd: '+x', size: 0, tex: 512 }],
   rocks: ['rock_moss_set_01', '', { size: 0, tris: 700, tex: 512 }],
+  // the land's trees: nine by one maker, a height of one, each a height of one
+  tree_oak: ['src/tree_oak_evolveduk', HF + '000-107/6468dd4d3eb240ef902b9057d9913606.glb', { size: 1, axis: 'y', tris: 9000, tex: 512, plain: 1 }],
+  tree_beech: ['src/tree_beech_evolveduk', HF + '000-062/0983d8933531491f9be71c669e8a907b.glb', { size: 1, axis: 'y', tris: 9000, tex: 512, plain: 1 }],
+  tree_birch: ['src/tree_birch_evolveduk', HF + '000-001/aa842dffd9654d33b8b91170ce83c172.glb', { size: 1, axis: 'y', tris: 9000, tex: 512, plain: 1 }],
+  tree_maple: ['src/tree_maple_evolveduk', HF + '000-131/b5e945e7abcc471da6547c04e314774c.glb', { size: 1, axis: 'y', tris: 9000, tex: 512, plain: 1 }],
+  tree_elm: ['src/tree_elm_evolveduk', HF + '000-091/f36443d3e59946bfa38b3f5cb90ea5fa.glb', { size: 1, axis: 'y', tris: 9000, tex: 512, plain: 1 }],
+  tree_willow: ['src/tree_willow_evolveduk', HF + '000-046/422de2372f3d46dfb314a0cd5da512fe.glb', { size: 1, axis: 'y', tris: 9000, tex: 512, plain: 1 }],
+  tree_pine: ['src/tree_pine_evolveduk', HF + '000-060/d45218a3fab349e5b1de040f29e7b6f9.glb', { size: 1, axis: 'y', tris: 9000, tex: 512, plain: 1 }],
+  tree_spruce: ['src/tree_spruce_evolveduk', HF + '000-116/a50a5df3164246a5af97992cec33a143.glb', { size: 1, axis: 'y', tris: 9000, tex: 512, plain: 1 }],
+  tree_fir: ['src/tree_fir_evolveduk', HF + '000-084/3f39aa5485e94477a36b435f7a1a8b54.glb', { size: 1, axis: 'y', tris: 9000, tex: 512, plain: 1 }],
 };
 const NM = '/node_modules/', PAGE = `<script type="importmap">{"imports":{"three":"${NM}three/build/three.module.js","three/addons/":"${NM}three/examples/jsm/"}}</script><script type="module">
 import * as THREE from 'three';import {GLTFLoader} from 'three/addons/loaders/GLTFLoader.js';import {GLTFExporter} from 'three/addons/exporters/GLTFExporter.js';import {mergeGeometries,mergeVertices} from 'three/addons/utils/BufferGeometryUtils.js';import {MeshoptSimplifier as MS} from '${NM}meshoptimizer/meshopt_simplifier.js';
@@ -96,7 +106,7 @@ window.prep=async(url,o)=>{await MS.ready;const GL=new GLTFLoader();GL.register(
     if(o.kind==='foe'){const isT=m=>{let p=m;while(p){if(o.turret.includes(p.name))return true;p=p.parent;}return false;},hull=gather(root,m=>!isT(m)),tur=gather(root,isT);for(const ps of[hull,tur])each(ps,g=>g.applyMatrix4(M));
       const ub=union(tur),hb=union(hull),px=(hb.min.x+hb.max.x)/2;let n=0,z=0;each(tur,g=>{const p=g.attributes.position;for(let i=0;i<p.count;i++)if(p.getY(i)<ub.min.y+.35){z+=p.getZ(i);n++;}});const P=V(px,0,z/n);
       for(const ps of[hull,tur])each(ps,g=>g.translate(-P.x,0,-P.z));tris=thin([...hull,...tur],o.tris);out.add(node('hull',hull),node('turret',tur));const u2=union(tur),h2=union(hull);Object.assign(info,{turret:[u2.min.toArray(),u2.max.toArray()],hull:[h2.min.toArray(),h2.max.toArray()]});
-    }else{each(all,g=>g.applyMatrix4(M));if(o.crop){const c=o.crop;for(const p of all){const g=p.geo,ps=g.attributes.position,ix=g.index.array,keep=[];for(let i=0;i<ix.length;i+=3){let x=0,y=0,z=0;for(let k=0;k<3;k++){x+=ps.getX(ix[i+k])/3;y+=ps.getY(ix[i+k])/3;z+=ps.getZ(ix[i+k])/3;}if(x>c[0]&&x<c[1]&&y>c[2]&&y<c[3]&&z>c[4]&&z<c[5])keep.push(ix[i],ix[i+1],ix[i+2]);}g.setIndex(keep);}}tris=thin(all,o.tris);out.add(node('m',all));const b2=new THREE.Box3().setFromObject(out);info.box=[b2.min.toArray(),b2.max.toArray()];}}
+    }else{each(all,g=>g.applyMatrix4(M));if(o.crop){const c=o.crop;for(const p of all){const g=p.geo,ps=g.attributes.position,ix=g.index.array,keep=[];for(let i=0;i<ix.length;i+=3){let x=0,y=0,z=0;for(let k=0;k<3;k++){x+=ps.getX(ix[i+k])/3;y+=ps.getY(ix[i+k])/3;z+=ps.getZ(ix[i+k])/3;}if(x>c[0]&&x<c[1]&&y>c[2]&&y<c[3]&&z>c[4]&&z<c[5])keep.push(ix[i],ix[i+1],ix[i+2]);}g.setIndex(keep);}}tris=thin(all,o.tris,o.err);out.add(node('m',all));const b2=new THREE.Box3().setFromObject(out);info.box=[b2.min.toArray(),b2.max.toArray()];}}
   if(o.plain)out.traverse(m=>{if(m.isMesh){const a=m.material;a.normalMap=a.roughnessMap=a.metalnessMap=a.aoMap=a.emissiveMap=null;a.metalness=0;a.roughness=.9;}});
   out.traverse(m=>{if(!m.isMesh)return;const a=m.material;for(const k of['map','normalMap','roughnessMap','metalnessMap','aoMap','emissiveMap'])if(a[k])a[k].userData.mimeType=a.transparent||a.alphaTest>0?'image/png':'image/jpeg';});
   const bin=await new GLTFExporter().parseAsync(out,{binary:true,maxTextureSize:o.tex||1024});info.tris=Math.round(tris);const u=new Uint8Array(bin);let s='';for(let i=0;i<u.length;i+=32768)s+=String.fromCharCode.apply(null,u.subarray(i,i+32768));return{info,b64:btoa(s)};};window.ready=1;</script>`;

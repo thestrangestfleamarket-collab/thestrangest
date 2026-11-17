@@ -368,9 +368,13 @@ addEventListener('pointerup', (e) => {
   for (const p of kit.pieces) {
     _a.copy(ray.ray.origin).applyMatrix4(p.inv); _b.copy(ray.ray.direction).transformDirection(p.inv);
     if (_b.y >= -1e-4) continue;
-    let t = -_a.y / _b.y;
-    for (let i = 0; i < 2; i++) { _c.copy(_a).addScaledVector(_b, t); t = -(_a.y - kit.height(p, Math.hypot(_c.x, _c.z))) / _b.y; }
-    _c.copy(_a).addScaledVector(_b, t);
+    // the first place along the click's line that is under the surface: stepped from above the piece's highest point down to its rim's plane, then closed in on
+    const t0 = -(_a.y - 0.045) / _b.y, t1 = -_a.y / _b.y, f = (tt) => { _c.copy(_a).addScaledVector(_b, tt); return _c.y - kit.height(p, Math.hypot(_c.x, _c.z)); };
+    let lo = t0, hi = t1, found = false;
+    for (let i = 1; i <= 24; i++) { const tt = t0 + (t1 - t0) * i / 24; if (f(tt) <= 0) { hi = tt; found = true; break; } lo = tt; }
+    if (!found) continue;
+    for (let i = 0; i < 8; i++) { const m = (lo + hi) / 2; if (f(m) <= 0) hi = m; else lo = m; }
+    const t = hi; f(t);
     const rho = Math.hypot(_c.x, _c.z);
     if (t > 0 && rho <= p.radius + (p.kind === 'drum' ? 0.02 : 0) && (!best || t < best.t)) best = { p, t, pt: _c.clone(), rho };
   }

@@ -22,7 +22,7 @@ export async function loadAssets(onProgress = () => { }, aniso = 4) {
   await Promise.all([
     ...TEX.map((k) => Promise.all([one(`${BASE}tex/${k}_c.jpg`, true, aniso), one(`${BASE}tex/${k}_n.jpg`, false, aniso), k === 'road' ? null : one(`${BASE}tex/${k}_r.jpg`, false, aniso)]).then((t) => { sets[k] = t; }).then(tick)),
     ...MODELS.map((k) => GL.loadAsync(`${BASE}m/${k}.glb`).then((d) => {
-      d.scene.traverse((o) => { if (o.isMesh) { o.castShadow = true; o.receiveShadow = true; o.material.envMapIntensity = 0.6; if (o.material.emissiveIntensity > 0.5) o.material.emissiveIntensity = 0.5; if (o.material.transmission > 0) { o.material.transmission = 0; o.material.transparent = true; o.material.opacity = 0.35; } } });
+      d.scene.traverse((o) => { if (o.isMesh) { o.castShadow = true; o.receiveShadow = true; o.material.envMapIntensity = 0.6; if (o.material.emissiveIntensity > 0.1) o.material.emissiveIntensity = 0.1; if (o.material.transmission > 0) { o.material.transmission = 0; o.material.transparent = true; o.material.opacity = 0.35; } } });
       models[k] = d.scene;
     }).catch((e) => console.warn('no model', k, e)).then(tick)),
     // each avatar sized to 1.76 m; each motion kept as turns of the body's bones and the hips' rise, its walk held in place

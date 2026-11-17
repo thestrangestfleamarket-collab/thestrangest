@@ -6,7 +6,7 @@ const $ = id => document.getElementById(id);
 const BASE = 'tank-assets/';
 
 // ---------- settings (this browser's own) ----------
-const SET={height:0,bright:1,screen:1.6,calm:true,tunnel:true,look:1};
+const SET={height:0,bright:1,screen:1.6,calm:true,tunnel:true,look:1,hour:0};
 try{Object.assign(SET,JSON.parse(localStorage.getItem('hulldown-set')||'{}'));}catch(e){}
 const saveSet=()=>{try{localStorage.setItem('hulldown-set',JSON.stringify(SET));}catch(e){}};
 // ---------- helpers ----------
@@ -57,6 +57,16 @@ try{
 const{SKY,MODJ}=A0,M=A0.M;
 
 // ---------- sky + sun ----------
+// the hour: the photographed evening as it comes, or a sky drawn for the hour (chosen on the menu, takes a reload). el: the light's height; sun, hemi: light colours and strengths; zen, hor: the sky's colours; cov: cloud cover; star: stars; ex: the eye's exposure
+const HOURS=[['Evening (photographed)',null],
+  ['Dawn',{el:.1,az:.9,sun:[1,.62,.42],sI:2.6,sky:[.55,.62,.86],gnd:[.2,.17,.16],hI:.5,zen:[.2,.32,.6],hor:[1,.62,.42],glow:[1,.5,.3],cov:.35,star:.15,ex:1.15}],
+  ['Morning',{el:.55,az:.6,sun:[1,.93,.8],sI:4.4,sky:[.6,.76,1],gnd:[.24,.22,.18],hI:.7,zen:[.16,.38,.78],hor:[.72,.84,.98],glow:[1,.95,.85],cov:.3,star:0,ex:.9}],
+  ['Noon',{el:1.15,az:.3,sun:[1,.98,.94],sI:5.2,sky:[.62,.78,1],gnd:[.26,.24,.2],hI:.8,zen:[.12,.33,.78],hor:[.66,.8,.97],glow:[1,1,.95],cov:.42,star:0,ex:.8}],
+  ['Overcast',{el:.8,az:.3,sun:[.86,.88,.9],sI:1.3,sky:[.78,.8,.84],gnd:[.3,.3,.3],hI:1.5,zen:[.5,.53,.57],hor:[.7,.72,.74],glow:[.8,.8,.8],cov:1,star:0,ex:1}],
+  ['Dusk',{el:.06,az:-1.2,sun:[1,.45,.25],sI:2,sky:[.45,.42,.7],gnd:[.16,.13,.14],hI:.45,zen:[.1,.13,.36],hor:[.95,.42,.22],glow:[1,.35,.15],cov:.5,star:.35,ex:1.35}],
+  ['Moonlit night',{el:.7,az:2.2,sun:[.55,.66,1],sI:.5,sky:[.2,.26,.5],gnd:[.04,.05,.07],hI:.22,zen:[.01,.02,.06],hor:[.05,.08,.16],glow:[.7,.8,1],cov:.3,star:1,ex:2.2,moon:1}]];
+{const q=new URLSearchParams(location.search);if(q.has('hour'))SET.hour=+q.get('hour')||0;if(!HOURS[SET.hour])SET.hour=0;}
+const HR=HOURS[SET.hour][1];if(HR){SKY.el=HR.el;SKY.u=HR.az/(Math.PI*2);SKY.hor=HR.hor.map(v=>Math.pow(v,1/2.2)*.9);SKY.sunhor=HR.glow.map(v=>Math.pow(v,1/2.2)*(HR.moon?.25:.8));}
 const sunPhi=SKY.u*Math.PI*2,SUN=new T.Vector3(-Math.cos(sunPhi)*Math.cos(SKY.el),Math.sin(SKY.el),Math.sin(sunPhi)*Math.cos(SKY.el)).normalize();
 const SUNL=new T.Vector3(-Math.cos(sunPhi)*Math.cos(Math.max(SKY.el,.44)),Math.sin(Math.max(SKY.el,.44)),Math.sin(sunPhi)*Math.cos(Math.max(SKY.el,.44))).normalize();
 const FOG=new T.Color(lin(SKY.hor[0]),lin(SKY.hor[1]),lin(SKY.hor[2])).multiplyScalar(1.05).lerp(new T.Color(.2,.23,.27),.3),SUNHAZE=new T.Color(lin(SKY.sunhor[0]),lin(SKY.sunhor[1]),lin(SKY.sunhor[2])).multiplyScalar(2.9);
@@ -99,6 +109,22 @@ const scene=new T.Scene();
 scene.fog=new T.FogExp2(FOG,-40);
 A0.sky.encoding=T.sRGBEncoding;A0.sky.wrapS=T.RepeatWrapping;A0.sky.anisotropy=maxAniso;
 const sky=new T.Mesh(new T.SphereGeometry(5000,48,18,0,Math.PI*2,0,Math.PI*SKY.cut),new T.MeshBasicMaterial({map:A0.sky,side:T.BackSide,fog:false,depthWrite:false,color:new T.Color(1.3,1.24,1.22)}));
+if(HR){const v3=a=>new T.Vector3(a[0],a[1],a[2]);sky.geometry=new T.SphereGeometry(5000,48,24);sky.material=new T.ShaderMaterial({side:T.BackSide,depthWrite:false,fog:false,uniforms:{uT:{value:0},uSun:{value:SUN},uZen:{value:v3(HR.zen)},uHor:{value:v3(HR.hor)},uGlow:{value:v3(HR.glow)},uSunC:{value:v3(HR.sun)},uP:{value:new T.Vector4(HR.cov,HR.star,HR.moon?1:0,HR.sI)}},
+  vertexShader:'varying vec3 vD;void main(){vD=position;gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.0);}',
+  fragmentShader:`uniform float uT;uniform vec3 uSun,uZen,uHor,uGlow,uSunC;uniform vec4 uP;varying vec3 vD;
+  float hh(vec2 p){return fract(sin(dot(p,vec2(127.1,311.7)))*43758.5453);}
+  float vn(vec2 p){vec2 i=floor(p),f=fract(p);f=f*f*(3.-2.*f);return mix(mix(hh(i),hh(i+vec2(1,0)),f.x),mix(hh(i+vec2(0,1)),hh(i+vec2(1,1)),f.x),f.y);}
+  float fbm(vec2 p){float s=0.,a=.5;for(int i=0;i<5;i++){s+=a*vn(p);p=p*2.03+7.1;a*=.5;}return s;}
+  void main(){vec3 d=normalize(vD);float el=max(d.y,0.),sd=max(dot(d,uSun),0.);
+    vec3 c=mix(uHor,uZen,pow(el,.45));c=mix(c,uGlow,pow(sd,6.)*exp(-el*4.)*.75);c*=1.-.5*clamp(-d.y*3.,0.,1.);
+    if(uP.y>0.&&d.y>0.){vec2 sp=d.xz/(d.y+.25)*220.;vec2 ci=floor(sp);float r=hh(ci);vec2 o=vec2(hh(ci+3.1),hh(ci+7.7));float st=step(.965,r)*smoothstep(.09,.0,length(fract(sp)-o))*(.4+.6*hh(ci+1.3));c+=vec3(.9,.95,1.)*st*uP.y*1.6;}
+    float disc=smoothstep(uP.z>.5?.9994:.9992,uP.z>.5?.9996:.9997,dot(d,uSun));c=mix(c,uP.z>.5?vec3(.95,.97,1.)*1.6:uSunC*6.,disc);c+=uSunC*pow(sd,uP.z>.5?600.:180.)*(uP.z>.5?.25:1.2);
+    if(d.y>-.02){vec2 p=d.xz/(d.y+.12);float den=fbm(p*.9+vec2(uT*.004,uT*.0015))*.62+fbm(p*2.6-vec2(uT*.006,0.))*.38;float k=smoothstep(.74-uP.x*.52,.92-uP.x*.42,den)*smoothstep(-.02,.1,d.y);
+      float thick=smoothstep(.5,.95,den);vec3 lit=mix(uHor*.9+uSunC*.5*min(uP.w,2.)*.5,uGlow,pow(sd,3.)*.6),dark=mix(uZen,uHor,.5)*.5;vec3 cc=mix(lit,dark,thick*(.45+.45*uP.x));c=mix(c,cc,k*(.82+.18*uP.x));}
+    gl_FragColor=vec4(c*1.25,1.);
+#include <tonemapping_fragment>
+#include <encodings_fragment>
+  }`});}
 sky.renderOrder=-10;sky.frustumCulled=false;scene.add(sky);
 A0.skyS.encoding=T.sRGBEncoding;A0.skyS.mapping=T.EquirectangularReflectionMapping;
 const pmrem=new T.PMREMGenerator(renderer);scene.environment=pmrem.fromEquirectangular(A0.skyS).texture;
@@ -107,12 +133,12 @@ const camera=new T.PerspectiveCamera(72,innerWidth/innerHeight,.06,9000);
 camera.rotation.order='YXZ';
 const rig=new T.Group();rig.add(camera);
 
-const sunL=new T.DirectionalLight(0xffbf80,4.4);
+const sunL=new T.DirectionalLight(0xffbf80,4.4);const SUNI=HR?HR.sI:4.4,HEMI=HR?HR.hI:.55;if(HR)sunL.color.setRGB(HR.sun[0],HR.sun[1],HR.sun[2]);
 sunL.castShadow=true;sunL.shadow.mapSize.set(1024,1024);sunL.shadow.autoUpdate=false;
 const shc=sunL.shadow.camera;shc.left=-26;shc.right=26;shc.top=26;shc.bottom=-26;shc.near=1;shc.far=400;
 sunL.shadow.bias=-.0004;sunL.shadow.normalBias=.06;
 scene.add(sunL,sunL.target);
-const hemiL=new T.HemisphereLight(0x7f98c4,0x2e2820,.34);scene.add(hemiL);
+const hemiL=new T.HemisphereLight(0x7f98c4,0x2e2820,.34);scene.add(hemiL);if(HR){hemiL.color.setRGB(HR.sky[0],HR.sky[1],HR.sky[2]);hemiL.groundColor.setRGB(HR.gnd[0],HR.gnd[1],HR.gnd[2]);}
 const flashL=[0,1].map(()=>{const l=new T.PointLight(0xffb060,0,90,1.6);l.userData.t=0;scene.add(l);return l;});let flashI=0,sunK=1;
 function flash(x,y,z,power,secs=.14,col=0xffb060){const l=flashL[flashI=(flashI+1)%2];l.position.set(x,y,z);l.color.setHex(col);l.userData={p:power,t:secs,d:secs};}const ENV=scene.environment;
 
@@ -121,7 +147,7 @@ function smokeCanvas(){const c=cnv(128,128),g=c.getContext('2d'),r=rng(4);for(le
 const ctex=c=>{const t=new T.CanvasTexture(c);t.anisotropy=maxAniso;return t;};
 const glowT=ctex(glowCanvas(false)),softT=ctex(glowCanvas(true)),smokeT=ctex(smokeCanvas());
 const sunGlow=new T.Sprite(new T.SpriteMaterial({map:softT,color:0xffd9a8,transparent:true,opacity:.3,blending:T.AdditiveBlending,depthWrite:false,fog:false,toneMapped:false}));
-sunGlow.scale.setScalar(2200);sunGlow.material.opacity=.42;scene.add(sunGlow);
+sunGlow.scale.setScalar(2200);sunGlow.material.opacity=.42;scene.add(sunGlow);if(HR){sunGlow.material.color.setRGB(HR.glow[0],HR.glow[1],HR.glow[2]);sunGlow.material.opacity=HR.moon?.1:HR.cov>.9?.05:.3;}
 
 // ---------- the land ----------
 const hsh=(x,z)=>{const n=Math.sin(x*127.1+z*311.7)*43758.5453;return n-Math.floor(n);};
@@ -877,7 +903,7 @@ function updateVision(dt){
   const fx=$('fxToggle').checked,out=!P.headIn,dmg=1-P.armour/100;
   const tgtE=state==='preview'||out||(P.sight&&!xrActive)?.4:lerp(.8,.55,P.hatch);
   expo=Math.exp(lerp(Math.log(expo),Math.log(tgtE),1-Math.exp(-dt/(P.sight&&!xrActive?.3:1.5))));
-  renderer.toneMappingExposure=expo*(1+(SET.calm?0:P.recoil*.25))*SET.bright;
+  renderer.toneMappingExposure=expo*(1+(SET.calm?0:P.recoil*.25))*SET.bright*(HR&&!P.headIn?HR.ex:1);if(HR)sky.material.uniforms.uT.value=time;
   {const mu=monitorMat.uniforms;mu.gain.value=1.15/expo;mu.thermal.value=P.thermal?1:0;mu.snow.value=P.dmg.sight>0?(SET.calm?.3:1):0;mu.time.value=time;}
   {const turn=SET.tunnel&&xrActive?clamp(((P.turning||0)+Math.abs(P.yawRate||0))*1.5-.1,0,1):0;P.tun=lerp(P.tun||0,turn,Math.min(1,dt*5));const h=fx?P.hurt*.8:0,tu=P.tun*.9;vign.visible=xrActive&&(h>.01||tu>.02);vign.material.uniforms.amt.value=Math.max(h,tu);vign.material.uniforms.col.value.setRGB(h>tu?.25:0,h>tu?.02:0,0);vign.material.uniforms.inner.value=h>tu?.5:.62;}
   const u=lens.uniforms;u.gainK.value=SET.bright;u.grain.value=SET.calm?0:.045;u.time.value=time;u.blur.value=fx?P.hurt*.7+P.shake*.12:0;u.ca.value=.004+(fx?P.hurt*.02+dmg*.005:0);u.desat.value=fx?dmg*.35+P.hurt*.3:0;u.vig.value=.28+(fx?P.hurt*.3:0);
@@ -971,7 +997,7 @@ function frame(){
   const vr=renderer.xr.isPresenting,flatSight=!vr&&P.sight&&state==='play',inNow=P.headIn&&!flatSight,L=inside.userData.L;
   const heat=on=>{const h=on&&P.thermal?1:0;if(heat.h===h)return;heat.h=h;M.foe.traverse(m=>{if(m.isMesh){m.material.emissive.setScalar(h*1.4);}});for(const w of wreckMats.values())w.emissive.setScalar(h*.5);heroProto.traverse(m=>{if(m.isMesh)m.material.emissive.setScalar(h*.7);});};
   gunCam.fov=zoomFov();
-  const lights=inn=>{sunL.intensity=inn?0:4.4*sunK;sunL.castShadow=!inn;hemiL.intensity=inn?.003+.02*P.hatch:.55*(.75+.25*sunK);scene.environment=ENV;
+  const lights=inn=>{sunL.intensity=inn?0:SUNI*sunK;sunL.castShadow=!inn;hemiL.intensity=inn?.003+.02*P.hatch:HEMI*(.75+.25*sunK);scene.environment=ENV;
     const fl=P.shake>.05&&!SET.calm?.55+.45*Math.sin(time*90)*Math.sin(time*37):1,pw=inn?(P.power==null?1:P.power)*fl:0,low=P.armour<40?1:0;
     L.dome.intensity=pw*.028;L.dome.castShadow=false;if(inn&&frameN%3===0)L.screen.shadow.needsUpdate=true;P.flash=Math.max(0,(P.flash||0)-.12);
     L.screen.intensity=inn?(P.dmg.sight>0?.5:1.6)*(SET.calm?1:.9+.1*Math.sin(time*23)*Math.sin(time*7.3))*(P.thermal?.8:1)*(.75+.25*sunK)+P.flash*5:0;
@@ -1029,6 +1055,7 @@ vrBtn.addEventListener('click',async()=>{
  document.querySelectorAll('[data-mode]').forEach(b=>b.addEventListener('click',()=>{if(!idle())return;G.mode=b.dataset.mode;if(G.wait&&isHost())setHud('Waiting for another player',MODES[G.mode].name+' starts when someone joins.',0);show();}));show();
  const slide=(id,get,put,fmt)=>{const el=$(id+'Range'),out=$(id+'Out');el.value=get();out.textContent=fmt(+el.value);el.addEventListener('input',()=>{put(+el.value);out.textContent=fmt(+el.value);saveSet();});};
  slide('height',()=>Math.round(SET.height*100),v=>{SET.height=v/100;},v=>(v>0?'+':'')+v+' cm');slide('bright',()=>Math.round(SET.bright*100),v=>{SET.bright=v/100;},v=>v+'%');
+{const el=$('hourPick');HOURS.forEach((l,i)=>{const o=document.createElement('option');o.value=i;o.textContent=l[0];el.appendChild(o);});el.value=SET.hour;el.addEventListener('change',()=>{SET.hour=+el.value;saveSet();location.reload();});}
  slide('screen',()=>Math.round(SET.screen*100),v=>{SET.screen=v/100;inside.userData.sight.scale.setScalar(SET.screen);},v=>'x'+(v/100).toFixed(1));
  {const el=$('lookPick');LOOKS.forEach((l,i)=>{const o=document.createElement('option');o.value=i;o.textContent=l[0];el.appendChild(o);});el.value=SET.look;el.addEventListener('change',()=>{SET.look=+el.value;saveSet();location.reload();});}
  for(const[id,k]of[['calmToggle','calm'],['tunnelToggle','tunnel']]){$(id).checked=SET[k];$(id).addEventListener('change',()=>{SET[k]=$(id).checked;saveSet();});}}document.querySelectorAll('[data-tank]').forEach(b=>b.addEventListener('click',()=>{if(state==='preview'||state==='over')setType(b.dataset.tank);}));

@@ -3,7 +3,7 @@ const DT = 0.1, CAP = 30, QMAX = 5, BX = 1, BY = 0.4, BZ = 1.35;
 const MOTHER = 0, FIGHTER = 1, FRIGATE = 2, CRUISER = 3, TURRET = 4, MINE = 5;
 // cls: 0 small, 1 medium, 2 large; w: the weapon (0 guns, 1 cannon, 2 heavy beam, 3 the mine's blast); time in steps
 const TYPES = [
-  { name: 'MOTHERSHIP', hp: 4500, speed: 0, range: 0.34, dmg: 16, cd: 4, cls: 2, r: 0.17, cost: 0, time: 0, w: 1, acc: 0, turn: 0, grip: 1, sh: 1200 },
+  { name: 'MOTHERSHIP', hp: 7000, speed: 0, range: 0.34, dmg: 28, cd: 4, cls: 2, r: 0.17, cost: 0, time: 0, w: 1, acc: 0, turn: 0, grip: 1, sh: 1800 },
   { name: 'FIGHTER', hp: 100, speed: 0.24, range: 0.13, dmg: 7, cd: 3, cls: 0, r: 0.02, cost: 50, time: 40, w: 0, acc: 0.5, turn: 3.4, grip: 0.4, sh: 0 },
   { name: 'FRIGATE', hp: 380, speed: 0.12, range: 0.22, dmg: 22, cd: 6, cls: 1, r: 0.045, cost: 120, time: 80, w: 1, acc: 0.12, turn: 1.2, grip: 0.2, sh: 160 },
   { name: 'CRUISER', hp: 1250, speed: 0.07, range: 0.3, dmg: 110, cd: 15, cls: 2, r: 0.08, cost: 300, time: 160, w: 2, acc: 0.04, turn: 0.55, grip: 0.1, sh: 420 },
@@ -15,13 +15,13 @@ const MUL = [[1, 0.75, 0.6], [1.15, 1, 0.55], [1, 1.1, 1.2], [1, 1, 1]];
 // a shot is not a hit: how likely each weapon is to land on each size (before the target's own speed and the range are counted), and how fast each one's shot flies
 const ACC = [[0.7, 0.8, 0.9], [0.55, 0.75, 0.9], [0.12, 0.7, 0.92], [1, 1, 1]], SHOT = [0.9, 0.55, 3];
 const NODES = [[0, 0, 0], [-0.62, 0.14, 0.42], [0.62, -0.14, 0.42], [0.62, 0.14, -0.42], [-0.62, -0.14, -0.42]];
-const SNEAK_SEE = 0.16, NODE_R = 0.16, BASE_INC = 8, NODE_INC = 5, START = 300, MINE_SEE = 0.12, BLAST = 0.09;
+const SNEAK_SEE = 0.16, NODE_R = 0.16, BASE_INC = 12, NODE_INC = 4, START = 300, MINE_SEE = 0.12, DOCK = 0.34, BLAST = 0.09;
 const HOME = [[0, 0, 1.12], [0, 0, -1.12]];
 const MASS = [1e9, 1, 8, 40, 12, 0.5], BOOM = [2, 6, 20];   // how heavy each kind is, and how hard each size goes up
 const clamp = (v, lo, hi) => (v < lo ? lo : v > hi ? hi : v);
 
 // the two navies: the same six kinds of ship, each navy's own hulls and its own bent (the Admiralty's stronger force fields; the Corsairs' lighter, faster, cheaper ships)
-const NAVY = [{ name: 'ADMIRALTY', hp: 1, sh: 1.3, speed: 1, cost: 1, dmg: 1 }, { name: 'CORSAIRS', hp: 0.85, sh: 0.7, speed: 1.1, cost: 0.95, dmg: 1.35 }];
+const NAVY = [{ name: 'ADMIRALTY', hp: 1, sh: 1.3, speed: 1, cost: 1, dmg: 1 }, { name: 'CORSAIRS', hp: 0.85, sh: 0.7, speed: 1.1, cost: 0.95, dmg: 1.3 }];
 const table = f => TYPES.map((t, i) => (i === MOTHER ? { ...t } : { ...t, hp: Math.round(t.hp * NAVY[f].hp), sh: Math.round(t.sh * NAVY[f].sh), speed: t.speed * NAVY[f].speed, acc: t.acc * NAVY[f].speed, dmg: t.dmg * NAVY[f].dmg, cost: Math.round(t.cost * NAVY[f].cost / 5) * 5 }));
 
 class Sim {
@@ -42,7 +42,8 @@ class Sim {
   }
   rnd() { return (this.seed = (this.seed * 16807) % 2147483647) / 2147483647; }
   count(side) { let n = 0; for (const u of this.units) if (u.side === side && u.type !== MOTHER) n++; return n; }
-  income(side) { let n = BASE_INC; for (const d of this.nodes) if (d.owner === side) n += NODE_INC; return n; }
+  // a big fleet costs to run: every ship past ten takes 2% off what comes in
+  income(side) { let n = BASE_INC; for (const d of this.nodes) if (d.owner === side) n += NODE_INC; return Math.round(n * (1 - 0.02 * Math.max(0, this.count(side) - 10))); }
   build(side, type) {
     const T = this.T[side][type]; if (!T || !T.cost || this.winner >= 0) return false; const q = this.queue[side];
     if (this.credits[side] < T.cost || q.length >= QMAX || this.count(side) + q.length >= CAP) return false;
@@ -126,7 +127,8 @@ class Sim {
     for (const u of US) if (u.boom) for (const e of US) if (e.side !== u.side && e.hp > 0 && Math.hypot(e.x - u.x, e.y - u.y, e.z - u.z) - this.T[e.side][e.type].r < BLAST) e.hurt = (e.hurt || 0) + TYPES[MINE].dmg;
     let dead = false;
     // a force field takes the damage first, and comes back after six quiet seconds
-    for (const u of US) { if (u.hurt) { const a = Math.min(u.sh, u.hurt); u.sh -= a; u.hp -= u.hurt - a; u.hurt = 0; u.calm = 0; u.loud = 30; } else if (u.sh < this.T[u.side][u.type].sh && ++u.calm > (u.m === 1 ? 30 : 50)) u.sh = Math.min(this.T[u.side][u.type].sh, u.sh + this.T[u.side][u.type].sh * 0.02); if (u.hp <= 0) { dead = true; this.ev.push(2, u.id, u.boom ? 3 : this.T[u.side][u.type].cls, 0); this.byId.delete(u.id); if (u.type === MOTHER && this.winner < 0) this.winner = 1 - u.side; } }
+    for (const u of US) { if (!u.hurt && u.type !== MOTHER && u.calm > 20 && u.hp < this.T[u.side][u.type].hp && Math.hypot(u.x - HOME[u.side][0], u.z - HOME[u.side][2]) < DOCK) u.hp = Math.min(this.T[u.side][u.type].hp, u.hp + this.T[u.side][u.type].hp * 0.0012);   // beside its own mothership a ship out of the fight is mended
+      if (u.hurt) { const a = Math.min(u.sh, u.hurt); u.sh -= a; u.hp -= u.hurt - a; u.hurt = 0; u.calm = 0; u.loud = 30; } else if (u.sh < this.T[u.side][u.type].sh && ++u.calm > (u.m === 1 ? 30 : 50)) u.sh = Math.min(this.T[u.side][u.type].sh, u.sh + this.T[u.side][u.type].sh * 0.02); if (u.hp <= 0) { dead = true; this.ev.push(2, u.id, u.boom ? 3 : this.T[u.side][u.type].cls, 0); this.byId.delete(u.id); if (u.type === MOTHER && this.winner < 0) this.winner = 1 - u.side; } }
     // a ship that blows up shoves the ships around it, the light ones most
     if (dead) for (const u of US) { if (u.hp > 0) continue; const E = u.type === MOTHER ? 60 : u.boom ? 10 : BOOM[this.T[u.side][u.type].cls];
       for (const e of US) { if (e.hp <= 0 || !this.T[e.side][e.type].speed) continue; const dx = e.x - u.x, dy = e.y - u.y, dz = e.z - u.z, d2 = dx * dx + dy * dy + dz * dz; if (d2 > 0.09) continue; const d = Math.sqrt(d2) || 1e-4, dv = Math.min(0.25, E * 0.0006 / (MASS[e.type] * (d2 + 0.003))); e.vx += dx / d * dv; e.vy += dy / d * dv; e.vz += dz / d * dv; } }

@@ -225,7 +225,7 @@ class View {
       if (n.hp < u.hp - 0.0005) u.hit = now; u.x = n.x; u.y = n.y; u.z = n.z; u.yaw = n.yaw; u.pitch = n.pitch; u.hp = n.hp; u.k = n.k; u.m = n.m; }
     const ev = o.ev;
     for (let i = 0; i < ev.length;) { const k = ev[i];
-      if (k === 1) { const tg = this.units.get(ev[i + 2]), v = ev[i + 3], secs = (v >> 5) * STEP; this.shot(this.units.get(ev[i + 1]), tg, v & 7, !!(v & 16), secs); if (tg && v & 8 && !(v & 16)) { const f = this.fields.take(); f.uid = tg.id; f.life = 0.5; f.t = -secs; this.onEvent && this.onEvent('field', tg.pos, 0); } i += 4; }
+      if (k === 1) { const tg = this.units.get(ev[i + 2]), v = ev[i + 3], secs = (v >> 5) * STEP; this.shot(this.units.get(ev[i + 1]), tg, v & 7, !!(v & 16), secs); if (tg && v & 8 && !(v & 16)) { let f = this.fields.it.find(o => o.life > 0 && o.uid === tg.id); if (f) { if (f.t > 0.1) f.t = 0.1; } else { f = this.fields.take(); f.uid = tg.id; f.life = 0.5; f.t = -secs; } this.onEvent && this.onEvent('field', tg.pos, 0); } i += 4; }
       else if (k === 2) { const u = this.units.get(ev[i + 1]); if (u) this.blast(u, ev[i + 2]); i += 4; }
       else if (k === 3) { this.onEvent && this.onEvent('built', ev[i + 1], ev[i + 2]); i += 3; }
       else if (k === 4) { this.onEvent && this.onEvent('relay', ev[i + 2], ev[i + 1]); i += 3; }
@@ -304,7 +304,7 @@ class View {
       if (!o.hitDone && !o.miss && (o.w === 2 ? o.t > 0.05 : f > 0.85)) { o.hitDone = true; this.ball(_b, o.w === 2 ? 0.02 : o.w === 1 ? 0.011 : 0.006, 0.18, _c.set(1, 0.85, 0.6)); if (o.w) this.fire.burst(_b, o.w === 2 ? 5 : 2, 0.05, o.w === 2 ? 0.03 : 0.016, 0.4); this.spark(_b, o.w === 2 ? 10 : 3, 0.08, _c.set(1, 0.8, 0.5), 0.35); this.onEvent && this.onEvent('hit', _b, o.w); } }
     this.bolts.mesh.instanceMatrix.needsUpdate = true; this.bolts.mesh.instanceColor.needsUpdate = true; this.fire.step(dt, this.arena.scale.x);
     for (const o of this.fields.it) { if (o.life <= 0) continue; o.t += dt; if (o.t < 0) continue; const u = this.units.get(o.uid), f = o.t / o.life; if (f >= 1 || !u) { this.fields.mesh.setMatrixAt(o.k, ZERO); o.life = 0; continue; } const L = LEN[u.type], w = Math.max(TYPES[u.type].r, L * 0.3) * 1.1;
-      _m.compose(u.pos, u.quat, _s.set(w, w, Math.max(w, L * 0.6))); this.fields.mesh.setMatrixAt(o.k, _m); this.fields.mesh.setColorAt(o.k, _c.copy(GLOW[this.ci(u.side)]).multiplyScalar(1.6 * (1 - f))); }
+      _m.compose(u.pos, u.quat, _s.set(w, w, Math.max(w, L * 0.6))); this.fields.mesh.setMatrixAt(o.k, _m); this.fields.mesh.setColorAt(o.k, _c.copy(GLOW[this.ci(u.side)]).multiplyScalar(0.9 * (1 - f))); }
     this.fields.mesh.instanceMatrix.needsUpdate = true; this.fields.mesh.instanceColor.needsUpdate = true;
     for (const o of this.balls.it) { if (o.life <= 0) continue; o.t += dt; if (o.t < 0) continue; const f = o.t / o.life; if (f >= 1) { this.balls.mesh.setMatrixAt(o.k, ZERO); o.life = 0; continue; }
       _m.compose(o.p, _q.identity(), _s.setScalar(o.r * (0.25 + 0.75 * Math.sqrt(f)))); this.balls.mesh.setMatrixAt(o.k, _m); this.balls.mesh.setColorAt(o.k, _c.copy(o.c).multiplyScalar((1 - f) * (1 - f) * 1.3)); }

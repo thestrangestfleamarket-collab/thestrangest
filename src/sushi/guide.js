@@ -20,8 +20,10 @@ export function buildGuide(scene, C) {
   const stack = new V3(0.93, 1.16, -0.36), matP = new V3(-0.3, 1.02, -0.26), tub = new V3(0.935, 1.12, 0.91), box = new V3(-0.93, 1.05, -0.36);
 
   function step() {
-    const game = G.game, off = C.pots.filter((p) => !p.on);
+    const game = G.game; if (G.ended) return null;
+    const need = game.state === 'prep' ? null : game.state === 'open' ? new Set(game.cfg().menu.map((k) => RECIPES[k].broth)) : new Set(), off = C.pots.filter((p) => !p.on && (!need || (p.type ? need.has(p.type) : need.size)));   // a cold brazier matters before opening and for what tonight's menu needs, not once the stall is closing
     if (off.length) return ['Open a brazier vent', `${off.length} to wake — the braziers, on your left`, new V3(-0.67, 0.78, off[0].z)];
+    if (game.state === 'closed' && !game.serving()) return null;
     if (game.state === 'prep' || game.state === 'closed') return ['Hang the noren: open', 'The peg on the right post, under the slate', G.buttons.find((b) => b.name.startsWith('OPEN')).getPos().clone().add(new V3(0, 0.08, 0))];
     const money = G.till && G.till.step(held); if (money) return money;
     const c = game.customers.filter((x) => x.state === 'waiting').sort((a, b) => a.patience / a.maxPatience - b.patience / b.maxPatience)[0];
@@ -63,7 +65,7 @@ export function buildGuide(scene, C) {
       Object.keys(TOPPINGS).filter((t) => m.menu.some((k) => RECIPES[k].tops[t])).map((t) => [TOPPINGS[t].label, a.tops[t]]),
       m.drinks ? [['SAKE', a.drinks.sake], ['TEA', a.drinks.tea]] : []].filter((r) => r.length); };
   g.update = (dt, t) => {
-    acc += dt; if (acc > 0.2) { acc = 0; try { cur = g.on ? step() : ['GUIDE MODE is off', 'Press the green button to turn it on', null]; } catch (e) { cur = null; } try { stock = stockRows(); } catch (e) { stock = []; } }
+    acc += dt; if (acc > 0.2) { acc = 0; try { cur = G.ended ? null : g.on ? step() : ['GUIDE MODE is off', 'Press the green button to turn it on', null]; } catch (e) { cur = null; } try { stock = stockRows(); } catch (e) { stock = []; } }
     const key = (cur ? cur[0] + '|' + cur[1] : '') + JSON.stringify(stock);
     if (key !== last) { last = key; G.guideText = g.on && cur ? `${cur[0]} — ${cur[1]}` : '';
       tex.redraw((c2, w, h) => { c2.fillStyle = g.on ? '#10241a' : '#241010'; c2.fillRect(0, 0, w, h); c2.strokeStyle = g.on ? '#40e080' : '#a04040'; c2.lineWidth = 10; c2.strokeRect(5, 5, w - 10, h - 10);

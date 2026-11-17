@@ -25,7 +25,7 @@ export const RECIPES = {
   shio: { name: 'SHIO', jp: '塩ラーメン', price: 16, broth: 'chicken', tare: 'shio', tops: { chashu: 2, menma: 1, negi: 1, egg: 1 } },
   miso: { name: 'MISO', jp: '味噌ラーメン', price: 20, broth: 'chicken', tare: 'miso', tops: { chashu: 2, corn: 1, negi: 1, menma: 1 } },
   tonkotsu: { name: 'TONKOTSU', jp: '豚骨ラーメン', price: 24, broth: 'tonkotsu', tare: 'shio', tops: { chashu: 2, egg: 1, negi: 1, nori: 1 } },
-  nokori: { name: 'NOKORI', jp: '残り汁', price: 4, broth: 'chicken', tare: 'shio', tops: { negi: 1 }, night: true },   // the night's bowl for the frightened: noodles in what broth is left, a little onion, a few mon or nothing
+  yonaki: { name: 'YONAKI', jp: '夜鳴きそば', price: 12, broth: 'chicken', tare: 'shoyu', tops: { negi: 1, menma: 1, nori: 1 }, night: true },   // the night stall's plain bowl, cheaper, for whoever is out late
 };
 export const DAYDISH = Object.keys(RECIPES).filter((k) => !RECIPES[k].night);
 

@@ -24,7 +24,7 @@ import { buildLive } from './live.js';
 import { buildCook } from './cook.js';
 import { buildShare } from './share.js';
 import { buildGuest } from './guest.js';
-import { buildOutbreak } from './outbreak.js';
+import { buildDawn } from './dawn.js';
 import { NET } from '../holo/net.js';
 import { PH } from './physics.js';
 import * as T from './tex.js';
@@ -78,7 +78,7 @@ for (const g of [cart.group, city.group]) g.traverse((o) => { if (o.isMesh && !o
 const tank = buildTank(scene), live = buildLive(), cook = buildCook(), story = buildStory(scene);
 if (G.guest) G.buttons.length = 0;   // (the cart's knobs, switch and boards are the cook's)
 const share = buildShare(live), guest = G.guest ? buildGuest(live) : null;
-const outbreak = buildOutbreak(scene);   // the night it turns: the director, the turned, what you fight with, blood
+const dawn = buildDawn(scene);   // the run's end at dawn: its card
 
 function render() { renderer.render(scene, camera); }   // straight to the screen at its own resolution (THE MARKET's look: no PlayStation 2 pass, owner 17 Nov 2026)
 addEventListener('resize', () => { if (renderer.xr.isPresenting) return; camera.aspect = innerWidth / innerHeight; camera.updateProjectionMatrix(); renderer.setSize(innerWidth, innerHeight); });
@@ -113,7 +113,7 @@ function tick(dt) {
   game.update(dt, G.t);
   city.update(dt, G.t);
   life.update(dt, G.t);
-  talk.update(dt); tank.update(dt); story.update(dt); live.update(dt); share.update(dt); outbreak.update(dt); if (!guest) cook.update(dt);
+  talk.update(dt); tank.update(dt); story.update(dt); live.update(dt); share.update(dt); if (!guest) cook.update(dt);
   grit.update(dt, G.t);
   guide.update(dt, G.t); gameMenu.update(dt); report.update(dt);
   G.fx.update(dt);
@@ -142,11 +142,11 @@ function frame(now) {
   govern(dt); frames++;
   render();
   if (G.afterRender) { const f = G.afterRender; G.afterRender = null; f(); }
-  if (G.mode === 'desktop') { $('hover').textContent = G.hoverText || ''; statT -= dt; if (statT <= 0) { statT = 0.5; $('stat').textContent = G.outHint || G.guideText || G.hint; } }
+  if (G.mode === 'desktop') { $('hover').textContent = G.ended ? '' : G.hoverText || ''; statT -= dt; if (statT <= 0) { statT = 0.5; $('stat').textContent = G.ended ? '' : G.guideText || G.hint; } }
 }
 renderer.setAnimationLoop(frame);
 
-G.debug = { weather, outbreak, Items, PH, person: makePerson, PF, city, guide, menu: gameMenu, report, tick, frame, render, input, startDesktop, startVR, THREE, share, guest, tank };
+G.debug = { weather, dawn, Items, PH, person: makePerson, PF, city, guide, menu: gameMenu, report, tick, frame, render, input, startDesktop, startVR, THREE, share, guest, tank };
 if (G.guest) { menu.querySelector('h2').textContent = 'RAMEN, as yourself: walk the village street up to the ramen stall, take a stool, order a bowl and pay for it. The cook, the customers and everyone passing are the same people every page in the village sees.'; $('help').innerHTML = '<div><b>Browser</b> WASD walk · mouse look · V first / third person · E sit at a stool or get up · click the menu to order · M settings</div><div><b>VR</b> left stick walk · right stick turn · trigger by a stool to sit · step away to get up · poke the menu to order</div><div><b>Back</b> walk out at the end of the street, or LEAVE, to THE MARKET</div>'; $('keys').textContent = 'WASD walk · V view · E sit / get up · click: order · M settings · Esc: free mouse'; deskBtn.textContent = 'Walk the village in this browser'; }
 window.G = G;
 { const box = $('say'); // on a screen: M the settings board, G the guide, T to type what you say if you would rather not speak it

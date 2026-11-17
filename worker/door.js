@@ -20,7 +20,6 @@ import { SUSHI } from "./sushi.js";
 import { SALOON } from "./saloon.js";
 import { HIDE } from "./hide.js";
 import { ZOMBIE } from "./zombie.js";
-import { OUTBREAK } from "./outbreak.js";
 import LIVESDATA from "../data/lives.json";
 import ITEMDATA from "../data/items.json";
 import WORLD from "../data/world.json";
@@ -326,10 +325,6 @@ export default {
       if (p === "/zombie/mind") { if (!env.ANTHROPIC_API_KEY) return json({ why: "the website has no ANTHROPIC_API_KEY secret yet" });
         if (tooMany("zombie:" + id, 40)) return json({ why: "too much at once, wait a minute" }, 429);
         const H = homeOf(env); return json(await ZOMBIE.think(env, { get: () => H.botGet("zombie:" + id), put: v => H.botPut("zombie:" + id, v) }, body)); }
-      // RAMEN's turned think together (worker/outbreak.js): which side of the cart to press; the page goes on by instinct without it
-      if (p === "/sushi/mind" || p === "/ramen/mind") { if (!env.ANTHROPIC_API_KEY) return json({ why: "the website has no ANTHROPIC_API_KEY secret yet" });
-        if (tooMany("ramen:" + id, 30)) return json({ why: "too much at once, wait a minute" }, 429);
-        const H = homeOf(env); return json(await OUTBREAK.think(env, { get: () => H.botGet("ramen-mind:" + id), put: v => H.botPut("ramen-mind:" + id, v) }, body)); }
       // a townsperson of THE LAST CHANCE says a line (worker/saloon.js); the day's count is the player's, in Home
       if (p === "/saloon/talk") { if (!env.ANTHROPIC_API_KEY) return json({ why: "the website has no ANTHROPIC_API_KEY secret yet" });
         if (tooMany("saloon:" + id, 30)) return json({ why: "too much at once, wait a minute" }, 429);

@@ -161,8 +161,8 @@ export function buildAlley(scene, o = {}) {
     AIR.sun[0] = _mp.x; AIR.sun[1] = _mp.y; AIR.sun[2] = _mp.z; const glow = sm(-3, 3, e) * (0.35 + 0.65 * (1 - clamp((e - 5) / 25, 0, 1))) * 0.16 * (1 - 0.7 * w.cloud);
     tmp.copy(Sk.sunC).multiplyScalar(glow).lerp(tmp2.copy(MOONC).multiplyScalar(0.03 * mk), f); AIR.sunC[0] = tmp.r; AIR.sunC[1] = tmp.g; AIR.sunC[2] = tmp.b;
     fill.color.copy(NIGHTF).lerp(DAYF, day).lerp(Sk.sunC, 0.22 * day * (1 - clamp(e / 20, 0, 1))).lerp(tmp2.setRGB(0.6, 0.62, 0.66), 0.3 * w.cloud * day); fill.groundColor.copy(EARTH).multiplyScalar(0.25 + 0.75 * day);
-    fill.intensity = (0.72 + 0.43 * day + 0.3 * mk) * (S.easy ? 1.2 : 1);
-    if (G.renderer) G.renderer.toneMappingExposure = 1.05 + 0.75 * (1 - day);   // the eye opens in the dark: night dark but readable
+    fill.intensity = (0.72 + 0.6 * day + 0.3 * mk) * (S.easy ? 1.2 : 1);
+    if (G.renderer) G.renderer.toneMappingExposure = 1.15 + 0.7 * (1 - day);   // the eye opens in the dark: night dark but readable
     paddyW.emissive.copy(Sk.zen).lerp(Sk.horizon, 0.5).lerp(fogC, 0.3); paddyW.emissiveIntensity = 0.3 + 0.45 * day;
     if (G.weather) G.weather.rain.material.color.setHex(0x8a98a8).multiplyScalar(0.16 + 0.84 * day + 0.25 * lit);
     api.sky = { e: +e.toFixed(2), day: +day.toFixed(3), moon: +mk.toFixed(3), sun: +sun.intensity.toFixed(3), hour: +h.toFixed(2) }; lastH = h; };

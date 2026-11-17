@@ -12,7 +12,8 @@ const exe = process.env.PW_CHROMIUM || (fs.existsSync('/opt/pw-browsers/chromium
   const { Sim, plan, RULES, TYPES } = await import(pathToFileURL(path.resolve('src/turret/sim.js')));
   const run = (s, secs, each) => { for (let t = 0; t < secs; t += 1 / 60) { each && each(); s.step(1 / 60); } }, has = (s, t) => s.events.some(e => e.t === t);
   const lead = (s, f) => { const tt = Math.hypot(...f.p) / RULES.bolt, p = f.p.map((v, i) => v + f.v[i] * tt), l = Math.hypot(...p); return p.map(v => v / l); };
-  ok(plan(1).every(t => t === 'fighter') && plan(5)[0] === 'cruiser' && plan(10)[0] === 'cruiser' && plan(4).includes('bomber') && plan(9).length > plan(2).length, 'the waves: fighters first, bombers and aces later, a cruiser every fifth');
+  ok(plan(1).every(t => t === 'fighter') && plan(2).includes('drone') && plan(5)[0] === 'cruiser' && plan(10)[0] === 'cruiser' && plan(4).includes('bomber') && plan(9).length > plan(2).length, 'the waves: fighters first, then drones, bombers and aces, a cruiser every fifth');
+  { const s = new Sim(2); s.start(); s.rest = 1e9; const d = s.spawn('drone', { p: [0, 200, 500], d: [0, 0, -1] }); run(s, 8); ok(d.dead && s.shield < 100 && has(s, 'boom'), 'a drone left alone rams the hull'); const e = s.spawn('drone', { p: [0, 200, 500], d: [0, 0, -1] }); s.hurt(e, 1, e.p); ok(e.dead && s.score > 0 && s.events.some(x => x.t === 'boom' && x.pts > 0), 'one bolt kills a drone, and the kill says its points'); }
   { const s = new Sim(3); s.step(1); ok(s.state === 'ready' && !s.ships.length && !s.fire([0, 0, 0], [0, 0, 1]), 'nothing moves or fires before the start');
     s.start(); run(s, 6); ok(s.wave === 1 && s.ships.length === plan(1).length && has(s, 'wave'), 'wave 1 arrives');
     ok(s.ships.every(f => Math.hypot(...f.p) > 300 && f.p[1] > 0), 'they come in from far off, above the hull'); }

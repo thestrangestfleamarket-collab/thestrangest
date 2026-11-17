@@ -48,19 +48,22 @@ addEventListener('keydown', e => { keys.add(e.code); if (mode !== 'screen') retu
 addEventListener('keyup', e => { keys.delete(e.code); if (e.code === 'Space') held = false; });
 function look(y, p) { yaw = y; pitch = Math.max(-0.35, Math.min(1.45, p)); }
 
+// which way to turn, as a gunner is told it: by the clock, twelve the ship's nose
+const clock = az => { const h = Math.round(Math.atan2(Math.cos(az), -Math.sin(az)) / (Math.PI / 6)); return ((h % 12) + 12) % 12 || 12; };
+function speak(t) { try { if (!window.speechSynthesis) return; const u = new SpeechSynthesisUtterance(t); u.rate = 1.1; u.pitch = 0.8; u.volume = 0.9; speechSynthesis.cancel(); speechSynthesis.speak(u); } catch { } }
 // ---- what the fight did: sound, the feel in the hands, words ----
 function tell(e) {
   world.fx(e);
   if (e.t === 'fire') { snd.play('gun', 0.2); buzz(aimHand, 0.4, 22); }
   else if (e.t === 'foefire') snd.play(e.heavy ? 'cannon' : 'gun2', e.heavy ? 1 : 0.6, e.p);
-  else if (e.t === 'hit') snd.play('hit', 0.6, e.p);
+  else if (e.t === 'hit') { snd.play('hit', 0.6, e.p); snd.play('ui_click', 0.35); }
   else if (e.t === 'shield') { snd.play('hit2', 0.6); buzz(0, 0.6, 60); buzz(1, 0.6, 60); }
   else if (e.t === 'hull') { snd.play('boom_s', 0.9); buzz(0, 1, 160); buzz(1, 1, 160); }
   else if (e.t === 'boom') { snd.play({ cruiser: 'boom_xl', bomber: 'boom_l', fighter: 'boom_m', ace: 'boom_m', pod: 'boom_m' }[e.type] || 'boom_s', 1.6, e.p); if (e.type === 'cruiser') { world.say('CRUISER DESTROYED', '', 3); snd.play('win', 0.7); } }
   else if (e.t === 'torp') { snd.play('alarm', 0.45); if (world.said !== 'CRUISER INBOUND') world.say('TORPEDO', 'shoot it down', 1.6); }
   else if (e.t === 'missile') { snd.play('thrust', 0.7); buzz(aimHand, 0.8, 90); }
   else if (e.t === 'overheat') snd.play('ui_deny', 0.8);
-  else if (e.t === 'wave') { world.say(e.boss ? 'CRUISER INBOUND' : 'WAVE ' + e.wave, e.boss ? 'its pods are its guns' : e.wave === 1 ? 'they come from every side: turn and shoot' : '', 3.5); snd.play('order', 0.8); }
+  else if (e.t === 'wave') { const c = clock(e.az); world.say(e.boss ? 'CRUISER INBOUND' : 'WAVE ' + e.wave, (e.boss ? 'cruiser' : 'fighters') + ' at ' + c + " o'clock" + (e.boss ? ': its pods are its guns' : e.drones ? ', drones behind them' : ''), 4); snd.play('order', 0.8); speak((e.boss ? 'Cruiser inbound, ' : 'Fighters, ') + c + " o'clock" + (e.drones && !e.boss ? '. Drones behind them.' : '')); }
   else if (e.t === 'clear') world.say('WAVE CLEAR', 'hull patched', 2);
   else if (e.t === 'over') { overAt = performance.now(); try { localStorage.setItem('swivel-best', sim.best); } catch { } snd.play('lose', 0.8); snd.play('boom_l', 1); world.say('SHIP LOST', 'score ' + e.score + '   wave ' + e.wave + '   best ' + sim.best, 1e9); }
 }

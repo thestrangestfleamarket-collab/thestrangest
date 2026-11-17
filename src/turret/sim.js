@@ -4,11 +4,12 @@ export const TYPES = {
   ace: { hp: 7, r: 11, speed: 150, turn: 2.0, score: 250, len: 24 },
   bomber: { hp: 18, r: 19, speed: 55, turn: 0.7, score: 400, len: 46 },
   torp: { hp: 1, r: 6, speed: 75, turn: 1.4, score: 25, len: 6 },
+  drone: { hp: 1, r: 8, speed: 100, turn: 1.7, score: 40, len: 10 },
   cruiser: { hp: 160, r: 30, speed: 0, turn: 0, score: 2000, len: 300 },
   pod: { hp: 12, r: 12, speed: 0, turn: 0, score: 150, len: 16 },
 };
 export const RULES = { bolt: 700, boltLife: 1.4, rate: 0.1, heat: 0.055, cool: 0.32, coolTo: 0.35, missiles: 6, reload: 6, lock: 0.21, shieldWait: 3.5, shieldUp: 9,
-  hull: [[0, -6, -26], [0, -6, 26], 10], foe: 260, foeDmg: 2, heavyDmg: 6, torpDmg: 14, harder: 0.05 };
+  hull: [[0, -6, -26], [0, -6, 26], 10], foe: 260, foeDmg: 2, heavyDmg: 6, torpDmg: 14, droneDmg: 6, harder: 0.05 };
 
 const add = (a, b, k = 1) => [a[0] + b[0] * k, a[1] + b[1] * k, a[2] + b[2] * k], sub = (a, b) => [a[0] - b[0], a[1] - b[1], a[2] - b[2]];
 const dot = (a, b) => a[0] * b[0] + a[1] * b[1] + a[2] * b[2], len = a => Math.hypot(a[0], a[1], a[2]);
@@ -41,6 +42,7 @@ export function plan(n) {
   for (let i = Math.min(1 + Math.ceil(k / 2), 6); i--;) out.push('fighter');
   for (let i = Math.max(0, Math.min(Math.floor((k - 2) / 2), 4)); i--;) out.push('ace');
   for (let i = k >= 3 ? Math.min(1 + Math.floor((k - 3) / 3), 3) : 0; i--;) out.push('bomber');
+  for (let i = k >= 2 ? Math.min(2 + k, 9) : 0; i--;) out.push('drone');
   return out;
 }
 
@@ -51,6 +53,7 @@ export class Sim {
   start() { this.reset(); this.state = 'play'; this.ev('start'); }
   ev(t, o) { this.events.push(Object.assign({ t }, o)); }
   foes() { return this.ships.filter(s => !s.dead && s.type !== 'torp'); }
+  ram(s) { return s.type === 'torp' || s.type === 'drone'; }
 
   // ---- the gunner ----
   fire(o, d) {
@@ -96,15 +99,16 @@ export class Sim {
   }
   hurt(s, dmg, p) {
     if (s.dead) return; s.hp -= dmg; this.ev('hit', { p, id: s.id });
-    if (s.hp > 0) return; s.dead = true; const T = TYPES[s.type];
-    if (this.state === 'play') { this.streak++; this.streakT = 4; this.kills++; this.score += Math.round(T.score * Math.min(5, 1 + (this.streak - 1) * 0.25)); }
-    this.ev('boom', { p: s.p.slice(), v: s.v.slice(), type: s.type, id: s.id });
+    if (s.hp > 0) return; s.dead = true; const T = TYPES[s.type]; let pts = 0;
+    if (this.state === 'play') { this.streak++; this.streakT = 4; this.kills++; this.score += pts = Math.round(T.score * Math.min(5, 1 + (this.streak - 1) * 0.25)); }
+    this.ev('boom', { p: s.p.slice(), v: s.v.slice(), type: s.type, id: s.id, pts });
     if (s.type === 'cruiser') for (const x of this.ships) if (x.par === s.id && !x.dead) { x.dead = true; this.ev('boom', { p: x.p.slice(), v: x.v.slice(), type: 'pod', id: x.id }); }
   }
 
   fly(s, dt) {
     const T = TYPES[s.type], dist = len(s.p), play = this.state === 'play'; let want;
-    if (s.type === 'torp') { want = norm(sub([0, -5, 0], s.p)); const n = add(s.p, s.d, T.speed * dt); if (this.hitsHull(s.p, n)) { s.dead = true; this.ev('boom', { p: s.p.slice(), v: [0, 0, 0], type: 'torp', id: s.id, onHull: true }); this.hurtShip(RULES.torpDmg, s.p.slice()); return; } }
+    if (this.ram(s)) { want = norm(sub([0, -5, 0], s.p)); if (s.type === 'drone' && dist > 160) { const j = norm(cross(want, [0, 1, 0])); want = norm(add(add(want, j, Math.sin(this.t * 3.1 + s.id * 1.7) * 0.45), [0, 1, 0], Math.cos(this.t * 2.3 + s.id) * 0.3)); }
+      const n = add(s.p, s.d, T.speed * dt); if (this.hitsHull(s.p, n)) { s.dead = true; this.ev('boom', { p: s.p.slice(), v: [0, 0, 0], type: s.type, id: s.id, onHull: true }); this.hurtShip(s.type === 'torp' ? RULES.torpDmg : RULES.droneDmg * (1 + (this.wave - 1) * RULES.harder), s.p.slice()); return; } }
     else if (s.type === 'bomber') {
       const flat = Math.hypot(s.p[0], s.p[2]) || 1, rad = [s.p[0] / flat, 0, s.p[2] / flat], tan = [-rad[2] * s.cw, 0, rad[0] * s.cw];
       want = norm([tan[0] + rad[0] * (s.orb - flat) / 120, (s.h - s.p[1]) / 120, tan[2] + rad[2] * (s.orb - flat) / 120]);
@@ -117,7 +121,7 @@ export class Sim {
       s.bt += dt; const out = norm(s.p), early = s.bt < 1.1; want = norm(add(add([s.d[0] * 0.4, s.d[1] * 0.4 + 0.25, s.d[2] * 0.4], s.side, early ? 1 : 0.3), out, early ? 0.3 : 1));
       if (dist > s.rout) this.aim(s);
     }
-    if (s.type !== 'torp' && s.p[1] < 30) want = norm([want[0], want[1] + (30 - s.p[1]) / 30 * 1.6, want[2]]);
+    if (!this.ram(s) && s.p[1] < 30) want = norm([want[0], want[1] + (30 - s.p[1]) / 30 * 1.6, want[2]]);
     s.d = toward(s.d, want, T.turn * dt); s.v = [s.d[0] * T.speed, s.d[1] * T.speed, s.d[2] * T.speed]; s.p = add(s.p, s.v, dt);
   }
 
@@ -132,7 +136,8 @@ export class Sim {
     if (play) {
       if (!this.queue.length && !this.foes().length) { if (this.rest <= 0) { if (this.wave) { this.hull = Math.min(100, this.hull + 12); this.ev('clear', { wave: this.wave }); } this.rest = this.wave ? 5 : 1.5; }
         if ((this.rest -= dt) <= 0) { this.wave++; const g = 1 + (this.wave > 2) + (this.wave > 6), az = Array.from({ length: g }, () => this.rnd() * 6.283);
-          plan(this.wave).forEach((type, i) => this.queue.push({ type, at: this.t + i * 1.3, az: az[i % g] + (this.rnd() - 0.5) * 0.5 })); this.ev('wave', { wave: this.wave, boss: this.wave % 5 === 0 }); } }
+          const P = plan(this.wave); P.forEach((type, i) => this.queue.push({ type, at: this.t + (type === 'drone' ? 4 + i * 0.35 : i * 1.3), az: type === 'drone' ? az[g - 1] + 2.4 + (this.rnd() - 0.5) * 0.3 : az[i % g] + (this.rnd() - 0.5) * 0.5 })); this.queue.sort((a, b) => a.at - b.at);
+          this.ev('wave', { wave: this.wave, boss: this.wave % 5 === 0, az: az[0], drones: P.includes('drone') }); } }
       while (this.queue.length && this.queue[0].at <= this.t) { const q = this.queue.shift(); this.enter(q.type, q.az); }
     }
 

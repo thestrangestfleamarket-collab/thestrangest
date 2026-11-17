@@ -54,7 +54,7 @@ async function play(navy, whole) {
   { cmd.all(); cmd.home(); const ids = [...V.sel], us = ids.map(id => sim().byId.get(id)).filter(Boolean), t0 = sim().tick; while (us.some(u => u.k === 1) && sim().tick - t0 < 400) await wait(60); const far = Math.max(0, ...us.filter(u => sim().byId.get(u.id)).map(u => Math.hypot(u.x, u.z - home.z * 0.6)));
     move('FALL BACK', 'the picked ships come home in front of the mothership and hold on DEFEND', 'farthest ' + far.toFixed(2) + ' from the spot, modes ' + [...new Set(us.map(u => u.m))].join(), far < 0.2 && us.every(u => u.m === 1)); }
   // 11 PAUSE
-  { cmd.pause(); await wait(300); const t0 = sim().tick; await wait(1200); const f = mine(1)[0] || mine(2)[0]; cmd.order([f.id], 0, { x: 0.2, y: 0, z: 0.7 }, 0, false); const took = f.k === 1, still = sim().tick === t0; cmd.pause(); await ticks(5);
+  { if (!mine(1)[0] && !mine(2)[0] && !mine(3)[0]) { sim().credits[0] += 60; cmd.build(1); await ticks(60); } cmd.pause(); await wait(300); const t0 = sim().tick; await wait(1200); const f = mine(1)[0] || mine(2)[0] || mine(3)[0]; cmd.order([f.id], 0, { x: 0.2, y: 0, z: 0.7 }, 0, false); const took = f.k === 1, still = sim().tick === t0; cmd.pause(); await ticks(5);
     move('PAUSE, give an order, RESUME', 'the battle stands still, the order is taken, it flies on resume', 'stood still: ' + still + ', order taken while paused: ' + took + ', running again: ' + (sim().tick > t0), still && took && sim().tick > t0); }
   watch(); return { navy, log, bad: [...new Set(bad)].slice(0, 12), winner: -1, minutes: 0, moves: 0, left: [], relays: '' }; }
 

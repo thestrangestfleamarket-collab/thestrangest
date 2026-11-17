@@ -51,7 +51,7 @@ class Bot {
     if (this.out && mineV < theirV * 0.6) { this.out = false; this.wave = Math.min(16, main.length + 4); S.order(me, ids, 0, [0, 0, home[2] * 0.62], 0, false, 1); return; }
     // gather at a post on our half until strong enough, then go out
     if (!this.out) { const post = [0, 0, home[2] * 0.5]; if (this.n % 5 === 0) { const off = main.filter(u => u.k === 0 && Math.hypot(u.x - post[0], u.z - post[2]) > 0.25); if (off.length) S.order(me, off.map(u => u.id), 0, post, 0, false, 1); }
-      if (main.length < this.wave && !(mineV > theirV * 1.4 && main.length >= 4)) return; this.out = true; this.wave = Math.min(16, this.wave + 2); this.goal = null; }
+      if (main.length < this.wave && !(mineV > theirV * 1.4 && main.length >= 4 && S.tick > 900)) return; this.out = true; this.wave = Math.min(16, this.wave + 2); this.goal = null; }
     // the nearest relay that is not ours, then their mothership
     if (open.length) { const g = open[0]; if (this.goal !== g.i || this.n % 5 === 0) { this.goal = g.i; S.order(me, ids.filter(id => S.byId.get(id).k === 0 || this.goal !== g.i), 0, g.p); } }
     else { const m = foes.find(f => f.type === MOTHER); if (m && this.n % 3 === 0) S.order(me, ids, 1, null, m.id); }

@@ -43,39 +43,40 @@ const WORLD=(()=>{
   // ---- loose pieces: stones, bricks and splinters that fly, bounce, roll and lie where they stop
   const DN=220,deb=[];
   // one piece cut from a model: a single stone out of a set of them (the triangles that hang together), or a length of a trunk
-  const cut=(g0,mode)=>{const g=g0.index?g0.toNonIndexed():g0.clone(),p=g.attributes.position,n=p.count/3,keep=[];
+  const cut=(g0,mode,want=90)=>{const g=g0.index?g0.toNonIndexed():g0.clone(),p=g.attributes.position,n=p.count/3,keep=[];
     if(mode==='slab'){for(let t=0;t<n;t++){let ok=true;for(let k=0;k<3;k++){const y=p.getY(t*3+k);if(y<.4||y>2.6)ok=false;}if(ok)keep.push(t);}}
     else{const id=new Map(),par=[],find=i=>{while(par[i]!==i)i=par[i]=par[par[i]];return i;},vt=[];
       for(let i=0;i<p.count;i++){const k=Math.round(p.getX(i)*200)+','+Math.round(p.getY(i)*200)+','+Math.round(p.getZ(i)*200);if(!id.has(k)){id.set(k,par.length);par.push(par.length);}vt.push(id.get(k));}
       for(let t=0;t<n;t++){const a=find(vt[t*3]);par[find(vt[t*3+1])]=a;par[find(vt[t*3+2])]=a;}
       const sets=new Map();for(let t=0;t<n;t++){const r=find(vt[t*3]);(sets.get(r)||sets.set(r,[]).get(r)).push(t);}
-      let best=null;for(const l of sets.values())if(l.length>=24&&(!best||Math.abs(l.length-90)<Math.abs(best.length-90)))best=l;if(best&&best.length<n)keep.push(...best);}
+      let best=null;for(const l of sets.values())if(l.length>=16&&(!best||Math.abs(l.length-want)<Math.abs(best.length-want)))best=l;if(best&&best.length<n)keep.push(...best);}
     if(keep.length<8)return g;const o=new T.BufferGeometry();for(const nm of['position','normal','uv']){const a=g.attributes[nm];if(!a)continue;const sz=a.itemSize,arr=new Float32Array(keep.length*3*sz);keep.forEach((t,i)=>{for(let k=0;k<3*sz;k++)arr[i*3*sz+k]=a.array[t*3*sz+k];});o.setAttribute(nm,new T.BufferAttribute(arr,sz));}return o;};
-  const mkDeb=(src,col,mode)=>{let g=null,mat=null;src.traverse(m=>{if(m.isMesh&&!g){g=cut(m.geometry,mode);mat=m.material;}});g.computeBoundingSphere();const s=1/g.boundingSphere.radius;g.translate(-g.boundingSphere.center.x,-g.boundingSphere.center.y,-g.boundingSphere.center.z);g.scale(s,s,s);
+  const mkDeb=(src,col,mode,want)=>{let g=null,mat=null;src.traverse(m=>{if(m.isMesh&&!g){g=cut(m.geometry,mode,want);mat=m.material;}});g.computeBoundingSphere();const s=1/g.boundingSphere.radius;g.translate(-g.boundingSphere.center.x,-g.boundingSphere.center.y,-g.boundingSphere.center.z);g.scale(s,s,s);
     const im=new T.InstancedMesh(g,new T.MeshLambertMaterial({map:mat.map,color:col,alphaTest:mat.alphaTest,side:mat.side}),DN);im.count=0;im.frustumCulled=false;im.castShadow=false;im.receiveShadow=true;scene.add(im);return{im,n:0,live:[]};};
-  const DEB={stone:mkDeb(M.rocks,0x8f8a80,'part'),brick:mkDeb(M.rubble,0x9a8f84,'part'),wood:mkDeb(M.deadtree,0x7a6a55,'slab')};
-  function chunk(kind,x,y,z,vx,vy,vz,s){const D=DEB[kind],i=D.n++%DN;D.im.count=Math.min(DN,Math.max(D.im.count,i+1));
-    const d={D,i,x,y,z,vx,vy,vz,s,ax:Math.random()*6.28,sp:(Math.random()-.5)*14,an:Math.random()*6,flat:kind==='wood'?[.45,1,.45]:[1,.7+Math.random()*.3,.75+Math.random()*.25],rest:false};
-    const old=D.live.findIndex(o=>o.i===i);if(old>=0)D.live.splice(old,1);D.live.push(d);deb.push(d);putDeb(d);}
-  function putDeb(d){dm.position.set(d.x,d.y,d.z);dm.quaternion.setFromAxisAngle(v1.set(Math.cos(d.ax),.3,Math.sin(d.ax)).normalize(),d.an);dm.scale.set(d.s*d.flat[0],d.s*d.flat[1],d.s*d.flat[2]);dm.updateMatrix();d.D.im.setMatrixAt(d.i,dm.matrix);d.D.im.instanceMatrix.needsUpdate=true;}
+  const DEB={stone:mkDeb(M.rocks,0x8f8a80,'part',90),stoneB:mkDeb(M.rocks,0x857f76,'part',36),stoneC:mkDeb(M.rocks,0x97928a,'part',170),brick:mkDeb(M.rubble,0x9a8f84,'part'),wood:mkDeb(M.deadtree,0x7a6a55,'slab')},STONES=['stone','stoneB','stoneC'];
+  function chunk(kind,x,y,z,vx,vy,vz,s,pin){if(kind==='stone')kind=STONES[Math.floor(Math.random()*3)];const D=DEB[kind],i=D.n++%DN;D.im.count=Math.min(DN,Math.max(D.im.count,i+1));
+    const d={D,i,x,y,z,vx,vy,vz,s,ax:Math.random()*6.28,sp:(Math.random()-.5)*14,an:Math.random()*6,flat:kind==='wood'?[.45,1,.45]:[1,.7+Math.random()*.3,.75+Math.random()*.25],rest:!!pin,pin:!!pin};if(pin){d.an=0;d.sp=0;}
+    const old=D.live.findIndex(o=>o.i===i);if(old>=0)D.live.splice(old,1);D.live.push(d);if(!pin)deb.push(d);putDeb(d);}
+  function putDeb(d){dm.position.set(d.x,d.y,d.z);if(d.pin)dm.quaternion.identity();else dm.quaternion.setFromAxisAngle(v1.set(Math.cos(d.ax),.3,Math.sin(d.ax)).normalize(),d.an);dm.scale.set(d.s*d.flat[0],d.s*d.flat[1],d.s*d.flat[2]);dm.updateMatrix();d.D.im.setMatrixAt(d.i,dm.matrix);d.D.im.instanceMatrix.needsUpdate=true;}
   function burst(kind,x,y,z,n,power,s0,s1,dx=0,dz=0){if(W.quiet)return;for(let i=0;i<n;i++){const a=Math.random()*6.28,v=power*(.3+Math.random()*.7);chunk(kind,x+(Math.random()-.5)*s1*2,y+Math.random()*s1,z+(Math.random()-.5)*s1*2,Math.cos(a)*v+dx*power,power*(.5+Math.random()*.9),Math.sin(a)*v+dz*power,s0+Math.random()*(s1-s0));}}
   function updateDebris(dt){
     for(let k=deb.length-1;k>=0;k--){const d=deb[k];if(d.D.live.indexOf(d)<0){deb.splice(k,1);continue;}
       d.vy-=9.8*dt;d.x+=d.vx*dt;d.y+=d.vy*dt;d.z+=d.vz*dt;d.an+=d.sp*dt;const g=(wetAt(d.x,d.z)?hAt(d.x,d.z):W.gAt(d.x,d.z))+d.s*.3;
       if(d.y<g){d.y=g;if(wetAt(d.x,d.z)&&Math.abs(d.vy)>3)splash(d.x,d.z,false);if(Math.abs(d.vy)<1.6&&d.vx*d.vx+d.vz*d.vz<1){d.rest=true;deb.splice(k,1);}d.vy=-d.vy*.32;const gx=(hAt(d.x+1,d.z)-hAt(d.x-1,d.z))*.5,gz=(hAt(d.x,d.z+1)-hAt(d.x,d.z-1))*.5;d.vx=d.vx*.55-gx*2;d.vz=d.vz*.55-gz*2;d.sp*=.5;}
+      if(d.s>.45&&d.vy*d.vy+d.vx*d.vx>30&&Math.random()<dt*9)puff(d.x,d.y,d.z,{c:[.42,.38,.3],s0:d.s,s1:d.s*4,life:1.6,op:.35});
       putDeb(d);}
     // a tank shoves what lies in its way
-    if(Math.abs(P.v)>.5)for(const kind in DEB)for(const d of DEB[kind].live)if(d.rest){const dx=d.x-P.x,dz=d.z-P.z;if(dx*dx+dz*dz<7){d.rest=false;d.vx=-Math.sin(P.yaw)*P.v*1.1+dx;d.vz=-Math.cos(P.yaw)*P.v*1.1+dz;d.vy=1.5+Math.random()*2;d.sp=(Math.random()-.5)*10;deb.push(d);}}}
+    if(Math.abs(P.v)>.5)for(const kind in DEB)for(const d of DEB[kind].live)if(d.rest&&!d.pin){const dx=d.x-P.x,dz=d.z-P.z;if(dx*dx+dz*dz<7){d.rest=false;d.vx=-Math.sin(P.yaw)*P.v*1.1+dx;d.vz=-Math.cos(P.yaw)*P.v*1.1+dz;d.vy=1.5+Math.random()*2;d.sp=(Math.random()-.5)*10;deb.push(d);}}}
   // ---- things: every placed model, by what it is
   //  b a building that takes hits and comes down · t a tower that falls · p a post that is knocked flat · l a loose thing that is thrown · c a car · w a wall that breaks · r a rock that shatters · R a great rock that splits · s what only scars
   const KIND={barn:'b5',h6:'b6',row:'b8',h9:'b6',shop:'b6',cork:'b6',flats:'b10',white:'b6',cottage:'b5',villa:'b6',mill:'b14',works:'b10',church:'b12',silos:'b8',watertower:'t3',stacks:'t5',mast:'t3',pylon:'t3',
     pole:'p1',lamp:'p1',dead:'p1',busstop:'l1',hay:'l1',log:'l1',ammobox:'l1',trabant:'c1',lada:'c1',van:'c1',tractor:'c2',truck:'c2',stonewall:'w1',brokenwall:'w1',bags:'w1',rockS:'r1',rockB:'R3',crag:'s9',hog:'s9',wreck:'s9',cars:'s9',rubble:'s9'};
   const moving=[],fires=[];
-  for(const t of ITEMS){const k=KIND[t.name]||'s9';t.cls=k[0];t.hp=+k.slice(1);t.h=t.so?t.so[0].h:1.5;t.id=ITEMS.indexOf(t);t.y=hAt(t[0],t[1]);if(t.keep)t.cls='s';if(t.so)for(const o of t.so)o.soft='plwc'.includes(t.cls)||t.cls==='r'&&t[3]<1.1;}
+  for(const t of ITEMS){const k=KIND[t.name]||'s9';t.cls=k[0];t.hp=+k.slice(1);if(t.name==='rockB')t.hp=Math.max(3,Math.round(t[3]*.9));if(t.name==='crag'){t.cls='R';t.hp=Math.round(8+t[3]*3);}t.hp0=t.hp;t.shr=1;t.h=t.so?t.so[0].h:1.5;t.id=ITEMS.indexOf(t);t.y=hAt(t[0],t[1]);if(t.keep)t.cls='s';if(t.so)for(const o of t.so)o.soft='plwc'.includes(t.cls)||t.cls==='r'&&t[3]<1.1;}
   // one thing's drawn instances, set from where it is, how it is turned and tipped, and how tall it still stands
   function setItem(t,x,y,z,ry,tipAx,tip,sy=1,sink=0){
     dm.position.set(x,y+(t[4]||0)-sink,z);q1.setFromAxisAngle(UP,ry);if(tip){v1.set(Math.cos(tipAx),0,Math.sin(tipAx));dm.quaternion.setFromAxisAngle(v1,tip).multiply(q1);}else dm.quaternion.copy(q1);
-    dm.scale.set(t[3],t[3]*(t[6]||1)*sy,t[3]);dm.updateMatrix();if(t[5]&&!tip)dm.matrix.multiply(m5.makeRotationZ(t[5]));
+    {const k=t.shr||1;dm.scale.set(t[3]*k,t[3]*(t[6]||1)*sy*k,t[3]*k);}dm.updateMatrix();if(t[5]&&!tip)dm.matrix.multiply(m5.makeRotationZ(t[5]));
     for(let i=0;i<t.im.length;i+=3){t.im[i].setMatrixAt(t.im[i+1],m4.multiplyMatrices(dm.matrix,t.im[i+2]));t.im[i].instanceMatrix.needsUpdate=true;}}
   const _c=new T.Color();
   function tint(t,k){for(let i=0;i<t.im.length;i+=3){t.im[i].setColorAt(t.im[i+1],_c.setScalar(k));t.im[i].instanceColor.needsUpdate=true;}}
@@ -84,8 +85,10 @@ const WORLD=(()=>{
   // a thing takes a knock: how hard, and which way it came
   function hitItem(t,power,dx,dz,px,py,pz){
     if(t.gone||t.cls==='s')return false;const x=t[0],z=t[1],y=t.y;
-    if(t.cls==='b'||t.cls==='t'||t.cls==='R'){t.hp-=power;tint(t,Math.max(.35,.55+.45*t.hp/(+KIND[t.name].slice(1))));
-      if(t.cls==='R'){burst('stone',px,py,pz,6,6,.25,.7,-dx*.3,-dz*.3);if(t.hp<=0){t.gone=true;unsolid(t);setItem(t,x,y,z,t[2],0,0,.001,5);burst('stone',x,y+1,z,26,9,.5,t[3]*.55);dustUp(x,y+1,z,8,t[3]*2);if(!W.quiet)play('boom',clamp(.6/(1+distTo(x,z)/90),0,.6),'out',distTo(x,z)/340,.7);}return true;}
+    if(t.cls==='b'||t.cls==='t'||t.cls==='R'){t.hp-=power;tint(t,Math.max(.35,.55+.45*t.hp/t.hp0));
+      if(t.cls==='R'){const big=t[3]*(t.name==='crag'?2:1);burst('stone',px,py,pz,4+Math.round(big*power),5+big*.5,.2,Math.max(.5,big*.22),-dx*.35,-dz*.35);dustUp(px,py,pz,3+Math.round(big*.4),big*.8,[.55,.52,.47]);
+        if(t.hp>0){t.shr=.5+.5*t.hp/t.hp0;setItem(t,x,y,z,t[2],0,0);if(t.so)for(const o of t.so)o.r=o.r0*(.6+.4*t.shr);}
+        if(t.hp<=0){t.gone=true;unsolid(t);setItem(t,x,y,z,t[2],0,0,.001,5);burst('stone',x,y+big*.5,z,14+Math.round(big*3),8+big*.5,.4,Math.max(.8,big*.42));dustUp(x,y+1,z,8+Math.round(big),big*2,[.55,.52,.47]);if(!W.quiet)play('boom',clamp(.6/(1+distTo(x,z)/90),0,.6),'out',distTo(x,z)/340,.7);}return true;}
       burst(t.name==='barn'||t.name==='watertower'||t.name==='mast'||t.name==='pylon'?'wood':'brick',px,py,pz,10,7,.2,.6,-dx*.4,-dz*.4);dustUp(px,py,pz,4,3);
       if(t.hp<=0){t.gone=true;t.fall={t:0,dx,dz,ax:Math.atan2(-dx,dz)};moving.push(t);if(!W.quiet){play('boom',clamp(1/(1+distTo(x,z)/120),0,1),'out',distTo(x,z)/340,.55);play('thump',clamp(.8/(1+distTo(x,z)/60),0,.8),'out',distTo(x,z)/340+.5,.6);}}
       return true;}
@@ -135,11 +138,26 @@ const WORLD=(()=>{
   for(const t of TREEL){const k=tkey(t[0]+1536,t[1]+1536);(TG.get(k)||TG.set(k,[]).get(k)).push(t);t.small=t.k===5||t.h<5;t.big=t.h>36;}
   function treesNear(x,z,r,fn){const a=(x+1536-r)/24|0,b=(x+1536+r)/24|0,c=(z+1536-r)/24|0,d=(z+1536+r)/24|0;for(let i=a;i<=b;i++)for(let j=c;j<=d;j++){const l=TG.get((i+64)*256+(j+64));if(l)for(const t of l)if(!t.dead){const dx=t[0]-x,dz=t[1]-z;if(dx*dx+dz*dz<r*r)fn(t,Math.sqrt(dx*dx+dz*dz));}}}
   function setTree(t,ax,an,sc=1){dm.position.set(t[0],hAt(t[0],t[1]),t[1]);q1.setFromAxisAngle(UP,t[3]);if(an){v1.set(Math.cos(ax),0,Math.sin(ax));dm.quaternion.setFromAxisAngle(v1,an).multiply(q1);}else dm.quaternion.copy(q1);dm.scale.setScalar(t[2]*sc);dm.updateMatrix();for(let i=0;i<t.im.length;i+=2){t.im[i].setMatrixAt(t.im[i+1],dm.matrix);t.im[i].instanceMatrix.needsUpdate=true;}}
+  const BN=18,BG=(()=>{const g=new T.PlaneGeometry(1,1),h=g.clone().rotateY(Math.PI/2),p=[],u=[];for(const q of[g,h]){const a=q.toNonIndexed();p.push(...a.attributes.position.array);u.push(...a.attributes.uv.array);}const o=new T.BufferGeometry();o.setAttribute('position',new T.Float32BufferAttribute(p,3));o.setAttribute('uv',new T.Float32BufferAttribute(u,2));o.computeVertexNormals();return o;})(),BOUGH=[],boughs=[];
+  TCARD.forEach((tx,k)=>{if(k===5)return;const g=new T.InstancedBufferGeometry();g.index=BG.index;g.attributes=Object.assign({},BG.attributes);const aUV=new T.InstancedBufferAttribute(new Float32Array(BN*4),4);g.setAttribute('aUV',aUV);
+    const m=new T.MeshLambertMaterial({map:tx[0],alphaTest:.5,side:T.DoubleSide,color:new T.Color(1.15,1.15,1.08)});m.onBeforeCompile=sh=>{sh.vertexShader=sh.vertexShader.replace('#include <common>','#include <common>\nattribute vec4 aUV;').replace('#include <uv_vertex>','#include <uv_vertex>\n#ifdef USE_UV\nvUv=aUV.xy+uv*aUV.zw;\n#endif');};
+    const im=new T.InstancedMesh(g,m,BN);im.count=0;im.frustumCulled=false;scene.add(im);BOUGH[k]={im,aUV,n:0};});
+  function bough(t,x,y,z,vx,vy,vz,s){const B=BOUGH[t.k];if(!B)return;const i=B.n++%BN;B.im.count=Math.min(BN,Math.max(B.im.count,i+1));B.aUV.setXYZW(i,.08+Math.floor(Math.random()*3)*.27,.42+Math.floor(Math.random()*2)*.26,.3,.3);B.aUV.needsUpdate=true;
+    const old=boughs.findIndex(b=>b.B===B&&b.i===i);if(old>=0)boughs.splice(old,1);boughs.push({B,i,x,y,z,vx,vy,vz,s,ry:Math.random()*6.28,tip:Math.random()*6,sp:(Math.random()-.5)*5,rest:false});}
+  function leaves(t,n,y0){for(let i=0;i<n;i++){const a=Math.random()*6.28,v=1+Math.random()*4;puff(t[0]+(Math.random()-.5)*t.h*.3,y0+Math.random()*t.h*.4,t[1]+(Math.random()-.5)*t.h*.3,{c:[.2+Math.random()*.08,.3+Math.random()*.1,.12],s0:.5+Math.random()*.5,s1:.35,life:3.5+Math.random()*3,vx:Math.cos(a)*v,vz:Math.sin(a)*v,vy:1+Math.random()*4,g:2.2,heat:0,op:.9});}}
+  function updateBoughs(dt){for(const b of boughs){if(b.rest)continue;b.vy-=9.8*dt;const dr=Math.min(1,dt*1.3);b.vx-=b.vx*dr;b.vy-=b.vy*dr;b.vz-=b.vz*dr;b.x+=b.vx*dt;b.y+=b.vy*dt;b.z+=b.vz*dt;b.tip+=b.sp*dt;const g=W.gAt(b.x,b.z)+b.s*.12;
+      if(b.y<g){b.y=g;b.rest=true;b.tip=Math.PI/2+(Math.random()-.5)*.3;if(wetAt(b.x,b.z))splash(b.x,b.z,false);}
+      dm.position.set(b.x,b.y,b.z);dm.rotation.set(b.tip,b.ry,0);dm.scale.setScalar(b.s);dm.updateMatrix();dm.rotation.set(0,0,0);b.B.im.setMatrixAt(b.i,dm.matrix);b.B.im.instanceMatrix.needsUpdate=true;}}
   function fell(t,dx,dz,burn,flat){if(t.dead)return;t.dead=1;const l=Math.hypot(dx,dz)||1;t.fx=dx/l;t.fz=dz/l;t.ax=Math.atan2(-t.fx,t.fz);t.an=0;t.w=flat?2.5:.5;falling.push(t);
     if(burn)for(let i=0;i<t.im.length;i+=2){t.im[i].setColorAt(t.im[i+1],_c.setRGB(.2,.17,.14));t.im[i].instanceColor.needsUpdate=true;}
     if(!W.quiet&&!flat)play('rico',clamp(.4/(1+distTo(t[0],t[1])/50),0,.4),'out',0,.45);for(let i=0;i<3;i++)puff(t[0],hAt(t[0],t[1])+t.h*.6,t[1],{c:[.22,.3,.14],s0:1.5,s1:t.h*.7,life:1.6,vx:(Math.random()-.5)*3,vz:(Math.random()-.5)*3,vy:1,op:.6});}
-  function shatter(t){if(t.dead)return;t.dead=2;setTree(t,0,0,.0001);const y=hAt(t[0],t[1]);burst('wood',t[0],y+t.h*.3,t[1],t.small?5:14,8,.3,Math.min(1.6,t.h*.14));for(let i=0;i<6;i++)puff(t[0],y+t.h*(.3+Math.random()*.5),t[1],{c:[.2,.27,.12],s0:2,s1:t.h*.9,life:2.2,vx:(Math.random()-.5)*6,vz:(Math.random()-.5)*6,vy:2+Math.random()*3,op:.7});}
-  function updateTrees(dt){for(let k=falling.length-1;k>=0;k--){const t=falling[k];t.w+=dt*2.4*Math.sin(t.an+.2);t.an+=t.w*dt;if(t.an>=1.48){t.an=1.48;falling.splice(k,1);if(!t.small){dustUp(t[0]+t.fx*t.h*.5,hAt(t[0],t[1])+.5,t[1]+t.fz*t.h*.5,3,3);stamp(t[0]+t.fx*t.h*.5,t[1]+t.fz*t.h*.5,t.h*.45,0,0,1,Math.atan2(t.fz,t.fx),.3);if(!W.quiet)play('thump',clamp(.5/(1+distTo(t[0],t[1])/40),0,.5),'out',0,.7);}}setTree(t,t.ax,t.an);}}
+  // a tree blown apart: a splintered stump left standing, lengths of its trunk and limbs thrown, its boughs torn off and falling, leaves coming down after
+  function shatter(t){if(t.dead)return;t.dead=2;setTree(t,0,0,.0001);const y=hAt(t[0],t[1]),h=t.h;if(W.quiet)return;
+    if(t.small){burst('wood',t[0],y+.5,t[1],4,5,.12,.35);leaves(t,5,y+.5);return;}
+    chunk('wood',t[0],y+h*.03,t[1],0,0,0,h*.045,true);burst('wood',t[0],y+h*.3,t[1],3+Math.round(h/7),7+h*.12,h*.022,h*.05);burst('wood',t[0],y+h*.25,t[1],9,9,.12,.4);
+    for(let i=0;i<5+Math.round(h/5);i++){const a=Math.random()*6.28,v=3+Math.random()*7;bough(t,t[0]+Math.cos(a)*h*.1,y+h*(.45+Math.random()*.45),t[1]+Math.sin(a)*h*.1,Math.cos(a)*v,3+Math.random()*7,Math.sin(a)*v,h*(.16+Math.random()*.14));}
+    leaves(t,16,y+h*.4);dustUp(t[0],y+1,t[1],4,h*.15,[.4,.34,.26]);}
+  function updateTrees(dt){for(let k=falling.length-1;k>=0;k--){const t=falling[k];t.w+=dt*2.4*Math.sin(t.an+.2);t.an+=t.w*dt;if(t.an>=1.48){t.an=1.48;falling.splice(k,1);if(!t.small){const gy=hAt(t[0],t[1]);for(let i=0;i<3;i++){const u=.5+Math.random()*.5;bough(t,t[0]+t.fx*t.h*u,gy+1.5,t[1]+t.fz*t.h*u,t.fx*3+(Math.random()-.5)*4,2+Math.random()*3,t.fz*3+(Math.random()-.5)*4,t.h*(.14+Math.random()*.1));}leaves({0:t[0]+t.fx*t.h*.7,1:t[1]+t.fz*t.h*.7,h:t.h},8,gy+1);dustUp(t[0]+t.fx*t.h*.5,hAt(t[0],t[1])+.5,t[1]+t.fz*t.h*.5,3,3);stamp(t[0]+t.fx*t.h*.5,t[1]+t.fz*t.h*.5,t.h*.45,0,0,1,Math.atan2(t.fz,t.fx),.3);if(!W.quiet)play('thump',clamp(.5/(1+distTo(t[0],t[1])/40),0,.5),'out',0,.7);}}setTree(t,t.ax,t.an);}}
   // a shell flying through the trees: SABOT goes through and brings one down, HEAT bursts on the trunk
   W.shellTree=s=>{let hit=null;treesNear(s.p.x,s.p.z,2.2,(t,d)=>{if(!hit&&d<.5+t[2]*.35&&s.p.y<hAt(t[0],t[1])+t.h*.8&&s.pt!==t)hit=t;});if(!hit)return false;
     if(s.kind==='H'){if(hit.big&&!hit.hurt){hit.hurt=1;burst('wood',s.p.x,s.p.y,s.p.z,12,8,.3,1);}else shatter(hit);explode(s.p.x,s.p.y,s.p.z,true,false);return true;}if(hit.big){s.pt=hit;burst('wood',s.p.x,s.p.y,s.p.z,5,6,.15,.5);return false;}fell(hit,s.v.x,s.v.z,false);burst('wood',s.p.x,s.p.y,s.p.z,5,6,.15,.5);return false;};
@@ -154,19 +172,19 @@ const WORLD=(()=>{
     const R=big?13:6;treesNear(x,z,R,(t,d)=>{if(t.big){if(big&&d<3){if(t.hurt)shatter(t);else t.hurt=1;}return;}if(d<(big?4:2.2))shatter(t);else if(d<R*(.55+.45*hsh(t[0],t[1])))fell(t,t[0]-x,t[1]-z,d<R*.5);});
     for(const o of solids.slice()){const t=o.it;if(!t||t.gone)continue;const d=Math.hypot(o.x-x,o.z-z)-o.r;if(d>R)continue;const dx=(o.x-x)/(d+o.r+.01),dz=(o.z-z)/(d+o.r+.01),k=1-Math.max(0,d)/R;
       if(t.cls==='b'||t.cls==='t'||t.cls==='R'){if(d<1.5&&big&&dirt)hitItem(t,1,dx,dz,o.x-dx*o.r,g+1.5,o.z-dz*o.r);}else if(k>.35||'lc'.includes(t.cls))hitItem(t,k*(big?1.6:.9),dx,dz,o.x,g+1,o.z);}
-    for(const kind in DEB)for(const d of DEB[kind].live)if(d.rest){const dx=d.x-x,dz=d.z-z,l=Math.hypot(dx,dz);if(l<R*.7){d.rest=false;const v=(1-l/R)*(big?11:6);d.vx=dx/(l+.1)*v;d.vz=dz/(l+.1)*v;d.vy=v*.8;d.sp=(Math.random()-.5)*12;deb.push(d);}}
+    for(const kind in DEB)for(const d of DEB[kind].live)if(d.rest&&!d.pin){const dx=d.x-x,dz=d.z-z,l=Math.hypot(dx,dz);if(l<R*.7){d.rest=false;const v=(1-l/R)*(big?11:6);d.vx=dx/(l+.1)*v;d.vz=dz/(l+.1)*v;d.vy=v*.8;d.sp=(Math.random()-.5)*12;deb.push(d);}}
     if(low&&!wet&&field(x,z).kind===1&&big&&fires.length<5)fires.push({x:()=>x,y:()=>g,z:()=>z,t:9});};
   // the tracks' ruts, laid as a tank moves
   W.rut=(o,x,z,yaw)=>{if(o.rx==null){o.rx=x;o.rz=z;return;}const d=Math.hypot(x-o.rx,z-o.rz);if(d<1.3)return;const a=Math.atan2(z-o.rz,x-o.rx);for(const s of[-1.45,1.45])stamp((x+o.rx)/2+Math.cos(yaw)*s,(z+o.rz)/2-Math.sin(yaw)*s,d*.62,0,0,.9,a,.62/(d*.62));stamp((x+o.rx)/2,(z+o.rz)/2,d*.7,0,0,.45,a,2.1/(d*.7));o.rx=x;o.rz=z;};
-  W.update=dt=>{updateDebris(dt);updateItems(dt);updateTrees(dt);flushStamps();};
+  W.update=dt=>{updateDebris(dt);updateItems(dt);updateTrees(dt);updateBoughs(dt);flushStamps();};
   // everything put back as it was
   W.reset=()=>{
-    W.quiet=true;craters.length=0;bowl.count=0;sq.length=eq.length=0;gsClean=false;W.rings.length=0;fires.length=0;moving.length=0;falling.length=0;deb.length=0;for(const k in DEB){DEB[k].im.count=0;DEB[k].n=0;DEB[k].live.length=0;}decal.count=0;dcI=0;decOf.length=0;
-    for(const t of ITEMS){if(!t.gone&&!t.body&&!t.burnt&&t.hp===+(KIND[t.name]||'s9').slice(1))continue;t.gone=false;t.body=null;t.fall=null;t.burnt=0;t.hp=+(KIND[t.name]||'s9').slice(1);if(t.x0!=null){t[0]=t.x0;t[1]=t.z0;}t.y=hAt(t[0],t[1]);setItem(t,t[0],t.y,t[1],t[2],0,0);tint(t,1);
-      if(t.so0&&!t.so){t.so=t.so0;for(const o of t.so){o.h=o.h0;if(solids.indexOf(o)<0)solids.push(o);}}else if(t.so)for(const o of t.so)o.h=o.h0;}
+    W.quiet=true;craters.length=0;bowl.count=0;sq.length=eq.length=0;gsClean=false;W.rings.length=0;fires.length=0;moving.length=0;falling.length=0;deb.length=0;for(const k in DEB){DEB[k].im.count=0;DEB[k].n=0;DEB[k].live.length=0;}boughs.length=0;for(const B of BOUGH)if(B){B.im.count=0;B.n=0;}decal.count=0;dcI=0;decOf.length=0;
+    for(const t of ITEMS){if(!t.gone&&!t.body&&!t.burnt&&t.hp===t.hp0)continue;t.gone=false;t.body=null;t.fall=null;t.burnt=0;t.hp=t.hp0;t.shr=1;if(t.x0!=null){t[0]=t.x0;t[1]=t.z0;}t.y=hAt(t[0],t[1]);setItem(t,t[0],t.y,t[1],t[2],0,0);tint(t,1);
+      if(t.so0&&!t.so){t.so=t.so0;for(const o of t.so){o.h=o.h0;o.r=o.r0;if(solids.indexOf(o)<0)solids.push(o);}}else if(t.so)for(const o of t.so){o.h=o.h0;o.r=o.r0;}}
     for(const t of TREEL)if(t.dead||t.hurt){t.dead=0;t.hurt=0;setTree(t,0,0);for(let i=0;i<t.im.length;i+=2){t.im[i].setColorAt(t.im[i+1],_c.setScalar(1));t.im[i].instanceColor.needsUpdate=true;}}
     W.quiet=false;};
-  for(const t of ITEMS){t.x0=t[0];t.z0=t[1];t.so0=t.so;if(t.so)for(const o of t.so)o.h0=o.h;}
-  W.items=ITEMS;W.trees=TREEL;W.hitItem=hitItem;W.fell=null;W.debris=DEB;W.moving=moving;W.fires=fires;W.falling=falling;
+  for(const t of ITEMS){t.x0=t[0];t.z0=t[1];t.so0=t.so;if(t.so)for(const o of t.so){o.h0=o.h;o.r0=o.r;}}
+  W.boughs=boughs;W.items=ITEMS;W.trees=TREEL;W.hitItem=hitItem;W.fell=null;W.debris=DEB;W.moving=moving;W.fires=fires;W.falling=falling;
   return W;
 })();

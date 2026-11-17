@@ -297,7 +297,7 @@ function sit(now) {
   walk.on = false; if (gun.held) { gun.held = false; gun.where = 'rack'; }
   scr.yaw = 0; scr.pitch = -0.42; placeRig(); readout.show('SEATED', now);
 }
-D.stand = stand; D.sit = sit;
+D.stand = stand; D.sit = sit; D.blocked = blocked;
 
 // ---------- where you sit ----------
 function placeRig() {
@@ -369,6 +369,7 @@ function vrInput(dt, now) {
     I.grip = sq > 0.5; I.gripDown = sq > 0.6 && !P.sq; I.gripUp = sq < 0.4 && !!P.sq; P.sq = sq > 0.6 ? true : sq < 0.4 ? false : P.sq;
     I.trigDown = trig > 0.5 && !P.td; P.td = trig > 0.5 ? true : trig < 0.3 ? false : P.td;
     if (I.gripDown && !gun.held && _p.distanceTo(garage.tv.at) < 0.35) garage.tvToggle();
+    if (walk.on && side === 'left') D.dbg = [sx, sy, A.length, B.length, head.pos.x, head.pos.z, dt];
     if (walk.on) {
       // on your feet: the left stick walks you the way you face, the right turns you a step at a time
       if (side === 'left' && (Math.abs(sx) > 0.15 || Math.abs(sy) > 0.15)) { const yaw = Math.atan2(-_b.set(0, 0, -1).applyQuaternion(head.quat).x, -_b.z), c = Math.cos(yaw), n = Math.sin(yaw), v = 2.4 * dt;

@@ -17,7 +17,7 @@ const quest = IWER + ';window.xrDevice=new IWER.XRDevice(IWER.metaQuest3);xrDevi
     return { pg, errs, miss, ev: (f, a) => pg.evaluate(f, a), wait: (f, ms = 60000) => pg.waitForFunction(f, null, { timeout: ms }).then(() => true, () => false) }; };
 
   // on a screen
-  { const { pg, errs, miss, ev, wait } = await open(); await shot(pg, 'start');
+  if (process.env.ONLY !== 'vr') { const { pg, errs, miss, ev, wait } = await open(); await shot(pg, 'start');
     const s0 = await ev(() => ({ ready: __drums.ready, snd: __drums.sound.ready, takes: Object.values(__drums.sound.kit.pieces).reduce((a, p) => a + p.s.length, 0), pieces: __drums.kit.pieces.length, guide: document.querySelectorAll('#go dt').length, go: !document.getElementById('go').hidden }));
     ok(s0.ready && s0.snd && s0.takes > 200 && s0.pieces === 9 && s0.go && s0.guide >= 18, 'it loads: nine pieces, the recorded kit, and the start card lists every control: ' + JSON.stringify(s0));
     await pg.click('#screen'); ok(await wait(() => __drums.mode === 'screen' && !document.getElementById('help').hidden), 'PLAY ON SCREEN seats you with the keys on a strip'); await pg.waitForTimeout(600); await shot(pg, 'seat');
@@ -100,7 +100,7 @@ const quest = IWER + ';window.xrDevice=new IWER.XRDevice(IWER.metaQuest3);xrDevi
     const tilt = await ev(async () => { const D = __drums, c = xrDevice.controllers.right, t0 = D.set.tilt; c.updateAxes('thumbstick', 0, -1); await new Promise(r => setTimeout(r, 1500)); c.updateAxes('thumbstick', 0, 0); await new Promise(r => setTimeout(r, 100)); return [t0, +D.set.tilt.toFixed(2), JSON.parse(localStorage.getItem('drums1')).tilt > 0]; });
     ok(tilt[1] > tilt[0] + 0.02 && tilt[2], 'the right thumbstick tips the sticks in your hands, and it is kept: ' + tilt);
     ok(await ev(() => __drums.guide.card.visible && __drums.hands.right.ready && __drums.hands.left.ready && __drums.body.ready), 'the guide card is up, a hand is closed round each stick, your body is on the throne'); await shot(pg, 'vr');
-    const wk = await ev(async () => { const D = __drums, c = xrDevice.controllers.left, w = (ms) => new Promise(r => setTimeout(r, ms)); c.updateButtonValue('x-button', 1); await w(700); c.updateButtonValue('x-button', 0); await w(300); const on = D.walk.on, z0 = D.head.pos.z; c.updateAxes('thumbstick', 0, 1); await w(4000); c.updateAxes('thumbstick', 0, 0); await w(200); return [on, +Math.abs(D.head.pos.z - z0).toFixed(2)]; });
+    const wk = await ev(async () => { const D = __drums, c = xrDevice.controllers.left, w = (ms) => new Promise(r => setTimeout(r, ms)); c.updateButtonValue('x-button', 1); await w(700); c.updateButtonValue('x-button', 0); await w(300); const on = D.walk.on, z0 = D.head.pos.z; c.updateAxes('thumbstick', 0, 1); await w(4000); c.updateAxes('thumbstick', 0, 0); await w(200); return [on, +Math.abs(D.head.pos.z - z0).toFixed(2), D.walk.on, JSON.stringify(D.rig.position.toArray().map(v => +v.toFixed(2))), JSON.stringify(D.dbg)]; });
     ok(wk[0] && wk[1] > 0.3, 'X stands you up and the left stick walks you: ' + wk);
     ok(errs.length === 0, 'no page error in the headset' + (errs.length ? ': ' + errs.join(' | ') : '')); await pg.close(); }
 

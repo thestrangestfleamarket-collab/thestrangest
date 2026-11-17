@@ -6,7 +6,7 @@ const $ = id => document.getElementById(id);
 const BASE = 'tank-assets/';
 
 // ---------- settings (this browser's own) ----------
-const SET={height:0,bright:1,screen:1.6,calm:true,tunnel:true,look:1,hour:0};
+const SET={height:0,bright:1,screen:1.6,calm:true,tunnel:true,look:1,hour:-1};
 try{Object.assign(SET,JSON.parse(localStorage.getItem('hulldown-set')||'{}'));}catch(e){}
 const saveSet=()=>{try{localStorage.setItem('hulldown-set',JSON.stringify(SET));}catch(e){}};
 // ---------- helpers ----------
@@ -65,8 +65,9 @@ const HOURS=[['Evening (photographed)',null],
   ['Overcast',{el:.8,az:.3,sun:[.86,.88,.9],sI:1.3,sky:[.78,.8,.84],gnd:[.3,.3,.3],hI:1.5,zen:[.5,.53,.57],hor:[.7,.72,.74],glow:[.8,.8,.8],cov:1,star:0,ex:1}],
   ['Dusk',{el:.06,az:-1.2,sun:[1,.45,.25],sI:2,sky:[.45,.42,.7],gnd:[.16,.13,.14],hI:.45,zen:[.1,.13,.36],hor:[.95,.42,.22],glow:[1,.35,.15],cov:.5,star:.35,ex:1.35}],
   ['Moonlit night',{el:.7,az:2.2,sun:[.55,.66,1],sI:.5,sky:[.2,.26,.5],gnd:[.04,.05,.07],hI:.22,zen:[.01,.02,.06],hor:[.05,.08,.16],glow:[.7,.8,1],cov:.3,star:1,ex:2.2,moon:1}]];
-{const q=new URLSearchParams(location.search);if(q.has('hour'))SET.hour=+q.get('hour')||0;if(!HOURS[SET.hour])SET.hour=0;}
-const HR=HOURS[SET.hour][1];if(HR){SKY.el=HR.el;SKY.u=HR.az/(Math.PI*2);SKY.hor=HR.hor.map(v=>Math.pow(v,1/2.2)*.9);SKY.sunhor=HR.glow.map(v=>Math.pow(v,1/2.2)*(HR.moon?.25:.8));}
+// no hour chosen (the default): one of them by chance each time the page loads
+let HOUR=SET.hour;{const q=new URLSearchParams(location.search);if(q.has('hour'))HOUR=+q.get('hour')||0;if(!HOURS[HOUR])HOUR=Math.floor(Math.random()*HOURS.length);}
+const HR=HOURS[HOUR][1];if(HR){SKY.el=HR.el;SKY.u=HR.az/(Math.PI*2);SKY.hor=HR.hor.map(v=>Math.pow(v,1/2.2)*.9);SKY.sunhor=HR.glow.map(v=>Math.pow(v,1/2.2)*(HR.moon?.25:.8));}
 const sunPhi=SKY.u*Math.PI*2,SUN=new T.Vector3(-Math.cos(sunPhi)*Math.cos(SKY.el),Math.sin(SKY.el),Math.sin(sunPhi)*Math.cos(SKY.el)).normalize();
 const SUNL=new T.Vector3(-Math.cos(sunPhi)*Math.cos(Math.max(SKY.el,.44)),Math.sin(Math.max(SKY.el,.44)),Math.sin(sunPhi)*Math.cos(Math.max(SKY.el,.44))).normalize();
 const FOG=new T.Color(lin(SKY.hor[0]),lin(SKY.hor[1]),lin(SKY.hor[2])).multiplyScalar(1.05).lerp(new T.Color(.2,.23,.27),.3),SUNHAZE=new T.Color(lin(SKY.sunhor[0]),lin(SKY.sunhor[1]),lin(SKY.sunhor[2])).multiplyScalar(2.9);
@@ -1055,7 +1056,7 @@ vrBtn.addEventListener('click',async()=>{
  document.querySelectorAll('[data-mode]').forEach(b=>b.addEventListener('click',()=>{if(!idle())return;G.mode=b.dataset.mode;if(G.wait&&isHost())setHud('Waiting for another player',MODES[G.mode].name+' starts when someone joins.',0);show();}));show();
  const slide=(id,get,put,fmt)=>{const el=$(id+'Range'),out=$(id+'Out');el.value=get();out.textContent=fmt(+el.value);el.addEventListener('input',()=>{put(+el.value);out.textContent=fmt(+el.value);saveSet();});};
  slide('height',()=>Math.round(SET.height*100),v=>{SET.height=v/100;},v=>(v>0?'+':'')+v+' cm');slide('bright',()=>Math.round(SET.bright*100),v=>{SET.bright=v/100;},v=>v+'%');
-{const el=$('hourPick');HOURS.forEach((l,i)=>{const o=document.createElement('option');o.value=i;o.textContent=l[0];el.appendChild(o);});el.value=SET.hour;el.addEventListener('change',()=>{SET.hour=+el.value;saveSet();location.reload();});}
+{const el=$('hourPick');{const o=document.createElement('option');o.value=-1;o.textContent='A different one each time (now: '+HOURS[HOUR][0]+')';el.appendChild(o);}HOURS.forEach((l,i)=>{const o=document.createElement('option');o.value=i;o.textContent=l[0];el.appendChild(o);});el.value=SET.hour;el.addEventListener('change',()=>{SET.hour=+el.value;saveSet();location.reload();});}
  slide('screen',()=>Math.round(SET.screen*100),v=>{SET.screen=v/100;inside.userData.sight.scale.setScalar(SET.screen);},v=>'x'+(v/100).toFixed(1));
  {const el=$('lookPick');LOOKS.forEach((l,i)=>{const o=document.createElement('option');o.value=i;o.textContent=l[0];el.appendChild(o);});el.value=SET.look;el.addEventListener('change',()=>{SET.look=+el.value;saveSet();location.reload();});}
  for(const[id,k]of[['calmToggle','calm'],['tunnelToggle','tunnel']]){$(id).checked=SET[k];$(id).addEventListener('change',()=>{SET[k]=$(id).checked;saveSet();});}}document.querySelectorAll('[data-tank]').forEach(b=>b.addEventListener('click',()=>{if(state==='preview'||state==='over')setType(b.dataset.tank);}));
@@ -1064,6 +1065,6 @@ drawStat();renderer.setAnimationLoop(frame);
 $('loading').hidden=true;
 if(document.fonts&&document.fonts.load)document.fonts.load('600 40px "IBM Plex Mono"').then(drawStat).catch(()=>{});
 
-window.game={explode,MTREE,TREEGEN,MT:A0.MT,snap,SNAP,throwNade,get hold(){return hold;},get time(){return time;},get state(){return state;},get wave(){return wave;},get cover(){return cover;},get xr(){return xrActive;},get expo(){return expo;},P,foes,shells,WAVES,ROOF,FLOOR,hAt,los,tank,inside,friends,crews,mines,nades,INV,addCrew,takeItem,useItem,NET,get rem(){return NET.peers.values().next().value||noRem;},G,MODES,SET,WORLD,startMission,get mis(){return mis;},isHost,TYPES,setType,get type(){return tyKey;},hands,view,supply:land.userData.supply,fire,trigger,lase,popSmoke,selectAmmo,toggleZoom,toggleThermal,extinguish,hurt:hurtPlayer,toggleHatch,toggleSight,addFoe,live,renderer,camera,rig,sounds:A,
+window.game={HOUR,HOURS,explode,MTREE,TREEGEN,MT:A0.MT,snap,SNAP,throwNade,get hold(){return hold;},get time(){return time;},get state(){return state;},get wave(){return wave;},get cover(){return cover;},get xr(){return xrActive;},get expo(){return expo;},P,foes,shells,WAVES,ROOF,FLOOR,hAt,los,tank,inside,friends,crews,mines,nades,INV,addCrew,takeItem,useItem,NET,get rem(){return NET.peers.values().next().value||noRem;},G,MODES,SET,WORLD,startMission,get mis(){return mis;},isHost,TYPES,setType,get type(){return tyKey;},hands,view,supply:land.userData.supply,fire,trigger,lase,popSmoke,selectAmmo,toggleZoom,toggleThermal,extinguish,hurt:hurtPlayer,toggleHatch,toggleSight,addFoe,live,renderer,camera,rig,sounds:A,
   skip(){waveT=0;},kill(e){killFoe(e);P.kills++;}};
 })();

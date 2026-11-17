@@ -54,11 +54,12 @@ export function buildGun(scene, garage, street, sound, kit, T, hooks) {
   const load = () => { if (!S.shell || S.tube >= TUBE) return false; S.shell = false; S.tube++; sound.action('shell'); hooks.pulse('left', 0.5, 25); hooks.pulse('right', 0.3, 20); status(); return true; };
   const takeBox = () => { if (S.pouch >= 25) return; S.pouch = 25; sound.action('shell'); say('25 SHELLS ON YOUR BELT'); };
 
-  function shoot() {
+  // eye: on a screen the shot goes where the middle of the picture is, from your eye; in a headset from the muzzle, where the barrel points
+  function shoot(eye) {
     if (S.chamber !== 1 || S.pump > 0.15) { sound.action('dry'); return false; }
     S.chamber = 2; S.shots++; S.kick = 1; sound.boom(); hooks.pulse('right', 1, 140); hooks.pulse('left', 0.8, 120);
-    const o = _a.set(0, 0.045, -MUZZLE).applyQuaternion(g.quaternion).add(g.position).clone(), fwd = _b.set(0, 0, -1).applyQuaternion(g.quaternion).clone();
-    flash.position.copy(o); flash.intensity = 60; fire.visible = true;
+    const mz = _a.set(0, 0.045, -MUZZLE).applyQuaternion(g.quaternion).add(g.position).clone(), o = eye ? eye.pos.clone() : mz, fwd = _b.set(0, 0, -1).applyQuaternion(eye ? eye.quat : g.quaternion).clone();
+    flash.position.copy(mz); flash.intensity = 60; fire.visible = true;
     if (!solidList) { solidList = []; for (const root of [garage.group, street.group]) root.traverse((m) => { if (m.isMesh && !m.isSkinnedMesh && m.material && !(m.material.transparent && !m.material.depthWrite) && !m.material.isMeshBasicMaterial) solidList.push(m); }); }
     for (let i = 0; i < PELLETS; i++) {
       const d = _c.copy(fwd).add(_d.set((Math.random() - 0.5) * 2, (Math.random() - 0.5) * 2, (Math.random() - 0.5) * 2).multiplyScalar(SPREAD)).normalize().clone();
@@ -66,7 +67,8 @@ export function buildGun(scene, garage, street, sound, kit, T, hooks) {
       for (const b of cans) { _d.copy(b.mesh.position).sub(o); const t = _d.dot(d); if (t > 0 && t < best && _d.addScaledVector(d, -t).length() < 0.09) { best = t; what = b; } }
       for (const p of kit.pieces) { _d.copy(o).applyMatrix4(p.inv); const dl = _q.set(0, 0, 0, 1) && _c.copy(d).transformDirection(p.inv); if (Math.abs(dl.y) < 1e-4) continue; const t = -_d.y / dl.y; if (t <= 0 || t >= best) continue; _d.addScaledVector(dl, t); const rho = Math.hypot(_d.x, _d.z); if (rho <= p.radius) { best = t; what = { piece: p, rho }; } }
       { _d.copy(garage.tv.at).sub(o); const t = _d.dot(d); if (t > 0 && t < best && _d.addScaledVector(d, -t).length() < 0.2) { best = t; what = 'tv'; } }
-      ray.set(o, d); const hit = ray.intersectObjects(solidList, false)[0];
+      // (something put away, a car waiting its turn, is not there to be hit)
+      ray.set(o, d); const seen = (m) => { for (let p = m; p; p = p.parent) if (!p.visible) return false; return true; }, hit = ray.intersectObjects(solidList, false).find((h) => seen(h.object));
       if (hit && hit.distance < best) {
         const h = holes[holeI++ % holes.length]; h.visible = true; h.position.copy(hit.point); if (hit.face) { _d.copy(hit.face.normal).transformDirection(hit.object.matrixWorld); h.position.addScaledVector(_d, 0.004); h.quaternion.setFromUnitVectors(_a.set(0, 0, 1), _d); } S.hits.wall++;
       } else if (what === 'tv') { garage.tvShot(); S.hits.tv++; }
@@ -79,7 +81,7 @@ export function buildGun(scene, garage, street, sound, kit, T, hooks) {
 
   // inp: { vr, R: {pos, quat, grip, gripDown, gripUp, trigDown}, L: {...}, head: {pos, quat}, feet: Vector3, screen: {fire, reload, pump, use} }
   S.update = (dt, time, inp) => {
-    const R = inp.R, L = inp.L;
+    const R = inp.R, L = inp.L; S.eye = inp.head;
     flash.intensity = Math.max(0, flash.intensity - dt * 700); if (flash.intensity <= 0) fire.visible = false;
     S.kick = Math.max(0, S.kick - dt * 6);
     if (inp.vr) {
@@ -108,7 +110,7 @@ export function buildGun(scene, garage, street, sound, kit, T, hooks) {
         g.position.copy(_a.set(0.17, -0.2 - (S.act ? 0.03 : 0), -0.28).applyQuaternion(inp.head.quat).add(inp.head.pos));
         // one key works the whole action a step at a time, as hands would
         if (S.act) { S.actT += dt; if (S.act === 'pump') { if (!S.gone) { setPump(Math.min(1, S.actT / 0.13)); if (S.actT >= 0.13) { setPump(1); S.gone = true; } } else { setPump(Math.max(0, 1 - (S.actT - 0.16) / 0.13)); if (S.pump <= 0) S.act = null; } } else if (S.actT >= 0.45) { S.shell = true; S.pouch--; load(); S.act = null; } }
-        else if (sc.fire) { if (S.chamber === 1) shoot(); else if (S.tube > 0 || S.chamber === 2) { S.act = 'pump'; S.actT = 0; S.gone = false; } else sound.action('dry'); }
+        else if (sc.fire) { if (S.chamber === 1) shoot(inp.head); else if (S.tube > 0 || S.chamber === 2) { S.act = 'pump'; S.actT = 0; S.gone = false; } else sound.action('dry'); }
         else if (sc.pump) { S.act = 'pump'; S.actT = 0; S.gone = false; }
         else if (sc.reload && S.pouch > 0 && S.tube < TUBE) { S.act = 'load'; S.actT = 0; }
       }
@@ -122,6 +124,6 @@ export function buildGun(scene, garage, street, sound, kit, T, hooks) {
   };
   // the cans stood up again (each new day, and when asked)
   S.reset = () => { for (const b of cans) { b.mesh.position.copy(b.home); b.mesh.rotation.set(0, 0, 0); b.v.set(0, 0, 0); b.rest = true; } for (const h of holes) h.visible = false; };
-  S.shoot = shoot; S.cans = cans;
+  S.shoot = (fromEye) => shoot(fromEye ? S.eye : undefined); S.cans = cans;
   return S;
 }

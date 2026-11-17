@@ -416,6 +416,8 @@ export function buildGarage(scene, low) {
     toggleDoor() { door.want = door.want > 0.5 ? 0 : 1; },
     setDoor(v) { door.open = door.want = v; setDoor(); for (const [l] of fills) l.shadow.needsUpdate = true; sun.shadow.needsUpdate = true; },
     // the hour sets where the sun is, how much of it there is and what colour, and what the sky and the air look like
+    // how high the sun stands at an hour of today (degrees)
+    altAt(hour) { const d = new Date(); return EPH.seen('sun', EPH.jdOf(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()) + (hour - EPH.LON / 15) * 3600e3)).alt; },
     // the hour (and the weather) set where the sun and moon really are, how much light there is and what colour, the sky and the air
     setHour(hour, time, wx = { cloud: 0.2, rain: 0, mist: 0.1 }) {
       G.hour = hour;

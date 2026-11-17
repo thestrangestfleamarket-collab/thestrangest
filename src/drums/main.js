@@ -583,6 +583,7 @@ renderer.setAnimationLoop(() => {
   ginp.vr = vr; ginp.feet.set(head.pos.x, 0, head.pos.z);
   gun.update(dt, now, ginp); ginp.screen.fire = ginp.screen.reload = ginp.screen.pump = ginp.screen.use = false;
   garage.ear.copy(head.pos);
+  if ($('aim').hidden !== !(gun.held && !vr)) $('aim').hidden = !(gun.held && !vr);
   sticks.left.obj.updateMatrixWorld(true); sticks.right.obj.updateMatrixWorld(true);
   for (const s of ['left', 'right']) { const h = hands[s]; h.kick = Math.max(0, (h.kick || 0) - dt * 7); if (h.ready) { h.curl(h.kick); h.update(); } }
   if (body.ready && hands.left.ready && hands.right.ready) {

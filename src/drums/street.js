@@ -44,6 +44,7 @@ export function buildStreet(scene, low) {
     steel: plain(0x6e7379, { rough: 0.4, metal: 0.8 }), line: plain(0xd8d2b0, { rough: 0.8 }),
     win: new THREE.MeshStandardMaterial({ color: 0x1a222b, roughness: 0.15, emissive: 0xffc878, emissiveIntensity: 0 }),
   };
+  M.winD = M.win.clone(); // a window with nobody home
   // the ground: your pavement, the road with its line, the far pavement, lawns behind
   box(M.pave, 2 * RUN, 0.12, 1.7, 0, -0.03, PAVE);
   box(M.road, 2 * RUN, 0.1, 7, 0, -0.09, ROADZ);
@@ -61,14 +62,14 @@ export function buildStreet(scene, low) {
     const dx = hx + (i % 2 ? 1.6 : -1.4);
     box(M.trim, 1.1, 2.15, 0.1, dx, 1.07, FRONT + 0.02); box(M.door[i % 3], 0.92, 2.0, 0.12, dx, 1.0, FRONT + 0.03);
     box(M.pave, 2.4, 0.18, 1.3, dx, 0.07, FRONT + 0.65); box(M.pave, 1.1, 0.06, FRONT - FAR - 1.4, dx, -0.01, (FRONT + FAR) / 2 + 0.6);
-    for (const wx of [-3, i % 2 ? -0.6 : 1.2, 3]) { if (Math.abs(hx + wx - dx) < 1) continue; box(M.trim, 1.25, 1.3, 0.08, hx + wx, 1.75, FRONT + 0.02); box(M.win, 1.1, 1.15, 0.1, hx + wx, 1.75, FRONT + 0.03); box(M.trim, 1.4, 0.06, 0.16, hx + wx, 1.1, FRONT + 0.06); if (i % 3 !== 1) for (const sx of [-0.82, 0.82]) box(M.door[(i + 1) % 3], 0.34, 1.25, 0.05, hx + wx + sx, 1.75, FRONT + 0.03); }
+    for (const wx of [-3, i % 2 ? -0.6 : 1.2, 3]) { if (Math.abs(hx + wx - dx) < 1) continue; box(M.trim, 1.25, 1.3, 0.08, hx + wx, 1.75, FRONT + 0.02); box(Math.sin(hx * 3.7 + wx * 5.1) > 0.25 ? M.winD : M.win, 1.1, 1.15, 0.1, hx + wx, 1.75, FRONT + 0.03); box(M.trim, 1.4, 0.06, 0.16, hx + wx, 1.1, FRONT + 0.06); if (i % 3 !== 1) for (const sx of [-0.82, 0.82]) box(M.door[(i + 1) % 3], 0.34, 1.25, 0.05, hx + wx + sx, 1.75, FRONT + 0.03); }
     box(M.steel, 0.07, 1.05, 0.07, dx + 1.1, 0.5, FAR + 0.75); box(M.trim, 0.2, 0.2, 0.42, dx + 1.1, 1.1, FAR + 0.75);
     if (Math.abs(hx) > 31) return;
     model('potted_plant_01', hx - 3.6, 0, FRONT + 0.9, i, { h: 1.3, shadow: false }, group);
   });
   // your own side: a neighbour's house each way, your mailbox by the drive
   for (const s of [-1, 1]) for (const k of [0, 1, 2, 3, 4]) { const hx = s * (17 + k * 14), br = M.brick[s > 0 ? 2 : 1]; box(br, 10, 3.1, 8, hx, 1.55, Z0 - 2.5); solids.push([hx - 5.2, Z0 - 6.7, hx + 5.2, Z0 + 1.7]); houses.push({ x: hx, z: Z0 - 2.5, w: 10, d: 8, h: 3.1, i: k, far: false }); casters.push([hx, Z0 - 2.5, 10, 8, 4]); const rg = new THREE.CylinderGeometry(0.02, 1, 1.9, 4, 1).rotateY(Math.PI / 4); rg.scale(7.8, 1, 6.4); rg.translate(hx, 4.05, Z0 - 2.5); raw(M.roof[0], rg);
-    for (const wx of [-2.5, 2.5]) { box(M.trim, 1.25, 1.3, 0.08, hx + wx, 1.75, Z0 - 6.52); box(M.win, 1.1, 1.15, 0.1, hx + wx, 1.75, Z0 - 6.53); } if (!k) { box(M.fence, 0.05, 1.1, 6, s * 10.5, 0.55, Z0 - 5.5); solids.push([s * 10.5 - 0.15, Z0 - 8.5, s * 10.5 + 0.15, Z0 - 2.5]); } }
+    for (const wx of [-2.5, 2.5]) { box(M.trim, 1.25, 1.3, 0.08, hx + wx, 1.75, Z0 - 6.52); box(Math.sin(hx * 2.3 + wx) > 0.2 ? M.winD : M.win, 1.1, 1.15, 0.1, hx + wx, 1.75, Z0 - 6.53); } if (!k) { box(M.fence, 0.05, 1.1, 6, s * 10.5, 0.55, Z0 - 5.5); solids.push([s * 10.5 - 0.15, Z0 - 8.5, s * 10.5 + 0.15, Z0 - 2.5]); } }
   box(M.steel, 0.07, 1.05, 0.07, 2.4, 0.5, PAVE + 1.05); box(M.trim, 0.2, 0.2, 0.42, 2.4, 1.1, PAVE + 1.05);
   for (const [mat, list] of bins) { const m = new THREE.Mesh(mergeGeometries(list), mat); m.receiveShadow = true; m.castShadow = false; group.add(m); }
   // lamps along your kerb, a hydrant, two cars left at the kerb
@@ -126,7 +127,7 @@ export function buildStreet(scene, low) {
     update(dt, time, hour, ctx) {
       S.time = time; S.hour = hour;
       const night = isNight(hour), dark = 1 - ctx.day;
-      M.win.emissiveIntensity = dark * 1.1; lampM.color.setRGB(0.2 + dark * 1.6, 0.16 + dark * 1.28, 0.1 + dark * 0.8); for (const l of lamps) l.intensity = dark * 26;
+      M.win.emissiveIntensity = dark * 1.1; M.winD.emissiveIntensity = dark * 0.06; lampM.color.setRGB(0.2 + dark * 1.6, 0.16 + dark * 1.28, 0.1 + dark * 0.8); for (const l of lamps) l.intensity = dark * 26;
       // cars
       nextCar -= dt;
       if (nextCar < 0) { nextCar = (night ? 25 : 7) + Math.random() * (night ? 50 : 16); const c = cars.find((k) => !k.on); if (c) { c.on = true; c.dir = Math.random() < 0.5 ? 1 : -1; c.v = 8 + Math.random() * 4; c.g.visible = true; c.g.position.set(-c.dir * CAREND, 0, ROADZ + c.dir * 1.75); c.g.rotation.y = c.dir > 0 ? 0 : Math.PI; } }
@@ -137,7 +138,7 @@ export function buildStreet(scene, low) {
       // the day's walks: each sets out at their hours, the mail carrier on his round
       const hh = Math.floor(hour);
       for (const p of people) {
-        if (p.state === 'home') { for (const h of p.c.hours) if (hh === h && p.done[h] !== S.dayN) { p.done[h] = S.dayN; const dir = Math.random() < 0.5 ? 1 : -1; p.pos.set(-dir * END, 0, PAVE + (Math.random() - 0.5) * 0.5); go(p, [[dir * END, PAVE]]); p.dir = dir; p.asked = false; break; } continue; }
+        if (p.state === 'home') { for (const h0 of p.c.hours) { const h = 16 + (h0 * 5 + p.c.age) % 8; if (hh === h && p.done[h] !== S.dayN) { p.done[h] = S.dayN; const dir = Math.random() < 0.5 ? 1 : -1; p.pos.set(-dir * END, 0, PAVE + (Math.random() - 0.5) * 0.5); go(p, [[dir * END, PAVE]]); p.dir = dir; p.asked = false; break; } } continue; }
         p.mixer?.update(dt);
         if (p.sayT > 0) { p.sayT -= dt; if (p.sayT <= 0) { p.bub.sprite.visible = false; if (p.state !== 'walk') play(p, 'idle'); } }
         p.hear = Math.max(0, p.hear - dt);

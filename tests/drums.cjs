@@ -33,9 +33,9 @@ const quest = IWER + ';window.xrDevice=new IWER.XRDevice(IWER.metaQuest3);xrDevi
     // the garage door, the hour, the street and its people
     const d0 = await ev(() => __drums.garage.door.open); await pg.keyboard.press('KeyO');
     ok(d0 < 0.3 && await wait(() => __drums.garage.door.open > 0.99, 90000), 'O runs the garage door up its tracks');
-    const hr = await ev(async () => { const D = __drums, a = [+D.life.hour.toFixed(1), +D.garage.day.toFixed(2)]; for (let i = 0; i < 8; i++) D.life.skip(); await new Promise(r => setTimeout(r, 600)); return [...a, +D.life.hour.toFixed(1), +D.garage.day.toFixed(2), +D.street.group.children.length > 20]; });
-    ok(hr[0] === 15 && hr[1] > 0.9 && hr[2] === 23 && hr[3] < 0.1 && hr[4], 'the hour is the one asked for, in full day; eight hours on it is night: ' + hr);
-    const st = await ev(async () => { const D = __drums, S = D.street, p = S.people.find(q => q.id === 'marcus'), nap = ms => new Promise(r => setTimeout(r, ms)); for (let i = 0; i < 16; i++) D.life.skip(); await nap(400);
+    const hr = await ev(async () => { const D = __drums, L = D.life, a = [+D.garage.sunE.toFixed(1), +L.hour.toFixed(1) >= +L.dusk.toFixed(1)]; let top = -99, dark = 0; for (let i = 0; i < 30; i++) { L.skip(); await new Promise(r => setTimeout(r, 250)); top = Math.max(top, D.garage.sunE); if (D.garage.day < 0.05) dark++; } return [...a, +top.toFixed(1), dark, D.street.group.children.length > 20]; });
+    ok(hr[0] <= 8 && hr[1] && hr[2] <= 8 && hr[3] >= 15 && hr[4], 'it is dusk when you come in, and through thirty hours on the sun never climbs: dusk, evening and night only: ' + hr);
+    const st = await ev(async () => { const D = __drums, S = D.street, p = S.people.find(q => q.id === 'marcus'), nap = ms => new Promise(r => setTimeout(r, ms)); D.life.to(D.life.dusk + 1); await nap(600);
       for (let i = 0; i < 6; i++) D.life.note(1); p.g.visible = true; p.pos.set(-1.5, 0, p.pos.z = -13.75); p.dir = 1; p.asked = false; p.state = 'walk'; p.path = [[44, -13.75]]; p.pi = 0;
       for (let i = 0; i < 160 && p.state !== 'visit'; i++) { D.life.note(1); await nap(250); } const came = p.state, bub = p.bub.sprite.visible, rel = p.rel; await D.life.say('Hello Marcus, how was your shift?'); await nap(300);
       return { n: S.people.length, mixers: S.people.filter(q => q.mixer).length, came, bub, rel, met: p.met, said: D.life.said.length, near: S.nearest() && S.nearest().id, cars: S.cars.length }; });
@@ -47,7 +47,7 @@ const quest = IWER + ';window.xrDevice=new IWER.XRDevice(IWER.metaQuest3);xrDevi
       D.walk.pos.set(-1.0, 0, 2.2); await nap(200); await key('KeyE'); D.walk.pos.set(0.9, 0, 2.3); await nap(200); await key('KeyE'); o.held = g.held; o.pouch = g.pouch;
       for (let i = 0; i < 6 && g.tube < 2; i++) await key('KeyR', 1500); o.tube = g.tube; await key('KeyF', 1500); o.ready = g.chamber;
       const p = D.street.people[0]; p.g.visible = true; p.state = 'walk'; p.pos.set(3, 0, -13.75); p.path = [[70, -13.75]]; p.pi = 0; p.asked = true; const rel = p.rel;
-      D.walk.pos.set(-0.08, 0, 1.4); D.scr.yaw = 0; D.scr.pitch = -0.51; await nap(600); const k0 = D.stats.hits; g.shoot(); await nap(500); o.shots = g.shots; o.kit = D.stats.hits - k0; o.spent = g.chamber; o.fled = p.fled && p.rel < rel;
+      D.walk.pos.set(-0.08, 0, 1.4); D.scr.yaw = 0; D.scr.pitch = -0.51; await nap(600); const k0 = D.stats.hits; g.shoot(true); await nap(500); o.shots = g.shots; o.kit = D.stats.hits - k0; o.spent = g.chamber; o.fled = p.fled && p.rel < rel;
       await key('KeyF', 1500); o.next = g.chamber; D.walk.pos.set(0, 0, 0.5); await nap(200); await key('Tab'); o.sat = !D.walk.on && !g.held; return o; });
     ok(wk.up && wk.shut > -3.6 && wk.out && wk.held && wk.pouch === 25 && wk.tube >= 2 && wk.ready === 1 && wk.shots === 1 && wk.kit >= 1 && wk.spent === 2 && wk.fled && wk.next === 1 && wk.sat, 'TAB stands you up; the shut door stops you and the open one lets you out; the shotgun is taken, loaded from your belt, pumped and fired, its shot rings the kit and sends a neighbour running; the pump brings up the next; TAB at the stool sits you down: ' + JSON.stringify(wk));
     const r = await ev(() => ({ calls: __drums.renderer.info.render.calls, tris: __drums.renderer.info.render.triangles, lines: __drums.renderer.domElement.height }));

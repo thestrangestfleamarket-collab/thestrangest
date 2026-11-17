@@ -19,7 +19,7 @@ export function dressLand(scene, street, garage, low) {
   // kerbs, a wide ground under everything, and every house finished: a drive and a garage door, a porch, a chimney, a bed under the windows, a hedge or a fence to the next lot
   box(M.kerb, 2 * RUN, 0.14, 0.16, 0, 0, ROADZ + 3.58); box(M.kerb, 2 * RUN, 0.14, 0.16, 0, 0, ROADZ - 3.58);
   const gd = new THREE.Mesh(new THREE.CircleGeometry(420, 48).rotateX(-Math.PI / 2), M.ground); gd.position.y = -0.16; group.add(gd);
-  const cars = [];
+  const cars = [], yard = [];
   for (const h of street.houses) {
     const s = h.far ? 1 : -1, front = h.z + s * h.d / 2, kerb = h.far ? FAR - 0.85 : PAVE + 0.85, dx = h.x + (h.i % 2 ? -1 : 1) * (h.w / 2 - 1.7), len = Math.abs(front - kerb);
     box(M.drive, 3, 0.06, len, dx, -0.012, (front + kerb) / 2);
@@ -30,10 +30,10 @@ export function dressLand(scene, street, garage, low) {
     if ((h.i + (h.far ? 0 : 1)) % 2) { box(M.hedge, 0.7, 1.05, len - 1, h.x + h.w / 2 + 1, 0.52, (front + kerb) / 2 + s * 0.4); solids.push([h.x + h.w / 2 + 0.6, Math.min(front, kerb) + 0.5, h.x + h.w / 2 + 1.4, Math.max(front, kerb) - 0.5]); casters.push([h.x + h.w / 2 + 1, (front + kerb) / 2, 0.7, len - 1, 1.05]); }
     else box(SM.fence, 0.05, 0.9, len - 1, h.x + h.w / 2 + 1, 0.45, (front + kerb) / 2 + s * 0.4);
     { // each yard dressed by its own draw of real things: a hose on the wall, planters, pots, rocks along the bed, bins by the garage, a ladder or broom left out, a watering can, crates
-      const R = (k) => hsh(h.x * 1.7 + k * 9.1, h.far ? 5 : 6), wallZ = front + s * 0.12, ry = h.far ? 0 : Math.PI, put = (n, x, z, o) => model(n, x, o.y || 0, z, o.ry ?? R(n.length) * 6.28, { shadow: false, ...o }, group);
+      const R = (k) => hsh(h.x * 1.7 + k * 9.1, h.far ? 5 : 6), wallZ = front + s * 0.12, ry = h.far ? 0 : Math.PI, put = (n, x, z, o) => { const m = model(n, x, o.y || 0, z, o.ry ?? R(n.length) * 6.28, { shadow: false, ...o }, group); yard.push(m); return m; };
       if (R(1) > 0.35) put('garden_hose_wall_mounted_01', h.x + (R(2) - 0.5) * (h.w - 4), wallZ, { y: 0.7, h: 0.5, ry });
       if (R(3) > 0.3) put('planter_box_01', h.x + (R(4) - 0.5) * (h.w - 5), front + s * 0.5, { h: 0.4, ry });
-      for (let k = 0; k < 1 + Math.floor(R(5) * 4); k++) put(R(6 + k) > 0.5 ? 'potted_plant_04' : 'potted_plant_01', h.x + (R(10 + k) - 0.5) * h.w * 0.9, front + s * (0.6 + R(14 + k) * 0.5), { h: R(6 + k) > 0.5 ? 0.3 + R(k) * 0.2 : 0.7 + R(k) * 0.7 });
+      for (let k = 0; k < 1 + Math.floor(R(5) * 4); k++) put(R(6 + k) > 0.5 || Math.abs(h.x) > 32 ? 'potted_plant_04' : 'potted_plant_01', h.x + (R(10 + k) - 0.5) * h.w * 0.9, front + s * (0.6 + R(14 + k) * 0.5), { h: R(6 + k) > 0.5 || Math.abs(h.x) > 32 ? 0.3 + R(k) * 0.2 : 0.7 + R(k) * 0.7 });
       if (R(20) > 0.4) { put('metal_trash_can', dx + (h.i % 2 ? 1.9 : -1.9), front + s * 0.7, { h: 0.75, ry: ry + 1.57 }); }
       if (R(21) > 0.6) put('trashbag', dx + (h.i % 2 ? 2.6 : -2.6), front + s * 0.5, { h: 0.45 });
       if (R(22) > 0.65) put('wooden_ladder', h.x - h.w / 2 + 0.6, front + s * 0.3, { h: 1.3, ry: ry + (R(23) - 0.5) });
@@ -93,7 +93,7 @@ export function dressLand(scene, street, garage, low) {
 
   // the sky's own light on everything out of doors: each surface glows a little by its own colour, more by day, so a wall in shade is still a wall
   const amb = new Set();
-  const take = (m) => { if (!m || m.isMeshBasicMaterial || m.isLineBasicMaterial || m.isSpriteMaterial || m.isPointsMaterial || m.isShaderMaterial || !m.emissive || m === SM.win) return; if (m.map && !m.emissiveMap) { m.emissiveMap = m.map; m.needsUpdate = true; } if (!(m.userData.ambC && m.userData.ambC.isColor)) m.userData.ambC = typeof m.userData.ambC === 'number' ? new THREE.Color(m.userData.ambC) : m.map ? new THREE.Color(1, 1, 1) : m.color.clone(); amb.add(m); };
+  const take = (m) => { if (!m || m.isMeshBasicMaterial || m.isLineBasicMaterial || m.isSpriteMaterial || m.isPointsMaterial || m.isShaderMaterial || !m.emissive || m === SM.win || m === SM.winD) return; if (m.map && !m.emissiveMap) { m.emissiveMap = m.map; m.needsUpdate = true; } if (!(m.userData.ambC && m.userData.ambC.isColor)) m.userData.ambC = typeof m.userData.ambC === 'number' ? new THREE.Color(m.userData.ambC) : m.map ? new THREE.Color(1, 1, 1) : m.color.clone(); amb.add(m); };
   const own = new Map(), mine = (o) => { if (!o.isMesh || !o.material || o.material.isMeshBasicMaterial) return; if (o.userData.amb) { o.material.userData.ambC = new THREE.Color(o.userData.amb); } else if (!o.userData.outC && o.parent && o.parent !== group && o.parent !== street.group) { let c = own.get(o.material); if (!c) { c = o.material.clone(); own.set(o.material, c); } o.material = c; o.userData.outC = true; } take(o.material); };
   street.group.traverse(mine); group.traverse(mine); if (garage.out) garage.out.traverse(mine);
   for (const k of ['grass', 'drive', 'fence']) take(garage.M[k]);
@@ -132,6 +132,8 @@ export function dressLand(scene, street, garage, low) {
 
   return { group, amb, cars,
     // sun: the way to it; day 0..1; dim: how much of the sun the cloud lets through; wx: the weather
+    // what is set out in the yards is drawn only near you: beyond that the haze has it anyway
+    near(x, z) { for (const m of yard) m.visible = (m.position.x - x) ** 2 + (m.position.z - z) ** 2 < 2500; },
     update(dt, time, sun, day, dim, wx) {
       sway.value = time; wind.value = 0.25 + 0.9 * wx.cloud;
       const k = 0.03 + 0.3 * day * (0.55 + 0.45 * dim);

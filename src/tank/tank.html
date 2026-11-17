@@ -37,6 +37,8 @@ button{font:600 14px/1 var(--mono);letter-spacing:.06em;text-transform:uppercase
 button.primary{background:var(--brass);color:#1a1407;border-color:var(--brass)}
 button:disabled{opacity:.4;cursor:not-allowed}
 button:focus-visible,input:focus-visible,summary:focus-visible{outline:2px solid var(--brass);outline-offset:3px}
+.pick{display:flex;flex-wrap:wrap;gap:8px}.pick button{padding:11px 14px;font-size:12px}.pick button.on{border-color:var(--brass);background:rgba(224,176,74,.16);color:var(--brass)}
+.sets{display:grid;gap:12px;margin-top:12px}.slide{display:grid;grid-template-columns:9.5rem 1fr 3.2rem;gap:10px;align-items:center;font-size:13px}.slide input{accent-color:var(--brass);width:100%}.slide output{color:var(--brass);text-align:right}select{font:600 13px var(--mono);background:#11130f;color:var(--ink);border:1px solid var(--line);padding:8px;border-radius:2px}
 .tanks{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
 .tanks button{display:grid;gap:6px;text-align:left;padding:12px;text-transform:none;letter-spacing:0;line-height:1.35}
 .tanks b{font-size:13px;letter-spacing:.08em;text-transform:uppercase;color:var(--brass)}
@@ -62,8 +64,6 @@ summary{cursor:pointer;font-size:12px;letter-spacing:.14em;text-transform:upperc
 #scope .v1{width:2px;height:16vmin;margin:-19vmin 0 0 -1px}
 #scope .v2{width:2px;height:16vmin;margin:3vmin 0 0 -1px}
 #fcs{position:absolute;left:50%;bottom:calc(50% - 38vmin);transform:translateX(-50%);font:600 14px var(--mono);color:#7dff9c;white-space:pre;text-shadow:0 0 4px #000}
-#bino{position:fixed;inset:0;pointer-events:none;z-index:3;background:radial-gradient(circle at calc(50% - 21vmin) 50%,rgba(0,0,0,0) 0,rgba(0,0,0,0) 38vmin,rgba(0,0,0,1) 40vmin),radial-gradient(circle at calc(50% + 21vmin) 50%,rgba(0,0,0,0) 0,rgba(0,0,0,0) 38vmin,rgba(0,0,0,1) 40vmin);background-blend-mode:lighten;mix-blend-mode:multiply}
-#bino::after{content:'';position:absolute;left:50%;top:50%;width:6px;height:6px;margin:-3px;border-radius:50%;background:rgba(10,10,8,.8)}
 #inv{position:fixed;left:50%;bottom:calc(22px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);z-index:4;pointer-events:none;font:600 13px var(--mono);letter-spacing:.08em;color:var(--ink);background:rgba(7,8,6,.6);padding:8px 14px;white-space:pre}
 #dot{position:fixed;left:50%;top:50%;width:4px;height:4px;margin:-2px;border-radius:50%;background:rgba(236,232,220,.7);z-index:3;pointer-events:none}
 #gunmark{position:fixed;width:22px;height:22px;margin:-11px;border:2px solid var(--brass);border-radius:50%;z-index:3;pointer-events:none;box-sizing:border-box}
@@ -90,7 +90,6 @@ summary{cursor:pointer;font-size:12px;letter-spacing:.14em;text-transform:upperc
   <i class="h1"></i><i class="h2"></i><i class="v1"></i><i class="v2"></i>
   <span id="fcs"></span>
 </div>
-<div id="bino" hidden></div>
 <div id="inv" hidden></div>
 <div id="dot" hidden></div>
 <div id="gunmark" hidden></div>
@@ -111,9 +110,16 @@ summary{cursor:pointer;font-size:12px;letter-spacing:.14em;text-transform:upperc
 </div>
 <div id="overlay">
   <div class="card">
-    <p class="eyebrow">Three tanks · four waves · one against one when someone joins</p>
+    <p class="eyebrow">Three tanks · four missions · alone or up to four in the lobby</p>
     <h1>Hull<br><span>Down</span></h1>
     <p class="lede">You are alone in the turret. Enemy armour is coming over the far ridges. Drive up behind a crest until only your turret shows, lase the range, lay the gun through the sight, and fire first. Two more tanks of your platoon hold the line with you.</p>
+    <div class="pick" id="gamePick" role="group" aria-label="Game">
+      <button data-game="single">Single player</button><button data-game="multi">Multiplayer</button>
+    </div>
+    <div class="pick" id="modePick" role="group" aria-label="Mission">
+      <button data-mode="battle">Battle</button><button data-mode="defend">Defend the town</button><button data-mode="ambush">Ambush</button><button data-mode="escort">Escort</button><button data-mode="duel">Against each other</button>
+    </div>
+    <p id="modeNote" class="note"></p>
     <div class="actions">
       <button id="vrBtn" class="primary" disabled>Checking for VR…</button>
       <button id="flatBtn">Play in browser</button>
@@ -124,15 +130,26 @@ summary{cursor:pointer;font-size:12px;letter-spacing:.14em;text-transform:upperc
       <button data-tank="light"><b>Scimitar</b><span>Light. Fast and quick to load, thin skin, short reach.</span></button>
       <button data-tank="hunter"><b>Archer</b><span>Hunter. A long gun that kills at any range. Slow, few rounds.</span></button>
     </div>
+    <details id="settings">
+      <summary>Settings and comfort</summary>
+      <div class="sets">
+        <label class="slide" for="heightRange">Seat height <input type="range" id="heightRange" min="-30" max="30" step="1"><output id="heightOut"></output></label>
+        <label class="slide" for="brightRange">Brightness <input type="range" id="brightRange" min="60" max="180" step="5"><output id="brightOut"></output></label>
+        <label class="slide" for="screenRange">Gunsight screen <input type="range" id="screenRange" min="100" max="200" step="10"><output id="screenOut"></output></label>
+        <label class="slide" for="lookPick">Picture style <select id="lookPick"></select><span></span></label>
+        <label class="toggle" for="calmToggle"><input type="checkbox" id="calmToggle"> Easy on the eyes: no flicker, no shake, softer flashes</label>
+        <label class="toggle" for="tunnelToggle"><input type="checkbox" id="tunnelToggle"> Darken the edges while the turret or hull turns (VR comfort)</label>
     <label class="toggle" for="levelToggle"><input type="checkbox" id="levelToggle" checked> Keep the hull level in VR (comfort)</label>
-    <label class="toggle" for="lowToggle"><input type="checkbox" id="lowToggle" checked> 480 lines: a small picture stretched, so it runs smooth</label>
+    <label class="toggle" for="lowToggle"><input type="checkbox" id="lowToggle" checked> 720p: a smaller picture stretched, so it runs smooth (off is full sharpness)</label>
     <label class="toggle" for="fxToggle"><input type="checkbox" id="fxToggle" checked> Hit effects (shake, blur, grey-out)</label>
+      </div>
+    </details>
     <p id="best" class="best" hidden></p>
     <details>
       <summary>Controls</summary>
       <dl class="controls">
-        <dt>VR</dt><dd>Sit down. Left stick drives, right stick lays the gun. Right hand: trigger fires, grip lases the range, A is the hatch, B zooms the sight, stick click re-centres your seat. Left hand: trigger lases, grip fires smoke, X changes the round, Y is the thermal sight, stick click is the extinguisher. Head out, hold the left grip for the binoculars and bring them to your eyes; left trigger then brings the gun on to what you see. Head out, the right grip changes what your right hand holds (pistol, grenade, mine) and the trigger uses it; inside, hold the left trigger for the coaxial gun.</dd>
-        <dt>Desktop</dt><dd>Click to take the mouse: it lays the gun. W A S D drive. Left click or Space fires. Right click or F is the gunsight, Z its zoom, T thermal. R lases the range. 1 and 2 pick SABOT or HEAT. G fires smoke. X is the extinguisher. H is the hatch. Head out, B is the binoculars: look, then click to bring the gun on to what you see. Head out you also carry a pistol (3), grenades (4) and mines for the ground (5): click uses what is in your hand. Inside, hold C for the coaxial gun against men on foot. Stop by the supply truck on the road to rearm and repair.</dd>
+        <dt>VR</dt><dd>Sit down. Left stick drives, right stick lays the gun. Right hand: trigger fires, grip lases the range, A is the hatch, B zooms the sight, stick click re-centres your seat. Left hand: trigger lases, grip fires smoke, X changes the round, Y is the thermal sight, stick click is the extinguisher. Stick click also sets your eye level to the seat. Head out, your kit hangs on you: pistol on your right hip, magazines at your belt, grenades on your chest, mines on your left hip. Reach, squeeze the grip to take one, and let go to throw a grenade or drop a mine; the trigger fires the pistol, and a magazine brought to it reloads it. Inside, hold the left trigger for the coaxial gun.</dd>
+        <dt>Desktop</dt><dd>Click to take the mouse: it lays the gun. W A S D drive. Left click or Space fires. Right click or F is the gunsight, Z or the wheel its zoom (four steps), T thermal. R lases the range. 1 and 2 pick SABOT or HEAT. G fires smoke. X is the extinguisher. H is the hatch. Head out you carry a pistol (3), grenades (4) and mines for the ground (5): click uses what is in your hand. Inside, hold C for the coaxial gun against men on foot. Stop by the supply truck on the road to rearm and repair.</dd>
         <dt>Phone</dt><dd>Drag to lay the gun. Arrow pad drives. Fire, Sight and Hatch are on the right.</dd>
       </dl>
     </details>

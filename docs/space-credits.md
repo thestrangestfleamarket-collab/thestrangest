@@ -63,6 +63,17 @@ Changes made: as above.
 
 Changes made: resized to 4096 x 2048, darkened.
 
+## Hull surfaces, CC0 (ambientCG)
+
+Fetched and packed by `tools/space-detail.py` into `data/space/tex/`.
+
+| Used for | Files | Set |
+|---|---|---|
+| The Admiralty's hull relief | `tex/hull0_n.jpg`, `tex/hull0_h.jpg` | MetalPlates008 |
+| The Corsairs' hull relief | `tex/hull1_n.jpg`, `tex/hull1_h.jpg` | MetalPlates012 |
+
+Changes made: resized to 1024 px; height, roughness and ambient occlusion packed into one picture's red, green and blue.
+
 ## Libraries
 
 three.js (MIT).

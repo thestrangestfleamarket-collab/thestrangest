@@ -27,7 +27,7 @@ const table = f => TYPES.map((t, i) => (i === MOTHER ? { ...t } : { ...t, hp: Ma
 class Sim {
   // fac: which navy each side flies (0 ADMIRALTY, 1 CORSAIRS)
   constructor(fac = [0, 1], seed = (Math.random() * 2147483646) | 0) {
-    this.seed = seed % 2147483646 + 1; this.fly = [];   // fly: shots on their way
+    this.seed = seed % 2147483646 + 1; this.shots = [];   // shots on their way
     this.fac = [fac[0] ? 1 : 0, fac[1] ? 1 : 0]; this.T = this.fac.map(table); this.tick = 0; this.next = 1; this.winner = -1; this.units = []; this.byId = new Map(); this.ev = [];
     this.credits = [START, START]; this.queue = [[], []]; this.nodes = NODES.map(p => ({ p, owner: -1, prog: 0 }));
     this.rally = [[0, 0, 0.62], [0, 0, -0.62]];
@@ -66,6 +66,28 @@ class Sim {
     for (const u of us) { if (u.type === MOTHER) continue; let ox = u.x - cx, oy = u.y - cy, oz = u.z - cz; const l = Math.hypot(ox, oy, oz), m = l > 0.15 ? 0.15 / l : 1;
       this.give(u, { k: 1, x: clamp(g[0] + ox * m, -BX, BX), y: clamp(g[1] + oy * m, -BY, BY), z: clamp(g[2] + oz * m, -BZ, BZ), m: mode }, add); }
   }
+  // a ship flown by hand (one a side): c is where its pilot points (x, y, z), how hard it thrusts (thr 0..1) and whether the trigger is held; null hands it back to hold where it is. Word must keep coming, or it is handed back after a second
+  fly(side, id, c) {
+    const u = this.byId.get(id); if (!u || u.side !== side || this.winner >= 0) return false;
+    if (!c) { if (u.fly) { u.fly = null; u.k = 0; u.q.length = 0; u.tid = 0; u.ax = u.x; u.ay = u.y; u.az = u.z; } return true; }
+    const l = Math.hypot(c.x, c.y, c.z); if (!(l > 1e-6)) return false;
+    for (const o of this.units) if (o !== u && o.side === side && o.fly) this.fly(side, o.id, null);
+    u.fly = { x: c.x / l, y: c.y / l, z: c.z / l, thr: clamp(+c.thr || 0, 0, 1), fire: !!c.fire, ttl: 12 }; return true;
+  }
+  // its step: the nose comes round to where the pilot points, quicker than the ship flies itself, and it thrusts along its nose; the guns fire where the pilot points, at the enemy nearest that line, half as far again as the ship reaches alone; a mine goes off when told
+  flown(u, T) {
+    const F = u.fly;
+    if (T.speed) { const m = Math.max(T.turn, 0.8) * 1.6 * DT; let dy = Math.atan2(F.x, F.z) - u.yaw; dy = Math.atan2(Math.sin(dy), Math.cos(dy)); u.yaw += clamp(dy, -m, m); u.pitch += clamp(Math.asin(clamp(F.y, -1, 1)) - u.pitch, -m, m);
+      const cp = Math.cos(u.pitch), sp = T.speed * 1.25 * F.thr, b = T.grip; u.vx += (Math.sin(u.yaw) * cp * sp - u.vx) * b; u.vy += (Math.sin(u.pitch) * sp - u.vy) * b; u.vz += (Math.cos(u.yaw) * cp * sp - u.vz) * b; }
+    if (u.cool > 0) u.cool--; if (!F.fire) return;
+    if (u.type === MINE) { u.hp = 0; u.boom = 1; return; } if (u.cool > 0) return; u.cool = T.cd;
+    let best = null, bc = 0.955; const reach = T.range * 1.5;
+    for (const e of this.units) { if (e.side === u.side || e.hp <= 0) continue; const dx = e.x - u.x, dy = e.y - u.y, dz = e.z - u.z, d = Math.hypot(dx, dy, dz) || 1e-6, r = this.T[e.side][e.type].r;
+      if (d - r > reach || (e.type === MINE && d - r > MINE_SEE)) continue; const c = (dx * F.x + dy * F.y + dz * F.z) / d + Math.min(0.04, r / d * 0.5); if (c > bc) { bc = c; best = e; } }
+    if (!best) { this.ev.push(5, u.id, Math.round(F.x * 100), Math.round(F.y * 100), Math.round(F.z * 100)); return; }   // a shot into empty space
+    best.hurt = (best.hurt || 0) + T.dmg * MUL[T.w][this.T[best.side][best.type].cls]; this.ev.push(1, u.id, best.id, T.w | (best.sh > 0 ? 8 : 0));
+    const kd = Math.hypot(best.x - u.x, best.y - u.y, best.z - u.z) || 1, kk = T.dmg * 0.0006 / MASS[best.type]; best.vx += (best.x - u.x) / kd * kk; best.vy += (best.y - u.y) / kd * kk; best.vz += (best.z - u.z) / kd * kk;
+  }
   // the nearest enemy this ship should shoot, within reach d (mines are seen only from close)
   pick(u, d) {
     const T = this.T[u.side][u.type]; let best = null, bs = 1e9;
@@ -80,6 +102,7 @@ class Sim {
         const r = this.rally[s]; u.k = 1; u.gx = clamp(r[0] + Math.cos(a) * 0.07, -BX, BX); u.gy = clamp(r[1] + Math.sin(a * 1.3) * 0.04, -BY, BY); u.gz = clamp(r[2] + Math.sin(a) * 0.07, -BZ, BZ); this.ev.push(3, s, it.type); } }
     for (const u of US) {
       if (u.hp <= 0) continue; const T = this.T[u.side][u.type]; let tx = u.x, ty = u.y, tz = u.z, go = false, tgt = null;
+      if (u.fly && --u.fly.ttl < 0) this.fly(u.side, u.id, null); if (u.fly) { this.flown(u, T); continue; }
       if (u.k === 2) { tgt = this.byId.get(u.tid); if (!tgt || tgt.hp <= 0) { tgt = null; u.k = 0; u.ax = u.x; u.ay = u.y; u.az = u.z; if (this.advance(u) && u.k === 2) tgt = this.byId.get(u.tid) || null; } }
       if (u.k === 1) { tx = u.gx; ty = u.gy; tz = u.gz; go = true; if (Math.hypot(tx - u.x, ty - u.y, tz - u.z) < 0.02) { u.k = 0; u.ax = tx; u.ay = ty; u.az = tz; go = false; this.advance(u); } }
       // on guard a ship takes on what comes near and goes back to its post; told to move it only shoots what it passes
@@ -105,7 +128,7 @@ class Sim {
       else if (shot && sd <= T.range && u.cool <= 0) { u.cool = T.cd; const TT = this.T[shot.side][shot.type], kd = Math.hypot(shot.x - u.x, shot.y - u.y, shot.z - u.z) || 1, dx = (shot.x - u.x) / kd, dy = (shot.y - u.y) / kd, dz = (shot.z - u.z) / kd;
         // the shot flies, and may miss: small fast ships are hard to hit, long shots harder; a ship shot at jinks
         const dodge = Math.min(0.45, Math.hypot(shot.vx, shot.vy, shot.vz) / 0.5) * (TT.cls === 0 ? 1 : TT.cls === 1 ? 0.5 : 0.15), hit = this.rnd() < ACC[T.w][TT.cls] * (1 - dodge) * (1 - 0.25 * Math.max(0, sd) / T.range) * (u.m === 1 && Math.hypot(u.vx, u.vy, u.vz) < T.speed * 0.3 ? 1.15 : 1), t = Math.max(1, Math.min(15, Math.round(kd / SHOT[T.w] / DT)));
-        u.loud = 30; this.fly.push({ t, tid: shot.id, dmg: T.dmg * MUL[T.w][TT.cls], hit, dx, dy, dz, k: T.dmg * 0.0006 / MASS[shot.type] }); this.ev.push(1, u.id, shot.id, T.w | (shot.sh > 0 ? 8 : 0) | (hit ? 0 : 16) | (t << 5));
+        u.loud = 30; this.shots.push({ t, tid: shot.id, dmg: T.dmg * MUL[T.w][TT.cls], hit, dx, dy, dz, k: T.dmg * 0.0006 / MASS[shot.type] }); this.ev.push(1, u.id, shot.id, T.w | (shot.sh > 0 ? 8 : 0) | (hit ? 0 : 16) | (t << 5));
         if (TT.cls < 2 && TT.speed) { const j = (TT.cls ? 0.02 : 0.08) * (this.rnd() < 0.5 ? -1 : 1), up = this.rnd() - 0.5; shot.vx += -dz * j; shot.vz += dx * j; shot.vy += up * Math.abs(j); } }
       // the nose swings to where it is going, or to what it shoots when it holds still
       if (!(go && Math.hypot(tx - u.x, ty - u.y, tz - u.z) > 0.03) && shot) { fx = shot.x - u.x; fy = shot.y - u.y; fz = shot.z - u.z; }
@@ -121,7 +144,7 @@ class Sim {
         if (d < need && d > 1e-5) { const p = (need - d) / d * (this.T[o.side][o.type].speed ? 0.5 : 1) * 2; a.vx += dx * p; a.vy += dy * p; a.vz += dz * p; } } }
     for (const u of US) { if (u.hp <= 0) continue; u.x = clamp(u.x + u.vx * DT, -BX, BX); u.y = clamp(u.y + u.vy * DT, -BY, BY); u.z = clamp(u.z + u.vz * DT, -BZ, BZ); }
     // shots arrive: one that was true does its damage and knocks its target back
-    for (let i = this.fly.length - 1; i >= 0; i--) { const f = this.fly[i]; if (--f.t > 0) continue; this.fly.splice(i, 1); const e = this.byId.get(f.tid); if (!e || e.hp <= 0 || !f.hit) continue; e.hurt = (e.hurt || 0) + f.dmg; e.vx += f.dx * f.k; e.vy += f.dy * f.k; e.vz += f.dz * f.k; }
+    for (let i = this.shots.length - 1; i >= 0; i--) { const f = this.shots[i]; if (--f.t > 0) continue; this.shots.splice(i, 1); const e = this.byId.get(f.tid); if (!e || e.hp <= 0 || !f.hit) continue; e.hurt = (e.hurt || 0) + f.dmg; e.vx += f.dx * f.k; e.vy += f.dy * f.k; e.vz += f.dz * f.k; }
     // mines go off, damage lands, the dead leave
     for (const u of US) if (u.boom) for (const e of US) if (e.side !== u.side && e.hp > 0 && Math.hypot(e.x - u.x, e.y - u.y, e.z - u.z) - this.T[e.side][e.type].r < BLAST) e.hurt = (e.hurt || 0) + TYPES[MINE].dmg;
     let dead = false;
@@ -145,7 +168,7 @@ class Sim {
     for (let s = 0; s < 2; s++) { const q = this.queue[s]; a.push(q.length); for (const it of q) a.push(it.type, Math.round(1000 * (1 - it.left / TYPES[it.type].time))); }
     a.push(this.nodes.length); for (const d of this.nodes) a.push(d.owner + 1, d.prog);
     a.push(this.units.length);
-    for (const u of this.units) a.push(u.id, u.type | (u.side << 3) | (u.k << 4) | ((u.m === 2 && u.loud <= 0 ? 3 : u.m) << 6), Math.round(u.x * 1000), Math.round(u.y * 1000), Math.round(u.z * 1000), Math.round(u.yaw * 100), Math.round(u.pitch * 100), Math.max(1, Math.round(1000 * u.hp / this.T[u.side][u.type].hp)));
+    for (const u of this.units) a.push(u.id, u.type | (u.side << 3) | ((u.fly ? 3 : u.k) << 4) | ((u.m === 2 && u.loud <= 0 ? 3 : u.m) << 6), Math.round(u.x * 1000), Math.round(u.y * 1000), Math.round(u.z * 1000), Math.round(u.yaw * 100), Math.round(u.pitch * 100), Math.max(1, Math.round(1000 * u.hp / this.T[u.side][u.type].hp)));
     a.push(this.ev.length); for (const e of this.ev) a.push(e); this.ev.length = 0; return a;
   }
   // a battle carried on from the last picture a headset had (its host left): every ship holds where it was

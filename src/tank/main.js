@@ -646,7 +646,7 @@ function takeItem(k){if(state!=='play')return;if(P.headIn){setHud('Open the hatc
 // the coaxial gun beside the cannon: for men on foot
 let coaxT=0;
 function updateCoax(dt){
-  const on=state==='play'&&P.headIn&&(keys.KeyC||xrActive&&xr.trig.left>.5&&!hold.left);coaxT-=dt;if(!on||coaxT>0)return;coaxT=.085;
+  const on=state==='play'&&P.headIn&&(keys.KeyC||xrActive&&xr.trig.left>.5&&!hold.left&&!(xr.trig.right>.6));coaxT-=dt;if(!on||coaxT>0)return;coaxT=.085;
   tank.updateMatrixWorld();muzzle.getWorldPosition(va);gunN.getWorldQuaternion(qa);vb.set((Math.random()-.5)*.012,(Math.random()-.5)*.012,-1).applyQuaternion(qa).normalize();va.addScaledVector(vb,-4.2);va.y+=.1;
   let R=600;for(let d=10;d<600;d+=8){if(va.y+vb.y*d<hAt(va.x+vb.x*d,va.z+vb.z*d)){R=d;break;}}
   for(const c of crews){if(c.state==='dead')continue;vc.set(c.x-va.x,c.y+1-va.y,c.z-va.z);const t=vc.dot(vb);if(t>0&&t<R&&vc.addScaledVector(vb,-t).length()<.7+t*.006&&Math.random()<.5)killCrew(c);}
@@ -871,7 +871,7 @@ function updateVision(dt){
 // ---------- input ----------
 const isTouch=matchMedia('(pointer:coarse)').matches;
 addEventListener('keydown',e=>{if(state==='play'&&['ArrowUp','ArrowDown','ArrowLeft','ArrowRight','Space'].includes(e.code))e.preventDefault();if(e.repeat)return;keys[e.code]=true;
-  if($('overlay').hidden&&!xrActive){if(e.code==='Space')trigger();if(e.code==='KeyF')toggleSight();if(e.code==='KeyH')toggleHatch();if(e.code==='KeyR'){if(P.item==='pistol')reloadPistol();else lase();}if(e.code==='Digit3')takeItem('pistol');if(e.code==='Digit4')takeItem('grenade');if(e.code==='Digit5')takeItem('mine');if(e.code==='KeyZ')toggleZoom(1);if(e.code==='KeyT')toggleThermal();if(e.code==='KeyG')popSmoke();if(e.code==='KeyX')extinguish();if(e.code==='Digit1')selectAmmo('S');if(e.code==='Digit2')selectAmmo('H');}});
+  if($('overlay').hidden&&!xrActive){if(e.code==='Space')trigger();if(e.code==='KeyF')toggleSight();if(e.code==='KeyH')toggleHatch();if(e.code==='KeyR'){if(P.item==='pistol')reloadPistol();else lase();}if(e.code==='Digit3')takeItem('pistol');if(e.code==='Digit4')takeItem('grenade');if(e.code==='Digit5')takeItem('mine');if(e.code==='KeyZ')toggleZoom(1);if(e.code==='KeyP')snap();if(e.code==='KeyT')toggleThermal();if(e.code==='KeyG')popSmoke();if(e.code==='KeyX')extinguish();if(e.code==='Digit1')selectAmmo('S');if(e.code==='Digit2')selectAmmo('H');}});
 addEventListener('keyup',e=>{keys[e.code]=false;});
 addEventListener('blur',()=>{for(const k in keys)keys[k]=false;});
 $('pad').querySelectorAll('button').forEach(b=>{const k=b.dataset.k;const on=e=>{e.preventDefault();e.stopPropagation();keys[k]=true;};const off=e=>{e.stopPropagation();keys[k]=false;};
@@ -913,9 +913,27 @@ function updateXR(dt){
   let ci=0;for(const src of s.inputSources){const gp=src.gamepad,c=xrC[ci++];if(!gp)continue;if(c&&(src.handedness==='left'||src.handedness==='right')){xr.ctrl[src.handedness]=c;xr.grip[src.handedness]=gp.buttons[1]?gp.buttons[1].value:0;xr.trig[src.handedness]=gp.buttons[0]?gp.buttons[0].value:0;}const h=src.handedness,ax=dz(gp.axes[2]||0),ay=dz(gp.axes[3]||0);
     if(h==='left'){xr.thr=-ay;xr.steer=-ax;}else{xr.trav=ax;xr.elv=-ay;}
     const edge=(n,fn)=>{const on=!!(gp.buttons[n]&&gp.buttons[n].pressed),k=h+n;if(on&&!xr.held[k])fn();xr.held[k]=on;};
-    if(h==='right'){edge(0,()=>{if(hold.right!=='pistol')trigger();});edge(1,()=>{if(P.headIn)lase();});edge(4,toggleHatch);edge(5,()=>toggleZoom(1));edge(3,()=>{xr.cx=xr.cz=xr.cy=0;xr.centre=1;});}
+    if(h==='right'){edge(0,()=>{if(hold.right!=='pistol'&&!(xr.trig.left>.6))trigger();});edge(1,()=>{if(P.headIn)lase();});edge(4,toggleHatch);edge(5,()=>toggleZoom(1));edge(3,()=>{xr.cx=xr.cz=xr.cy=0;xr.centre=1;});}
     else{edge(0,()=>{if(!P.headIn&&hold.left!=='pistol')lase();});edge(1,()=>{if(P.headIn)popSmoke();});edge(4,()=>selectAmmo(P.next==='S'?'H':'S'));edge(5,toggleThermal);edge(3,extinguish);}}
 }
+
+// ---------- a picture of what you see, sent to the owners' queue: both triggers held three seconds in the headset, P on a keyboard ----------
+const SNAP={t:0,busy:false,w:960,h:540,cam:new T.PerspectiveCamera(84,16/9,.06,9000)};
+function snap(){
+  if(SNAP.busy)return;SNAP.busy=true;const w=SNAP.w,h=SNAP.h;
+  if(!SNAP.rt){SNAP.rt=new T.WebGLRenderTarget(w,h,{type:T.HalfFloatType});SNAP.out=new T.WebGLRenderTarget(w,h);SNAP.sc=new T.Scene();SNAP.oc=new T.OrthographicCamera(-1,1,1,-1,0,1);
+    SNAP.mat=new T.ShaderMaterial({uniforms:{map:{value:SNAP.rt.texture},ex:{value:1}},vertexShader:'varying vec2 vUv;void main(){vUv=uv;gl_Position=vec4(position.xy,0.,1.);}',fragmentShader:'uniform sampler2D map;uniform float ex;varying vec2 vUv;void main(){vec3 x=texture2D(map,vUv).rgb*ex;x=clamp((x*(2.51*x+.03))/(x*(2.43*x+.59)+.14),0.,1.);gl_FragColor=vec4(pow(x,vec3(1./2.2)),1.);}',depthTest:false,depthWrite:false,toneMapped:false});
+    SNAP.sc.add(new T.Mesh(new T.PlaneGeometry(2,2),SNAP.mat));}
+  tank.updateMatrixWorld();camera.updateMatrixWorld();camera.matrixWorld.decompose(SNAP.cam.position,SNAP.cam.quaternion,SNAP.cam.scale);SNAP.cam.updateMatrixWorld();
+  const prev=renderer.getRenderTarget(),xe=renderer.xr.enabled,hv=hud.visible;renderer.xr.enabled=false;hud.visible=false;renderer.setRenderTarget(SNAP.rt);renderer.clear();renderer.render(scene,SNAP.cam);
+  SNAP.mat.uniforms.ex.value=expo*1.6*SET.bright;renderer.setRenderTarget(SNAP.out);renderer.render(SNAP.sc,SNAP.oc);const px=new Uint8Array(w*h*4);renderer.readRenderTargetPixels(SNAP.out,0,0,w,h,px);renderer.setRenderTarget(prev);renderer.xr.enabled=xe;hud.visible=hv;
+  const c=cnv(w,h),g=c.getContext('2d'),im=g.createImageData(w,h);for(let y=0;y<h;y++)im.data.set(px.subarray((h-1-y)*w*4,(h-y)*w*4),y*w*4);g.putImageData(im,0,0);const jpg=c.toDataURL('image/jpeg',.82);SNAP.last=jpg;
+  play('switch',.7,'dry',0,1.6);haptic(.8,120);setHud('Picture taken','Sending it…',4);
+  fetch('/tank/report',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({jpg,context:{mode:G.mode,multi:G.multi,vr:xrActive,x:Math.round(P.x),z:Math.round(P.z),yaw:+(P.yaw+P.tyaw).toFixed(2),hatch:+P.hatch.toFixed(1),look:SET.look,state}})})
+    .then(r=>r.ok?setHud('Picture sent','',3):setHud('Picture not sent',r.status===401?'Log in on the website in this browser first.':'The website did not take it ('+r.status+').',6)).catch(()=>setHud('Picture not sent','No connection to the website.',5)).then(()=>{SNAP.busy=false;});
+}
+function updateSnap(dt){const both=xrActive&&xr.trig.left>.6&&xr.trig.right>.6;if(!both){SNAP.t=0;SNAP.armed=true;return;}if(!SNAP.armed)return;const n0=Math.ceil(3-SNAP.t);SNAP.t+=dt;const n1=Math.ceil(3-SNAP.t);
+  if(SNAP.t>=3){SNAP.armed=false;snap();}else if(n1!==n0||SNAP.t===dt){setHud('Picture in '+n1,'Keep both triggers held.',1.2);haptic(.2,30);}}
 
 // ---------- sound mix ----------
 function updateAudio(dt){
@@ -949,6 +967,7 @@ function frame(){
     gunCam.aspect=4/3;gunCam.updateProjectionMatrix();renderer.setRenderTarget(sightRT);renderer.render(scene,gunCam);
     renderer.setRenderTarget(prev);renderer.xr.enabled=xe;}
   inside.visible=inNow;ext.visible=turN.visible=!inNow;hatchLid.visible=!inNow;lights(inNow);heat(flatSight);lens.uniforms.thermal.value=flatSight&&P.thermal?1:0;
+  updateSnap(dt);
   if(vr)renderer.render(scene,camera);
   else{if(flatSight){gunCam.aspect=innerWidth/innerHeight;gunCam.updateProjectionMatrix();}renderPass.camera=flatSight?gunCam:camera;composer.render(dt);}
 }
@@ -1002,6 +1021,6 @@ drawStat();renderer.setAnimationLoop(frame);
 $('loading').hidden=true;
 if(document.fonts&&document.fonts.load)document.fonts.load('600 40px "IBM Plex Mono"').then(drawStat).catch(()=>{});
 
-window.game={throwNade,get hold(){return hold;},get time(){return time;},get state(){return state;},get wave(){return wave;},get cover(){return cover;},get xr(){return xrActive;},get expo(){return expo;},P,foes,shells,WAVES,ROOF,FLOOR,hAt,los,tank,inside,friends,crews,mines,nades,INV,addCrew,takeItem,useItem,NET,get rem(){return NET.peers.values().next().value||noRem;},G,MODES,SET,WORLD,startMission,get mis(){return mis;},isHost,TYPES,setType,get type(){return tyKey;},hands,view,supply:land.userData.supply,fire,trigger,lase,popSmoke,selectAmmo,toggleZoom,toggleThermal,extinguish,hurt:hurtPlayer,toggleHatch,toggleSight,addFoe,live,renderer,camera,rig,sounds:A,
+window.game={snap,SNAP,throwNade,get hold(){return hold;},get time(){return time;},get state(){return state;},get wave(){return wave;},get cover(){return cover;},get xr(){return xrActive;},get expo(){return expo;},P,foes,shells,WAVES,ROOF,FLOOR,hAt,los,tank,inside,friends,crews,mines,nades,INV,addCrew,takeItem,useItem,NET,get rem(){return NET.peers.values().next().value||noRem;},G,MODES,SET,WORLD,startMission,get mis(){return mis;},isHost,TYPES,setType,get type(){return tyKey;},hands,view,supply:land.userData.supply,fire,trigger,lase,popSmoke,selectAmmo,toggleZoom,toggleThermal,extinguish,hurt:hurtPlayer,toggleHatch,toggleSight,addFoe,live,renderer,camera,rig,sounds:A,
   skip(){waveT=0;},kill(e){killFoe(e);P.kills++;}};
 })();

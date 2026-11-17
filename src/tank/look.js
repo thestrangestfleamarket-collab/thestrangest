@@ -13,7 +13,7 @@ const LOOK=(()=>{
     const g=new T.InstancedBufferGeometry();g.setAttribute('position',new T.Float32BufferAttribute(bp,3));g.setIndex(bi);const ao=new Float32Array(N*N*3);
     for(let i=0;i<N;i++)for(let j=0;j<N;j++){const k=(i*N+j)*3;ao[k]=(i+r())*sp;ao[k+1]=(j+r())*sp;ao[k+2]=r();}
     g.setAttribute('aO',new T.InstancedBufferAttribute(ao,3));g.instanceCount=N*N;
-    const mat=new T.MeshLambertMaterial({side:T.DoubleSide});
+    const mat=new T.MeshLambertMaterial({side:T.DoubleSide,color:new T.Color(2.1,2.05,1.9)});
     mat.onBeforeCompile=s=>{Object.assign(s.uniforms,{uT:L.uT,uCam:L.uCam,uWind:L.uWind,tH:{value:tH},tGS:{value:WORLD.tex},tG:{value:A0.grass.d},tDry:{value:A0.dry},tShade:landMat.userData.tShade,uShadeM:landMat.userData.uShadeM});
       s.vertexShader=s.vertexShader.replace('#include <common>',`#include <common>
 attribute vec3 aO;uniform float uT;uniform vec2 uCam;uniform vec3 uWind;uniform sampler2D tH,tGS,tG,tDry,tShade;uniform mat4 uShadeM;varying vec3 vGc;
@@ -35,8 +35,8 @@ float pondD(vec2 p){float m=9.;${PONDS.map(q=>`m=min(m,(length(p-vec2(${q[0]}.,$
   p.xz+=dv*h*h*sz*.6;p.y-=.3*dot(dv,dv)*h*h*sz;
   vec3 transformed=vec3(w.x,hgt-.03,w.y)+p*sc;
   vec3 g1=texture2D(tG,w/5.3).rgb,g2=texture2D(tG,w/31.).rgb;vec3 gr=g1*(.55+1.1*g2);vec3 dr=texture2D(tDry,q/6.1).rgb*vec3(1.25,1.12,.8);vec3 gc=mix(mix(gr,dr,kd),gr*vec3(.62,.66,.5),kw);
-  float cl=texture2D(tG,w/1700.+vec2(uT*.0021,uT*.0009)).g*.6+texture2D(tG,w/640.-vec2(uT*.003,0.)).r*.4;gc*=mix(.34,1.08,smoothstep(.3,.56,cl))*vec3(.9,.93,.9);
-  {vec4 c4=uShadeM*vec4(transformed,1.);vec3 sq=c4.xyz*.5+.5;float lit=(sq.x<0.||sq.x>1.||sq.y<0.||sq.y>1.)?1.:step(sq.z-.0016,unpackRGBAToDepth(texture2D(tShade,sq.xy)));gc*=mix(vec3(.34,.38,.46),vec3(1.),lit);}
+  float cl=texture2D(tG,w/1700.+vec2(uT*.0021,uT*.0009)).g*.6+texture2D(tG,w/640.-vec2(uT*.003,0.)).r*.4;gc*=mix(.55,1.08,smoothstep(.3,.56,cl))*vec3(.9,.93,.9);
+  {vec4 c4=uShadeM*vec4(transformed,1.);vec3 sq=c4.xyz*.5+.5;float lit=(sq.x<0.||sq.x>1.||sq.y<0.||sq.y>1.)?1.:step(sq.z-.0016,unpackRGBAToDepth(texture2D(tShade,sq.xy)));gc*=mix(vec3(.26,.33,.5),vec3(1.),lit);}
   gc*=mix(1.,.2,gs.r)*mix(.62,1.3,h)*(.85+.3*fh(aO.xy));vGc=gc;`);
       s.vertexShader=s.vertexShader.replace('#include <packing>','');if(s.vertexShader.indexOf('unpackRGBAToDepth')>=0&&s.vertexShader.indexOf('float unpackRGBAToDepth')<0)s.vertexShader=s.vertexShader.replace('attribute vec3 aO;','const vec4 UnB=vec4(1.)/vec4(16581375.,65025.,255.,1.)*vec4(1.,1.,1.,1.);float unpackRGBAToDepth(vec4 v){return dot(v,vec4(255./256./(256.*256.*256.),255./256./(256.*256.),255./256./256.,255./256.));}\nattribute vec3 aO;');
       s.fragmentShader=s.fragmentShader.replace('#include <common>','#include <common>\nvarying vec3 vGc;').replace('#include <map_fragment>','diffuseColor.rgb*=vGc;');};

@@ -27,19 +27,19 @@ export const DRESS = {
   village_gardener: [0x2a2a22, 0x4a5a3a, 0xa8a080], village_child: [0x1c2440, 0x3a4a72, 0xc8c0a8],
 };
 const _h = {}, _c = new THREE.Color();
-export function dye(C, pal) { if (!pal) return C; const P = pal.map((x) => new THREE.Color(x));
-  for (let i = 0; i < C.length; i += 3) { _c.setRGB(C[i], C[i + 1], C[i + 2]); _c.getHSL(_h); const skin = _h.h > 0.015 && _h.h < 0.12 && _h.s > 0.2 && _h.s < 0.8 && _h.l > 0.08 && _h.l < 0.75, hair = _h.l < 0.035;
+export function dye(C, pal, keep) { if (!pal) return C; const P = pal.map((x) => new THREE.Color(x));
+  for (let i = 0; i < C.length; i += 3) { if (keep && keep(i / 3)) continue; _c.setRGB(C[i], C[i + 1], C[i + 2]); _c.getHSL(_h); const skin = _h.h > 0.015 && _h.h < 0.12 && _h.s > 0.2 && _h.s < 0.8 && _h.l > 0.08 && _h.l < 0.75, hair = _h.l < 0.035;
     if (skin || hair) continue; const k = Math.min(1, _h.l / 0.45), c = k < 0.5 ? P[0].clone().lerp(P[1], k * 2) : P[1].clone().lerp(P[2], (k - 0.5) * 2); C[i] = c.r; C[i + 1] = c.g; C[i + 2] = c.b; }
   return C; }
 export const CUSTOMERS = Object.keys(PF).filter((k) => PF[k][5] && k !== 'carving_chef' && k !== 'village_child');
 
 const b64 = (s) => Uint8Array.from(atob(s), (c) => c.charCodeAt(0)), i16 = (s) => new Int16Array(b64(s).buffer), u16 = (s) => new Uint16Array(b64(s).buffer);
 const lin = (C, n) => { const out = new Float32Array(n), c = new THREE.Color(); for (let i = 0; i < n; i += 3) { c.setRGB(C[i] / 255, C[i + 1] / 255, C[i + 2] / 255, THREE.SRGBColorSpace); out[i] = c.r; out[i + 1] = c.g; out[i + 2] = c.b; } return out; };
-let D = null, MAT = null, BONES, NB, PI, HEAD, TORSO, CL; const GEO = {};
+let D = null, MAT = null, BONES, NB, PI, HEAD, TORSO, CL, FACEB; const GEO = {};
 const PARENT = { torso: 'hips', head: 'torso', upperArmL: 'torso', upperArmR: 'torso', forearmL: 'upperArmL', forearmR: 'upperArmR', handL: 'forearmL', handR: 'forearmR', thighL: 'hips', thighR: 'hips', shinL: 'thighL', shinR: 'thighR', shoeL: 'shinL', shoeR: 'shinR' };
 export async function loadCast(url) {
   D = await (await fetch(url)).json(); MAT = mat({ vertexColors: true, flatShading: true });
-  BONES = D.bones; NB = BONES.length; PI = BONES.map((n) => (PARENT[n] ? BONES.indexOf(PARENT[n]) : -1)); HEAD = BONES.indexOf('head'); TORSO = BONES.indexOf('torso');
+  BONES = D.bones; NB = BONES.length; PI = BONES.map((n) => (PARENT[n] ? BONES.indexOf(PARENT[n]) : -1)); HEAD = BONES.indexOf('head'); FACEB = new Set(['head', 'handL', 'handR'].map((n) => BONES.indexOf(n))); TORSO = BONES.indexOf('torso');
   CL = {}; for (const s of ['m', 'f']) { CL[s] = {}; for (const [n, c] of Object.entries(D.clips[s])) CL[s][n] = { ...c, Q: Float32Array.from(c.q), P: Float32Array.from(c.p) }; }
   return Object.keys(D.bodies);
 }
@@ -58,13 +58,13 @@ const geoOf = (key) => { if (GEO[key]) return GEO[key]; const b = D.bodies[key],
   for (const q of piece.values()) { const s = ARMB[q.bone]; q.drop = false; if (!s || !q.rigid) continue; const A = AX[s], c = q.c.map((x) => x / q.k - 0), r = [c[0] - A.S[0], c[1] - A.S[1], c[2] - A.S[2]], t = r[0] * A.d[0] + r[1] * A.d[1] + r[2] * A.d[2], off = Math.hypot(r[0] - A.d[0] * t, r[1] - A.d[1] * t, r[2] - A.d[2] * t); q.drop = t > A.l - 0.02 || off > 0.1; }
   const held = (v) => piece.get(top(id(v))).drop;
   const keep = []; for (let i = 0; i < T0.length; i += 3) if (!held(T0[i])) keep.push(T0[i], T0[i + 1], T0[i + 2]);
-  const g = new THREE.BufferGeometry(); g.setAttribute('position', new THREE.BufferAttribute(P, 3)); g.setAttribute('color', new THREE.BufferAttribute(dye(lin(b64(b.vcol), Q.length), DRESS[key]), 3)); g.setAttribute('skinIndex', new THREE.BufferAttribute(si, 4)); g.setAttribute('skinWeight', new THREE.BufferAttribute(sw, 4)); g.setIndex(new THREE.BufferAttribute(new Uint16Array(keep), 1)); g.computeVertexNormals();
+  const g = new THREE.BufferGeometry(); g.setAttribute('position', new THREE.BufferAttribute(P, 3)); g.setAttribute('color', new THREE.BufferAttribute(dye(lin(b64(b.vcol), Q.length), DRESS[key], (v) => FACEB.has(BN[v * 2])), 3)); g.setAttribute('skinIndex', new THREE.BufferAttribute(si, 4)); g.setAttribute('skinWeight', new THREE.BufferAttribute(sw, 4)); g.setIndex(new THREE.BufferAttribute(new Uint16Array(keep), 1)); g.computeVertexNormals();
   // the face: the nose is the head's foremost point; the eyes sit above it, either side
   const O = b.origin; let face = null; { let zm = -9, ny = 0; for (let v = 0; v < n; v++) if (BN[v * 2] === HEAD && BW[v] > 200 && Math.abs(P[v * 3]) < 0.03 && P[v * 3 + 1] < O[HEAD][1] + 0.2 && P[v * 3 + 2] > zm) { zm = P[v * 3 + 2]; ny = P[v * 3 + 1]; }
     const zs = []; for (let v = 0; v < n; v++) if (BN[v * 2] === HEAD && BW[v] > 200 && Math.abs(P[v * 3]) > 0.025 && Math.abs(P[v * 3]) < 0.07 && Math.abs(P[v * 3 + 1] - ny - 0.04) < 0.05) zs.push(P[v * 3 + 2]); zs.sort((a, c) => c - a); if (zs.length) face = [0.036, ny + 0.042, zs[0] - 0.006]; }
   return (GEO[key] = { g, face }); };
 
-const ER = 0.015; let EYE = null;
+const ER = 0.015; let EYE = null; const EYEBALLS = false;   // (owner, 16 Nov 2026: the faces looked wrong: Polyfork's own painted eyes, nothing laid over them)
 const eyeball = () => { EYE ||= { white: mat({ color: 0xf2efe6 }), iris: mat({ color: 0x4a3a2a }), pupil: new THREE.MeshBasicMaterial({ color: 0x0a0806 }), wg: new THREE.SphereGeometry(ER, 10, 8), ig: new THREE.CircleGeometry(ER * 0.56, 12), pg: new THREE.CircleGeometry(ER * 0.27, 10), lg: new THREE.SphereGeometry(ER * 1.09, 10, 6, 0, Math.PI * 2, 0, Math.PI * 0.5), lid: mat({ color: 0xd9a98a }) };
   const g = new THREE.Group(); g.add(new THREE.Mesh(EYE.wg, EYE.white)); const ir = new THREE.Mesh(EYE.ig, EYE.iris); ir.position.z = ER * 0.86; g.add(ir); const pu = new THREE.Mesh(EYE.pg, EYE.pupil); pu.position.z = ER * 0.875; g.add(pu); return g; };
 const GEST = { nod: 'Agree', no: 'Head shake', laugh: 'Laughing', shrug: 'Arms folded', think: 'Arms folded' }, UPPER = ['torso', 'head', 'upperArmL', 'forearmL', 'handL', 'upperArmR', 'forearmR', 'handR'];
@@ -83,7 +83,7 @@ export function pfPerson(key, sticks) {
   const RI = b.rest.map((r) => new THREE.Quaternion().setFromRotationMatrix(m1.makeBasis(va.set(r[0], r[1], r[2]), vb.set(r[3], r[4], r[5]), _w.set(r[6], r[7], r[8]))).invert());
   const ix = (n) => BONES.indexOf(n), ARM = { L: [ix('upperArmL'), ix('forearmL'), ix('handL')], R: [ix('upperArmR'), ix('forearmR'), ix('handR')] }, UP = UPPER.map(ix);
   const DIR = (a, c) => O[c].clone().sub(O[a]).normalize(), LEN = (a, c) => O[c].distanceTo(O[a]);
-  let eyes = null; if (face) { const [ex, ey, ez] = face; eyes = [-1, 1].map((sx) => { const e = eyeball(); e.position.set(sx * ex, ey, ez).sub(O[HEAD]); bones[HEAD].add(e); const lid = new THREE.Mesh(EYE.lg, EYE.lid); lid.rotation.x = -1.5; lid.position.copy(e.position); bones[HEAD].add(lid); e.userData.lid = lid; return e; }); }
+  let eyes = null; if (face && EYEBALLS) { const [ex, ey, ez] = face; eyes = [-1, 1].map((sx) => { const e = eyeball(); e.position.set(sx * ex, ey, ez).sub(O[HEAD]); bones[HEAD].add(e); const lid = new THREE.Mesh(EYE.lg, EYE.lid); lid.rotation.x = -1.5; lid.position.copy(e.position); bones[HEAD].add(lid); e.userData.lid = lid; return e; }); }
   const sitHip = O[0].y + (clips.Sitting ? clips.Sitting.P[1] : -0.34) * ks;
   const st = { cur: { c: clips.Idle, t: Math.random() * 5, loop: true }, prev: null, fade: 0, fade0: 1, over: null, yaw: 0, pitch: 0, ey: 0, ep: 0, blink: 1 + Math.random() * 3, lid: 0, sac: 0, sx: 0, sy: 0, base: 'Idle', fold: 0, hit: null, down: null, duck: null, push: null, wd: 0, wl: 0, phys: 0 };
   const CH = BONES.map((n, i) => { const L = LIMBS[n.replace(/[LR]$/, '')]; if (!L) return null; const set = []; for (let k = 0; k < NB; k++) { let a = k; while (a > 0 && a !== i) a = PI[a]; if (a === i) set.push(k); } return { set, I: L[0], K: L[1], C: 2 * 0.65 * Math.sqrt(L[1]), max: L[2], a: new THREE.Vector3(), w: new THREE.Vector3() }; });

@@ -77,6 +77,7 @@ jobs:
           k tank    'src/tank/|data/tank/|tools/edge\.cjs|tools/tank|tests/tank\.cjs'
           k sniper  'src/sniper/|data/sniper/|tools/sniper|tests/sniper\.cjs'
           k duel    'src/duel/|data/duel/|tools/duel\.cjs|tests/duel\.cjs'
+          k qzar    'src/qzar/|tools/qzar\.cjs|tests/qzar\.cjs'
           k laser   'src/laser/|worker/laser|tools/laser\.cjs|tests/laser\.cjs'
           k fleet   'src/space/|data/space/|worker/space|tools/space|tests/fleet\.cjs'
           k turret  'src/turret/|src/space/(cosmos|post)|data/space/|data/tank/|tools/turret\.cjs|tests/turret\.cjs'
@@ -319,6 +320,10 @@ jobs:
         timeout-minutes: 15
         if: contains(steps.f.outputs.run, ' duel')
         run: node tests/duel.cjs dist/duel.html
+      - name: Slowfire Duel (the dodge duel at /qzar; a round against the bot, two linked pages)
+        timeout-minutes: 10
+        if: contains(steps.f.outputs.run, ' qzar')
+        run: node tests/qzar.cjs dist/qzar.html
       - name: Laser Tag (Super Charge 25 at /laser; the pack's rules, two linked packs tagging and covering, an emulated Quest 3 lining up)
         timeout-minutes: 15
         if: contains(steps.f.outputs.run, ' laser')

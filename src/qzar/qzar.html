@@ -1,0 +1,112 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex">
+<link rel="icon" href="data:,">
+<title>Slowfire Duel</title>
+<style>
+:root{
+  --bg:#0d1326; --panel:#18224a; --line:#2c3a73; --ink:#eef1ff; --muted:#a3aedb;
+  --you:#3fd6e0; --foe:#ff7a59; --warn:#ffd166;
+  --font-display:'Trebuchet MS',system-ui,sans-serif;
+  --font-body:system-ui,-apple-system,'Segoe UI',sans-serif;
+  color-scheme:dark;
+}
+html,body{height:100%;margin:0}
+[hidden]{display:none!important}
+body{background:var(--bg);color:var(--ink);font-family:var(--font-body);overflow:hidden}
+#app{position:relative;height:100%;user-select:none;-webkit-user-select:none}
+#view{display:block;width:100%;height:100%;touch-action:none;cursor:crosshair}
+.gutter{padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+#hud{position:absolute;inset:0 0 auto 0;padding-block:12px;display:flex;gap:12px;align-items:center;pointer-events:none}
+.side{flex:1;min-width:0;display:flex;flex-direction:column;gap:4px}
+.side.foe{align-items:flex-end}
+.label{font-family:var(--font-display);font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
+.bar{width:100%;height:12px;background:var(--panel);border:1px solid var(--line);border-radius:3px;overflow:hidden}
+.fill{height:100%;width:100%;transition:width .12s linear}
+.you .fill{background:var(--you)}
+.foe .fill{background:var(--foe);margin-left:auto}
+#mid{font-family:var(--font-display);text-align:center;font-variant-numeric:tabular-nums;min-width:84px}
+#clock{font-size:26px;font-weight:700;line-height:1}
+#score{font-size:12px;color:var(--muted);letter-spacing:.1em}
+#foot{position:absolute;inset:auto 0 0 0;padding-block:14px;display:flex;justify-content:space-between;align-items:flex-end;gap:12px;pointer-events:none}
+#weapon{font-family:var(--font-display);font-size:15px}
+#weapon small{display:block;font-family:var(--font-body);font-size:12px;color:var(--muted)}
+#fire{pointer-events:auto;display:none;font-family:var(--font-display);font-weight:700;font-size:18px;color:var(--bg);background:var(--warn);border:0;border-radius:50%;width:84px;height:84px}
+@media (pointer:coarse){#fire{display:block}}
+#flash{position:absolute;inset:0;pointer-events:none;background:radial-gradient(ellipse at center,transparent 45%,var(--foe) 130%);opacity:0;transition:opacity .25s}
+#banner{position:absolute;left:0;right:0;top:34%;text-align:center;font-family:var(--font-display);font-weight:700;font-size:clamp(28px,7vw,64px);pointer-events:none;text-shadow:0 2px 0 var(--bg)}
+#menu{position:absolute;inset:0;display:flex;padding-block:16px;background:color-mix(in srgb,var(--bg) 72%,transparent);overflow:auto}
+.card{margin:auto;width:min(100%,480px);background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:22px;display:flex;flex-direction:column;gap:14px}
+h1{margin:0;font-family:var(--font-display);font-size:34px;line-height:1.05;text-wrap:balance}
+h1 span{color:var(--warn)}
+.card p{margin:0;color:var(--muted);line-height:1.5}
+.card ul{margin:0;padding-left:18px;color:var(--ink);line-height:1.55}
+.row{display:flex;gap:8px;flex-wrap:wrap}
+.stack{display:flex;flex-direction:column;gap:8px}
+button{font:inherit;cursor:pointer}
+button:focus-visible,input:focus-visible{outline:2px solid var(--warn);outline-offset:2px}
+.seg{flex:1;padding:8px 10px;background:transparent;color:var(--muted);border:1px solid var(--line);border-radius:4px;font-family:var(--font-display);white-space:nowrap}
+.seg[aria-pressed="true"]{color:var(--bg);background:var(--you);border-color:var(--you)}
+#code{flex:1;min-width:0;width:90px;padding:8px 10px;background:var(--bg);color:var(--ink);border:1px solid var(--line);border-radius:4px;font:inherit;font-family:var(--font-display);letter-spacing:.2em;text-transform:uppercase;text-align:center}
+#status{color:var(--warn)}
+.go{flex:1;padding:12px 14px;border:0;border-radius:4px;font-family:var(--font-display);font-weight:700;font-size:17px;color:var(--bg);background:var(--warn);white-space:nowrap}
+.go.alt{background:transparent;color:var(--ink);border:1px solid var(--ink)}
+#note{font-size:12px}
+</style>
+</head>
+<body>
+<div id="app">
+  <canvas id="view"></canvas>
+  <div id="flash"></div>
+  <div id="hud" class="gutter">
+    <div class="side you"><span class="label">You</span><div class="bar"><div class="fill" id="hpYou"></div></div></div>
+    <div id="mid"><div id="clock">1:30</div><div id="score">0 – 0</div></div>
+    <div class="side foe"><span class="label">Rival</span><div class="bar"><div class="fill" id="hpFoe"></div></div></div>
+  </div>
+  <div id="banner"></div>
+  <div id="foot" class="gutter">
+    <div id="weapon">Empty hand<small>Move onto a floating weapon to grab it</small></div>
+    <button id="fire" type="button">FIRE</button>
+  </div>
+  <div id="menu" class="gutter">
+    <div class="card">
+      <h1>Slowfire <span>Duel</span></h1>
+      <p>Two platforms, slow shots, and your own body as the target. First to win two rounds takes the match.</p>
+      <ul>
+        <li><b>Mouse or finger:</b> move to dodge and to touch floating weapons. Click, Space or FIRE shoots.</li>
+        <li><b>Headset:</b> dodge for real, reach out to grab weapons, pull the trigger to shoot.</li>
+        <li>Every weapon has limited shots. The Buckler blocks, the Drifter eats incoming fire.</li>
+      </ul>
+      <div class="row" id="opp" role="group" aria-label="Rival">
+        <button class="seg" type="button" data-o="bot" id="oBot" aria-pressed="true">Versus bot</button>
+        <button class="seg" type="button" data-o="net" id="oNet" aria-pressed="false">Two players</button>
+      </div>
+      <div class="row" id="diff" role="group" aria-label="Bot skill">
+        <button class="seg" type="button" data-d="easy" id="dEasy" aria-pressed="false">Easy</button>
+        <button class="seg" type="button" data-d="normal" id="dNormal" aria-pressed="true">Normal</button>
+        <button class="seg" type="button" data-d="hard" id="dHard" aria-pressed="false">Hard</button>
+      </div>
+      <div class="stack" id="link" hidden>
+        <div class="row">
+          <button class="seg" type="button" id="host">Host a duel</button>
+          <input id="code" maxlength="4" placeholder="CODE" aria-label="Duel code" autocomplete="off" autocapitalize="characters" spellcheck="false">
+          <button class="seg" type="button" id="join">Join</button>
+        </div>
+        <p id="status">Host a duel and share the code, or type your rival's code and join.</p>
+      </div>
+      <div class="row">
+        <button class="go" type="button" id="start">Start duel</button>
+        <button class="go alt" type="button" id="vr" hidden>Enter VR</button>
+        <button class="go alt" type="button" id="mr" hidden>Enter passthrough</button>
+      </div>
+      <p id="note"></p>
+    </div>
+  </div>
+</div>
+
+<script type="module">__QZAR__</script>
+</body>
+</html>

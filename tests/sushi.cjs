@@ -143,9 +143,9 @@ const srv = require('http').createServer((q, r) => { const f = path.join(ROOT, d
     step(60); park(pb, V(1.2, 0, -2.6)); pb.p.root.rotation.y = Math.PI; step(5); const hd = pb.p.bones.find((b) => b.name === 'head').getWorldPosition(V(0, 0, 0)); throwAt(hd.y + 0.12, 13);
     let down = false; for (let i = 0; i < 60; i++) { step(1); down = down || pb.p.down(); } const e2 = G.react.log[G.react.log.length - 1]; out.pass = { who: e2 && e2.who === pb.def.name, seated: e2 && e2.seated, J: e2 && e2.J, down, mad: !!B.mad[pb.def.id] }; step(60 * 5); out.pass.up = !pb.p.down() && !pb.p.reeling();
     // a slow hand laid on someone's chest is a touch: nobody is knocked about
-    const pt = free(); park(pt, V(-1.3, 0, -2.6)); pt.p.root.rotation.y = 0; step(5); const tc = pt.p.bones.find((b) => b.name === 'torso').getWorldPosition(V(0, 0, 0)), n3 = G.react.log.length; h.active = true; h.held = null; step(40);
+    const pt = free(); park(pt, V(-1.3, 0, -2.6)); pt.p.root.rotation.y = 0; step(5); const tc = pt.p.bones.find((b) => b.name === 'torso').getWorldPosition(V(0, 0, 0)), t3 = G.t - 0.01; h.active = true; h.held = null; step(40);
     let reel = false; for (let i = 0; i < 50; i++) { h.pos.set(tc.x, tc.y + 0.05, tc.z + 0.35 - i * 0.006); h.vs.set(0, 0, -0.3); step(1); reel = reel || pt.p.down() || pt.p.reeling(); } h.active = false;
-    const e3 = G.react.log.slice(n3).find((x) => x.who === pt.def.name); out.touch = { kind: e3 && e3.kind, J: e3 && e3.J, level: e3 && e3.level, reel, mad: !!B.mad[pt.def.id] };
+    const e3 = G.react.log.filter((x) => x.t >= t3).find((x) => x.who === pt.def.name); out.touch = { kind: e3 && e3.kind, J: e3 && e3.J, level: e3 && e3.level, reel, mad: !!B.mad[pt.def.id] };
     let back = false; for (let k = 0; k < 10; k++) { const t = B.take(); if (!t) break; back = back || t === pb; B.give(t); } out.pass.notBack = !back;
     for (let w = 0; w < 900 && (G.talk.D.cur || G.talk.D.q.length || G.t < (G.talk.floorT || 0)); w++) step(1); // the shouts above have had the floor
     const pw = free(); park(pw, V(-1.6, 0, -2.7)); for (const o of B.people) if (o !== pw && !o.taken) o.p.root.position.x += 40; step(5); G.talk.last = null; game.onWave(); out.wave = { greet: !!pw.greet }; step(50); out.wave.waving = pw.p.waveT > 0; out.wave.said = G.talk.last && G.talk.last.who === pw.def.name;

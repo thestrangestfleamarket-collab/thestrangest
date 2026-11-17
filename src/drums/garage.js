@@ -46,7 +46,7 @@ export function buildGarage(scene, low) {
     fence: pbr('fence', { tile: 1.2, env: 0.2 }),
     brick: pbr('brick', { tile: 1.8, env: 0.2 }),
     grass: pbr('grass', { tile: 2.5, env: 0.1 }),
-    trim: plain(0xe9e6dc, { rough: 0.6 }),
+    trim: plain(0x9a968a, { rough: 0.7 }),
     steel: plain(0x8d9299, { rough: 0.35, metal: 1, env: 1 }),
     dark: plain(0x151517, { rough: 0.8 }),
     white: plain(0xe4e4df, { rough: 0.35 }),

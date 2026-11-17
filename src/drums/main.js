@@ -83,10 +83,12 @@ function card(lines, w = 0.86) {
   c.width = 768; c.height = 44 + lines.length * 46;
   const g = c.getContext('2d');
   g.fillStyle = 'rgba(8,8,10,.82)'; g.fillRect(0, 0, c.width, c.height);
+  g.font = '700 30px system-ui,sans-serif';
+  const col = Math.max(300, ...lines.map(([a, b]) => b ? g.measureText(a).width + 52 : 0));
   lines.forEach(([a, b], i) => {
     const y = 58 + i * 46;
     g.font = '700 30px system-ui,sans-serif'; g.textAlign = 'left'; g.fillStyle = '#ffb347'; g.fillText(a, 28, y);
-    g.font = '500 30px system-ui,sans-serif'; g.fillStyle = '#f2efe6'; g.fillText(b, 300, y);
+    g.font = '500 30px system-ui,sans-serif'; g.fillStyle = '#f2efe6'; g.fillText(b, col, y, c.width - col - 16);
   });
   const t = new THREE.CanvasTexture(c);
   t.colorSpace = THREE.SRGBColorSpace;

@@ -131,7 +131,7 @@ const PACK=(()=>{
   let LF=null;const leafT=()=>{if(LF)return LF;const mk=(N,n,L0,L1)=>{const cv=cnv(N,N),g=cv.getContext('2d');g.scale(N/64,N/64);let a=11;const R=()=>{a=(a*16807)%2147483647;return a/2147483647;};
       for(let i=0;i<n;i++){const t=R()*6.283,rr=23*Math.sqrt(R()),v=244+R()*8|0,L=L0+R()*L1;g.save();g.translate(29+Math.cos(t)*rr,32+Math.sin(t)*rr);g.rotate(R()*6.283);g.fillStyle='rgb('+v+','+v+','+v+')';g.beginPath();g.ellipse(0,0,L,L*.5,0,0,6.283);g.fill();g.restore();}return cv;};
     const cv=cnv(512,256),g=cv.getContext('2d');g.drawImage(mk(256,130,3.4,2.2),0,0);g.drawImage(mk(256,300,1.9,1.3),256,0);LF=new T.CanvasTexture(cv);LF.encoding=T.sRGBEncoding;LF.anisotropy=4;return LF;};
-  const build=(name,real)=>{const E=A0.PK[name],p=new Float32Array(b64(E.p).buffer),c8=b64(E.c),kk=b64(E.k),L=LOOK[name]||{},r=rng(name.length*977+name.charCodeAt(0)*31),grp=new T.Group();
+  const build=(name,real,O={})=>{const E=A0.PK[name],p=new Float32Array(b64(E.p).buffer),c8=b64(E.c),kk=b64(E.k),L=LOOK[name]||{},r=rng(name.length*977+name.charCodeAt(0)*31),grp=new T.Group();
     let H=0,wd=0;for(let i=0;i<p.length;i+=3){H=Math.max(H,p[i+1]);wd=Math.max(wd,Math.abs(p[i]),Math.abs(p[i+2]));}
     const wp=[],lp=[],lc=[];for(let t=0;t<kk.length;t++)for(let v=0;v<3;v++){const j=t*9+v*3;if(kk[t])wp.push(p[j]/H,p[j+1]/H,p[j+2]/H);else{lp.push(p[j]/H,p[j+1]/H,p[j+2]/H);lc.push(Math.pow(c8[j]/255,2.2),Math.pow(c8[j+1]/255,2.2),Math.pow(c8[j+2]/255,2.2));}}
     if(!real){const g=new T.BufferGeometry(),c=new Float32Array(c8.length),q=new Float32Array(p.length);for(let i=0;i<c.length;i++)c[i]=Math.pow(c8[i]/255,2.2);for(let i=0;i<q.length;i++)q[i]=p[i]/H;g.setAttribute('position',new T.BufferAttribute(q,3));g.setAttribute('color',new T.BufferAttribute(c,3));g.computeVertexNormals();
@@ -141,12 +141,12 @@ const PACK=(()=>{
       const bk=A0.bark.clone();bk.wrapS=bk.wrapT=T.RepeatWrapping;bk.needsUpdate=true;grp.add(new T.Mesh(g,new T.MeshLambertMaterial({map:bk,color:new T.Color(.95,.86,.78),side:T.DoubleSide})));}
     // the crown: twigs out from the wood to the crown's skin, each carrying a cluster of small separate leaves; the hollows between are left open, and the tree's own shadow falls into them
     let cx=0,cy=0,cz=0,n=lp.length/3;for(let i=0;i<lp.length;i+=3){cx+=lp[i];cy+=lp[i+1];cz+=lp[i+2];}cx/=n;cy/=n;cz/=n;let cr=1e-3,lo=1e9;for(let i=0;i<lp.length;i+=3){cr=Math.max(cr,Math.hypot(lp[i]-cx,lp[i+1]-cy,lp[i+2]-cz));lo=Math.min(lo,lp[i+1]);}
-    const base=(L.col||[72,96,50]).map(v=>Math.pow(v/255,2.2)),P=[],N=[],C=[],U=[],TW=[],a=new T.Vector3(),b=new T.Vector3(),c=new T.Vector3(),o=new T.Vector3(),nr=new T.Vector3(),e=new T.Vector3(),q=new T.Vector3(),ax=new T.Vector3(),Q=new T.Quaternion(),Q2=new T.Quaternion(),LS=.036*(L.size||1),VQ=[[-.5,0],[.5,0],[.5,1],[-.5,0],[.5,1],[-.5,1]];
+    const base=(L.col||[72,96,50]).map(v=>Math.pow(v/255,2.2)),P=[],N=[],C=[],U=[],TW=[],a=new T.Vector3(),b=new T.Vector3(),c=new T.Vector3(),o=new T.Vector3(),nr=new T.Vector3(),e=new T.Vector3(),q=new T.Vector3(),ax=new T.Vector3(),Q=new T.Quaternion(),Q2=new T.Quaternion(),LS=.036*(L.size||1)*(O.sk||1),VQ=[[-.5,0],[.5,0],[.5,1],[-.5,0],[.5,1],[-.5,1]];
     // the wood's points, to root each twig at the nearest limb
     const wpts=[];for(let i=0;i<wp.length;i+=9)wpts.push(wp[i],wp[i+1],wp[i+2]);
     const root=(x,y,z,out)=>{let bd=1e9,bi=0;for(let i=0;i<wpts.length;i+=3){const d=(wpts[i]-x)**2+(wpts[i+1]-y)**2+(wpts[i+2]-z)**2;if(d<bd){bd=d;bi=i;}}return out.set(wpts[bi],wpts[bi+1],wpts[bi+2]);};
     let area=0;const tris=[];for(let t=0;t<lp.length;t+=9){a.fromArray(lp,t);b.fromArray(lp,t+3);c.fromArray(lp,t+6);const A=nr.copy(b).sub(a).cross(e.copy(c).sub(a)).length()*.5;area+=A;tris.push(t,area);}
-    const NC=Math.round(area*430*(L.dens||1));
+    const NC=Math.round(area*430*(L.dens||1)*(O.dk||1));
     for(let k=0;k<NC;k++){const pick=r()*area;let ti=0;while(ti<tris.length-2&&tris[ti+1]<pick)ti+=2;const t=tris[ti];a.fromArray(lp,t);b.fromArray(lp,t+3);c.fromArray(lp,t+6);nr.copy(b).sub(a).cross(e.copy(c).sub(a)).normalize();let u=r(),v=r();if(u+v>1){u=1-u;v=1-v;}
       o.copy(a).multiplyScalar(1-u-v).addScaledVector(b,u).addScaledVector(c,v);if(nr.dot(e.set(o.x-cx,o.y-cy,o.z-cz))<0)nr.negate();o.addScaledVector(nr,(r()*r()*-.9+.25)*.06);   // most at the skin, some set in, a few standing proud
       root(o.x,o.y,o.z,q);const tl=o.distanceTo(q),st=q.clone().lerp(o,Math.max(0,1-.09/Math.max(tl,.001)));TW.push(st.x,st.y,st.z,o.x,o.y,o.z);
@@ -159,9 +159,9 @@ const PACK=(()=>{
     // the twigs: thin, tapering, bark-coloured
     {const g=new T.BufferGeometry(),tp=[];for(let i=0;i<TW.length;i+=6){a.set(TW[i],TW[i+1],TW[i+2]);b.set(TW[i+3],TW[i+4],TW[i+5]);const d=e.copy(b).sub(a),len=d.length();if(len<1e-4)continue;d.normalize();const s1=q.set(d.y,-d.x,0).normalize().clone(),s2=new T.Vector3().crossVectors(d,s1),r0=.0026,r1=.0008;
         for(let k=0;k<3;k++){const a0=k/3*6.283,a1=(k+1)/3*6.283,p0=a.clone().addScaledVector(s1,Math.cos(a0)*r0).addScaledVector(s2,Math.sin(a0)*r0),p1=a.clone().addScaledVector(s1,Math.cos(a1)*r0).addScaledVector(s2,Math.sin(a1)*r0),p2=b.clone().addScaledVector(s1,Math.cos(a0)*r1).addScaledVector(s2,Math.sin(a0)*r1),p3=b.clone().addScaledVector(s1,Math.cos(a1)*r1).addScaledVector(s2,Math.sin(a1)*r1);tp.push(p0.x,p0.y,p0.z,p1.x,p1.y,p1.z,p2.x,p2.y,p2.z,p2.x,p2.y,p2.z,p1.x,p1.y,p1.z,p3.x,p3.y,p3.z);}}
-      g.setAttribute('position',new T.Float32BufferAttribute(tp,3));g.computeVertexNormals();const m=new T.Mesh(g,new T.MeshLambertMaterial({color:new T.Color(.045,.035,.026),side:T.DoubleSide}));m.castShadow=m.receiveShadow=true;grp.add(m);}
+      g.setAttribute('position',new T.Float32BufferAttribute(tp,3));g.computeVertexNormals();const m=new T.Mesh(g,new T.MeshLambertMaterial({color:new T.Color(.045,.035,.026),side:T.DoubleSide}));m.castShadow=m.receiveShadow=true;grp.add(m);grp.userData.twig=g;}
     {const g=new T.BufferGeometry();g.setAttribute('position',new T.Float32BufferAttribute(P,3));g.setAttribute('normal',new T.Float32BufferAttribute(N,3));g.setAttribute('color',new T.Float32BufferAttribute(C,3));g.setAttribute('uv',new T.Float32BufferAttribute(U,2));
-      const m=new T.Mesh(g,new T.MeshLambertMaterial({vertexColors:true,map:leafOne(),alphaTest:.5,side:T.DoubleSide}));m.castShadow=m.receiveShadow=true;m.customDepthMaterial=new T.MeshDepthMaterial({depthPacking:T.RGBADepthPacking,map:leafOne(),alphaTest:.5,side:T.DoubleSide});grp.add(m);}
+      const m=new T.Mesh(g,new T.MeshLambertMaterial({vertexColors:true,map:leafOne(),alphaTest:.5,side:T.DoubleSide}));m.castShadow=m.receiveShadow=true;m.customDepthMaterial=new T.MeshDepthMaterial({depthPacking:T.RGBADepthPacking,map:leafOne(),alphaTest:.5,side:T.DoubleSide});grp.add(m);grp.userData.leaf=g;}
     grp.traverse(m=>{if(m.isMesh)m.castShadow=m.receiveShadow=true;});
     return{grp,w:(wd/H+.06)*2.06,cards:P.length/18};};
   // drawn large, then brought down to a small picture so the leaves blend as they do at a distance
@@ -172,34 +172,29 @@ const PACK=(()=>{
     const w=Math.max(.2,t.w),cam=new T.OrthographicCamera(-w/2,w/2,.53,-.51,.1,20),tm=renderer.toneMapping,cc=renderer.getClearColor(new T.Color()).clone(),ca=renderer.getClearAlpha(),tex=[],rts=[];renderer.toneMapping=T.NoToneMapping;renderer.setClearColor(0x2a3a1c,0);
     for(const a of[0,Math.PI/2]){const rt=new T.WebGLRenderTarget(N_,N_,{depthBuffer:true});rt.texture.generateMipmaps=true;rt.texture.minFilter=T.LinearMipmapLinearFilter;rt.texture.anisotropy=4;cam.position.set(Math.sin(a)*8,.5,Math.cos(a)*8);cam.lookAt(0,.5,0);renderer.setRenderTarget(rt);renderer.clear();renderer.render(sc,cam);const out=real&&size<N_?shrink(rt,size):rt;tex.push(out.texture);rts.push(out);}
     renderer.setRenderTarget(null);renderer.toneMapping=tm;renderer.setClearColor(cc,ca);renderer.shadowMap.autoUpdate=sa;if(sun.shadow.map)sun.shadow.map.dispose();t.grp.traverse(m=>{if(m.geometry)m.geometry.dispose();});return{w,tex,rts,cards:t.cards||0};};
-  // four leafy boughs of a tree drawn into one small picture, to hang through its crown
-  const atlas=name=>{const L=LOOK[name]||{},base=(L.col||[72,96,50]).map(v=>Math.pow(v/255,2.2)),r=rng(name.length*131+7),rt=new T.WebGLRenderTarget(256,256,{depthBuffer:true});rt.texture.generateMipmaps=true;rt.texture.minFilter=T.LinearMipmapLinearFilter;rt.texture.anisotropy=4;
-    const sc=new T.Scene(),sun=new T.DirectionalLight(0xfff2dc,1.3);sun.position.set(.3,1,.8);sc.add(sun,new T.HemisphereLight(0xd6e0f0,0x6a6a52,1.9));const cam=new T.OrthographicCamera(-.62,.62,.62,-.62,.1,10);cam.position.set(0,0,4);cam.lookAt(0,0,0);
-    const tm=renderer.toneMapping,cc=renderer.getClearColor(new T.Color()).clone(),ca=renderer.getClearAlpha();renderer.toneMapping=T.NoToneMapping;renderer.setClearColor(0x2a3a1c,0);renderer.setRenderTarget(rt);renderer.clear();
-    const q=new T.Vector3(),ax=new T.Vector3(),Q=new T.Quaternion(),Q2=new T.Quaternion(),VQ=[[-.5,0],[.5,0],[.5,1],[-.5,0],[.5,1],[-.5,1]],sx=name==='Willow1'?.22:.5,sy=name==='Willow1'?.55:name==='Spruce1'?.2:.36,LS=(name==='Spruce1'?.09:.15)*(L.size||1);
-    for(let cell=0;cell<4;cell++){const P=[],N=[],C=[],U=[],TP=[];
-      for(let i=0;i<70;i++){const a=r()*6.283,rr=Math.sqrt(r()),lx=Math.cos(a)*rr*sx,ly=(r()-.5)*2*sy*Math.sqrt(1-rr*rr*.6)-(L.down||0)*rr*.1,lz=(r()-.5)*.3;
-        ax.set(lx*.6+(r()-.5)*.9,.5+(r()-.5)*.6,1+(r()-.5)*.8).normalize();Q.setFromUnitVectors(q.set(0,0,1),ax);Q2.setFromAxisAngle(q.set(0,0,1),r()*6.283);Q.multiply(Q2);const sz=LS*(.75+r()*.6),f=.86+r()*.2+ly*.25;
-        for(const[x,y]of VQ){q.set(x*sz*.62,y*sz-sz*.5,0).applyQuaternion(Q);P.push(lx+q.x,ly+q.y,lz+q.z);N.push(ax.x,ax.y,ax.z);C.push(base[0]*f,base[1]*f,base[2]*f);U.push(x+.5,y);}
-        if(i%7===0)TP.push(0,-sy*.2,-.05,lx*.9,ly*.9,lz);}
-      const g=new T.BufferGeometry();g.setAttribute('position',new T.Float32BufferAttribute(P,3));g.setAttribute('normal',new T.Float32BufferAttribute(N,3));g.setAttribute('color',new T.Float32BufferAttribute(C,3));g.setAttribute('uv',new T.Float32BufferAttribute(U,2));
-      const me=new T.Mesh(g,new T.MeshLambertMaterial({vertexColors:true,map:leafOne(),alphaTest:.5,side:T.DoubleSide})),lg=new T.BufferGeometry();lg.setAttribute('position',new T.Float32BufferAttribute(TP,3));const ln=new T.LineSegments(lg,new T.LineBasicMaterial({color:0x1a140e}));
-      sc.add(me,ln);renderer.setViewport(cell%2*128,(cell>>1)*128,128,128);renderer.setScissor(cell%2*128,(cell>>1)*128,128,128);renderer.setScissorTest(true);renderer.render(sc,cam);sc.remove(me,ln);g.dispose();lg.dispose();}
-    renderer.setScissorTest(false);renderer.setViewport(0,0,256,256);renderer.setRenderTarget(null);renderer.toneMapping=tm;renderer.setClearColor(cc,ca);return rt.texture;};
-  // a tree in the round, a height of one: its wood rounded and barked, and its crown as separate boughs hung through it at their own depths and angles, darker low and inside
-  const model=name=>{const E=A0.PK[name],p=new Float32Array(b64(E.p).buffer),kk=b64(E.k),L=LOOK[name]||{},r=rng(name.length*53+name.charCodeAt(1)*17);let H=0;for(let i=1;i<p.length;i+=3)H=Math.max(H,p[i]);
+  // a mass of leaves as a picture that tiles: for wrapping round a crown's lumps
+  let LM=null;const leafMass=()=>{if(LM)return LM;const cv=cnv(256,256),g=cv.getContext('2d'),r=rng(4242);
+    const leaf=(x,y,a,L,v)=>{for(const ox of[-256,0,256])for(const oy of[-256,0,256]){g.save();g.translate(x+ox,y+oy);g.rotate(a);g.fillStyle='rgb('+v+','+v+','+v+')';g.beginPath();g.moveTo(0,L);g.bezierCurveTo(-L*.62,L*.4,-L*.5,-L*.5,0,-L);g.bezierCurveTo(L*.5,-L*.5,L*.62,L*.4,0,L);g.fill();g.restore();}};
+    for(let pass=0;pass<3;pass++)for(let i=0;i<(pass?150:210);i++)leaf(r()*256,r()*256,r()*6.283,9+r()*7,[150,205,250][pass]+(r()*24-12|0));
+    LM=new T.CanvasTexture(cv);LM.encoding=T.sRGBEncoding;LM.wrapS=LM.wrapT=T.RepeatWrapping;LM.anisotropy=4;return LM;};
+  const n3=(x,y,z)=>{const h=(a,b,c)=>{const s=Math.sin(a*127.1+b*311.7+c*74.7)*43758.5453;return s-Math.floor(s);},xi=Math.floor(x),yi=Math.floor(y),zi=Math.floor(z),u=smooth(x-xi),v=smooth(y-yi),w=smooth(z-zi),m=(a,b,t)=>a+(b-a)*t;
+    return m(m(m(h(xi,yi,zi),h(xi+1,yi,zi),u),m(h(xi,yi+1,zi),h(xi+1,yi+1,zi),u),v),m(m(h(xi,yi,zi+1),h(xi+1,yi,zi+1),u),m(h(xi,yi+1,zi+1),h(xi+1,yi+1,zi+1),u),v),w);};
+  // a tree in the round, a height of one, nothing flat: the wood rounded and barked; the crown a lumpy leafy mass with depth, hollows and ragged edges; and, for the nearest, its twigs and separate leaves
+  const model=name=>{const E=A0.PK[name],p=new Float32Array(b64(E.p).buffer),kk=b64(E.k),L=LOOK[name]||{},base=(L.col||[72,96,50]).map(v=>Math.pow(v/255,2.2));let H=0;for(let i=1;i<p.length;i+=3)H=Math.max(H,p[i]);
     const wp=[],lp=[];for(let t=0;t<kk.length;t++)for(let v=0;v<3;v++){const j=t*9+v*3;(kk[t]?wp:lp).push(p[j]/H,p[j+1]/H,p[j+2]/H);}
     let wood=new T.BufferGeometry();wood.setAttribute('position',new T.Float32BufferAttribute(wp,3));wood=T.BufferGeometryUtils.mergeVertices(wood,1e-4);wood.computeVertexNormals();{const ps=wood.attributes.position,uv=new Float32Array(ps.count*2);for(let i=0;i<ps.count;i++){uv[i*2]=Math.atan2(ps.getX(i),ps.getZ(i))/6.2832*2+ps.getY(i)*.6;uv[i*2+1]=ps.getY(i)*5;}wood.setAttribute('uv',new T.BufferAttribute(uv,2));}
     let cx=0,cy=0,cz=0,n=lp.length/3;for(let i=0;i<lp.length;i+=3){cx+=lp[i];cy+=lp[i+1];cz+=lp[i+2];}cx/=n;cy/=n;cz/=n;let cr=1e-3,lo=1e9;for(let i=0;i<lp.length;i+=3){cr=Math.max(cr,Math.hypot(lp[i]-cx,lp[i+1]-cy,lp[i+2]-cz));lo=Math.min(lo,lp[i+1]);}
-    const a=new T.Vector3(),b=new T.Vector3(),c=new T.Vector3(),o=new T.Vector3(),nr=new T.Vector3(),e=new T.Vector3(),rt=new T.Vector3(),up=new T.Vector3(),q=new T.Vector3(),tris=[];let area=0;
-    for(let t=0;t<lp.length;t+=9){a.fromArray(lp,t);b.fromArray(lp,t+3);c.fromArray(lp,t+6);area+=nr.copy(b).sub(a).cross(e.copy(c).sub(a)).length()*.5;tris.push(t,area);}
-    const P=[],N=[],C=[],U=[],NB=Math.round(clamp(area*26*(L.dens||1),36,96)),BS=(name==='Willow1'?.2:name==='Spruce1'?.2:.24)*Math.min(1.4,.7+cr);
-    for(let k=0;k<NB;k++){const pick=r()*area;let ti=0;while(ti<tris.length-2&&tris[ti+1]<pick)ti+=2;const t=tris[ti];a.fromArray(lp,t);b.fromArray(lp,t+3);c.fromArray(lp,t+6);nr.copy(b).sub(a).cross(e.copy(c).sub(a)).normalize();let u=r(),v=r();if(u+v>1){u=1-u;v=1-v;}
-      o.copy(a).multiplyScalar(1-u-v).addScaledVector(b,u).addScaledVector(c,v);e.set(o.x-cx,o.y-cy,o.z-cz);if(nr.dot(e)<0)nr.negate();const depth=r()*r();o.addScaledVector(e,-depth*.5);   // most near the skin, some well inside
-      const out=e.normalize().clone().lerp(nr,.4);out.x+=(r()-.5)*.9;out.y+=(r()-.5)*.5;out.z+=(r()-.5)*.9;out.normalize();rt.crossVectors(UP,out);if(rt.lengthSq()<1e-4)rt.set(1,0,0);rt.normalize();up.crossVectors(out,rt).normalize();const tw=(r()-.5)*.7,ct=Math.cos(tw),st=Math.sin(tw),s=BS*(.75+r()*.6),cell=Math.floor(r()*4),u0=cell%2*.5,v0=(cell>>1)*.5;
-      const hf=clamp((o.y-lo)/Math.max(1e-3,cy+cr-lo),0,1),f=(.62+.34*hf)*(1-.45*depth)*(.94+r()*.12),nn=e.clone().lerp(UP,.25).normalize();
-      for(const[x,y]of[[-1,-1],[1,-1],[1,1],[-1,-1],[1,1],[-1,1]]){q.copy(o).addScaledVector(rt,(x*ct-y*st)*s*.5).addScaledVector(up,(x*st+y*ct)*s*.5);P.push(q.x,q.y,q.z);N.push(nn.x,nn.y,nn.z);C.push(f,f,f);U.push(u0+(x+1)*.25,v0+(y+1)*.25);}}
-    const boughs=new T.BufferGeometry();boughs.setAttribute('position',new T.Float32BufferAttribute(P,3));boughs.setAttribute('normal',new T.Float32BufferAttribute(N,3));boughs.setAttribute('color',new T.Float32BufferAttribute(C,3));boughs.setAttribute('uv',new T.Float32BufferAttribute(U,2));
-    return{wood,boughs,atlas:atlas(name),n:NB};};
-  return{build,bake,model,atlas,names:['OakTree1','OakTree2','OakTree3','Elder1','Elder2','Spruce1','Willow1','Giant1']};
+    // the crown's skin, its points joined, each face cut into four, then pushed in and out into lumps and hollows
+    let g=new T.BufferGeometry();g.setAttribute('position',new T.Float32BufferAttribute(lp,3));g=T.BufferGeometryUtils.mergeVertices(g,1e-4);
+    const sub=(g,times)=>{let P=Array.from(g.attributes.position.array),I=Array.from(g.index.array);for(let s=0;s<times;s++){const mid=new Map(),J=[],m=(a,b)=>{const k=a<b?a+'_'+b:b+'_'+a;if(mid.has(k))return mid.get(k);const i=P.length/3;P.push((P[a*3]+P[b*3])/2,(P[a*3+1]+P[b*3+1])/2,(P[a*3+2]+P[b*3+2])/2);mid.set(k,i);return i;};
+        for(let t=0;t<I.length;t+=3){const a=I[t],b=I[t+1],c=I[t+2],ab=m(a,b),bc=m(b,c),ca=m(c,a);J.push(a,ab,ca,ab,b,bc,ca,bc,c,ab,bc,ca);}I=J;}return{P,I};};
+    const mk=times=>{const{P,I}=sub(g,times),nv=P.length/3,C=new Float32Array(nv*3),U=new Float32Array(nv*2),f=name==='Spruce1'?.4:1;
+      for(let i=0;i<nv;i++){const x=P[i*3],y=P[i*3+1],z=P[i*3+2],dx=x-cx,dy=y-cy,dz=z-cz,l=Math.hypot(dx,dy,dz)||1,nz=n3(x*9+3,y*9,z*9+7)*.6+n3(x*21,y*21+5,z*21)*.4,d=(nz-.45)*.17*cr*f;P[i*3]=x+dx/l*d;P[i*3+1]=y+dy/l*d*.8;P[i*3+2]=z+dz/l*d;
+        const hf=clamp((y-lo)/Math.max(1e-3,cy+cr-lo),0,1),sh=(.55+.4*hf)*(.62+.6*nz);C[i*3]=base[0]*sh*(1+.08*hf);C[i*3+1]=base[1]*sh;C[i*3+2]=base[2]*sh*(1-.08*hf);U[i*2]=Math.atan2(dx,dz)/6.2832*Math.round(6+cr*10)+y*1.7;U[i*2+1]=y*8;}
+      const o=new T.BufferGeometry();o.setAttribute('position',new T.Float32BufferAttribute(P,3));o.setAttribute('color',new T.BufferAttribute(C,3));o.setAttribute('uv',new T.BufferAttribute(U,2));o.setIndex(I);o.computeVertexNormals();return o;};
+    const near=build(name,true,{dk:.3,sk:1.5});
+    return{wood,crown:mk(2),crownLo:mk(1),leaf:near.grp.userData.leaf,twig:near.grp.userData.twig,base,tris:[wood.index.count/3,0]};};
+  // a torn-off bough: a small lumpy leafy mass, in the round
+  const clump=()=>{const g=new T.IcosahedronGeometry(1,2),ps=g.attributes.position,uv=g.attributes.uv;for(let i=0;i<ps.count;i++){const x=ps.getX(i),y=ps.getY(i),z=ps.getZ(i),k=.7+.6*n3(x*2.3+4,y*2.3,z*2.3+9);ps.setXYZ(i,x*k,y*k*.7,z*k);uv.setXY(i,uv.getX(i)*3,uv.getY(i)*2);}g.computeVertexNormals();return g;};
+  return{build,bake,model,clump,leafMass,leafOne,names:['OakTree1','OakTree2','OakTree3','Elder1','Elder2','Spruce1','Willow1','Giant1']};
 })();

@@ -93,6 +93,7 @@ export function rbPerson(key, sticks, o = {}) {
     eyeY: (O[HEAD].y + 0.1) * (o.scale || 1),
     // an impulse imp (world, N s) landing at at on the named bone: it and each limb it hangs from turn about their joints by r × imp / I and spring back; the feet answer what reaches the hips
     push(name, imp, at) {
+      if (st.acc) { st.force = 1; this.update(0); st.force = 0; }   // (a pose left unworked while far or out of view is brought up to now before the blow lands)
       body.updateWorldMatrix(true, false); inv.copy(body.matrixWorld).invert(); body.getWorldQuaternion(qh).invert();
       const j = imp.clone().applyQuaternion(qh), a = at.clone().applyMatrix4(inv), seated = this.pose === 'sit' || this.pose === 'eat', r = new THREE.Vector3(); let i = IX[name] ?? -1; if (i < 0) i = TORSO;
       for (let k = i; k > 0; k = PI[k]) { const c = CH[k]; if (!c) continue; c.w.addScaledVector(r.copy(a).sub(J[k]).cross(j), 1 / c.I); st.phys = 3; }
@@ -119,7 +120,7 @@ export function rbPerson(key, sticks, o = {}) {
     update(dt) {
       // far or out of view: drawn lighter or not at all, the pose worked less often (time still passes for it)
       st.acc = (st.acc || 0) + dt; if (G.camera && !this.hands) { root.getWorldPosition(_w); G.camera.getWorldPosition(_cam); const d = _w.distanceTo(_cam), vr = G.renderer && G.renderer.xr.isPresenting;
-        body.visible = d < GONE; if (!body.visible || (!vr && !onScreen(_w)) || (d > SLOW && (frN & 1) === st.par)) { if (st.acc < 0.25) return; } }
+        body.visible = d < GONE; if (!st.force && (!body.visible || (!vr && !onScreen(_w)) || (d > SLOW && (frN & 1) === st.par))) { if (st.acc < 0.25) return; } }
       dt = st.acc; st.acc = 0;
       const seated = this.pose === 'sit' || this.pose === 'eat';
       this.talkT = Math.max(0, this.talkT - dt); if (st.fold > 0) st.fold -= dt;

@@ -162,7 +162,7 @@ export function buildAlley(scene, o = {}) {
     addHalo(x, 1.95, z, 2.6);
     const puffs = []; for (let k = 0; k < 4; k++) { const s = new THREE.Sprite(new THREE.SpriteMaterial({ map: smokeT, color: 0x6a6460, transparent: true, opacity: 0, depthWrite: false, fog: true })); s.userData = { t: k / 4, nopick: true }; g.add(s); puffs.push(s); }
     braz.push({ fl, puffs, ph: i * 2.1, l }); });
-  const _mp = new THREE.Vector3(), fogC = new THREE.Color(), tmp = new THREE.Color(), tmp2 = new THREE.Color(), MOONC = new THREE.Color(0x9ab0e8), NIGHTF = new THREE.Color(0x5468a0), DAYF = new THREE.Color(0xbcd0ec), EARTH = new THREE.Color(0x6a5a40);
+  const SMOKE = new THREE.Color(0x6a6460), EMBER = new THREE.Color(0xd08a50), _mp = new THREE.Vector3(), fogC = new THREE.Color(), tmp = new THREE.Color(), tmp2 = new THREE.Color(), MOONC = new THREE.Color(0x9ab0e8), NIGHTF = new THREE.Color(0x5468a0), DAYF = new THREE.Color(0xbcd0ec), EARTH = new THREE.Color(0x6a5a40);
   let lit = 0, skyT = 0, wet = 0, lastH = -1; const api = {};
   const sm = (a, b, x) => { const t = clamp((x - a) / (b - a), 0, 1); return t * t * (3 - 2 * t); };
   const paint = () => { const K = G.clock, h = K ? K.hour : 11, w = G.weather ? G.weather.now : weatherAt(K ? K.frac : 0), jd = city.jd(h);
@@ -191,7 +191,7 @@ export function buildAlley(scene, o = {}) {
     lit += clamp(want - lit, -dt / 4, dt / 4); const e = S.easy ? 0.6 : 1;
     for (const m of lampMats) m.emissiveIntensity = lit * 1.6 * e; HU.opacity.value = lit * 0.32 * e; fireM.opacity = lit * 0.7 * e;
     braz.forEach((b, i) => { const br = 1 + 0.05 * Math.sin(t * 0.9 + b.ph) + 0.03 * Math.sin(t * 0.37 + b.ph * 2); b.l.intensity = lit * 3.4 * br; b.fl.scale.set(1, br * (0.6 + 0.4 * lit), 1); b.fl.visible = lit > 0.02;   // a slow breath: nothing flickers
-      for (const s of b.puffs) { const u = s.userData; u.t += dt * 0.09; if (u.t > 1) u.t -= 1; const k = u.t, wd = (G.wind ?? 0.3) * 2.4; s.position.set(k * k * wd, 2.0 + k * 3.4, k * 0.3); const sc = 0.5 + k * 2.2; s.scale.set(sc, sc, 1); s.material.opacity = Math.sin(k * Math.PI) * 0.16 * lit; } });
+      for (const s of b.puffs) { const u = s.userData; u.t += dt * 0.09; if (u.t > 1) u.t -= 1; const k = u.t, wd = (G.wind ?? 0.3) * 2.4; s.position.set(k * k * wd, 2.0 + k * 3.4, k * 0.3); const sc = 0.5 + k * 2.2; s.scale.set(sc, sc, 1); s.material.opacity = Math.sin(k * Math.PI) * 0.16 * lit; s.material.color.copy(SMOKE).lerp(EMBER, (1 - k) * 0.55); } });
     swing(t);   // the lanterns swing a little on their cords
     wet += clamp(clamp((G.rainK || 0) / 0.2, 0, 1) - wet, -dt / 300, dt / 60); T.SURF.wet.value = wet;   // the ground darkens as it rains and dries slowly after
     if (G.cart && G.cart.lamps) G.cart.lamps(lit);

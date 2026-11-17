@@ -3,7 +3,7 @@ import * as THREE from 'three';
 import { HOOP } from './kit.js';
 
 export const TIP = 0.301, BUTT = 0.105, TIP_R = 0.006;
-const REARM = 0.008, MIN_SPEED = 0.25, FULL_SPEED = 6.2, GAP = 0.02;
+const REARM = 0.008, MIN_SPEED = 0.25, FULL_SPEED = 8.5, GAP = 0.02;
 
 export function buildStick(T) {
   const pts = [[0, -BUTT], [0.0066, -BUTT + 0.002], [0.0073, -0.09], [0.0073, 0.17], [0.0046, 0.262], [0.0036, 0.283], [0.0058, 0.292], [0.0052, 0.299], [0, TIP + 0.0005]];
@@ -26,7 +26,7 @@ function shaftAt(a, f, R, out) {
   return out.copy(a).lerp(f, t);
 }
 
-export const speedToVel = (s, sens = 1) => Math.min(1, Math.max(0.03, Math.pow(Math.max(0, s - 0.15) / (FULL_SPEED - 0.15), 0.8) * sens));
+export const speedToVel = (s, sens = 1) => Math.min(1, Math.max(0.03, Math.pow(Math.max(0, s - 0.15) / (FULL_SPEED - 0.15), 0.95) * sens));
 
 class Stick {
   constructor(side, T) {
@@ -170,19 +170,24 @@ export class Sticks {
     }
   }
 
-  // the two sticks knocked together
+  // the two sticks knocked together: every time one passes the other between two frames, or comes to touch it, as fast and as often as you like
   _knock(dt) {
     const L = this.left, Rr = this.right;
-    if (!this.detect || !L.active || !Rr.active || !(dt > 0)) { this.apart = 1; return; }
-    // nearest points of the two shafts
+    if (!this.detect || !L.active || !Rr.active || !(dt > 0) || !L.had || !Rr.had) { this.side = 0; this.apart = 1; return; }
     const d1 = v.copy(L.tip).sub(L.pos), d2 = w.copy(Rr.tip).sub(Rr.pos), r = c.copy(L.pos).sub(Rr.pos);
     const a = d1.dot(d1), e = d2.dot(d2), f = d2.dot(r), cc = d1.dot(r), b = d1.dot(d2), den = a * e - b * b;
-    let sN = den > 1e-9 ? Math.min(1, Math.max(0, (b * f - cc * e) / den)) : 0;
-    let tN = (b * sN + f) / e;
+    let sN = den > 1e-9 ? Math.min(1, Math.max(0, (b * f - cc * e) / den)) : 0, tN = (b * sN + f) / e;
     if (tN < 0) { tN = 0; sN = Math.min(1, Math.max(0, -cc / a)); } else if (tN > 1) { tN = 1; sN = Math.min(1, Math.max(0, (b - cc) / a)); }
-    const dist = a0.copy(L.pos).addScaledVector(d1, sN).distanceTo(a1.copy(Rr.pos).addScaledVector(d2, tN));
-    const was = this.apart;
-    this.apart = dist;
-    if (dist < 0.0155 && was >= 0.0155 && L.had && Rr.had) { const sp = (was - dist) / dt; if (sp > 0.3 && was < 0.3) this.onClick?.(Math.min(1, sp / 3)); }
+    a0.copy(L.pos).addScaledVector(d1, sN); a1.copy(Rr.pos).addScaledVector(d2, tN);
+    const dist = a0.distanceTo(a1), inside = sN > 0.02 && sN < 0.98 && tN > 0.02 && tN < 0.98;
+    // which side of the right stick the left one is on: when that flips with both sticks overlapping along their lengths, they have crossed
+    const side = Math.sign(cf.crossVectors(d1, d2).dot(q0.copy(a0).sub(a1))) || this.side, was = this.apart;
+    const crossed = inside && this.side && side !== this.side && was < 0.12, touch = dist < 0.02 && was >= 0.02;
+    if (dist > 0.03) this.clickArm = true;
+    if ((crossed || (touch && this.clickArm)) && this.time - (this.clickT || -1) > 0.04) {
+      const sp = crossed ? (was + dist) / dt : (was - dist) / dt;
+      if (sp > 0.15) { this.clickT = this.time; this.clickArm = false; this.onClick?.(Math.min(1, Math.max(0.08, sp / 3.5))); }
+    }
+    this.side = side; this.apart = dist;
   }
 }

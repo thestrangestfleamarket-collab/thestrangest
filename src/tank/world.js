@@ -23,7 +23,7 @@ const WORLD=(()=>{
   const CRN=56,craters=[];
   const bowl=(()=>{const rs=[0,.3,.6,.85,1,1.2,1.55],ys=[-.42,-.39,-.27,-.1,.05,.1,-.08],N=18,p=[],c=[],ix=[],uv=[];
     rs.forEach((r,j)=>{for(let i=0;i<=N;i++){const a=i/N*6.2832,k=1+.09*Math.sin(a*3+j)+.06*Math.sin(a*7.3);p.push(Math.cos(a)*r*k,ys[j]*(.85+.3*hsh(i*.7,j*1.3)),Math.sin(a)*r*k);const s=j<4?.2+j*.05:j<6?.5:.75;c.push(s,s*.9,s*.78);uv.push(Math.cos(a)*r*.5+.5,Math.sin(a)*r*.5+.5);}});
-    for(let j=0;j<rs.length-1;j++)for(let i=0;i<N;i++){const a=j*(N+1)+i,b=a+N+1;ix.push(a,b,a+1,a+1,b,b+1);}
+    for(let j=0;j<rs.length-1;j++)for(let i=0;i<N;i++){const a=j*(N+1)+i,b=a+N+1;ix.push(a,a+1,b,a+1,b+1,b);}
     const g=new T.BufferGeometry();g.setAttribute('position',new T.Float32BufferAttribute(p,3));g.setAttribute('color',new T.Float32BufferAttribute(c,3));g.setAttribute('uv',new T.Float32BufferAttribute(uv,2));g.setIndex(ix);g.computeVertexNormals();
     const im=new T.InstancedMesh(g,new T.MeshLambertMaterial({map:A0.soil.d,vertexColors:true,color:0x8a7f72}),CRN);im.count=0;im.frustumCulled=false;im.receiveShadow=true;scene.add(im);return im;})();
   function crater(x,z,R){
@@ -42,11 +42,20 @@ const WORLD=(()=>{
     for(let i=0;i<5;i++)puff(x,y+.3,z,{c:[.7,.74,.76],s0:2,s1:big?14:8,life:2.2,vy:.6,op:.35});}
   // ---- loose pieces: stones, bricks and splinters that fly, bounce, roll and lie where they stop
   const DN=220,deb=[];
-  const mkDeb=(src,col)=>{let g=null,mat=null;src.traverse(m=>{if(m.isMesh&&!g){g=m.geometry.clone();mat=m.material;}});g.computeBoundingSphere();const s=1/g.boundingSphere.radius;g.translate(-g.boundingSphere.center.x,-g.boundingSphere.center.y,-g.boundingSphere.center.z);g.scale(s,s,s);
+  // one piece cut from a model: a single stone out of a set of them (the triangles that hang together), or a length of a trunk
+  const cut=(g0,mode)=>{const g=g0.index?g0.toNonIndexed():g0.clone(),p=g.attributes.position,n=p.count/3,keep=[];
+    if(mode==='slab'){for(let t=0;t<n;t++){let ok=true;for(let k=0;k<3;k++){const y=p.getY(t*3+k);if(y<.4||y>2.6)ok=false;}if(ok)keep.push(t);}}
+    else{const id=new Map(),par=[],find=i=>{while(par[i]!==i)i=par[i]=par[par[i]];return i;},vt=[];
+      for(let i=0;i<p.count;i++){const k=Math.round(p.getX(i)*200)+','+Math.round(p.getY(i)*200)+','+Math.round(p.getZ(i)*200);if(!id.has(k)){id.set(k,par.length);par.push(par.length);}vt.push(id.get(k));}
+      for(let t=0;t<n;t++){const a=find(vt[t*3]);par[find(vt[t*3+1])]=a;par[find(vt[t*3+2])]=a;}
+      const sets=new Map();for(let t=0;t<n;t++){const r=find(vt[t*3]);(sets.get(r)||sets.set(r,[]).get(r)).push(t);}
+      let best=null;for(const l of sets.values())if(l.length>=24&&(!best||Math.abs(l.length-90)<Math.abs(best.length-90)))best=l;if(best&&best.length<n)keep.push(...best);}
+    if(keep.length<8)return g;const o=new T.BufferGeometry();for(const nm of['position','normal','uv']){const a=g.attributes[nm];if(!a)continue;const sz=a.itemSize,arr=new Float32Array(keep.length*3*sz);keep.forEach((t,i)=>{for(let k=0;k<3*sz;k++)arr[i*3*sz+k]=a.array[t*3*sz+k];});o.setAttribute(nm,new T.BufferAttribute(arr,sz));}return o;};
+  const mkDeb=(src,col,mode)=>{let g=null,mat=null;src.traverse(m=>{if(m.isMesh&&!g){g=cut(m.geometry,mode);mat=m.material;}});g.computeBoundingSphere();const s=1/g.boundingSphere.radius;g.translate(-g.boundingSphere.center.x,-g.boundingSphere.center.y,-g.boundingSphere.center.z);g.scale(s,s,s);
     const im=new T.InstancedMesh(g,new T.MeshLambertMaterial({map:mat.map,color:col,alphaTest:mat.alphaTest,side:mat.side}),DN);im.count=0;im.frustumCulled=false;im.castShadow=false;im.receiveShadow=true;scene.add(im);return{im,n:0,live:[]};};
-  const DEB={stone:mkDeb(M.rocks,0x8f8a80),brick:mkDeb(M.rubble,0x9a8f84),wood:mkDeb(M.deadtree,0x7a6a55)};
+  const DEB={stone:mkDeb(M.rocks,0x8f8a80,'part'),brick:mkDeb(M.rubble,0x9a8f84,'part'),wood:mkDeb(M.deadtree,0x7a6a55,'slab')};
   function chunk(kind,x,y,z,vx,vy,vz,s){const D=DEB[kind],i=D.n++%DN;D.im.count=Math.min(DN,Math.max(D.im.count,i+1));
-    const d={D,i,x,y,z,vx,vy,vz,s,ax:Math.random()*6.28,sp:(Math.random()-.5)*14,an:Math.random()*6,flat:kind==='wood'?[1,.16,.16]:[1,.6+Math.random()*.4,.7+Math.random()*.3],rest:false};
+    const d={D,i,x,y,z,vx,vy,vz,s,ax:Math.random()*6.28,sp:(Math.random()-.5)*14,an:Math.random()*6,flat:kind==='wood'?[.45,1,.45]:[1,.7+Math.random()*.3,.75+Math.random()*.25],rest:false};
     const old=D.live.findIndex(o=>o.i===i);if(old>=0)D.live.splice(old,1);D.live.push(d);deb.push(d);putDeb(d);}
   function putDeb(d){dm.position.set(d.x,d.y,d.z);dm.quaternion.setFromAxisAngle(v1.set(Math.cos(d.ax),.3,Math.sin(d.ax)).normalize(),d.an);dm.scale.set(d.s*d.flat[0],d.s*d.flat[1],d.s*d.flat[2]);dm.updateMatrix();d.D.im.setMatrixAt(d.i,dm.matrix);d.D.im.instanceMatrix.needsUpdate=true;}
   function burst(kind,x,y,z,n,power,s0,s1,dx=0,dz=0){if(W.quiet)return;for(let i=0;i<n;i++){const a=Math.random()*6.28,v=power*(.3+Math.random()*.7);chunk(kind,x+(Math.random()-.5)*s1*2,y+Math.random()*s1,z+(Math.random()-.5)*s1*2,Math.cos(a)*v+dx*power,power*(.5+Math.random()*.9),Math.sin(a)*v+dz*power,s0+Math.random()*(s1-s0));}}

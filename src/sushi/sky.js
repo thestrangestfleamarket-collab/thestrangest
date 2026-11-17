@@ -49,7 +49,8 @@ export function buildSky(scene) {
         #include <tonemapping_fragment>
         #include <colorspace_fragment>
       }` });
-  const dome = new THREE.Mesh(new THREE.SphereGeometry(400, 32, 16), mat); dome.renderOrder = -10; dome.frustumCulled = false; Object.assign(dome.userData, { nopick: true, dyn: true }); scene.add(dome);
+  const dome = new THREE.Mesh(new THREE.SphereGeometry(400, 32, 16), mat); dome.renderOrder = 10; dome.frustumCulled = false;   // (drawn after everything solid, so only the sky that shows is worked out)
+  Object.assign(dome.userData, { nopick: true, dyn: true }); scene.add(dome);
   // the stars: points on the celestial sphere, turned as the night goes by the matrix from the sky's coordinates to the village's
   const R = (() => { let s = 1862; return () => { s = (s * 16807) % 2147483647; return s / 2147483647; }; })(), pos = [], mag = [];
   const eq = (ra, dec) => { const a = ra * Math.PI / 180, b = dec * Math.PI / 180; return [Math.cos(b) * Math.cos(a), Math.cos(b) * Math.sin(a), Math.sin(b)]; };

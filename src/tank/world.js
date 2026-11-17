@@ -137,7 +137,16 @@ const WORLD=(()=>{
   const TG=new Map(),tkey=(x,z)=>((x/24|0)+64)*256+((z/24|0)+64),falling=[];
   for(const t of TREEL){const k=tkey(t[0]+1536,t[1]+1536);(TG.get(k)||TG.set(k,[]).get(k)).push(t);t.small=t.k===5||t.h<5;t.big=t.h>36;}
   function treesNear(x,z,r,fn){const a=(x+1536-r)/24|0,b=(x+1536+r)/24|0,c=(z+1536-r)/24|0,d=(z+1536+r)/24|0;for(let i=a;i<=b;i++)for(let j=c;j<=d;j++){const l=TG.get((i+64)*256+(j+64));if(l)for(const t of l)if(!t.dead){const dx=t[0]-x,dz=t[1]-z;if(dx*dx+dz*dz<r*r)fn(t,Math.sqrt(dx*dx+dz*dz));}}}
-  function setTree(t,ax,an,sc=1){dm.position.set(t[0],hAt(t[0],t[1]),t[1]);q1.setFromAxisAngle(UP,t[3]);if(an){v1.set(Math.cos(ax),0,Math.sin(ax));dm.quaternion.setFromAxisAngle(v1,an).multiply(q1);}else dm.quaternion.copy(q1);dm.scale.setScalar(t[2]*sc);dm.updateMatrix();for(let i=0;i<t.im.length;i+=2){t.im[i].setMatrixAt(t.im[i+1],dm.matrix);t.im[i].instanceMatrix.needsUpdate=true;}}
+  const T3=[],T3N=48,ZERO=new T.Matrix4().makeScale(0,0,0);
+  TREES.forEach((n,k)=>{if(n[0]!=='PK')return;const M3=PACK.model(n[1]),bk=A0.bark.clone();bk.wrapS=bk.wrapT=T.RepeatWrapping;bk.needsUpdate=true;
+    const wood=new T.InstancedMesh(M3.wood,new T.MeshLambertMaterial({map:bk,color:new T.Color(.95,.86,.78)}),T3N),leaf=new T.InstancedMesh(M3.boughs,new T.MeshLambertMaterial({map:M3.atlas,vertexColors:true,alphaTest:.5,side:T.DoubleSide,color:new T.Color(1.9,1.9,1.8)}),T3N);
+    for(const m of[wood,leaf]){for(let i=0;i<T3N;i++)m.setMatrixAt(i,ZERO);m.instanceColor=new T.InstancedBufferAttribute(new Float32Array(T3N*3).fill(1),3);m.frustumCulled=false;m.castShadow=true;m.receiveShadow=true;land.add(m);}
+    T3[k]={wood,leaf,free:Array.from({length:T3N},(_,i)=>i)};});
+  function setTree(t,ax,an,sc=1){if(ax!==undefined){t.cax=ax;t.can=an;t.csc=sc;}dm.position.set(t[0],hAt(t[0],t[1]),t[1]);q1.setFromAxisAngle(UP,t[3]);if(an){v1.set(Math.cos(ax),0,Math.sin(ax));dm.quaternion.setFromAxisAngle(v1,an).multiply(q1);}else dm.quaternion.copy(q1);dm.scale.setScalar(t[2]*sc);dm.updateMatrix();const in3=t.s3!=null;for(let i=0;i<t.im.length;i+=2){t.im[i].setMatrixAt(t.im[i+1],in3?ZERO:dm.matrix);t.im[i].instanceMatrix.needsUpdate=true;}
+    if(in3){const K=T3[t.k];dm.scale.setScalar(t.h*sc);dm.updateMatrix();K.wood.setMatrixAt(t.s3,dm.matrix);K.leaf.setMatrixAt(t.s3,dm.matrix);K.wood.instanceMatrix.needsUpdate=K.leaf.instanceMatrix.needsUpdate=true;}}
+  let lodI=0;function updateLod(){const N=TREEL.length;for(let c=0;c<160&&N;c++){const t=TREEL[lodI=(lodI+1)%N],K=T3[t.k];if(!K)continue;const d=Math.hypot(t[0]-P.x,t[1]-P.z),want=t.dead!==2&&d<(t.s3!=null?112:92);
+      if(want&&t.s3==null&&K.free.length){t.s3=K.free.pop();const burnt=t.burn?.25:1;K.leaf.setColorAt(t.s3,_c.setScalar(burnt));K.leaf.instanceColor.needsUpdate=true;setTree(t,t.cax||0,t.can||0,t.csc==null?1:t.csc);}
+      else if(!want&&t.s3!=null){const i=t.s3;t.s3=null;K.wood.setMatrixAt(i,ZERO);K.leaf.setMatrixAt(i,ZERO);K.wood.instanceMatrix.needsUpdate=K.leaf.instanceMatrix.needsUpdate=true;K.free.push(i);if(t.dead!==2)setTree(t,t.cax||0,t.can||0,t.csc==null?1:t.csc);}}}
   const BN=18,BG=(()=>{const g=new T.PlaneGeometry(1,1),h=g.clone().rotateY(Math.PI/2),p=[],u=[];for(const q of[g,h]){const a=q.toNonIndexed();p.push(...a.attributes.position.array);u.push(...a.attributes.uv.array);}const o=new T.BufferGeometry();o.setAttribute('position',new T.Float32BufferAttribute(p,3));o.setAttribute('uv',new T.Float32BufferAttribute(u,2));o.computeVertexNormals();return o;})(),BOUGH=[],boughs=[];
   TCARD.forEach((tx,k)=>{if(k===5)return;const g=new T.InstancedBufferGeometry();g.index=BG.index;g.attributes=Object.assign({},BG.attributes);const aUV=new T.InstancedBufferAttribute(new Float32Array(BN*4),4);g.setAttribute('aUV',aUV);
     const m=new T.MeshLambertMaterial({map:tx[0],alphaTest:.5,side:T.DoubleSide,color:new T.Color(1.15,1.15,1.08)});m.onBeforeCompile=sh=>{sh.vertexShader=sh.vertexShader.replace('#include <common>','#include <common>\nattribute vec4 aUV;').replace('#include <uv_vertex>','#include <uv_vertex>\n#ifdef USE_UV\nvUv=aUV.xy+uv*aUV.zw;\n#endif');};
@@ -149,7 +158,7 @@ const WORLD=(()=>{
       if(b.y<g){b.y=g;b.rest=true;b.tip=Math.PI/2+(Math.random()-.5)*.3;if(wetAt(b.x,b.z))splash(b.x,b.z,false);}
       dm.position.set(b.x,b.y,b.z);dm.rotation.set(b.tip,b.ry,0);dm.scale.setScalar(b.s);dm.updateMatrix();dm.rotation.set(0,0,0);b.B.im.setMatrixAt(b.i,dm.matrix);b.B.im.instanceMatrix.needsUpdate=true;}}
   function fell(t,dx,dz,burn,flat){if(t.dead)return;t.dead=1;const l=Math.hypot(dx,dz)||1;t.fx=dx/l;t.fz=dz/l;t.ax=Math.atan2(-t.fx,t.fz);t.an=0;t.w=flat?2.5:.5;falling.push(t);
-    if(burn)for(let i=0;i<t.im.length;i+=2){t.im[i].setColorAt(t.im[i+1],_c.setRGB(.2,.17,.14));t.im[i].instanceColor.needsUpdate=true;}
+    if(burn){t.burn=1;for(let i=0;i<t.im.length;i+=2){t.im[i].setColorAt(t.im[i+1],_c.setRGB(.2,.17,.14));t.im[i].instanceColor.needsUpdate=true;}if(t.s3!=null){T3[t.k].leaf.setColorAt(t.s3,_c.setScalar(.25));T3[t.k].leaf.instanceColor.needsUpdate=true;}}
     if(!W.quiet&&!flat)play('rico',clamp(.4/(1+distTo(t[0],t[1])/50),0,.4),'out',0,.45);for(let i=0;i<3;i++)puff(t[0],hAt(t[0],t[1])+t.h*.6,t[1],{c:[.22,.3,.14],s0:1.5,s1:t.h*.7,life:1.6,vx:(Math.random()-.5)*3,vz:(Math.random()-.5)*3,vy:1,op:.6});}
   // a tree blown apart: a splintered stump left standing, lengths of its trunk and limbs thrown, its boughs torn off and falling, leaves coming down after
   function shatter(t){if(t.dead)return;t.dead=2;setTree(t,0,0,.0001);const y=hAt(t[0],t[1]),h=t.h;if(W.quiet)return;
@@ -176,13 +185,13 @@ const WORLD=(()=>{
     if(low&&!wet&&field(x,z).kind===1&&big&&fires.length<5)fires.push({x:()=>x,y:()=>g,z:()=>z,t:9});};
   // the tracks' ruts, laid as a tank moves
   W.rut=(o,x,z,yaw)=>{if(o.rx==null){o.rx=x;o.rz=z;return;}const d=Math.hypot(x-o.rx,z-o.rz);if(d<1.3)return;const a=Math.atan2(z-o.rz,x-o.rx);for(const s of[-1.45,1.45])stamp((x+o.rx)/2+Math.cos(yaw)*s,(z+o.rz)/2-Math.sin(yaw)*s,d*.62,0,0,.9,a,.62/(d*.62));stamp((x+o.rx)/2,(z+o.rz)/2,d*.7,0,0,.45,a,2.1/(d*.7));o.rx=x;o.rz=z;};
-  W.update=dt=>{updateDebris(dt);updateItems(dt);updateTrees(dt);updateBoughs(dt);flushStamps();};
+  W.update=dt=>{updateDebris(dt);updateItems(dt);updateTrees(dt);updateBoughs(dt);updateLod();flushStamps();};
   // everything put back as it was
   W.reset=()=>{
     W.quiet=true;craters.length=0;bowl.count=0;sq.length=eq.length=0;gsClean=false;W.rings.length=0;fires.length=0;moving.length=0;falling.length=0;deb.length=0;for(const k in DEB){DEB[k].im.count=0;DEB[k].n=0;DEB[k].live.length=0;}boughs.length=0;for(const B of BOUGH)if(B){B.im.count=0;B.n=0;}decal.count=0;dcI=0;decOf.length=0;
     for(const t of ITEMS){if(!t.gone&&!t.body&&!t.burnt&&t.hp===t.hp0)continue;t.gone=false;t.body=null;t.fall=null;t.burnt=0;t.hp=t.hp0;t.shr=1;if(t.x0!=null){t[0]=t.x0;t[1]=t.z0;}t.y=hAt(t[0],t[1]);setItem(t,t[0],t.y,t[1],t[2],0,0);tint(t,1);
       if(t.so0&&!t.so){t.so=t.so0;for(const o of t.so){o.h=o.h0;o.r=o.r0;if(solids.indexOf(o)<0)solids.push(o);}}else if(t.so)for(const o of t.so){o.h=o.h0;o.r=o.r0;}}
-    for(const t of TREEL)if(t.dead||t.hurt){t.dead=0;t.hurt=0;setTree(t,0,0);for(let i=0;i<t.im.length;i+=2){t.im[i].setColorAt(t.im[i+1],_c.setScalar(1));t.im[i].instanceColor.needsUpdate=true;}}
+    for(const t of TREEL)if(t.dead||t.hurt){t.dead=0;t.hurt=0;t.burn=0;setTree(t,0,0);if(t.s3!=null){T3[t.k].leaf.setColorAt(t.s3,_c.setScalar(1));T3[t.k].leaf.instanceColor.needsUpdate=true;}for(let i=0;i<t.im.length;i+=2){t.im[i].setColorAt(t.im[i+1],_c.setScalar(1));t.im[i].instanceColor.needsUpdate=true;}}
     W.quiet=false;};
   for(const t of ITEMS){t.x0=t[0];t.z0=t[1];t.so0=t.so;if(t.so)for(const o of t.so){o.h0=o.h;o.r0=o.r;}}
   W.boughs=boughs;W.items=ITEMS;W.trees=TREEL;W.hitItem=hitItem;W.fell=null;W.debris=DEB;W.moving=moving;W.fires=fires;W.falling=falling;

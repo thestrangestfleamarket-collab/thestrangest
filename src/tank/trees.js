@@ -192,9 +192,17 @@ const PACK=(()=>{
       for(let i=0;i<nv;i++){const x=P[i*3],y=P[i*3+1],z=P[i*3+2],dx=x-cx,dy=y-cy,dz=z-cz,l=Math.hypot(dx,dy,dz)||1,nz=n3(x*9+3,y*9,z*9+7)*.6+n3(x*21,y*21+5,z*21)*.4,d=(nz-.45)*.17*cr*f;P[i*3]=x+dx/l*d;P[i*3+1]=y+dy/l*d*.8;P[i*3+2]=z+dz/l*d;
         const hf=clamp((y-lo)/Math.max(1e-3,cy+cr-lo),0,1),sh=(.55+.4*hf)*(.62+.6*nz);C[i*3]=base[0]*sh*(1+.08*hf);C[i*3+1]=base[1]*sh;C[i*3+2]=base[2]*sh*(1-.08*hf);U[i*2]=Math.atan2(dx,dz)/6.2832*Math.round(6+cr*10)+y*1.7;U[i*2+1]=y*8;}
       const o=new T.BufferGeometry();o.setAttribute('position',new T.Float32BufferAttribute(P,3));o.setAttribute('color',new T.BufferAttribute(C,3));o.setAttribute('uv',new T.BufferAttribute(U,2));o.setIndex(I);o.computeVertexNormals();return o;};
-    const near=build(name,true,{dk:.3,sk:1.5});
-    return{wood,crown:mk(2),crownLo:mk(1),leaf:near.grp.userData.leaf,twig:near.grp.userData.twig,base,tris:[wood.index.count/3,0]};};
+    // leaves as real shapes: each one two halves folded along its midrib, pointed at both ends, coloured by itself (no picture). Made from where build() puts its leaves
+    const solid=(lg)=>{const q=lg.attributes.position.array,cq=lg.attributes.color.array,n=q.length/18,P=new Float32Array(n*36),C=new Float32Array(n*36),B=new T.Vector3(),Tp=new T.Vector3(),S=new T.Vector3(),D=new T.Vector3(),Nn=new T.Vector3(),ML=new T.Vector3(),MR=new T.Vector3(),MC=new T.Vector3(),put=(o,v,r,g,b,k)=>{P[o]=v.x;P[o+1]=v.y;P[o+2]=v.z;C[o]=r*k;C[o+1]=g*k;C[o+2]=b*k;};
+      for(let i=0;i<n;i++){const o=i*18;B.set((q[o]+q[o+3])/2,(q[o+1]+q[o+4])/2,(q[o+2]+q[o+5])/2);Tp.set((q[o+6]+q[o+15])/2,(q[o+7]+q[o+16])/2,(q[o+8]+q[o+17])/2);S.set((q[o+3]-q[o])/2,(q[o+4]-q[o+1])/2,(q[o+5]-q[o+2])/2);D.copy(Tp).sub(B);Nn.crossVectors(S,D).normalize();const lift=S.length()*.55;
+        MC.copy(B).addScaledVector(D,.5);ML.copy(B).addScaledVector(D,.45).addScaledVector(S,-.95).addScaledVector(Nn,lift);MR.copy(B).addScaledVector(D,.45).addScaledVector(S,.95).addScaledVector(Nn,lift);
+        const r=cq[o],g=cq[o+1],b=cq[o+2],w=i*36;put(w,B,r,g,b,.85);put(w+3,MR,r,g,b,1.05);put(w+6,MC,r,g,b,1.2);put(w+9,B,r,g,b,.85);put(w+12,MC,r,g,b,1.2);put(w+15,ML,r,g,b,.9);put(w+18,MC,r,g,b,1.2);put(w+21,MR,r,g,b,1.05);put(w+24,Tp,r,g,b,1.1);put(w+27,MC,r,g,b,1.2);put(w+30,Tp,r,g,b,1.1);put(w+33,ML,r,g,b,.9);}
+      const g=new T.BufferGeometry();g.setAttribute('position',new T.BufferAttribute(P,3));g.setAttribute('color',new T.BufferAttribute(C,3));g.computeVertexNormals();return g;};
+    const near=build(name,true,{dk:.2,sk:1.7}),mid=build(name,true,{dk:.04,sk:2.9}),fine=solid(near.grp.userData.leaf),tuft=solid(mid.grp.userData.leaf);
+    // the crown for every solid tree: the lumpy mass and a scatter of big leaves standing out of it, as one shape
+    const cr0=mk(1).toNonIndexed(),join=(a,b)=>{const o=new T.BufferGeometry();for(const k of['position','normal','color']){const x=a.attributes[k].array,y=b.attributes[k].array,z=new Float32Array(x.length+y.length);z.set(x);z.set(y,x.length);o.setAttribute(k,new T.BufferAttribute(z,3));}return o;};
+    return{wood,crown:join(cr0,tuft),leaf:fine,twig:near.grp.userData.twig,base};};
   // a torn-off bough: a small lumpy leafy mass, in the round
-  const clump=()=>{const g=new T.IcosahedronGeometry(1,2),ps=g.attributes.position,uv=g.attributes.uv;for(let i=0;i<ps.count;i++){const x=ps.getX(i),y=ps.getY(i),z=ps.getZ(i),k=.7+.6*n3(x*2.3+4,y*2.3,z*2.3+9);ps.setXYZ(i,x*k,y*k*.7,z*k);uv.setXY(i,uv.getX(i)*3,uv.getY(i)*2);}g.computeVertexNormals();return g;};
+  const clump=()=>{const g=new T.IcosahedronGeometry(1,2),ps=g.attributes.position;for(let i=0;i<ps.count;i++){const x=ps.getX(i),y=ps.getY(i),z=ps.getZ(i),k=.7+.6*n3(x*2.3+4,y*2.3,z*2.3+9);ps.setXYZ(i,x*k,y*k*.7,z*k);}const cc=new Float32Array(ps.count*3);for(let i=0;i<ps.count;i++){const k=.55+.6*n3(ps.getX(i)*5,ps.getY(i)*5+2,ps.getZ(i)*5)+.25*ps.getY(i);cc[i*3]=cc[i*3+1]=cc[i*3+2]=k;}g.setAttribute('color',new T.BufferAttribute(cc,3));g.computeVertexNormals();return g;};
   return{build,bake,model,clump,leafMass,leafOne,names:['OakTree1','OakTree2','OakTree3','Elder1','Elder2','Spruce1','Willow1','Giant1']};
 })();

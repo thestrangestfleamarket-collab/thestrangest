@@ -43,7 +43,7 @@ float pondD(vec2 p){float m=9.;${PONDS.map(q=>`m=min(m,(length(p-vec2(${q[0]}.,$
     const m=new T.Mesh(g,mat);m.frustumCulled=false;m.receiveShadow=false;m.castShadow=false;scene.add(m);return m;}
   L.grass=[ring(72,.46,0,.62,5),ring(80,1.15,13,.95,4)];
   // the trees' crowns and the hedges move with the same wind
-  land.traverse(o=>{if(!o.isInstancedMesh||!o.instanceColor||!o.material.alphaTest||!o.material.vertexColors)return;const mt=o.material,hgt=o.geometry.boundingBox||(o.geometry.computeBoundingBox(),o.geometry.boundingBox);
+  land.traverse(o=>{if(!o.isInstancedMesh||!o.instanceColor||!(o.userData.sway||o.material.alphaTest&&o.material.vertexColors))return;const mt=o.material,hgt=o.geometry.boundingBox||(o.geometry.computeBoundingBox(),o.geometry.boundingBox);
     mt.onBeforeCompile=s=>{s.uniforms.uT=L.uT;s.uniforms.uWind=L.uWind;s.vertexShader=s.vertexShader.replace('#include <common>','#include <common>\nuniform float uT;uniform vec3 uWind;').replace('#include <begin_vertex>',`#include <begin_vertex>
   {float h=max(position.y,0.)/${hgt.max.y.toFixed(2)};vec3 ip=instanceMatrix[3].xyz;float ph=ip.x*.31+ip.z*.17;float g=(.7+.3*sin(uT*.23+ph))*uWind.z*2.;float am=${(hgt.max.y*.024).toFixed(3)}*g;transformed.x+=sin(uT*1.6+ph)*h*h*am;transformed.z+=sin(uT*1.2+ph*1.7)*h*h*am*.7;transformed.x+=sin(uT*3.1+ph*2.3+position.y*.9)*h*am*.18;}`);};mt.needsUpdate=true;});
   // the ponds: wind ripples, and rings that run out from whatever hits the water

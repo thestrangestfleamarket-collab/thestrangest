@@ -108,3 +108,7 @@ body.bigcross #cross{width:14px;height:14px;margin:-8px 0 0 -8px;border-width:3p
 #talkbox .who{font-family:'Caveat',cursive;font-size:26px;margin-bottom:6px}
 #talkbox input{width:100%;box-sizing:border-box;font:20px 'Kalam',cursive;background:transparent;border:0;border-bottom:2px dashed rgba(90,60,30,.5);padding:4px 2px;outline:none;color:inherit}
 #talkbox small{display:block;margin-top:8px;opacity:.6;font-family:'Kalam',cursive}
+
+#board{position:fixed;right:14px;top:120px;z-index:6;background:rgba(30,20,12,.82);color:#f3e6c8;font:16px 'Kalam',cursive;padding:8px 12px;border-radius:8px;min-width:150px}
+#board div{display:flex;gap:8px;align-items:baseline}#board div.me{font-weight:700}#board span{margin-left:auto;font-family:'Courier Prime',monospace}
+#menu input{font:18px 'Kalam',cursive;background:transparent;border:0;border-bottom:2px dashed rgba(90,60,30,.5);padding:3px 2px;color:inherit;outline:none}

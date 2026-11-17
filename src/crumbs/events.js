@@ -140,7 +140,7 @@ E.list.snacker = {
       if (E.watch(eye, dt, cone ? { cone, center: look } : { center: look }) || byHand) { a.caught = true; G.caught(byHand ? 'The hand brushed right against you!' : 'The human saw a mouse!'); H.look = 0; a.ph = 5; a.pt = 0; if (H.carried) { H.carried.group.visible = false; H.carried = null; } }
     } else if (a.ph === 0) { E.state = 'coming'; }
   },
-  end() { if (H) { H.g.visible = false; H.torch.intensity = 0; if (H.carried) { H.carried.group.visible = false; H.carried = null; } } W.setLit(0); W.door.material.opacity = 0; MC.game.hiding = false; MC.game.spot = 0; E.state = null; if (MC.game.mode === 'play') MC.say('Safe. The diner is open again.', 3); },
+  end() { if (H) { H.g.visible = false; H.torch.intensity = 0; if (H.carried) { H.carried.group.visible = false; H.carried = null; } } W.setLit(0); W.door.material.opacity = 0; MC.game.hiding = false; MC.game.spot = 0; E.state = null; if (MC.game.mode === 'play') MC.say('Safe. Back to work.', 3); },
   reset() { if (H) H.g.visible = false; if (W.door) W.door.material.opacity = 0; E.state = null; },
 };
 

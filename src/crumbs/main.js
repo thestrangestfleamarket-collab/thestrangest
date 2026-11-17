@@ -33,7 +33,7 @@ function vrPauseButton() {   // left controller X toggles pause in VR
   const s = MC.renderer.xr.getSession && MC.renderer.xr.getSession(); if (!s) return; let x = false; for (const src of s.inputSources) if (src.handedness === 'left' && src.gamepad && src.gamepad.buttons[4]) x = src.gamepad.buttons[4].pressed;
   if (x && !xPrev && G.mode === 'play') MC.paused = !MC.paused; xPrev = x; if (MC.paused) PL.wristNote('Paused. Press X to resume.');
 }
-MC.renderer.setAnimationLoop(() => { const dt = Math.min(clock.getDelta(), 0.05); if (MC.isXR()) vrPauseButton(); if (!MC.paused && !MC.manual) MC.tick(dt); MC.renderer.render(MC.scene, MC.camera); });
+MC.renderer.setAnimationLoop(() => { const dt = Math.min(clock.getDelta(), 0.05); if (MC.isXR()) vrPauseButton(); if (!MC.paused && !MC.manual) MC.tick(dt); if (MC.draw) MC.draw(dt); else MC.renderer.render(MC.scene, MC.camera); });
 
 // ---------- flow ----------
 MC.startNight = function (cfg) {
@@ -76,7 +76,7 @@ if (navigator.xr && navigator.xr.isSessionSupported) navigator.xr.isSessionSuppo
 // headsets get a lighter shadow setup: one 2048 moon map, no point-light shadow
 // fur level of detail: in a headset every other shell is dropped (the alpha ramp keeps the look, half the overdraw)
 MC.furLOD = function (xr) { MC.scene.traverse(o => { if (o.userData.furLayer) o.visible = !xr || o.userData.furLayer % 2 === 0; }); };
-MC.xrPerf = function () { if (!MC.isXR() && !MC.renderer.xr.getSession()) return; MC.furLOD(true); const c = W.candle && W.candle.light; if (c) c.castShadow = false; for (const L of [W.moon, W.ceil]) if (L && L.shadow && L.shadow.mapSize.x > 2048) { L.shadow.mapSize.set(2048, 2048); if (L.shadow.map) { L.shadow.map.dispose(); L.shadow.map = null; } } };
+MC.xrPerf = function () { if (!MC.isXR() && !MC.renderer.xr.getSession()) return; MC.furLOD(true); const c = W.candle && W.candle.light; if (c) c.castShadow = false; if (W.roomSpot) W.roomSpot.castShadow = false; if (W.nightLight) W.nightLight.castShadow = false; for (const L of [W.moon, W.ceil]) if (L && L.shadow && L.shadow.mapSize.x > 2048) { L.shadow.mapSize.set(2048, 2048); if (L.shadow.map) { L.shadow.map.dispose(); L.shadow.map = null; } } };
 MC.on('world:built', () => { if (MC.renderer.xr.getSession && MC.renderer.xr.getSession()) MC.xrPerf(); });
 // customers and the cat are built after the world: in a headset, thin their fur too
 MC.on('furAdded', () => { if (MC.isXR()) MC.furLOD(true); });

@@ -54,10 +54,10 @@ MC.SHOP = [
   { id: 'pack', name: 'Second pocket', cost: 60, desc: 'One more pocket in your backpack.' },
   { id: 'paws', name: 'Soft paws', cost: 50, desc: 'Things you drop or bump make less noise.' },
   { id: 'timer', after: 3, name: 'Egg timer', cost: 35, desc: 'The pan ticks loudly before food burns.' },
-  { id: 'lantern', name: 'Diner lantern', cost: 30, desc: 'A warm lantern over the diner. Cosy, and easier to see.' },
+  { id: 'lantern', name: 'Pub lantern', cost: 30, desc: 'A warm lantern over the bar. Cosy, and easier to see.' },
   // diner decor: cosmetic only, unlocked by career stars, bought with tips
-  { id: 'bunting', look: true, stars: 20, name: 'Bunting', cost: 150, desc: 'Little paper flags strung over the diner.' },
-  { id: 'cloth', look: true, stars: 35, name: 'Gingham tablecloth', cost: 250, desc: 'A checked cloth on the counter, like a proper diner.' },
+  { id: 'bunting', look: true, stars: 20, name: 'Bunting', cost: 150, desc: 'Little paper flags strung over the bar.' },
+  { id: 'cloth', look: true, stars: 35, name: 'Gingham tablecloth', cost: 250, desc: 'A checked cloth on the counter, like a proper pub.' },
   { id: 'gold', look: true, stars: 50, name: 'Golden bottle-cap plates', cost: 400, desc: 'Serve in style.' },
   { id: 'jar', look: true, stars: 65, name: 'Firefly jar', cost: 600, desc: 'A thimble lantern of glowing fireflies for the bar.' },
   { id: 'sign', look: true, stars: 80, name: 'Neon sign', cost: 900, desc: 'MIDNIGHT CRUMBS in buzzing neon. Fully earned.' },
@@ -93,16 +93,16 @@ function decor(cfg) {
   if (s.cloth) { const c = document.createElement('canvas'); c.width = c.height = 64; const g = c.getContext('2d'); g.fillStyle = '#f4efe2'; g.fillRect(0, 0, 64, 64); g.fillStyle = 'rgba(200,50,50,0.55)'; g.fillRect(0, 0, 32, 64); g.fillRect(0, 0, 64, 32); const t = new THREE.CanvasTexture(c); t.wrapS = t.wrapT = THREE.RepeatWrapping; t.repeat.set(8, 2); t.colorSpace = THREE.SRGBColorSpace;
     const m = new THREE.Mesh(new THREE.BoxGeometry(d.x1 - d.x0 + 0.1, 0.02, d.z1 - d.z0 + 0.2), new THREE.MeshStandardMaterial({ map: t, roughness: 0.95 })); m.position.set(cx, 0.915, (d.z0 + d.z1) / 2); m.receiveShadow = true; W.group.add(m); }
   if (s.gold) for (const st of W.seats) { const m = new THREE.Mesh(new THREE.TorusGeometry(0.47, 0.035, 8, 32), M.brass); m.rotation.x = Math.PI / 2; m.position.set(st.plate.x, 0.97, st.plate.z); W.group.add(m); }
-  if (s.jar) { const x = d.x0 + 0.3, j = new THREE.Mesh(new THREE.CylinderGeometry(0.22, 0.22, 0.5, 20, 1, true), M.glass); j.position.set(x, 1.15, -4.1); W.group.add(j); for (let i = 0; i < 5; i++) W.glow(x + (Math.random() - 0.5) * 0.25, 1.0 + Math.random() * 0.3, -4.1 + (Math.random() - 0.5) * 0.25, 0.35, 0xd6ff5a); const L = new THREE.PointLight(MC.col(0xcfff7a), 4, 8, 2); L.position.set(x, 1.3, -3.9); W.group.add(L); }
+  if (s.jar) { const x = d.x0 + 0.3, j = new THREE.Mesh(new THREE.CylinderGeometry(0.22, 0.22, 0.5, 20, 1, true), M.glass); j.position.set(x, 1.15, W.seats[0].plate.z); W.group.add(j); for (let i = 0; i < 5; i++) W.glow(x + (Math.random() - 0.5) * 0.25, 1.0 + Math.random() * 0.3, -4.1 + (Math.random() - 0.5) * 0.25, 0.35, 0xd6ff5a); const L = new THREE.PointLight(MC.col(0xcfff7a), 4, 8, 2); L.position.set(x, 1.3, -3.9); W.group.add(L); }
   if (s.sign) { const c = document.createElement('canvas'); c.width = 512; c.height = 96; const g = c.getContext('2d'); g.font = 'bold 60px "Bree Serif", Georgia, serif'; g.textAlign = 'center'; g.shadowColor = '#ff4fa0'; g.shadowBlur = 24; g.fillStyle = '#ffd0ea'; g.fillText('MIDNIGHT CRUMBS', 256, 68);
-    const t = new THREE.CanvasTexture(c); const m = new THREE.Mesh(new THREE.PlaneGeometry(4.2, 0.8), new THREE.MeshBasicMaterial({ map: t, transparent: true, fog: false })); m.position.set(cx, 6.6, -5.95); W.group.add(m); const L = new THREE.PointLight(MC.col(0xff5fae), 6, 10, 2); L.position.set(cx, 6.2, -5.2); W.group.add(L); }
+    const t = new THREE.CanvasTexture(c); const m = new THREE.Mesh(new THREE.PlaneGeometry(4.2, 0.8), new THREE.MeshBasicMaterial({ map: t, transparent: true, fog: false })); m.position.set(cx, 6.6, d.z0 - 1.45); W.group.add(m); const L = new THREE.PointLight(MC.col(0xff5fae), 6, 10, 2); L.position.set(cx, 6.2, -5.2); W.group.add(L); }
 }
 // world-level modifier effects, applied right after the home is built
 MC.applyMods = function (cfg) {
   const m = cfg.mods || [], r = MC.rng(cfg.seed + 5), up = MC.save.upgrades;
   PL.slip = m.indexOf('rainy') >= 0; MC.audio.setLoop('rain', PL.slip ? 0.06 : 0, 1);
   C.heatMul = m.indexOf('cold') >= 0 ? 1.4 : 1; C.softPaws = MC.up('paws') ? 0.8 : 1; C.timer = MC.up('timer');
-  if (m.indexOf('fullmoon') >= 0) { W.moonI = 4.4; W.hemiI = 0.72; }
+  if (m.indexOf('fullmoon') >= 0) { W.moonI = 4.4; W.hemiI = 0.14; }
   const freeSpot = () => { for (let k = 0; k < 40; k++) { const x = -14 + r() * 28, z = -1.5 + r() * 6.5, [ci, cj] = P.cellOf(x, z); if (!P.grid.g[cj * P.grid.nx + ci] && Math.hypot(x - W.spawn.x, z - W.spawn.z) > 2) return [x, z]; } return [W.spawn.x + 2, W.spawn.z + 2]; };
   if (m.indexOf('sticky') >= 0) for (let i = 0; i < 4; i++) { const [x, z] = freeSpot(); W.jam(x, z, 1.1 + r() * 0.7); }
   if (m.indexOf('crumbs') >= 0) for (let i = 0; i < 10; i++) { const [x, z] = freeSpot(); C.create('crumb', new V3(x, 0.2, z)); }
@@ -113,13 +113,13 @@ MC.applyMods = function (cfg) {
 
 // ---------- tutorial hints (one persistent line; advances on game events) ----------
 const T = MC.TUTOR = {
-  toast: [['Look at the bread slice and click to tear off a crumb.', 'Reach into the bread slice and squeeze to tear off a crumb.', 'take'],
-    ['Press E to tuck it in your backpack: you need both paws to climb.', 'Let go of it behind your head to tuck it in your backpack.', 'stash'],
-    ['Walk to the striped towel on the toaster. Hold a mouse button on it, pull the mouse DOWN, then grab higher with the other button. Let go above the top to hop on.', 'Climb the striped towel on the toaster hand over hand, and let go above the top.', 'mantle'],
+  toast: [['Your larder is the house. Go out through the mousehole in the wall, onto the kitchen counter, and find the bread slice. Click it to tear off a crumb.', 'Your larder is the house. Go out through the mousehole onto the kitchen counter, reach into the bread slice and squeeze to tear off a crumb.', 'take'],
+    ['Press E to tuck it in your backpack, then carry it home through the mousehole.', 'Let go of it behind your head to tuck it in your backpack, then carry it home through the mousehole.', 'stash'],
+    ['In the pub kitchen, walk to the striped towel on the toaster. Hold a mouse button on it, pull the mouse DOWN, then grab higher with the other button. Let go above the top to hop on.', 'In the pub kitchen, climb the striped towel on the toaster hand over hand, and let go above the top.', 'mantle'],
     ['Press E to take the crumb out, then click one of the dark slots.', 'Take the crumb from behind your head and drop it in a slot.', 'slotted'],
     ['Walk to the end of the toaster above the lever. Look down at the lever, hold a mouse button on it and hang on. (Riding the lever is also your way down.)', 'Grab the lever on the end of the toaster and hang on.', 'lever'],
-    ['Let go. The toast pops onto the counter. Carry it to the diner and click the plate under the ticket.', 'Let go. Carry the toast to the diner and drop it on the plate under the ticket.', 'served'],
-    ['That is the job. Check the tickets, keep quiet (watch the diner candle: it flares when you are loud), close before dawn.', null, 'timeout']],
+    ['Let go. The toast pops out onto the floor. Carry it to the bar and click the plate under the ticket.', 'Let go. Carry the toast to the bar and drop it on the plate under the ticket.', 'served'],
+    ['That is the job. Check the tickets, keep quiet (watch the bar candle: it flares when you are loud), close before dawn.', null, 'timeout']],
   char: [['Charred means toasted twice: send a toasted crumb through the toaster again.', null, 'served']],
   pan: [['New: the bottle-cap pan over a burner. Put a pea from the brass lid in it, wait for the ring to fill, then take it out before it burns.', null, 'cooked']],
   cheese: [['Cheese is up on the bread box. Climb its striped cloth, pinch off a bit, then melt it in the pan.', null, 'cooked']],

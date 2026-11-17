@@ -290,7 +290,7 @@ const srv = require('http').createServer((q, r) => { const f = path.join(ROOT, d
     const x0 = G.rig.position.x; ctl('left').updateAxis('thumbstick', 'x-axis', 1); await frames(6); ctl('left').updateAxis('thumbstick', 'x-axis', 0); out.moved = G.rig.position.x > x0 + 0.05;
     return out; });
   ok(vr.presenting && vr.hands, 'in the headset: a session with both controllers'); ok(vr.knob, 'a controller tip turns a burner knob'); ok(vr.took === 'bowl' && vr.rest, 'grip takes a bowl from the stack; let go, it comes to rest on the counter');
-  ok(vr.cook.on && vr.cook.L < 0.05 && vr.cook.R < 0.05 && !vr.cook.sleeves, 'in the headset you are the carving chef: its arms reach your own wrists (' + JSON.stringify(vr.cook) + ')');
+  ok(vr.cook.on && vr.cook.L < 0.05 && vr.cook.R < 0.05 && !vr.cook.sleeves, 'in the headset you are the cook: its arms reach your own wrists (' + JSON.stringify(vr.cook) + ')');
   ok(vr.tare === 'shoyu' && vr.home, 'a roll of the wrist pours the tare; the ladle flies home and refills (' + JSON.stringify([vr.tare, vr.home]) + ')'); ok(vr.left === 7, 'the knife chops by its own motion (' + vr.left + ' of 10 left)'); ok(vr.moved, 'the left stick steps along the cart');
   ok(vr.pot.took && vr.pot.low > 0.885 && vr.pot.ghost && vr.pot.gap > 0.08 && vr.pot.back, 'a pot taken by its handle and pushed down into the counter stays on top of it; a faint ghost shows the real hand (' + JSON.stringify(vr.pot) + ')');
   ok(vr.shove.bowl === 'bowl' && vr.shove.moved > 0.08 && vr.shove.apart > 0.08 && vr.shove.up, 'a held bowl shoves a loose shaker aside instead of passing through it (' + JSON.stringify(vr.shove) + ')');

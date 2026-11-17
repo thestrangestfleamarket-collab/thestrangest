@@ -138,21 +138,23 @@ const WORLD=(()=>{
   for(const t of TREEL){const k=tkey(t[0]+1536,t[1]+1536);(TG.get(k)||TG.set(k,[]).get(k)).push(t);t.small=t.k===5||t.h<5;t.big=t.h>36;}
   function treesNear(x,z,r,fn){const a=(x+1536-r)/24|0,b=(x+1536+r)/24|0,c=(z+1536-r)/24|0,d=(z+1536+r)/24|0;for(let i=a;i<=b;i++)for(let j=c;j<=d;j++){const l=TG.get((i+64)*256+(j+64));if(l)for(const t of l)if(!t.dead){const dx=t[0]-x,dz=t[1]-z;if(dx*dx+dz*dz<r*r)fn(t,Math.sqrt(dx*dx+dz*dz));}}}
   // trees in the round: each kind keeps a pool of solid trees (trunk, limbs, a leafy crown with depth) for those within sight, and a few with their twigs and separate leaves for the nearest; a tree takes one as you come near and gives it back as you leave
-  const T3=[],T3N=34,T0N=6,ZERO=new T.Matrix4().makeScale(0,0,0);
+  const T3=[],T3N=16,T0N=4,ZERO=new T.Matrix4().makeScale(0,0,0);
   // leaves let light through: lit from behind they still glow a little with their own green
   const leafy=m=>{m.onBeforeCompile=sh=>{sh.fragmentShader=sh.fragmentShader.replace('#include <lights_fragment_end>','#include <lights_fragment_end>\nreflectedLight.indirectDiffuse+=diffuseColor.rgb*.42;');};m.customProgramCacheKey=()=>'leafy';return m;};
   const pool=(g,m,n,cast)=>{const im=new T.InstancedMesh(g,m,n);for(let i=0;i<n;i++)im.setMatrixAt(i,ZERO);im.instanceColor=new T.InstancedBufferAttribute(new Float32Array(n*3).fill(1),3);im.frustumCulled=false;im.castShadow=cast;im.receiveShadow=true;land.add(im);return im;};
   // a model's parts as pools: its bark, and its leaves (which sway, let light through and can be scorched)
-  const parts=(src,mats,n,cast,thin)=>{const out=[];src.updateMatrixWorld(true);src.traverse(m=>{if(!m.isMesh)return;const hi=mats&&mats.get(m.material.name),leaf=(hi||m.material).alphaTest>0||(hi||m.material).transparent;let g=m.geometry;
-      if(thin&&leaf&&g.index&&g.index.count/3>thin){const ix=g.index.array,keep=[],f=thin/(g.index.count/3);for(let q=0;q+5<ix.length;q+=6)if(hsh(q*.37,q*.11)<f)for(let e=0;e<6;e++)keep.push(ix[q+e]);g=g.clone();g.setIndex(keep);}   // the further tree keeps a share of its leaf cards
-      const a=hi||m.material,mat=leaf?leafy(new T.MeshLambertMaterial({map:a.map,alphaTest:clamp(a.alphaTest||.3,.08,.5),side:T.DoubleSide,color:new T.Color(1.9,1.9,1.8)})):new T.MeshLambertMaterial({map:a.map,color:new T.Color(1.5,1.45,1.4)}),im=pool(g,mat,n,cast&&!leaf);im.userData.sway=leaf?1:0;im.userData.leaf=leaf;out.push(im);});return out;};
-  TREES.forEach((n,k)=>{if(n[0]!=='T')return;const hiM=M['tree_'+n[1]];
-    T3[k]={lo:parts(hiM,null,T3N,false,0),hi:parts(hiM,null,T0N,true,0),free:Array.from({length:T3N},(_,i)=>i),free0:Array.from({length:T0N},(_,i)=>i),base:[.07,.12,.04]};});
+  // only: 'wood' or 'leaf'; keep: the share of leaf triangles kept
+  const parts=(src,mats,n,cast,only,keep)=>{const out=[];src.updateMatrixWorld(true);src.traverse(m=>{if(!m.isMesh)return;const a=mats&&mats.get(m.material.name)||m.material,leaf=a.alphaTest>0||a.transparent;if(only&&(only==='leaf')!==leaf)return;let g=m.geometry;
+      if(leaf&&keep<1&&g.index){const ix=g.index.array,kp=[];for(let q=0;q+2<ix.length;q+=3)if(hsh(ix[q]*.37,ix[q+1]*.11)<keep)kp.push(ix[q],ix[q+1],ix[q+2]);g=g.clone();g.setIndex(kp);}
+      const mat=leaf?leafy(new T.MeshLambertMaterial({map:a.map,alphaTest:clamp((a.alphaTest||.3)*(keep<1?.6:1),.06,.5),side:T.DoubleSide,color:new T.Color(1.9,1.9,1.8)})):new T.MeshLambertMaterial({map:a.map,color:new T.Color(1.5,1.45,1.4)}),im=pool(g,mat,n,cast&&!leaf);im.userData.sway=leaf?1:0;im.userData.leaf=leaf;out.push(im);});return out;};
+  // three steps of a tree: whole for the nearest few, thinned wood with a share of the leaves for those within sight, a pair of pictures beyond
+  TREES.forEach((n,k)=>{if(n[0]!=='T')return;const hiM=M['tree_'+n[1]],loM=M['tree_'+n[1]+'_lo'],mats=new Map();hiM.traverse(m=>{if(m.isMesh)mats.set(m.material.name,m.material);});
+    T3[k]={lo:[...parts(loM,mats,T3N,false,'wood',1),...parts(hiM,null,T3N,false,'leaf',.34)],hi:parts(hiM,null,T0N,true,null,1),free:Array.from({length:T3N},(_,i)=>i),free0:Array.from({length:T0N},(_,i)=>i),base:[.07,.12,.04]};});
   const each=(l,i,m)=>{for(const im of l){im.setMatrixAt(i,m);im.instanceMatrix.needsUpdate=true;}},shade=(t,v)=>{const K=T3[t.k];if(!K)return;for(const[l,i]of[[K.lo,t.s3],[K.hi,t.s0]])if(i!=null)for(const im of l)if(im.userData.leaf){im.setColorAt(i,_c.setScalar(v));im.instanceColor.needsUpdate=true;}};
   function setTree(t,ax,an,sc=1){if(ax!==undefined){t.cax=ax;t.can=an;t.csc=sc;}dm.position.set(t[0],hAt(t[0],t[1]),t[1]);q1.setFromAxisAngle(UP,t[3]);if(an){v1.set(Math.cos(ax),0,Math.sin(ax));dm.quaternion.setFromAxisAngle(v1,an).multiply(q1);}else dm.quaternion.copy(q1);dm.scale.setScalar(t[2]*sc);dm.updateMatrix();const in3=t.s3!=null;for(let i=0;i<t.im.length;i+=2){t.im[i].setMatrixAt(t.im[i+1],in3?ZERO:dm.matrix);t.im[i].instanceMatrix.needsUpdate=true;}
     if(in3){const K=T3[t.k];dm.scale.setScalar(t.h*sc);dm.updateMatrix();if(t.s0!=null){each(K.hi,t.s0,dm.matrix);each(K.lo,t.s3,ZERO);}else each(K.lo,t.s3,dm.matrix);}}
   // which trees are in the round: every one within sight takes a place in its kind's pool, the nearest few take the whole model; they give them back as you go
-  let lodI=0;function updateLod(){const N=TREEL.length;for(let c=0;c<220&&N;c++){const t=TREEL[lodI=(lodI+1)%N],K=T3[t.k];if(!K)continue;const d=Math.hypot(t[0]-P.x,t[1]-P.z),want=t.dead!==2&&d<(t.s3!=null?150:135),fine=want&&d<(t.s0!=null?58:48);let ch=false;
+  let lodI=0;function updateLod(){const N=TREEL.length;for(let c=0;c<220&&N;c++){const t=TREEL[lodI=(lodI+1)%N],K=T3[t.k];if(!K)continue;const d=Math.hypot(t[0]-P.x,t[1]-P.z),want=t.dead!==2&&d<(t.s3!=null?112:98),fine=want&&d<(t.s0!=null?44:36);let ch=false;
       if(want&&t.s3==null&&K.free.length){t.s3=K.free.pop();ch=true;}
       if(t.s3!=null&&fine&&t.s0==null&&K.free0.length){t.s0=K.free0.pop();ch=true;}
       if(t.s0!=null&&(!fine||!want)){each(K.hi,t.s0,ZERO);K.free0.push(t.s0);t.s0=null;ch=true;}

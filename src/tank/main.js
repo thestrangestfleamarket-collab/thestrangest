@@ -47,7 +47,7 @@ const jget=f=>count(fetch(BASE+f).then(r=>r.json()));
 const TREES=[['T','oak',17],['T','beech',21],['T','maple',16],['T','spruce',24],['T','elm',25],['B',0,2.6],['T','willow',13],['T','birch',18],['T','pine',22],['T','fir',20]];
 let A0;
 try{
-  const names=['hero','ally','foe','seat','console','display','switchbox','radio','helmet','barn','cars','pipes','sconce','ammobox','rocks','h6','row','h9','shop','cork','flats','white','cottage','villa','mill','works','church','watertower','silos','stacks','mast','pylon','pole','stonewall','lamp','hay','brokenwall','rubble','trabant','lada','van','tractor','truck','busstop','hand_l','hand_r','crag','deadtree','sandbags','hedgehog','wreck','grenade','pistol','soldier','breech','mfd','shell','mine','hatch',...TREES.filter(t=>t[0]==='T').map(t=>'tree_'+t[1])];
+  const names=['hero','ally','foe','seat','console','display','switchbox','radio','helmet','barn','cars','pipes','sconce','ammobox','rocks','h6','row','h9','shop','cork','flats','white','cottage','villa','mill','works','church','watertower','silos','stacks','mast','pylon','pole','stonewall','lamp','hay','brokenwall','rubble','trabant','lada','van','tractor','truck','busstop','hand_l','hand_r','crag','deadtree','sandbags','hedgehog','wreck','grenade','pistol','soldier','breech','mfd','shell','mine','hatch',...TREES.filter(t=>t[0]==='T').flatMap(t=>['tree_'+t[1],'tree_'+t[1]+'_lo'])];
   const[sky,skyS,SKY,MT,MODJ,grass,dry,soil,plate,paint,leather,models]=await Promise.all([
     count(new Promise((ok,no)=>texL.load(BASE+'sky/sky.jpg',ok,null,()=>no(new Error('sky'))))),count(new Promise((ok,no)=>texL.load(BASE+'sky/sky_s.jpg',ok,null,()=>no(new Error('sky'))))),jget('sky/sky.json'),jget('trees-market.json'),jget('models.json'),
     pbr('leafy_grass',1),tex('sparse_grass_d.jpg',{srgb:1}),pbr('farm_soil',1),pbr('metal_plate',1),pbr('green_metal_rust',1),pbr('fabric_leather_02',1),
@@ -977,7 +977,7 @@ function frame(){
     L.screen.intensity=inn?(P.dmg.sight>0?.5:1.6)*(SET.calm?1:.9+.1*Math.sin(time*23)*Math.sin(time*7.3))*(P.thermal?.8:1)*(.75+.25*sunK)+P.flash*5:0;
     {const a=Math.atan2(SUN.x,SUN.z)-(P.yaw+P.tyaw)+Math.PI,k=Math.max(0,Math.cos(a));L.slit.position.set(HX+Math.sin(a)*.42,ROOF-.2,HZ+Math.cos(a)*.42);L.slit.intensity=inn?(.04+.5*k*k)*sunK:0;}L.screen.color.setRGB(P.thermal?.6:.75,1,P.thermal?.7:.86);L.mfd.intensity=inn?.38:0;
     L.alarm.intensity=inn?(P.hurt>.02?1.6*P.hurt:0)+low*.9*(SET.calm?.7:.5+.5*Math.sin(time*7)):0;L.beacon.material.color.setRGB(.2+L.alarm.intensity,.04,.03);L.day.intensity=inn?P.hatch*3:0;L.lid.rotation.x=clamp(P.hatch*2.2,0,1)*1.9;if(!inn&&(frameN&1))sunL.shadow.needsUpdate=true;};
-  if(inNow&&state!=='preview'&&(!vr||frameN%3===0)){
+  if(inNow&&state!=='preview'&&(!vr||frameN%4===0)){
     inside.visible=false;ext.visible=turN.visible=true;lights(false);heat(true);
     const prev=renderer.getRenderTarget(),xe=renderer.xr.enabled;renderer.xr.enabled=false;
     gunCam.aspect=4/3;gunCam.updateProjectionMatrix();renderer.setRenderTarget(sightRT);renderer.render(scene,gunCam);

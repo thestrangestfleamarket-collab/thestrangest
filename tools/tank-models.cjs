@@ -59,7 +59,7 @@ const LIST = {
   binos: ['binoculars', '', { size: 0.19, axis: 'x', tris: 4000, tex: 512 }],
   pistol: ['service_pistol', '', { keep: '_a$', fwd: '+x', size: 0, tex: 512 }],
   rocks: ['rock_moss_set_01', '', { size: 0, tris: 700, tex: 512 }],
-  // the land's trees: nine by one maker, a height of one, each a height of one
+  // the land's trees: nine by one maker, a height of one, each a height of one; the _lo is its wood thinned, for trees further off (the page hangs a share of the whole one's leaves on it)
   tree_oak: ['src/tree_oak_evolveduk', HF + '000-107/6468dd4d3eb240ef902b9057d9913606.glb', { size: 1, axis: 'y', tris: 9000, tex: 512, plain: 1 }],
   tree_beech: ['src/tree_beech_evolveduk', HF + '000-062/0983d8933531491f9be71c669e8a907b.glb', { size: 1, axis: 'y', tris: 9000, tex: 512, plain: 1 }],
   tree_birch: ['src/tree_birch_evolveduk', HF + '000-001/aa842dffd9654d33b8b91170ce83c172.glb', { size: 1, axis: 'y', tris: 9000, tex: 512, plain: 1 }],
@@ -69,6 +69,15 @@ const LIST = {
   tree_pine: ['src/tree_pine_evolveduk', HF + '000-060/d45218a3fab349e5b1de040f29e7b6f9.glb', { size: 1, axis: 'y', tris: 9000, tex: 512, plain: 1 }],
   tree_spruce: ['src/tree_spruce_evolveduk', HF + '000-116/a50a5df3164246a5af97992cec33a143.glb', { size: 1, axis: 'y', tris: 9000, tex: 512, plain: 1 }],
   tree_fir: ['src/tree_fir_evolveduk', HF + '000-084/3f39aa5485e94477a36b435f7a1a8b54.glb', { size: 1, axis: 'y', tris: 9000, tex: 512, plain: 1 }],
+  tree_oak_lo: ['src/tree_oak_evolveduk', HF + '000-107/6468dd4d3eb240ef902b9057d9913606.glb', { size: 1, axis: 'y', tris: 700, err: .5, tex: 32, plain: 1 }],
+  tree_beech_lo: ['src/tree_beech_evolveduk', HF + '000-062/0983d8933531491f9be71c669e8a907b.glb', { size: 1, axis: 'y', tris: 700, err: .5, tex: 32, plain: 1 }],
+  tree_birch_lo: ['src/tree_birch_evolveduk', HF + '000-001/aa842dffd9654d33b8b91170ce83c172.glb', { size: 1, axis: 'y', tris: 700, err: .5, tex: 32, plain: 1 }],
+  tree_maple_lo: ['src/tree_maple_evolveduk', HF + '000-131/b5e945e7abcc471da6547c04e314774c.glb', { size: 1, axis: 'y', tris: 700, err: .5, tex: 32, plain: 1 }],
+  tree_elm_lo: ['src/tree_elm_evolveduk', HF + '000-091/f36443d3e59946bfa38b3f5cb90ea5fa.glb', { size: 1, axis: 'y', tris: 700, err: .5, tex: 32, plain: 1 }],
+  tree_willow_lo: ['src/tree_willow_evolveduk', HF + '000-046/422de2372f3d46dfb314a0cd5da512fe.glb', { size: 1, axis: 'y', tris: 700, err: .5, tex: 32, plain: 1 }],
+  tree_pine_lo: ['src/tree_pine_evolveduk', HF + '000-060/d45218a3fab349e5b1de040f29e7b6f9.glb', { size: 1, axis: 'y', tris: 700, err: .5, tex: 32, plain: 1 }],
+  tree_spruce_lo: ['src/tree_spruce_evolveduk', HF + '000-116/a50a5df3164246a5af97992cec33a143.glb', { size: 1, axis: 'y', tris: 700, err: .5, tex: 32, plain: 1 }],
+  tree_fir_lo: ['src/tree_fir_evolveduk', HF + '000-084/3f39aa5485e94477a36b435f7a1a8b54.glb', { size: 1, axis: 'y', tris: 700, err: .5, tex: 32, plain: 1 }],
 };
 const NM = '/node_modules/', PAGE = `<script type="importmap">{"imports":{"three":"${NM}three/build/three.module.js","three/addons/":"${NM}three/examples/jsm/"}}</script><script type="module">
 import * as THREE from 'three';import {GLTFLoader} from 'three/addons/loaders/GLTFLoader.js';import {GLTFExporter} from 'three/addons/exporters/GLTFExporter.js';import {mergeGeometries,mergeVertices} from 'three/addons/utils/BufferGeometryUtils.js';import {MeshoptSimplifier as MS} from '${NM}meshoptimizer/meshopt_simplifier.js';

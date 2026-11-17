@@ -60,7 +60,7 @@ float wn(vec2 p){vec2 i=floor(p),f=fract(p);f=f*f*(3.-2.*f);return mix(mix(wh(i)
    normal=normalize(normal+mat3(viewMatrix)*vec3(dn.x,0.,dn.y));}`);};mt.needsUpdate=true;});
   let wakeT=0;
   L.update=dt=>{L.uT.value=time;camera.getWorldPosition(va);L.uCam.value.set(va.x,va.z);L.uWind.value.z=.35+.25*Math.sin(time*.11)+.12*Math.sin(time*.37);
-    const far=!SET.grass||SET.grass>1;L.grass[0].visible=SET.grass!==0;L.grass[1].visible=SET.grass!==0&&far;
+    const far=!SET.grass||SET.grass>1;L.grass[0].visible=SET.grass!==0;L.grass[1].visible=SET.grass!==0&&far&&!xrActive;L.grass[0].geometry.instanceCount=xrActive?72*44:72*72;
     WORLD.rings.forEach((r,i)=>rings[i].set(r.x,r.z,r.t,r.a));for(let i=WORLD.rings.length;i<8;i++)rings[i].z=-99;
     wakeT-=dt;if(wakeT<=0&&Math.abs(P.v)>1&&WORLD.wetAt(P.x,P.z)){wakeT=.45;WORLD.rings.push({x:P.x,z:P.z,t:time,a:.5});if(WORLD.rings.length>8)WORLD.rings.shift();puff(P.x+Math.sin(P.yaw)*3,P.y+.6,P.z+Math.cos(P.yaw)*3,{c:[.75,.8,.82],s0:1.5,s1:5,life:1,vy:2.5,op:.5});}};
   return L;

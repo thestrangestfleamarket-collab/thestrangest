@@ -13,6 +13,12 @@ import { loadAssets, kitTextures } from './assets.js';
 import { buildGarage } from './garage.js';
 import { GripHand, Body } from './hands.js';
 import { startLife } from './life.js';
+import { buildGun, RACK, BOX } from './gun.js';
+import { buildTeach } from './teach.js';
+import { installAir } from '../sushi/air.js';
+import { ROOM } from './garage.js';
+
+installAir(); // THE MARKET's haze and ground mist, in every material, before any is drawn
 
 const Q = new URLSearchParams(location.search), LOW = Q.has('low');
 const $ = (id) => document.getElementById(id);
@@ -34,7 +40,7 @@ renderer.xr.setFramebufferScaleFactor(0.7); // small eyes: the same look in the 
 renderer.xr.setFoveation(1);
 const scene = new THREE.Scene();
 scene.background = new THREE.Color(0xb7c6d2);
-const camera = new THREE.PerspectiveCamera(72, 1, 0.03, 70);
+const camera = new THREE.PerspectiveCamera(72, 1, 0.03, 900);
 const rig = new THREE.Group();
 rig.add(camera);
 scene.add(rig);
@@ -77,10 +83,12 @@ function card(lines, w = 0.86) {
   c.width = 768; c.height = 44 + lines.length * 46;
   const g = c.getContext('2d');
   g.fillStyle = 'rgba(8,8,10,.82)'; g.fillRect(0, 0, c.width, c.height);
+  g.font = '700 30px system-ui,sans-serif';
+  const col = Math.max(300, ...lines.map(([a, b]) => b ? g.measureText(a).width + 52 : 0));
   lines.forEach(([a, b], i) => {
     const y = 58 + i * 46;
     g.font = '700 30px system-ui,sans-serif'; g.textAlign = 'left'; g.fillStyle = '#ffb347'; g.fillText(a, 28, y);
-    g.font = '500 30px system-ui,sans-serif'; g.fillStyle = '#f2efe6'; g.fillText(b, 300, y);
+    g.font = '500 30px system-ui,sans-serif'; g.fillStyle = '#f2efe6'; g.fillText(b, col, y, c.width - col - 16);
   });
   const t = new THREE.CanvasTexture(c);
   t.colorSpace = THREE.SRGBColorSpace;
@@ -89,7 +97,7 @@ function card(lines, w = 0.86) {
   return m;
 }
 const VR_GUIDE = [['RIGHT TRIGGER', 'kick drum'], ['LEFT TRIGGER', 'open the hi-hat'], ['GRIP ON A CYMBAL', 'choke it'], ['RIGHT STICK  ↕', 'stick angle'], ['RIGHT GRIP + STICK  ↕', 'body forward / back'], ['LEFT STICK  ↕', 'seat height'],
-  ['LEFT STICK  ↔', 'timing: earlier / later'], ['RIGHT STICK  ↔ / CLICK', 'metronome tempo / on-off'], ['LEFT STICK  CLICK', 'garage door up / down'], ['HOLD A', 'talk to a neighbour'], ['HOLD X', 'sit me at the kit again'], ['BOTH TRIGGERS, 3 s', 'send a picture of what you see'], ['B or Y', 'hide this guide']];
+  ['LEFT STICK  ↔', 'timing: earlier / later'], ['RIGHT STICK  ↔ / CLICK', 'metronome tempo / on-off'], ['LEFT STICK  CLICK', 'garage door up / down'], ['HOLD A', 'talk to a neighbour'], ['X', 'stand up / sit down at the stool'], ['ON YOUR FEET', 'left stick walks, right stick turns'], ['YOUR FEET, or a pedal', 'the kick (and hi-hat) where the headset sees them'], ['BOTH TRIGGERS, 3 s', 'send a picture of what you see'], ['RIGHT GRIP + STICK  ↔', 'television: volume, off at nothing'], ['Y', 'lessons (left stick ↔ picks one)'], ['B', 'hide this guide']];
 
 // a small readout that shows only while a setting is being changed
 const readout = (() => {
@@ -112,9 +120,14 @@ const readout = (() => {
 })();
 
 // ---------- build ----------
-let kit, sticks, garage, body, hands, metro, life;
-const handMat = new THREE.MeshStandardMaterial({ color: 0xd9a984, roughness: 0.62 });
 const head = { pos: new THREE.Vector3(), quat: new THREE.Quaternion() };
+let kit, sticks, garage, body, hands, metro, life, gun, teach;
+// on your feet: where they are and which way you face (a screen); in a headset the rig is moved under you
+const walk = { on: false, pos: new THREE.Vector3(0, 0, 0.5), bob: 0 };
+const mkHand = () => ({ pos: new THREE.Vector3(), quat: new THREE.Quaternion(), grip: false, gripDown: false, gripUp: false, trigDown: false });
+const ginp = { vr: false, R: mkHand(), L: mkHand(), head, feet: new THREE.Vector3(), screen: { fire: false, reload: false, pump: false, use: false } };
+D.walk = walk;
+const handMat = new THREE.MeshStandardMaterial({ color: 0xd9a984, roughness: 0.62 });
 const seat = Object.assign(new THREE.Vector3(), { feet: [new THREE.Vector3(), new THREE.Vector3()] });
 
 async function build() {
@@ -177,10 +190,17 @@ async function build() {
     composer.addPass(D.film);
     size();
   }
+  gun = buildGun(scene, garage, life.street, sound, kit, T, { readout: (t) => readout.show(t, clock.elapsedTime), pulse, kit: (n, v, z, r) => onHit(n, v, z, r, 0, 0, null) });
+  D.gun = gun;
+  teach = buildTeach(scene, kit, sound, set, keep); D.teach = teach;
+  if (set.tv !== undefined) garage.tv.vol = set.tv;
+  guide.gun = card([['THE SHOTGUN', ''], ['RIGHT GRIP', 'take it; let go here to hang it up'], ['LEFT GRIP at the box', 'shells onto your belt'], ['LEFT GRIP at your hip', 'a shell in your hand'], ['PUSH IT IN under the gun', 'loads the tube (five)'], ['LEFT GRIP on the fore-end', 'pull back, push forward: pump'], ['RIGHT TRIGGER', 'fire']], 0.8);
+  guide.gun.position.set(RACK.x, 2.12, ROOM.z1 - 0.03); guide.gun.rotation.y = Math.PI; scene.add(guide.gun);
   D.kit = kit; D.sticks = sticks; D.garage = garage; D.body = body; D.hands = hands; D.guide = guide;
   placeRig();
   garage.sun.shadow.needsUpdate = true;
   await snd;
+  SEAT_HELP = $('help').innerHTML;
   $('load').hidden = true; $('go').hidden = false;
   D.ready = true;
 }
@@ -205,12 +225,31 @@ function onHit(piece, vel, zone, r, lx, lz, side) {
     if (hands[side]) hands[side].kick = 1;
   }
   life.note(vel);
+  teach.hit(piece, vel, side);
   if (vel > 0.5) garage.jolt((vel - 0.5) * (cym ? 0.5 : 1));
   shake.v = Math.max(shake.v, vel * (piece === 'kick' ? 1 : 0.4));
   const l = guide.labels[piece];
   if (l) l.played = true;
 }
 function kick(vel) { onHit('kick', vel, 'head', 0, 0, 0, null); rumble('right', 0.35 + 0.45 * vel, 0.06); rumble('left', 0.15 + 0.25 * vel, 0.05); }
+
+// ---------- your feet, where the headset reports a body: the right foot's tap is the kick, the left foot lifted opens the hi-hat ----------
+const feet = { seen: false, key: false, r: { y: 0, v: 0, low: 0, armed: true }, l: { y: 0, base: null }, told: false };
+function readFeet(dt, now) {
+  const frame = renderer.xr.getFrame && renderer.xr.getFrame(), ref = renderer.xr.getReferenceSpace(), body = frame && frame.body;
+  if (!body || !ref || walk.on) return;
+  const y = (name) => { const sp = body.get && body.get(name); if (!sp) return null; const p = frame.getPose(sp, ref); return p ? p.transform.position.y : null; };
+  const ry = y('right-foot-ball') ?? y('right-foot-ankle'), ly = y('left-foot-ball') ?? y('left-foot-ankle');
+  if (ry == null) return;
+  if (!feet.told) { feet.told = true; readout.show('FEET SEEN: TAP YOUR RIGHT FOOT FOR THE KICK', now); }
+  feet.seen = true;
+  const R = feet.r, v = (ry - R.y) / Math.max(dt, 0.004); R.y = ry; R.v += (v - R.v) * 0.6;
+  if (R.v < -0.25) R.low = Math.max(R.low, -R.v);
+  // the foot coming down and stopping is the beater on the head; it must lift again before the next
+  if (R.armed && R.low > 0.25 && R.v > -0.05) { R.armed = false; kick(Math.min(1, 0.25 + R.low / 2.2)); R.low = 0; }
+  if (R.v > 0.2) { R.armed = true; R.low = 0; }
+  if (ly != null && !feet.key && !ginp.L.grip) { const Lf = feet.l; Lf.base = Lf.base == null ? ly : Math.min(Lf.base + dt * 0.002, ly); const open = Math.min(1, Math.max(0, (ly - Lf.base - 0.015) / 0.05)); if ((xr.prev.left.trig || 0) < 0.05) { sound.setHat(open, 6); kit.setHat(open); } }
+}
 
 // ---------- a picture of what you see, sent to the owners' queue (both triggers held three seconds; P on a screen) ----------
 const snapper = { hold: 0, sent: false, busy: false };
@@ -231,6 +270,34 @@ async function sendPicture(now) {
     readout.show(j && j.ok ? 'PICTURE SENT' : r.status === 401 ? 'SIGN IN TO SEND A PICTURE' : 'PICTURE NOT SENT', clock.elapsedTime); } catch (e) { readout.show('PICTURE NOT SENT', clock.elapsedTime); }
   snapper.busy = false;
 }
+
+const WALK_HELP = '<b>W A S D</b> walk · <b>DRAG</b> look · <b>E</b> take the shotgun, the shells, the television · <b>R</b> load a shell · <b>F</b> pump · <b>CLICK</b> fire · <b>O</b> door · <b>ENTER</b> talk · <b>TAB</b> sit at the stool';
+let SEAT_HELP = '';
+// ---------- on your feet: what stops you, standing up and sitting down ----------
+const BODY_R = 0.28;
+function blocked(x, z) {
+  if (Math.abs(x) > 62 || z < ROOM.z0 - 24.3 || z > 8 || (x > ROOM.x1 + 0.3 && z > 1.5)) return true;
+  const hit = (b) => x > b[0] - BODY_R && x < b[2] + BODY_R && z > b[1] - BODY_R && z < b[3] + BODY_R;
+  for (const b of garage.solids) if (hit(b)) return true;
+  for (const b of life.street.solids) if (hit(b)) return true;
+  return garage.door.open < 0.85 && hit(garage.doorGap);
+}
+// a step from (x, z): each way tried on its own, so a wall is slid along
+function step(x, z, dx, dz) { if (blocked(x + dx, z)) dx = 0; if (blocked(x + dx, z + dz)) dz = 0; return [dx, dz]; }
+function stand(now) {
+  if (walk.on) return;
+  walk.on = true; sound.setHat(0); kit.setHat(0); kit.setPedal(0);
+  if (renderer.xr.isPresenting) { const c = renderer.xr.getCamera(), y = _a.copy(c.getWorldPosition(_a)).y - rig.position.y; rig.position.y = y < 1.35 ? 1.62 - y : 0; }
+  else { walk.pos.set(SEAT.x, 0, SEAT.z + 0.45); scr.pitch = 0; }
+  readout.show('ON YOUR FEET', now);
+}
+function sit(now) {
+  if (!walk.on) return;
+  if (Math.hypot(head.pos.x - SEAT.x, head.pos.z - SEAT.z) > 1.5) { readout.show('GO TO THE STOOL TO SIT', now); return; }
+  walk.on = false; if (gun.held) { gun.held = false; gun.where = 'rack'; }
+  scr.yaw = 0; scr.pitch = -0.42; placeRig(); readout.show('SEATED', now);
+}
+D.stand = stand; D.sit = sit;
 
 // ---------- where you sit ----------
 function placeRig() {
@@ -291,34 +358,47 @@ function vrInput(dt, now) {
     if (!slot.grip.visible) continue;
     slot.grip.getWorldPosition(_p);
     slot.grip.getWorldQuaternion(_q);
+    const I = side === 'right' ? ginp.R : ginp.L; I.pos.copy(_p); I.quat.copy(_q);
     _q.multiply(_t.setFromAxisAngle(AX, set.tilt));
-    sticks.set(side, _p, _q, true);
-    hands[side].group.visible = true;
+    const free = !gun.held && !gun.shell;
+    sticks.set(side, _p, _q, free);
+    hands[side].group.visible = free;
     any[side] = true;
     const g = src.gamepad, B = g?.buttons || [], A = g?.axes || [], P = xr.prev[side];
     const trig = B[0]?.value || 0, sq = B[1]?.value || 0, sx = A[2] || 0, sy = A[3] || 0, a = !!B[4]?.pressed, b = !!B[5]?.pressed, th = !!B[3]?.pressed;
-    if (side === 'right') {
+    I.grip = sq > 0.5; I.gripDown = sq > 0.6 && !P.sq; I.gripUp = sq < 0.4 && !!P.sq; P.sq = sq > 0.6 ? true : sq < 0.4 ? false : P.sq;
+    I.trigDown = trig > 0.5 && !P.td; P.td = trig > 0.5 ? true : trig < 0.3 ? false : P.td;
+    if (I.gripDown && !gun.held && _p.distanceTo(garage.tv.at) < 0.35) garage.tvToggle();
+    if (walk.on) {
+      // on your feet: the left stick walks you the way you face, the right turns you a step at a time
+      if (side === 'left' && (Math.abs(sx) > 0.15 || Math.abs(sy) > 0.15)) { const yaw = Math.atan2(-_b.set(0, 0, -1).applyQuaternion(head.quat).x, -_b.z), c = Math.cos(yaw), n = Math.sin(yaw), v = 2.4 * dt;
+        const [mx, mz] = step(head.pos.x, head.pos.z, (sx * c + sy * n) * v, (sy * c - sx * n) * v); rig.position.x += mx; rig.position.z += mz; }
+      if (side === 'right') { if (Math.abs(sx) > 0.7 && !P.turn) { P.turn = true; const a = -Math.sign(sx) * Math.PI / 6; _a.copy(head.pos).sub(rig.position).applyAxisAngle(UP, a); rig.rotation.y += a; rig.position.x = head.pos.x - _a.x; rig.position.z = head.pos.z - _a.z; } if (Math.abs(sx) < 0.3) P.turn = false; }
+    } else if (side === 'right') {
       // the kick: sounds as the trigger passes a third of its pull, as hard as it was pulled
-      kit.setPedal(trig);
+      if (gun.held) P.down = true;
+      kit.setPedal(gun.held ? 0 : trig);
       if (trig > 0.33 && !P.down) { P.down = true; kick(Math.min(1, Math.max(0.2, Math.pow(Math.max(0, (trig - (P.trig || 0)) / Math.max(dt, 0.004) - 2) / 34, 0.7)))); }
       if (trig < 0.2) P.down = false;
       // with the grip held, the same stick slides your body forward or back under your head
       if (sq > 0.6 && Math.abs(sy) > 0.5) { set.body = Math.max(-0.3, Math.min(0.3, set.body + sy * dt * 0.15)); readout.show('BODY ' + (set.body > 0 ? 'BACK ' : 'FORWARD ') + Math.abs(Math.round(set.body * 100)) + ' cm', now); keep(); }
       else if (Math.abs(sy) > 0.5) { set.tilt = Math.max(-0.9, Math.min(0.9, set.tilt - sy * dt * 0.5)); readout.show('STICK ANGLE ' + Math.round(set.tilt * 57.3) + '°', now); keep(); }
-      if (Math.abs(sx) > 0.6 && Math.abs(sy) < 0.4) { set.bpm = Math.max(40, Math.min(240, set.bpm + sx * dt * 30)); readout.show('TEMPO ' + Math.round(set.bpm), now); keep(); }
+      if (sq > 0.6 && Math.abs(sx) > 0.6 && Math.abs(sy) < 0.4) { set.tv = garage.tvVol(sx * dt * 0.5); readout.show(set.tv > 0.01 ? 'TELEVISION ' + Math.round(set.tv * 100) + '%' : 'TELEVISION OFF', now); keep(); }
+      else if (Math.abs(sx) > 0.6 && Math.abs(sy) < 0.4) { set.bpm = Math.max(40, Math.min(240, set.bpm + sx * dt * 30)); readout.show('TEMPO ' + Math.round(set.bpm), now); keep(); }
       if (th && !P.th) toggleMetro(now);
     } else {
       // the hi-hat: the trigger lifts the top cymbal; letting go shuts it with the pedal's chick
       const rate = ((P.trig || 0) - trig) / Math.max(dt, 0.004);
       if ((P.trig || 0) > 0.12 && trig <= 0.12) rumble('left', 0.3, 0.03);
-      sound.setHat(trig, rate); kit.setHat(trig);
+      if (!(feet.seen && trig < 0.05) && !feet.key) { sound.setHat(trig, rate); kit.setHat(trig); }
       if (Math.abs(sy) > 0.5 && Math.abs(sx) < 0.4) { set.height = Math.max(-0.4, Math.min(0.4, set.height - sy * dt * 0.2)); placeRig(); readout.show('SEAT ' + (set.height >= 0 ? '+' : '') + Math.round(set.height * 100) + ' cm', now); keep(); }
-      if (Math.abs(sx) > 0.6 && Math.abs(sy) < 0.4) { set.lead = Math.max(0, Math.min(80, set.lead + sx * dt * 25)); sticks.lead = set.lead / 1000; readout.show('HITS ' + Math.round(set.lead) + ' ms EARLY', now); keep(); }
+      if (teach.on) { if (Math.abs(sx) > 0.7 && !P.step) { P.step = true; teach.go(Math.sign(sx)); } if (Math.abs(sx) < 0.3) P.step = false; }
+      else if (Math.abs(sx) > 0.6 && Math.abs(sy) < 0.4) { set.lead = Math.max(0, Math.min(80, set.lead + sx * dt * 25)); sticks.lead = set.lead / 1000; readout.show('HITS ' + Math.round(set.lead) + ' ms EARLY', now); keep(); }
     }
-    if (side === 'left') { if (a) { xr.hold += dt; if (xr.hold > 0.5 && !xr.seated) { placeRig(); xr.seated = 1; readout.show('SEATED', now); } } else { xr.hold = 0; xr.seated = 0; } if (th && !P.th) { garage.toggleDoor(); readout.show(garage.door.want > 0.5 ? 'DOOR UP' : 'DOOR DOWN', now); } }
+    if (side === 'left') { if (a && !P.a) { if (walk.on) sit(now); else stand(now); } if (th && !P.th) { garage.toggleDoor(); readout.show(garage.door.want > 0.5 ? 'DOOR UP' : 'DOOR DOWN', now); } }
     else if (a !== !!P.a) life.listen(a);
     P.a = a;
-    if (b && !P.b) { guide.on = !guide.on; }
+    if (b && !P.b) { if (side === 'left') { teach.start(); readout.show(teach.on ? 'LESSONS' : 'LESSONS OFF', now); } else guide.on = !guide.on; }
     // a cymbal held is a cymbal stopped
     if (sq > 0.6) for (const p of kit.pieces) if (p.kind === 'cymbal') {
       _a.copy(_p).applyMatrix4(p.inv);
@@ -329,6 +409,7 @@ function vrInput(dt, now) {
     P.trig = trig; P.th = th; P.b = b;
   }
   for (const s of ['left', 'right']) if (!any[s]) sticks.set(s, _p, _q, false);
+  ginp.vr = true;
   // both triggers held three seconds: a picture of what you see goes to the owners
   if ((xr.prev.left.trig || 0) > 0.8 && (xr.prev.right.trig || 0) > 0.8) { snapper.hold += dt; if (snapper.hold > 0.4 && !snapper.sent) readout.show('PICTURE IN ' + Math.max(1, Math.ceil(3 - snapper.hold)), now); if (snapper.hold >= 3 && !snapper.sent) { snapper.sent = true; sendPicture(now); } } else { snapper.hold = 0; snapper.sent = false; }
 }
@@ -356,8 +437,11 @@ function playKey(code, now) {
   return true;
 }
 addEventListener('keydown', (e) => {
+  if (D.mode === 'vr' && !walk.on && !e.repeat) { if (e.code === 'Space' || e.code === 'KeyB' || e.code === 'PageDown') { kick(0.75); e.preventDefault(); } else if (e.code === 'KeyV' || e.code === 'PageUp') { sound.setHat(1); kit.setHat(1); feet.key = true; } return; }
   if (D.mode !== 'screen') return;
   if (e.target === $('say')) { if (e.code === 'Enter') { life.say($('say').value); $('say').value = ''; $('say').blur(); $('say').hidden = true; } else if (e.code === 'Escape') { $('say').blur(); $('say').hidden = true; } return; }
+  if (e.code === 'Tab') { e.preventDefault(); if (!e.repeat) { if (walk.on) sit(clock.elapsedTime); else stand(clock.elapsedTime); } return; }
+  if (walk.on) { scr.keys.add(e.code); if (!e.repeat) { if (e.code === 'KeyE') ginp.screen.use = true; else if (e.code === 'KeyR') ginp.screen.reload = true; else if (e.code === 'KeyF') ginp.screen.pump = true; else if (e.code === 'KeyO') garage.toggleDoor(); else if (e.code === 'KeyN') life.skip(); else if (e.code === 'KeyP') sendPicture(clock.elapsedTime); else if (e.code === 'KeyH') guide.on = !guide.on; else if (e.code === 'Enter') { const b = $('say'); b.hidden = false; b.focus(); e.preventDefault(); } } if (/^(Space|Arrow)/.test(e.code)) e.preventDefault(); return; }
   if (e.repeat) { if (KEYMAP[e.code] || e.code === 'Space') e.preventDefault(); return; }
   scr.keys.add(e.code);
   const now = performance.now() / 1000;
@@ -366,13 +450,17 @@ addEventListener('keydown', (e) => {
   else if (e.code === 'KeyH') guide.on = !guide.on;
   else if (e.code === 'KeyO') { garage.toggleDoor(); readout.show(garage.door.want > 0.5 ? 'DOOR UP' : 'DOOR DOWN', now); }
   else if (e.code === 'KeyN') life.skip();
+  else if (e.code === 'KeyL') { teach.start(); readout.show(teach.on ? 'LESSONS' : 'LESSONS OFF', now); }
+  else if (e.code === 'Comma' || e.code === 'Period') teach.go(e.code === 'Comma' ? -1 : 1);
+  else if (e.code === 'Minus' || e.code === 'Equal') { set.tv = garage.tvVol(e.code === 'Minus' ? -0.1 : 0.1); readout.show(set.tv > 0.01 ? 'TELEVISION ' + Math.round(set.tv * 100) + '%' : 'TELEVISION OFF', now); keep(); }
+  else if (e.code === 'KeyK') { garage.tvToggle(); readout.show(garage.tv.on ? 'TELEVISION ON' : 'TELEVISION OFF', now); }
   else if (e.code === 'KeyP') sendPicture(now);
   else if (e.code === 'Enter') { const b = $('say'); b.hidden = false; b.focus(); e.preventDefault(); }
   else if (e.code === 'KeyM') toggleMetro(now);
   else if (e.code === 'BracketLeft' || e.code === 'BracketRight') { set.bpm = Math.max(40, Math.min(240, set.bpm + (e.code === 'BracketLeft' ? -4 : 4))); readout.show('TEMPO ' + set.bpm, now); keep(); }
   else if (playKey(e.code, now)) e.preventDefault();
 });
-addEventListener('keyup', (e) => { scr.keys.delete(e.code); if (e.code === 'KeyQ' && D.mode === 'screen') { sound.setHat(0, 6); kit.setHat(0); } });
+addEventListener('keyup', (e) => { if (D.mode === 'vr' && feet.key && (e.code === 'KeyV' || e.code === 'PageUp')) { feet.key = false; sound.setHat(0, 6); kit.setHat(0); } scr.keys.delete(e.code); if (e.code === 'KeyQ' && D.mode === 'screen') { sound.setHat(0, 6); kit.setHat(0); } });
 addEventListener('blur', () => scr.keys.clear());
 let drag = null;
 canvas.addEventListener('pointerdown', (e) => { drag = { x: e.clientX, y: e.clientY, moved: 0 }; });
@@ -380,13 +468,14 @@ addEventListener('pointermove', (e) => {
   if (!drag || D.mode !== 'screen') return;
   const dx = e.clientX - drag.x, dy = e.clientY - drag.y;
   drag.moved += Math.abs(dx) + Math.abs(dy); drag.x = e.clientX; drag.y = e.clientY;
-  scr.yaw = Math.max(-1.6, Math.min(1.6, scr.yaw - dx * 0.004)); scr.pitch = Math.max(-1.3, Math.min(0.9, scr.pitch - dy * 0.004));
+  scr.yaw = walk.on ? scr.yaw - dx * 0.004 : Math.max(-1.6, Math.min(1.6, scr.yaw - dx * 0.004)); scr.pitch = Math.max(-1.3, Math.min(0.9, scr.pitch - dy * 0.004));
 });
 // a click on the kit strikes it exactly there
 const ray = new THREE.Raycaster(), nd = new THREE.Vector2();
 addEventListener('pointerup', (e) => {
   const d = drag; drag = null;
   if (!d || d.moved > 6 || D.mode !== 'screen' || !kit) return;
+  if (walk.on) { if (gun.held) ginp.screen.fire = true; return; }
   nd.set(e.clientX / innerWidth * 2 - 1, -(e.clientY / innerHeight) * 2 + 1);
   ray.setFromCamera(nd, camera);
   let best = null;
@@ -414,6 +503,7 @@ addEventListener('pointerup', (e) => {
 // the drawn stroke on a screen: the tip is on the surface the instant the key goes down, comes up off it as a stick does, and waits above
 const REST = { left: 'snare', right: 'floor' };
 function screenSticks(now) {
+  if (walk.on) { for (const side of ['left', 'right']) sticks.set(side, _p, _q, false); return; }
   for (const side of ['left', 'right']) {
     let s = scr.st[side];
     if (!s) { const p = kit.P[REST[side]], lz = p.radius * 0.4; s = scr.st[side] = { piece: p.name, at: new THREE.Vector3(0, kit.height(p, lz), lz).applyMatrix4((p.name === 'hat' ? p.top : p.group).matrixWorld), n: p.wn.clone(), t: -9, vel: 0.3 }; }
@@ -444,9 +534,10 @@ function metroTick() {
 // ---------- start ----------
 async function enter(vr) {
   sound.start();
+  garage.tvStart(sound);
   $('start').hidden = true;
   if (vr) {
-    const session = await navigator.xr.requestSession('immersive-vr', { optionalFeatures: ['local-floor', 'hand-tracking'] });
+    const session = await navigator.xr.requestSession('immersive-vr', { optionalFeatures: ['local-floor', 'hand-tracking', 'body-tracking'] });
     renderer.xr.setReferenceSpaceType('local-floor');
     await renderer.xr.setSession(session);
     // the most frames the headset will give: every frame is a fresh reading of the sticks
@@ -454,7 +545,7 @@ async function enter(vr) {
     D.mode = 'vr';
     xr.t0 = performance.now();
     guide.card.visible = true;
-    session.addEventListener('end', () => { D.mode = 'screen'; size(); placeRig(); $('help').hidden = false; });
+    session.addEventListener('end', () => { D.mode = 'screen'; walk.on = false; size(); placeRig(); $('help').hidden = false; });
   } else {
     D.mode = 'screen';
     $('help').hidden = false;
@@ -478,16 +569,23 @@ renderer.setAnimationLoop(() => {
   if (vr) {
     if (!seatedOnce && performance.now() - xr.t0 > 600) { placeRig(); seatedOnce = true; }
     vrInput(dt, now);
+    readFeet(dt, now);
     feel(dt);
   } else {
     // on a screen the kick is felt as a knock of the picture (never in a headset: the world must not move there)
     shake.v *= Math.exp(-dt * 14);
-    if (!D.free) { camera.rotation.set(scr.pitch + shake.v * 0.006 * Math.sin(now * 90), scr.yaw, 0, 'YXZ'); camera.position.y = EYES.y - shake.v * 0.004; }
+    if (walk.on) {
+      // on your feet on a screen: W A S D or the arrows walk the way you look
+      const K = scr.keys, fx = (K.has('KeyD') || K.has('ArrowRight') ? 1 : 0) - (K.has('KeyA') || K.has('ArrowLeft') ? 1 : 0), fz = (K.has('KeyS') || K.has('ArrowDown') ? 1 : 0) - (K.has('KeyW') || K.has('ArrowUp') ? 1 : 0);
+      if (fx || fz) { const c = Math.cos(scr.yaw), n = Math.sin(scr.yaw), v = (K.has('ShiftLeft') ? 4.2 : 2.4) * dt / Math.hypot(fx, fz), [mx, mz] = step(walk.pos.x, walk.pos.z, (fx * c + fz * n) * v, (fz * c - fx * n) * v); walk.pos.x += mx; walk.pos.z += mz; walk.bob += dt * 9; }
+      if (!D.free) { camera.rotation.set(scr.pitch, scr.yaw, 0, 'YXZ'); camera.position.set(walk.pos.x, 1.66 + 0.02 * Math.sin(walk.bob), walk.pos.z); }
+    } else if (!D.free) { camera.rotation.set(scr.pitch + shake.v * 0.006 * Math.sin(now * 90), scr.yaw, 0, 'YXZ'); camera.position.set(EYES.x, EYES.y - shake.v * 0.004, EYES.z); }
     if (D.mode === 'screen' || D.mode === 'menu') screenSticks(now);
   }
   sticks.detect = vr;
   sticks.update(dt);
-  metroTick();
+  if (!teach.on) metroTick();
+  teach.update();
   // your body: seated, the arms ending at the hands on the sticks
   const cam = vr ? renderer.xr.getCamera() : camera;
   cam.getWorldPosition(head.pos); cam.getWorldQuaternion(head.quat);
@@ -495,17 +593,27 @@ renderer.setAnimationLoop(() => {
   seat.copy(SEAT); seat.y += 0.04;
   if (vr) { _a.set(0, 0, 0.04 + set.body).applyAxisAngle(UP, Math.atan2(-_b.set(0, 0, -1).applyQuaternion(head.quat).x, -_b.z)); seat.x = head.pos.x + _a.x; seat.z = head.pos.z + _a.z; }
   for (let k = 0; k < 2; k++) { seat.feet[k].copy(FEET[k]); seat.feet[k].y += kit.foot[k]; }
+  ginp.vr = vr; ginp.feet.set(head.pos.x, 0, head.pos.z);
+  gun.update(dt, now, ginp); ginp.screen.fire = ginp.screen.reload = ginp.screen.pump = ginp.screen.use = false;
+  garage.ear.copy(head.pos);
+  if ($('aim').hidden !== !(gun.held && !vr)) $('aim').hidden = !(gun.held && !vr);
   sticks.left.obj.updateMatrixWorld(true); sticks.right.obj.updateMatrixWorld(true);
   for (const s of ['left', 'right']) { const h = hands[s]; h.kick = Math.max(0, (h.kick || 0) - dt * 7); if (h.ready) { h.curl(h.kick); h.update(); } }
   if (body.ready && hands.left.ready && hands.right.ready) {
     if (!body.skinned) { handMat.color.copy(body.skin); body.skinned = true; }
-    body.pose(head.pos, head.quat, sticks.left.active ? hands.left.wrist : _a.set(-0.25, 0.8, -0.1), sticks.right.active ? hands.right.wrist : _b.set(0.25, 0.8, -0.1), seat, dt);
+    // the arms end at the hands on the sticks, or at the hands themselves when they hold something else, or hang at your sides
+    const side = (sx) => { const yaw = Math.atan2(-_c.set(0, 0, -1).applyQuaternion(head.quat).x, -_c.z); return new THREE.Vector3(sx * 0.27, -0.78, -0.08).applyAxisAngle(UP, yaw).add(head.pos); };
+    const wl = sticks.left.active ? hands.left.wrist : vr ? ginp.L.pos : gun.held ? _a.set(-0.1, -0.22, -0.5).applyQuaternion(head.quat).add(head.pos) : side(-1);
+    const wr = sticks.right.active ? hands.right.wrist : vr ? ginp.R.pos : gun.held ? _b.set(0.17, -0.24, -0.25).applyQuaternion(head.quat).add(head.pos) : side(1);
+    body.pose(head.pos, head.quat, wl, wr, walk.on ? null : seat, dt);
   }
-  life.update(dt, now);
+  life.update(dt, now, head.pos);
   garage.update(dt, now);
   garage.haloM.opacity = vr ? 0.12 : 0; // a pane's glow: the bloom does it on a screen
-  for (const n in guide.labels) guide.labels[n].visible = guide.on && !guide.labels[n].played;
-  guide.card.visible = vr && guide.on;
+  for (const n in guide.labels) guide.labels[n].visible = guide.on && !walk.on && !guide.labels[n].played;
+  if (D.mode === 'screen' && D.walking !== walk.on) { D.walking = walk.on; $('help').innerHTML = walk.on ? WALK_HELP : SEAT_HELP; }
+  guide.card.visible = vr && guide.on && !walk.on && !teach.on;
+  guide.gun.visible = guide.on;
   readout.tick(now);
   // the lamp's shadows follow the sticks; given up first if a frame ever runs long
   if (vr) { if (dt > 0.02) stats.slow++; else stats.slow = Math.max(0, stats.slow - 0.02); if (stats.slow > 90 && lampOn) { lampOn = false; garage.lamp.shadow.autoUpdate = false; stats.slow = 0; } else if (stats.slow > 90 && !garage.lean) garage.thin(); }

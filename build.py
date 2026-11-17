@@ -123,6 +123,7 @@ subprocess.run(['node', 'tools/crumbs.cjs'], check=True)   # MIDNIGHT CRUMBS (sr
 subprocess.run(['node', 'tools/duel.cjs'], check=True)   # AR DUEL (src/duel/): its own page, dist/duel.html, and its pictures, dist/duel-assets/
 subprocess.run(['node', 'tools/qzar.cjs'], check=True)   # SLOWFIRE DUEL (src/qzar/): its own page, dist/qzar.html
 subprocess.run(['node', 'tools/laser.cjs'], check=True)   # LASER TAG (src/laser/): its own page, dist/laser.html
+subprocess.run(['node', 'tools/tag.cjs'], check=True)   # SENSOR TAG (src/tag/): its own page, dist/tag.html
 subprocess.run(['node', 'tools/turret.cjs'], check=True)  # SWIVEL (src/turret/): its own page, dist/turret.html, and the models and sounds it uses of SPACE FLEET's, dist/turret-assets/
 subprocess.run(['node', 'tools/space.cjs'], check=True)   # SPACE FLEET (src/space/): its own page, dist/space.html, and its models, sky and sounds, dist/space-assets/
 for f in sorted(set(re.findall(r'__FILE__\("([^"]+)"\)', body))):

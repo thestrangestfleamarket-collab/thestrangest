@@ -8,7 +8,7 @@ const KEYS = MC.KEYS = '<table class="keys">' +
   '<tr><td>Climb</td><td>Striped cloth is grippable. Hold a button on it, pull the mouse <i>down</i> to haul yourself up, grab higher with the other paw. Let go above a ledge to hop on.</td></tr>' +
   '<tr><td>Backpack</td><td>E stashes or takes out what you carry, so both paws are free to climb.</td></tr>' +
   '<tr><td>Floss</td><td>Click a pushpin, then another, to string a zipline. Hold a button on the line to ride it down.</td></tr>' +
-  '<tr><td>Quiet!</td><td>The diner candle flares as the noise meter rises. Fill it and someone comes to look. When anything is watching: stop moving.</td></tr>' +
+  '<tr><td>Quiet!</td><td>The bar candle flares as the noise meter rises. Fill it and someone comes to look. When anything is watching: stop moving.</td></tr>' +
   '<tr><td>VR</td><td>Grip or trigger grabs and climbs. Left stick walks, right stick snap-turns, A hops. Let go of an item behind your head to pack it.</td></tr>' +
   '<tr><td>Other</td><td>Esc pauses · R restarts after a night · VR: X pauses · Every key can be remapped, and climb assist, toggle grip, a slower pace and more are in Options.</td></tr></table>';
 const st = MC.menuState = { tab: 'career', sel: 0 };
@@ -21,9 +21,9 @@ function cfgInfo(c) {
     (c.events && c.events.length ? 'Expect: ' + c.events.map(e => MC.EVENTS[e.type]).filter((v, i, a) => a.indexOf(v) === i).join(', ') + '<br>' : '') +
     (c.mods && c.mods.length ? c.mods.map(m => '<b>' + MC.MODS[m].name + '</b>: ' + MC.MODS[m].desc).join('<br>') : '');
 }
-const playBtns = id => '<button id="' + id + '">Open the diner</button>' + (MC.enterVR ? '<button id="' + id + '-vr" class="alt">Play in VR</button>' : '');
+const playBtns = id => '<button id="' + id + '">Open the pub</button>' + (MC.enterVR ? '<button id="' + id + '-vr" class="alt">Play in VR</button>' : '');
 function bindPlay(id, mk) { $(id).onclick = () => MC.startNight(mk()); const v = $(id + '-vr'); if (v) v.onclick = () => MC.enterVR(mk()); }
-const TABS = [['career', 'Career'], ['daily', 'Daily Night'], ['long', 'Long Night'], ['shop', 'Upgrades'], ['regs', 'Regulars'], ['opts', 'Options'], ['help', 'How to play']];
+const TABS = [['career', 'Career'], ['daily', 'Daily Night'], ['long', 'Long Night'], ['together', 'Together'], ['shop', 'Upgrades'], ['regs', 'Regulars'], ['opts', 'Options'], ['help', 'How to play']];
 function render() {
   const ae = document.activeElement, keep = ae && ae.dataset ? (ae.dataset.tab ? '[data-tab="' + ae.dataset.tab + '"]' : ae.dataset.night ? '[data-night="' + ae.dataset.night + '"]' : ae.dataset.lhome ? '[data-lhome="' + ae.dataset.lhome + '"]' : ae.dataset.bind ? '[data-bind="' + ae.dataset.bind + '"]' : ae.id ? '#' + ae.id : null) : null;
   render0(); if (keep) { const el = document.querySelector(keep); if (el) el.focus(); }
@@ -52,6 +52,12 @@ function render0() {
   } else if (st.tab === 'long') {
     const lb = typeof S.longBest === 'object' ? S.longBest : { 0: S.longBest || 0 }; st.lhome = st.lhome == null ? 0 : st.lhome;
     h += '<p>Endless service. Customers arrive faster and faster, something goes bump more and more often, and you have three lives: one is lost whenever a customer walks out or you get caught. Every 12 served earns one back. Half your tips go to the wallet.</p><div class="grid" style="grid-template-columns:repeat(3,1fr)">' + [0, 1, 2].map(hm => { const u = MC.unlocked(hm * 10); return '<button class="night' + (u ? '' : ' locked') + (st.lhome === hm ? ' sel' : '') + '" data-lhome="' + hm + '"' + (u ? '' : ' disabled') + ' style="aspect-ratio:auto;padding:10px 0">' + MC.HOMES[hm].name + '<span class="st">' + (u ? 'best ' + (lb[hm] || 0) : 'locked') + '</span></button>'; }).join('') + '</div>' + playBtns('m-play');
+  } else if (st.tab === 'together') {
+    const N = MC.net;
+    if (!N || !N.available) h += '<h2>Play together</h2><p>Up to four mice in one house, each running their own pub on the same night: most tips by dawn wins. This needs the game opened from the website.</p>';
+    else if (!N.room) h += '<h2>Play together</h2><p>Up to four mice in one house. Each of you runs your own pub on the same night and raids the same kitchen: most tips by dawn wins.</p><div class="opt"><span>Your name</span><input id="n-name" maxlength="14" value="' + (MC.save.name || '').replace(/[<>"&]/g, '') + '" placeholder="Mouse"></div><button id="n-make">Open a house</button><div class="opt"><span>Or join one</span><input id="n-code" maxlength="24" placeholder="house code"></div><button id="n-join" class="alt">Join</button>';
+    else { const link = location.origin + location.pathname + '?room=' + N.room;
+      h += '<h2>House ' + N.room.toUpperCase() + '</h2><p>' + (N.connected ? 'Send the others this link:' : 'Finding the house…') + '<br><input id="n-link" readonly value="' + link + '" style="width:100%"></p><p>' + N.board().map(r => '<b style="color:' + N.color(r.slot) + '">●</b> ' + r.name.replace(/[<>&]/g, '') + (r.me ? ' (you)' : '')).join('<br>') + '</p><p>' + (N.peers.size ? (N.host ? 'You pick the night: open any Career, Daily or Long Night and it opens for everyone.' : 'The first mouse in the house picks the night. It will open for you when they do.') : 'Waiting for the others…') + '</p><button id="n-leave" class="alt">Leave the house</button>'; }
   } else if (st.tab === 'shop') {
     h += '<p>Wallet: <b>' + MC.money(S.tips) + '</b>. Upgrades add options, not raw power; switch any off to replay a night the hard way. All are off in Daily Night.</p>';
     const tot = MC.careerStars(); S.upgOff = S.upgOff || {}; let dec = false;
@@ -68,7 +74,7 @@ function render0() {
       chk('gripToggle', 'Toggle grip (press to grab, press again to let go)') + chk('climbAssist', 'Climb assist: hold Forward on a cloth to climb and hop up') + rng('climbSens', 'Climb pull speed', 0.5, 3, 0.1) + chk('vrOneHand', 'VR one-handed: right stick walks and turns') +
       '<h3>Accessibility</h3>' + sel('pace', 'Pace', [['standard', 'Standard'], ['relaxed', 'Relaxed: more patience, slower burning'], ['nowalk', 'No walk-outs']]) +
       rng('uiScale', 'Text and HUD size', 0.8, 1.8, 0.1) + chk('plainFont', 'Plain, easy-to-read font') + chk('bigCross', 'Large crosshair') + chk('cues', 'Visual sound cues (warnings, thunder, new-customer arrow)') +
-      rng('shake', 'Screen shake', 0, 1, 0.1) + sel('flash', 'Lightning flashes', [['full', 'Full'], ['dim', 'Dim'], ['off', 'Off']]) + sel('captions', 'VR captions', [['left', 'Left wrist'], ['right', 'Right wrist'], ['head', 'In front of me']]) + '<h3>General</h3>';
+      rng('shake', 'Screen shake', 0, 1, 0.1) + sel('flash', 'Lightning flashes', [['full', 'Full'], ['dim', 'Dim'], ['off', 'Off']]) + sel('captions', 'VR captions', [['float', 'Floating, low and to the side'], ['head', 'In front of me'], ['left', 'Left wrist'], ['right', 'Right wrist']]) + '<h3>General</h3>';
     h += '<div class="opt"><span>Graphics quality <small>(reloads)</small></span><select id="o-q"><option value="0">Low (no shadows)</option><option value="1">Medium</option><option value="2">High</option></select></div>' +
       '<div class="opt"><span>Volume</span><input type="range" id="o-vol" min="0" max="1" step="0.05" value="' + o.volume + '"></div>' +
       '<div class="opt"><span>Mouse sensitivity</span><input type="range" id="o-sens" min="0.3" max="2.5" step="0.1" value="' + o.sens + '"></div>' +
@@ -83,6 +89,9 @@ function render0() {
   for (const b of document.querySelectorAll('[data-upg]')) b.onchange = () => { S.upgOff[b.dataset.upg] = !b.checked; MC.persist(); };
   for (const b of document.querySelectorAll('[data-opt]')) b.onchange = () => { MC.opt[b.dataset.opt] = b.checked; MC.persist(); MC.applyAccess(); };
   if (st.tab === 'career') bindPlay('m-play', () => MC.cfgCareer(st.sel));
+  if (st.tab === 'together' && MC.net) { const N = MC.net, nm = () => { const v = ($('n-name').value || '').trim().slice(0, 14) || 'Mouse'; MC.save.name = v; MC.persist(); return v; };
+    if ($('n-make')) $('n-make').onclick = () => { N.join(N.code(), nm()); render(); }; if ($('n-join')) $('n-join').onclick = () => { const c = $('n-code').value.trim(); if (c) { N.join(c, nm()); render(); } };
+    if ($('n-leave')) $('n-leave').onclick = () => { N.leave(); try { history.replaceState(null, '', location.pathname); } catch (e) { } render(); }; if ($('n-link')) $('n-link').onclick = e => { e.target.select(); try { navigator.clipboard.writeText(e.target.value); } catch (x) { } }; }
   if (st.tab === 'daily' && $('m-play')) { bindPlay('m-play', () => MC.cfgDaily()); const add = $('d-add'); if (add) add.onclick = () => { const r = MC.readCode($('d-code').value); if (!r || r.day !== MC.dailyKey()) { $('d-code').value = ''; $('d-code').placeholder = r ? 'that code is for ' + r.day : 'not a valid code'; return; } const key = MC.dailyKey(), list = (S.friends[key] = S.friends[key] || []), raw = $('d-code').value.trim().toUpperCase(); if (list.some(x => x.code === raw)) { $('d-code').value = ''; $('d-code').placeholder = 'already on the board'; return; } list.push({ code: raw, who: ($('d-name').value || 'Friend').slice(0, 16), tips: r.tips, stars: r.stars }); MC.persist(); render(); }; }
   if (st.tab === 'long') { bindPlay('m-play', () => MC.cfgLong(st.lhome)); for (const b of document.querySelectorAll('[data-lhome]')) b.onclick = () => { st.lhome = +b.dataset.lhome; render(); }; }
   if (st.tab === 'opts') {
@@ -99,5 +108,6 @@ function render0() {
 }
 MC.menuRender = render; render();
 MC.on('menu', () => { st.auto = true; render(); });
+MC.on('net', () => { if (MC.net && MC.net.room && !st.netSeen) { st.netSeen = true; st.tab = 'together'; } if (!MC.net.room) st.netSeen = false; if (st.tab === 'together' && MC.game.mode === 'menu' && !/^n-(name|code)$/.test((document.activeElement || {}).id || '')) render(); });
 $('pause-body').innerHTML = KEYS;
 })();

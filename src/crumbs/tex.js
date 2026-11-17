@@ -17,6 +17,7 @@ MC.noise = { hash, vnoise, fbm, worley };
 
 // fn(u, v, o) fills o.h (height 0..1), o.r/g/b (sRGB 0..1), o.rough (0..1)
 function gen(N, fn, bump = 2) {
+  N = Math.min(N, 128);   // a PlayStation's worth of texture: small and unfiltered
   const colD = new Uint8ClampedArray(N * N * 4), rghD = new Uint8ClampedArray(N * N * 4), nrmD = new Uint8ClampedArray(N * N * 4), H = new Float32Array(N * N), o = {};
   for (let y = 0; y < N; y++) for (let x = 0; x < N; x++) {
     o.h = 0.5; o.r = o.g = o.b = 0.5; o.rough = 0.7; fn(x / N, y / N, o);
@@ -32,7 +33,7 @@ function gen(N, fn, bump = 2) {
   }
   const mk = (d, srgb) => {
     const c = document.createElement('canvas'); c.width = c.height = N; c.getContext('2d').putImageData(new ImageData(d, N, N), 0, 0);
-    const t = new THREE.CanvasTexture(c); t.wrapS = t.wrapT = THREE.RepeatWrapping; t.anisotropy = 4; if (srgb) t.colorSpace = THREE.SRGBColorSpace; return t;
+    const t = new THREE.CanvasTexture(c); t.wrapS = t.wrapT = THREE.RepeatWrapping; t.magFilter = THREE.NearestFilter; t.minFilter = THREE.NearestMipmapNearestFilter; if (srgb) t.colorSpace = THREE.SRGBColorSpace; return t;
   };
   return { map: mk(colD, true), normalMap: mk(nrmD), roughnessMap: mk(rghD) };
 }
@@ -91,8 +92,28 @@ MC.buildMaterials = function (pal) {
   M.sponge = std(gen(256, (u, v, o) => { const w = worley(u, v, 14, 51), hole = sstep(0.42, 0.22, w) * 0.85 + sstep(0.2, 0.05, worley(u, v, 40, 9)) * 0.4; mix3(o, [0.95, 0.82, 0.3], [0.8, 0.64, 0.16], hole); o.h = 1 - hole; o.rough = 1; }, 1.6));
   M.paint = std(gen(256, (u, v, o) => { const f = fbm(u, v, 3, 24, 24, 61); const c = rgb(P.enamel); o.r = c[0]; o.g = c[1]; o.b = c[2]; o.h = f; o.rough = 0.3 + f * 0.12; }, 0.1));
   M.cab = std(gen(256, (u, v, o) => { const f = fbm(u, v, 4, 3, 40, 71); const c = rgb(P.cab); o.r = c[0] * (0.85 + f * 0.3); o.g = c[1] * (0.85 + f * 0.3); o.b = c[2] * (0.85 + f * 0.3); o.h = f; o.rough = 0.55; }, 0.25));
+  // inside the walls: old brick, rough-sawn studs, lath and crumbling plaster (the pub)
+  M.brick = std(gen(512, (u, v, o) => { const rows = 8, by = v * rows, row = Math.floor(by), bx = u * 4 + (row % 2) * 0.5, col = Math.floor(bx), fx = bx - col, fy = by - row;
+    const mort = Math.min(fx, 1 - fx) * 4 < 0.09 || Math.min(fy, 1 - fy) < 0.07, k = hash(col, row, 31), f = fbm(u, v, 4, 32, 32, 41);
+    if (mort) { const m = 0.38 + f * 0.12; o.r = m; o.g = m * 0.95; o.b = m * 0.86; o.h = 0.1; o.rough = 0.97; }
+    else { mix3(o, [0.52, 0.22, 0.14], [0.36, 0.17, 0.11], clamp(k * 0.7 + f * 0.5, 0, 1)); const soot = sstep(0.55, 0.9, fbm(u, v, 3, 6, 6, 9)) * 0.4; o.r *= 1 - soot; o.g *= 1 - soot; o.b *= 1 - soot; o.h = 0.6 + f * 0.3; o.rough = 0.88; } }, 2.4));
+  M.stud = std(gen(256, (u, v, o) => { const g = fbm(u, v, 4, 4, 48, 77), s = fbm(u, v, 3, 30, 30, 5); mix3(o, [0.62, 0.48, 0.32], [0.42, 0.3, 0.19], clamp(g * 0.8 + s * 0.3, 0, 1)); o.h = g * 0.6 + s * 0.4; o.rough = 0.93; }, 1.6));
+  M.lath = std(gen(256, (u, v, o) => { const by = v * 10, fy = by - Math.floor(by), gap = fy > 0.82, f = fbm(u, v, 4, 20, 20, 13);
+    if (gap) { const c = 0.42 + f * 0.12; o.r = c; o.g = c * 0.95; o.b = c * 0.86; o.h = 0.7 + f * 0.2; o.rough = 0.95; } else { mix3(o, [0.5, 0.38, 0.25], [0.36, 0.26, 0.16], f); o.h = 0.4 + f * 0.2; o.rough = 0.9; } }, 1.4));
+  M.felt = std(gen(128, (u, v, o) => { const f = fbm(u, v, 4, 40, 40, 3); o.r = 0.2 + f * 0.05; o.g = 0.32 + f * 0.06; o.b = 0.2 + f * 0.04; o.h = f; o.rough = 1; }, 0.6));
   M.paper = std(gen(256, (u, v, o) => { const f = fbm(u, v, 4, 30, 30, 81); const c = 0.9 + f * 0.08; o.r = c; o.g = c * 0.98; o.b = c * 0.93; o.h = f; o.rough = 0.95; }, 1));
-  const flat = (hex, rough, metal = 0, extra = {}) => new THREE.MeshStandardMaterial(Object.assign({ color: col(hex), roughness: rough, metalness: metal }, extra));
+  // nothing is factory-new: every plain surface carries scratches, scuffs, dents and grime (roughness, relief and a little colour)
+  if (!MC.WEAR) {
+    const scr = (u, v, n, seed, len) => { let a = 0; for (let k = 0; k < n; k++) { const cx = hash(k, 1, seed), cy = hash(k, 2, seed), ang = hash(k, 3, seed) * 3.14159, L = len * (0.3 + hash(k, 4, seed)); let dx = u - cx, dy = v - cy; dx -= Math.round(dx); dy -= Math.round(dy); const t = dx * Math.cos(ang) + dy * Math.sin(ang), d = Math.abs(-dx * Math.sin(ang) + dy * Math.cos(ang)); if (Math.abs(t) < L) a = Math.max(a, sstep(0.004, 0.001, d) * (1 - Math.abs(t) / L)); } return a; };
+    const mk = (metal) => gen(256, (u, v, o) => {
+      const s1 = scr(u, v, metal ? 70 : 34, 11, metal ? 0.22 : 0.1), scuff = sstep(0.52, 0.8, fbm(u, v, 4, 5, 5, 91)), dent = sstep(0.16, 0.0, worley(u, v, 5, 23)), fine = fbm(u, v, 3, 60, metal ? 6 : 60, 37), grime = fbm(u, v, 4, 3, 3, 55);
+      o.h = 0.5 - dent * 0.5 - s1 * 0.25 + (fine - 0.5) * 0.12; o.rough = clamp(0.5 + scuff * 0.38 + s1 * 0.35 + (fine - 0.5) * 0.22 - dent * 0.1, 0.2, 1);
+      const c = 1 - grime * 0.2 - scuff * 0.1 - s1 * 0.12 + dent * 0.05; o.r = c; o.g = c * 0.985; o.b = c * 0.96; }, metal ? 0.7 : 0.5);
+    MC.WEAR = { metal: mk(true), soft: mk(false) };
+  }
+  const flat = (hex, rough, metal = 0, extra = {}) => { const w = extra.transparent || extra.noWear ? null : metal ? MC.WEAR.metal : MC.WEAR.soft, e = Object.assign({}, extra); delete e.noWear;
+    const m = new THREE.MeshStandardMaterial(Object.assign({ color: col(hex), roughness: w ? Math.min(1, rough * 2) : rough, metalness: metal }, w ? { map: w.map, roughnessMap: w.roughnessMap, normalMap: w.normalMap } : {}, e));
+    if (w) m.normalScale.set(0.55, 0.55); if (metal) m.envMapIntensity = 3.2; return m; };   // metal is only what it reflects: it keeps more of the room than the rest does
   M.flat = flat;
   M.ceramic = flat(P.mugC, 0.18); M.white = flat(0xf2efe6, 0.25); M.black = flat(0x0c0c0e, 0.5); M.chrome = flat(0xdfe3e6, 0.12, 1);
   M.rubber = flat(0x1a1a1d, 0.85); M.wax = flat(0xe9dfc4, 0.6, 0, { emissive: col(0x3a2006), emissiveIntensity: 0.35 });

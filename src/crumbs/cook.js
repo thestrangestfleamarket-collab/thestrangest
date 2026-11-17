@@ -70,6 +70,8 @@ function impact(it, v, other) {
 }
 C.setBody = function (it, on) { if (on !== it.inWorld) { P.enable(it.body, on); it.inWorld = on; } };
 C.free = function (it, pos, vel) {
+  if (it.state === 'gone' || !it.body || !it.body.rb) return;   // already taken away (its body is gone): nothing to set free
+  if (!isFinite(pos.x + pos.y + pos.z)) pos = it.lastSafe || W.spawn.clone().setY(0.3);   // never hand the physics a place that is not a number
   if (it.hand) it.hand.item = null; it.hand = null; it.state = 'free'; it.pos.copy(pos);
   const b = it.body; b.position.set(pos.x, pos.y, pos.z); b.velocity.set(vel ? vel.x : 0, vel ? vel.y : 0, vel ? vel.z : 0); b.angularVelocity.set(0, 0, 0); b.setQuaternion(0, 0, 0, 1);
   C.setBody(it, true); b.wakeUp(); it.mesh.visible = true;
@@ -140,7 +142,7 @@ function updateToaster(dt) {
       let k = 0;
       for (const it of C.items) if (it.state === 'slot') {
         it.cook = Math.min(2, it.cook + 1); C.refresh(it); it.quietT = 3.5; it.cool = 0.8; it.hotT = HOT_T;
-        C.free(it, new V3(t.ejectFrom.x + k * 0.75, t.ejectFrom.y, t.ejectFrom.z + (k % 2 ? 0.5 : -0.5)), new V3((Math.random() - 0.5) * 1.2, 7.6, 3.1 + Math.random() * 0.6));
+        C.free(it, new V3(t.ejectFrom.x + k * 0.75, t.ejectFrom.y, t.ejectFrom.z + (k % 2 ? 0.5 : -0.5)), new V3((Math.random() - 0.5) * 0.6, 6.4, 2.7 + Math.random() * 0.3));   // up and just forward: it lands within a step of the toaster's front
         it.body.angularVelocity.set(Math.random() * 8, Math.random() * 8, Math.random() * 8); k++;
       }
       if (k) { MC.say('Pop! ' + (k > 1 ? k + ' crumbs fly' : 'A ' + C.name(C.items.find(i => i.cool > 0.7 && i.type === 'crumb') || { type: 'crumb', cook: 1 }) + ' flies') + ' onto the counter.', 3); MC.emit('pop', k); }

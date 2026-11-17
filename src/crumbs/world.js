@@ -5,7 +5,7 @@ const { V3, col, clamp, lerp } = MC, P = MC.phys, M = MC.M;
 const W = MC.world = { group: null, grips: [], flames: [], pins: [], seats: [], sources: [], cookies: [], st: {}, t: 0 };
 const scene = MC.scene;
 const CX0 = -16, CX1 = 16, CZ0 = -6, CZ1 = 6;
-W.bounds = { x0: CX0, x1: CX1, z0: CZ0, z1: CZ1 };
+W.bounds = { x0: -34, x1: CX1, z0: -26, z1: CZ1 };   // the counter and the pub behind its wall
 
 // ---------- builders ----------
 function mesh(geo, mat, x, y, z, o = {}) {
@@ -44,8 +44,8 @@ function flameTex() {
   return new THREE.CanvasTexture(c);
 }
 function glow(x, y, z, s, color, parent) {
-  const sp = new THREE.Sprite(new THREE.SpriteMaterial({ map: GLOW, color: col(color), blending: THREE.AdditiveBlending, depthWrite: false, transparent: true, fog: false }));
-  sp.position.set(x, y, z); sp.scale.set(s, s, 1); (parent || W.group).add(sp); return sp;
+  const sp = new THREE.Sprite(new THREE.SpriteMaterial({ map: GLOW, color: col(color), blending: THREE.AdditiveBlending, depthWrite: false, transparent: true, opacity: 0.38, fog: false }));
+  sp.position.set(x, y, z); sp.scale.set(s * 0.8, s * 0.8, 1); (parent || W.group).add(sp); return sp;
 }
 W.glow = glow;
 function flame(x, y, z, o = {}) {
@@ -53,7 +53,7 @@ function flame(x, y, z, o = {}) {
   fm.position.set(x, y + 0.14 * s, z); fm.center.set(0.5, 0.12); W.group.add(fm);
   const g = glow(x, y + 0.16 * s, z, 1.1 * s, 0xff8a2a);
   const L = new THREE.PointLight(col(0xff9a48), o.I || 18, o.dist || 0, 2); L.position.set(x, y + 0.62 * s, z);
-  if (o.shadow && MC.opt.quality > 0) { L.castShadow = true; L.shadow.mapSize.set(MC.opt.quality > 1 ? 1024 : 512, MC.opt.quality > 1 ? 1024 : 512); L.shadow.bias = -0.004; L.shadow.radius = 4; L.shadow.camera.near = 0.2; L.shadow.camera.far = 40; }
+  if (o.shadow && MC.opt.quality > 0) { L.castShadow = true; L.shadow.mapSize.set(512, 512); L.shadow.bias = -0.004; L.shadow.radius = 4; L.shadow.camera.near = 0.2; L.shadow.camera.far = 40; }
   W.group.add(L);
   const f = { mesh: fm, glow: g, light: L, I: o.I || 18, s, wild: 0, ph: Math.random() * 10, y: y + 0.14 * s }; W.flames.push(f); return f;
 }
@@ -68,10 +68,11 @@ function shell(pal) {
   const fl = mesh(new THREE.PlaneGeometry(140, 110), M.floor, 6, -19, 26, { rx: -Math.PI / 2, cast: false }); fl.geometry.attributes.uv.array.forEach((v, i, a) => { a[i] = v * 5; });
   // back wall: tiled backsplash below, plaster above, with a window opening
   const WX0 = -2.5, WX1 = 6.5, WY0 = 7, WY1 = 15.5;
-  rbox(-26, 30, -1.4, WY0, -8, CZ0, M.tile, { r: 0.02, uv: 0.2, solid: false });
+  const hx = W.hole.x, hx0 = hx - 0.8, hx1 = hx + 0.8, HH = 2.3;   // the mousehole through to the pub
+  holedWall(-26, 30, -1.4, WY0, -8, CZ0, M.tile, hx, 0.2); holeTrim(hx, CZ0 + 0.01, 1); holeTrim(hx, -8.01, -1);
   rbox(-26, WX0, WY0, 34, -8, CZ0, M.plaster, { r: 0.02, uv: 0.08, solid: false }); rbox(WX1, 30, WY0, 34, -8, CZ0, M.plaster, { r: 0.02, uv: 0.08, solid: false });
   rbox(WX0, WX1, WY1, 34, -8, CZ0, M.plaster, { r: 0.02, uv: 0.08, solid: false });
-  P.addBox(-26, 30, -2, 60, -8, CZ0);
+  P.addBox(-26, hx0, -2, 60, -8, CZ0); P.addBox(hx1, 30, -2, 60, -8, CZ0); P.addBox(hx0, hx1, HH, 60, -8, CZ0); P.addBox(hx0, hx1, -2, 0, -8.6, CZ0 + 0.2);   // walls either side, above, and a floor through the hole
   rbox(WX0 - 0.5, WX1 + 0.5, WY0 - 0.35, WY0, -6.4, -5.3, M.white, { r: 0.08, solid: false });                       // sill
   for (const x of [WX0, (WX0 + WX1) / 2, WX1]) rbox(x - 0.22, x + 0.22, WY0, WY1, -6.6, -6.2, M.white, { r: 0.04, solid: false });
   for (const y of [WY0 + 0.2, (WY0 + WY1) / 2, WY1 - 0.2]) rbox(WX0, WX1, y - 0.22, y + 0.22, -6.6, -6.2, M.white, { r: 0.04, solid: false });
@@ -92,25 +93,148 @@ function shell(pal) {
   rbox(WX1 + 1.2, 17.5, 9, 14.2, CZ0, -2.4, M.black, { r: 0.15, solid: false }); rbox(WX1 + 1.6, 13.4, 9.5, 13.7, -2.42, -2.36, M.flat(0x11161c, 0.08), { r: 0.02, solid: false, cast: false });
   W.st.clock = new V3(15.3, 11.6, -2.33);
   // the rest of the room (only really visible when the big light comes on)
-  const room = mesh(new THREE.BoxGeometry(96, 55, 62), M.plaster.clone(), 14, 8.5, 23, { cast: false }); room.material.side = THREE.BackSide; room.material.normalMap = null;
+  const room = mesh(new THREE.BoxGeometry(96, 55, 62), M.plaster.clone(), 14, 8.5, 23, { cast: false }); room.material.side = THREE.BackSide; room.material.normalMap = null; room.geometry.setDrawRange(0, 30);   // no face behind the kitchen wall: the mousehole opens into the pub
   { const u = room.geometry.attributes.uv; for (let i = 0; i < u.count; i++) u.setXY(i, u.getX(i) * 6, u.getY(i) * 4); }
   W.lamp = mesh(new THREE.CylinderGeometry(3.2, 3.6, 0.8, 24), new THREE.MeshBasicMaterial({ color: 0x1a1a1a, fog: false }), 8, 35.4, 20, { cast: false, recv: false });
-  rbox(-8, 12, -19, -3, 30, 44, M.wood, { r: 0.3, uv: 0.05, solid: false });   // kitchen table silhouette across the room
   // hallway door (far right): its glow is the "someone is coming" tell
   W.door = mesh(new THREE.PlaneGeometry(14, 40), new THREE.MeshBasicMaterial({ color: 0xffd9a0, transparent: true, opacity: 0, fog: false }), 61.6, 1, 30, { ry: -Math.PI / 2, cast: false, recv: false });
+}
+
+// one wall with the mousehole's arch cut clean through it; the cut faces are dark, sooty and unlit-looking
+function holedWall(x0, x1, y0, y1, z0, z1, mat, hx, uv) {
+  const sh = new THREE.Shape(); sh.moveTo(x0, y0); sh.lineTo(x1, y0); sh.lineTo(x1, y1); sh.lineTo(x0, y1); sh.closePath();
+  const h = new THREE.Path(); h.moveTo(hx - 0.8, Math.max(0, y0)); h.lineTo(hx - 0.8, 1.5); h.absarc(hx, 1.5, 0.8, Math.PI, 0, true); h.lineTo(hx + 0.8, Math.max(0, y0)); h.closePath(); sh.holes.push(h);
+  const g = new THREE.ExtrudeGeometry(sh, { depth: z1 - z0, bevelEnabled: false, curveSegments: 20 }), u = g.attributes.uv; for (let i = 0; i < u.count; i++) u.setXY(i, u.getX(i) * uv, u.getY(i) * uv);
+  if (!W.sootM) W.sootM = new THREE.MeshStandardMaterial({ color: 0x0b0806, roughness: 1 });
+  return mesh(g, [mat, W.sootM], 0, 0, z0, { cast: true });
+}
+// a gnawed arch round the mousehole, on one face of the wall (side: +1 faces the kitchen, -1 the pub)
+function holeTrim(x, z, side) {
+  const sh = new THREE.Shape(); sh.moveTo(-1.05, 0); sh.lineTo(-1.05, 1.5); sh.absarc(0, 1.5, 1.05, Math.PI, 0, true); sh.lineTo(1.05, 0); sh.lineTo(0.8, 0); sh.lineTo(0.8, 1.5); sh.absarc(0, 1.5, 0.8, 0, Math.PI, false); sh.lineTo(-0.8, 0); sh.closePath();
+  const m = mesh(new THREE.ExtrudeGeometry(sh, { depth: 0.12, bevelEnabled: true, bevelSize: 0.04, bevelThickness: 0.03, bevelSegments: 2, curveSegments: 18 }), M.stud, x, 0, z, { cast: false }); if (side < 0) m.rotation.y = Math.PI;
+}
+
+// ---------- the pub: a room inside the B&B's wall, behind the kitchen's backsplash, at counter height ----------
+const PX0 = -34, PX1 = -4.5, PZ0 = -26, PZ1 = -8, PH = 12;
+function pub(pal) {
+  const hx = W.hole.x;
+  // floor (old boards), brick back wall, lath-and-plaster sides, the kitchen wall's back as the front, joists overhead
+  rbox(PX0 - 1, PX1 + 1, -0.8, 0, PZ0 - 1, PZ1, M.stud, { r: 0.02, uv: 0.12 });
+  for (let x = PX0; x < PX1; x += 2.2) rbox(x + 0.02, x + 2.18, -0.02, 0.02, PZ0, PZ1, M.stud, { r: 0.04, uv: 0.15, solid: false, cast: false });   // board seams
+  rbox(PX0 - 1, PX1 + 1, 0, PH + 1, PZ0 - 1, PZ0, M.brick, { r: 0.02, uv: 0.09 });
+  rbox(PX0 - 1, PX0, 0, PH + 1, PZ0, PZ1, M.lath, { r: 0.02, uv: 0.12 }); rbox(PX1, PX1 + 1, 0, PH + 1, PZ0, PZ1, M.lath, { r: 0.02, uv: 0.12 });
+  holedWall(PX0, PX1, 0, PH + 1, PZ1 - 0.02, PZ1 + 0.6, M.lath, hx, 0.12);
+  P.addBox(PX0 - 1, -26, -2, 60, PZ1, -6);   // the pub's front wall where the kitchen wall does not reach
+  rbox(PX0 - 1, PX1 + 1, PH, PH + 1.2, PZ0 - 1, PZ1 + 0.6, M.stud, { r: 0.02, uv: 0.1 });
+  for (let x = PX0 + 1; x < PX1; x += 4.2) rbox(x, x + 0.9, PH - 1.6, PH, PZ0, PZ1, M.stud, { r: 0.06, uv: 0.15, solid: false });   // joists
+  for (const x of [PX0 + 0.1, PX1 - 0.7]) for (let z = PZ0 + 2; z < PZ1 - 1; z += 5) rbox(x, x + 0.6, 0, PH, z, z + 0.9, M.stud, { r: 0.05, uv: 0.15, solid: false });   // studs
+  // a wire and an old porcelain insulator along the joists: the house's own wiring
+  const wire = new THREE.CatmullRomCurve3([new V3(PX0, PH - 1.7, PZ0 + 3), new V3((PX0 + PX1) / 2, PH - 2.1, PZ0 + 3.4), new V3(PX1, PH - 1.7, PZ0 + 3)]); mesh(new THREE.TubeGeometry(wire, 30, 0.06, 6), M.rubber, 0, 0, 0, { cast: false });
+  // the bar against the brick, the kitchen along the side wall
+  diner(-27.5, PZ0);
+  toaster(-31.6, -15.5, { pub: true });
+  stoves(-22.8, -13.6, PZ1 - 0.1);
+  cuttingBoard(-17.5, -15.8);
+  // larder shelves on the brick: jars, a cork, buttons, a sugar cube
+  for (const y of [3.2, 6.2]) { rbox(-16, -6.5, y - 0.18, y, PZ0, PZ0 + 1.6, M.stud, { r: 0.04, uv: 0.2, solid: false }); for (const x of [-15.6, -7]) mesh(new THREE.CylinderGeometry(0.05, 0.05, 1.1, 6), M.chrome, x, y - 0.6, PZ0 + 0.8, { rz: 0.5, cast: false }); }
+  for (let i = 0; i < 6; i++) { const x = -15 + i * 1.5, j = lathe([[0, 0], [0.42, 0], [0.45, 0.06], [0.44, 0.9], [0.36, 1.0], [0.36, 1.15], [0, 1.15]], M.glass, x, 3.2, PZ0 + 0.8); void j; cyl(x, PZ0 + 0.8, 0.36, 3.25, 3.25 + 0.3 + (i % 3) * 0.2, [M.pea, M.crust, M.cheese][i % 3], { solid: false }); }
+  for (let i = 0; i < 4; i++) cyl(-14 + i * 2.2, PZ0 + 0.8, 0.5, 6.2, 6.5 + i * 0.05, [M.cork, M.white, M.paint, M.brass][i], { solid: false, seg: 24 });
+  // tables: jar lids on cork legs, bottle-cap stools, a stub of candle on each
+  for (const [tx, tz] of [[-12.5, -20.5], [-8, -15.5], [-12.2, -11.6]]) {
+    cyl(tx, tz, 0.32, 0, 1.6, M.cork, { seg: 16 }); cyl(tx, tz, 1.25, 1.6, 1.78, M.brass, { seg: 36, solid: true });
+    for (let k = 0; k < 3; k++) { const a = k * 2.1 + tx, sx = tx + Math.cos(a) * 1.9, sz = tz + Math.sin(a) * 1.9; lathe([[0, 0], [0.5, 0], [0.55, 0.12], [0.5, 0.12], [0.45, 0.04], [0, 0.04]], M.paint, sx, 0.75, sz); cyl(sx, sz, 0.2, 0, 0.75, M.cork, { solid: false, seg: 10 }); }
+    cyl(tx, tz, 0.16, 1.78, 2.05, M.wax, { solid: false, seg: 12 }); flameLite(tx, 2.08, tz);
+  }
+  // barrels (thimbles on their sides), a dartboard (a coat button), a chalk menu (a matchbook), a rug (a felt offcut)
+  for (const [bx, bz, by] of [[-6.4, -24.6, 0.55], [-6.4, -23.2, 0.55], [-6.4, -23.9, 1.6]]) mesh(new THREE.CylinderGeometry(0.62, 0.62, 1.2, 20), M.brass, bx, by, bz, { rz: Math.PI / 2 });
+  const btn = mesh(new THREE.CylinderGeometry(1.1, 1.1, 0.16, 32), M.flat(0x2a5a3a, 0.6), PX1 - 0.1, 5.2, -17, { rz: Math.PI / 2, cast: false }); void btn;
+  for (const [dy, dz] of [[0.35, 0.35], [0.35, -0.35], [-0.35, 0.35], [-0.35, -0.35]]) mesh(new THREE.CylinderGeometry(0.13, 0.13, 0.2, 10), M.black, PX1 - 0.12, 5.2 + dy, -17 + dz, { rz: Math.PI / 2, cast: false });
+  mesh(new THREE.BoxGeometry(0.04, 3.8, 6), M.felt, -10, 0.03, -16, { rz: Math.PI / 2, cast: false });
+  label('TONIGHT: ask the cook', -18.5, 8.3, PZ0 + 0.05, 5, '#f4efe2', '#1d2a22');
+  // two hanging lanterns (bottle caps with candle stubs) and a warm haze of light round the room
+  for (const [lx, lz] of [[-25, -19], [-11, -17]]) { mesh(new THREE.CylinderGeometry(0.01, 0.01, PH - 1.6 - 7.4, 4), M.black, lx, (PH - 1.6 + 7.4) / 2, lz, { cast: false }); lathe([[0, 0], [0.45, 0], [0.5, 0.12], [0.45, 0.12], [0.4, 0.04], [0, 0.04]], M.tin, lx, 7.3, lz); cyl(lx, lz, 0.18, 7.34, 7.6, M.wax, { solid: false }); flame(lx, 7.62, lz, { I: 55, dist: 34, s: 0.9, shadow: lx < -20 }); }
+  const amb = new THREE.PointLight(col(0xffb070), 0.6, 40, 1.6); amb.position.set((PX0 + PX1) / 2, PH - 3, (PZ0 + PZ1) / 2); W.group.add(amb); W.pubAmb = amb;
+  W.st.pub = { x0: PX0, x1: PX1, z0: PZ0, z1: PZ1, h: PH, hole: new V3(hx, 0, PZ1 - 0.6), out: new V3(hx, 0, CZ0 + 0.8) };
+}
+// ---------- the pub's life: patrons at the tables, a band, the hearth, bottles, things hung from the joists, pictures, crates ----------
+function stamp(x, y, z, ry, w, h, seed) {   // a postage stamp as a framed picture
+  const c = document.createElement('canvas'); c.width = 64; c.height = 80; const g = c.getContext('2d'), r = MC.rng(seed), hue = Math.floor(r() * 360);
+  g.fillStyle = '#efe6cf'; g.fillRect(0, 0, 64, 80); g.fillStyle = 'hsl(' + hue + ',45%,38%)'; g.fillRect(6, 6, 52, 68); g.fillStyle = 'hsl(' + ((hue + 40) % 360) + ',50%,70%)'; g.beginPath(); g.arc(32, 34, 13, 0, 7); g.fill(); g.fillRect(18, 46, 28, 22);
+  g.fillStyle = '#efe6cf'; for (let k = 0; k < 9; k++) { g.beginPath(); g.arc(4 + k * 7, 0, 2.5, 0, 7); g.arc(4 + k * 7, 80, 2.5, 0, 7); g.fill(); } g.font = 'bold 10px serif'; g.fillText(String(1 + Math.floor(r() * 9)) + 'd', 44, 70);
+  const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; t.magFilter = THREE.NearestFilter; return mesh(new THREE.PlaneGeometry(w, h), new THREE.MeshStandardMaterial({ map: t, roughness: 0.9 }), x, y, z, { ry, cast: false });
+}
+function bottle(x, y, z, hue, s = 1) { lathe([[0, 0], [0.2 * s, 0], [0.22 * s, 0.05], [0.22 * s, 0.6 * s], [0.08 * s, 0.85 * s], [0.08 * s, 1.1 * s], [0, 1.1 * s]], M.flat(hue, 0.25), x, y, z, { seg: 10, cast: false }); }
+function pubLife() {
+  const NS = { solid: false, cast: false }, hx = W.hole.x;
+  W.patrons = [];
+  // patrons: the house's other night folk, sat on the stools and at the booth, each idling in its own time
+  const CAST = (MC.CAST || []).filter(c => !c.regular), by = w => CAST.filter(c => c.where === w);
+  const sit = (c, x, y, z, ry) => { if (!c || !MC.pf || !MC.pf.has(c.pf)) return null; const P = MC.pf.build(c.pf, { len: c.len, colors: c.colors }); P.root.position.set(x, y, z); P.root.rotation.y = ry; P.mesh.castShadow = false; W.group.add(P.root); P.cast = c; P.pos = new V3(x, y + 0.4, z); W.patrons.push(P); return P; };
+  const T = [[-12.5, -20.5], [-8, -15.5], [-12.2, -11.6]], seated = by('table');
+  let ki = 0; for (const [tx, tz] of T) for (let k = 0; k < 3; k++) { const a = k * 2.1 + tx, sx = tx + Math.cos(a) * 1.9, sz = tz + Math.sin(a) * 1.9; sit(seated[ki++], sx, 0.87, sz, Math.atan2(tx - sx, tz - sz)); }
+  for (const [tx, tz] of T) for (let k = 0; k < 3; k++) { const a = k * 2.1 + 1 + tx; lathe([[0, 0], [0.16, 0], [0.19, 0.3], [0.17, 0.3], [0.14, 0.03], [0, 0.03]], M.glass, tx + Math.cos(a) * 0.75, 1.78, tz + Math.sin(a) * 0.75, { seg: 10, cast: false }); cyl(tx + Math.cos(a) * 0.75, tz + Math.sin(a) * 0.75, 0.13, 1.8, 2.0, M.flat(0xc98a2a, 0.3), { solid: false, cast: false, seg: 8 }); }
+  // the band's corner: a cotton-reel stage, a cricket and a snail on it, a string of lights over them
+  cyl(-19.4, -24.3, 1.4, 0, 0.5, M.stud, { seg: 20 }); cyl(-19.4, -24.3, 1.6, 0.5, 0.62, M.wood, { seg: 20, solid: false });   // against the brick, between the bar and the larder: clear of the toaster and where its toast lands
+  { const b = by('band'); sit(b[0], -19.9, 0.62, -24.4, 0.3); sit(b[1], -18.7, 0.62, -24.5, -0.3); }
+  mesh(new THREE.CylinderGeometry(0.5, 0.5, 0.12, 16), M.brass, -20.9, 2.6, PZ0 + 0.1, { rx: Math.PI / 2, cast: false });   // a bottle-cap gong
+  // the hearth in the side wall: a brick arch, embers, the warmest light in the room
+  const hz = -20.5; rbox(PX1 - 0.9, PX1, 0, 3.4, hz - 1.9, hz - 1.3, M.brick, { r: 0.05, uv: 0.2, solid: false }); rbox(PX1 - 0.9, PX1, 0, 3.4, hz + 1.3, hz + 1.9, M.brick, { r: 0.05, uv: 0.2, solid: false }); rbox(PX1 - 1.0, PX1, 3.2, 3.9, hz - 2.1, hz + 2.1, M.stud, { r: 0.08, solid: false });
+  mesh(new THREE.PlaneGeometry(2.6, 3.2), new THREE.MeshBasicMaterial({ color: 0x050302 }), PX1 - 0.02, 1.6, hz, { ry: -Math.PI / 2, cast: false, recv: false });
+  for (let k = 0; k < 5; k++) mesh(new THREE.SphereGeometry(0.22 + (k % 2) * 0.1, 6, 5), new THREE.MeshBasicMaterial({ color: new THREE.Color(1.6, 0.5 + (k % 3) * 0.15, 0.08), fog: false }), PX1 - 0.5, 0.2, hz - 0.8 + k * 0.4, { cast: false, recv: false });
+  flame(PX1 - 0.55, 0.3, hz - 0.3, { I: 0.0001, s: 1.3 }).light.visible = false; const fire = flame(PX1 - 0.6, 0.35, hz + 0.3, { I: 38, dist: 30, s: 1.6, shadow: true }); fire.light.color.set(0xff7a2a); W.hearth = fire;
+  for (let k = 0; k < 3; k++) mesh(new THREE.CylinderGeometry(0.11, 0.11, 1.6, 6), M.stud, PX1 - 1.6, 0.25 + k * 0.2, hz - 2.9 + (k % 2) * 0.15, { rx: Math.PI / 2, cast: false });   // matchstick logs
+  // the back bar: bottles on shelves either side of the board, a mirror (a foil scrap), taps on the kegs
+  for (const [x0, x1] of [[-33.6, -28.2], [-21.6, -17]]) for (const y of [2.9, 4.6]) { rbox(x0, x1, y - 0.14, y, PZ0, PZ0 + 0.9, M.stud, { r: 0.03, uv: 0.2, solid: false, cast: false }); for (let x = x0 + 0.4, k = 0; x < x1 - 0.2; x += 0.55, k++) bottle(x, y, PZ0 + 0.45, [0x2f5a3a, 0x6a2a1a, 0x8a6a1e, 0x24405e, 0x5a1e3a][(k + (y > 4 ? 2 : 0)) % 5], 0.8 + (k % 3) * 0.15); }
+  mesh(new THREE.PlaneGeometry(3.4, 1.6), new THREE.MeshStandardMaterial({ color: 0x9aa4a8, roughness: 0.18, metalness: 1 }), -19.3, 7.2, PZ0 + 0.03, { cast: false });
+  // hung from the joists: two strings of little bulbs, bunting, copper pots, bundles of herbs
+  const cols = [0xffd27a, 0xff8f6b, 0x8fd6ff, 0xb6ff9a];
+  for (const [z, x0, x1] of [[-17.5, PX0 + 0.5, PX1 - 0.5], [-11.5, -26, PX1 - 0.5]]) for (let i = 0; i <= 22; i++) { const u = i / 22, x = x0 + (x1 - x0) * u, y = PH - 2.2 - Math.sin(u * Math.PI) * 1.3 - Math.abs(Math.sin(u * Math.PI * 4)) * 0.25; mesh(new THREE.SphereGeometry(0.09, 5, 4), new THREE.MeshBasicMaterial({ color: col(cols[i % 4]), fog: false }), x, y, z, { cast: false, recv: false }); }
+  for (let i = 0; i < 16; i++) { const u = i / 15, x = -27 + u * 21, y = PH - 2.6 - Math.sin(u * Math.PI) * 0.9, g = new THREE.BufferGeometry(); g.setAttribute('position', new THREE.Float32BufferAttribute([-0.3, 0, 0, 0.3, 0, 0, 0, -0.6, 0], 3)); g.computeVertexNormals(); const m = mesh(g, new THREE.MeshStandardMaterial({ color: col([0xd94f4f, 0xf2c14e, 0x4f8ad9, 0x6fb043][i % 4]), roughness: 1, side: THREE.DoubleSide }), x, y, -21.8, { cast: false }); m.rotation.y = 0.1 * (i % 3 - 1); }
+  for (let k = 0; k < 5; k++) { const x = -24 + k * 1.3, y = 6.6 - (k % 2) * 0.5; mesh(new THREE.CylinderGeometry(0.012, 0.012, PH - 1.6 - y, 4), M.black, x, (PH - 1.6 + y) / 2, -12.6, { cast: false }); lathe([[0, 0], [0.3, 0], [0.42, 0.35], [0.4, 0.35], [0.28, 0.04], [0, 0.04]], M.brass, x, y - 0.35, -12.6, { seg: 12, cast: false }); }
+  for (let k = 0; k < 6; k++) { const x = -15 + k * 1.2; mesh(new THREE.ConeGeometry(0.22, 0.9, 6), M.flat([0x4a6a2a, 0x6a5a2a, 0x7a3a4a][k % 3], 1), x, PH - 2.3, -24.2, { rx: Math.PI, cast: false }); }
+  // pictures (stamps), a watch-face clock, a playing card, cramped round the walls
+  for (let k = 0; k < 7; k++) stamp(PX0 + 0.03, 3.2 + (k % 2) * 2.3, -23.5 + k * 1.15, Math.PI / 2, 1.3, 1.6, 20 + k);
+  for (let k = 0; k < 6; k++) stamp(-25 + k * 3.3 + (k > 2 ? 2.5 : 0), 4.2 + (k % 3) * 1.6, PZ1 - 0.05, Math.PI, 1.3, 1.6, 40 + k);
+  for (let k = 0; k < 4; k++) stamp(PX1 - 0.03, 5.2 + (k % 2) * 2, -15 + k * 1.6, -Math.PI / 2, 1.2, 1.5, 60 + k);
+  mesh(new THREE.CylinderGeometry(1.0, 1.0, 0.12, 24), M.white, PX0 + 0.08, 8.3, -19, { rz: Math.PI / 2, cast: false }); mesh(new THREE.TorusGeometry(1.0, 0.08, 6, 24), M.brass, PX0 + 0.12, 8.3, -19, { ry: Math.PI / 2, cast: false });
+  for (const [a, l] of [[0.6, 0.7], [2.4, 0.45]]) mesh(new THREE.BoxGeometry(0.03, l, 0.06), M.black, PX0 + 0.16, 8.3 + Math.cos(a) * l / 2, -19 + Math.sin(a) * l / 2, { rx: a, cast: false });
+  // crates (matchboxes), sacks, a ladder to a loft shelf heaped with more, corks, a broom
+  for (const [x, z, n] of [[-33, -19.5, 3], [-33, -21.6, 2], [-17.4, -9.0, 2]]) for (let k = 0; k < n; k++) rbox(x - 0.8 + (k % 2) * 0.15, x + 0.8 + (k % 2) * 0.15, k * 0.95, k * 0.95 + 0.9, z - 0.55, z + 0.55, M.card, { r: 0.04, uv: 0.5, solid: k === 0 });
+  for (const [x, z] of [[-32.9, -23.6], [-31.6, -24.6], [-15.9, -8.9]]) { const m2 = mesh(new THREE.SphereGeometry(0.8, 8, 6), M.flat(0xa89878, 1), x, 0.55, z, { cast: false }); m2.scale.set(1, 0.75, 0.9); }
+  rbox(PX0, PX0 + 2.6, 9.2, 9.4, -25.9, -12, M.stud, { r: 0.03, uv: 0.2, solid: false }); for (let k = 0; k < 7; k++) rbox(PX0 + 0.3, PX0 + 1.9, 9.4, 10.2 - (k % 2) * 0.3, -25.4 + k * 1.9, -24.2 + k * 1.9, k % 2 ? M.card : M.cork, { r: 0.05, uv: 0.4, solid: false, cast: false });
+  for (const dz of [-0.45, 0.45]) mesh(new THREE.CylinderGeometry(0.06, 0.06, 9.6, 5), M.wood, PX0 + 2.9, 4.6, -17.2 + dz, { rz: -0.12, cast: false }); for (let k = 0; k < 9; k++) mesh(new THREE.CylinderGeometry(0.05, 0.05, 0.9, 5), M.wood, PX0 + 3.4 - k * 0.125, 0.7 + k * 1.0, -17.2, { rx: Math.PI / 2, cast: false });
+  // a booth along the hearth wall: a domino for a bench, felt cushions
+  rbox(PX1 - 1.3, PX1 - 0.1, 0, 0.8, -17.6, -12.4, M.black, { r: 0.06, solid: false }); rbox(PX1 - 1.3, PX1 - 0.15, 0.8, 0.95, -17.5, -12.5, M.felt, { r: 0.05, solid: false, cast: false });
+  for (let k = 0; k < 3; k++) for (const dz of [-0.35, 0.35]) mesh(new THREE.CylinderGeometry(0.09, 0.09, 0.03, 8), M.white, PX1 - 0.09, 0.4, -16.6 + k * 1.7 + dz, { rz: Math.PI / 2, cast: false });
+  { const b = by('booth'); sit(b[0], PX1 - 0.8, 0.95, -13.4, -Math.PI / 2); sit(b[1], PX1 - 0.8, 0.95, -16.6, -Math.PI / 2 + 0.3); }
+  // three who are never still: the potboy between the tables, the flower seller, the rent man doing his rounds
+  const ROUTES = [[[-15, -19], [-10.5, -17.5], [-11, -13], [-15.5, -11], [-21, -17], [-24.5, -20.8]], [[-19, -10], [-13, -9.6], [-7, -12.6], [-10.2, -18], [-15, -22.6], [-21, -21]], [[-23, -22], [-19, -22.8], [-14.6, -17], [-19.5, -12.5], [-27, -18.5]]];
+  by('walk').forEach((c, i) => { const r = ROUTES[i % 3], P = sit(c, r[0][0], 0, r[0][1], 0); if (!P) return; P.route = r; P.leg = 0; P.wait = 2 + i * 3; P.walk = MC.pf.pick(P.clips, 'walk'); P.idle = MC.pf.pick(P.clips, 'idle'); });
+  // rugs, sawdust by the bar, a doormat at the mousehole
+  mesh(new THREE.BoxGeometry(5, 0.04, 3), M.flat(0x6a2a2a, 1), -25, 0.03, -20.5, { cast: false }); mesh(new THREE.BoxGeometry(2.2, 0.04, 1.4), M.flat(0x5a4a2a, 1), hx, 0.03, PZ1 - 1.4, { cast: false });
+  // a second low beam and posts that crowd the room
+  rbox(PX0, PX1, 8.6, 9.3, -18.6, -17.9, M.stud, { r: 0.06, uv: 0.15, solid: false }); for (const x of [-17.4, -6.4]) rbox(x, x + 0.6, 0, 8.6, -18.55, -17.95, M.stud, { r: 0.06, uv: 0.15 });
+}
+// a candle on a table: a flame and its glow, no light of its own (the lanterns light the room)
+function flameLite(x, y, z) { const f = flame(x, y, z, { I: 0.0001, s: 0.6 }); f.light.visible = false; return f; }
+function label(text, x, y, z, w, fg = '#3a2414', bg = '#f2e6c8') {
+  const c = document.createElement('canvas'); c.width = 512; c.height = 128; const g = c.getContext('2d'); g.fillStyle = bg; g.fillRect(0, 0, 512, 128); g.fillStyle = fg; g.font = 'bold 54px Georgia,serif'; g.textAlign = 'center'; g.fillText(text, 256, 84);
+  const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; return mesh(new THREE.PlaneGeometry(w, w / 4), new THREE.MeshStandardMaterial({ map: t, roughness: 0.85 }), x, y, z, { cast: false });
 }
 
 // ---------- lights + atmosphere ----------
 function lights(pal) {
   const q = MC.opt.quality;
-  W.hemi = new THREE.HemisphereLight(col(pal.hemiSky || 0x6f86d8), col(0x1a1c2c), 0.5); W.group.add(W.hemi); W.hemiC = W.hemi.color.clone(); W.dawn = 0;
-  const moon = W.moon = new THREE.DirectionalLight(col(0xb9c9ff), 2.6); moon.position.set(2, 24, -18); moon.target.position.set(2, 0, 0.5); W.group.add(moon, moon.target);
+  W.hemi = new THREE.HemisphereLight(col(pal.hemiSky || 0x6f86d8), col(0x0a0b12), 0.07); W.group.add(W.hemi); W.hemiC = W.hemi.color.clone(); W.dawn = 0;
+  // the moon is outside: its light only gets in through the window, as a shaft that lands on the counter
+  const moon = W.moon = new THREE.SpotLight(col(0xb9c9ff), 2.6, 0, 0.14, 0.35, 0); moon.position.set(2, 50.9, -36.9); moon.target.position.set(2, 11.25, -6.4); W.group.add(moon, moon.target);
   const ceil = W.ceil = new THREE.DirectionalLight(col(0xffe2b8), 0); ceil.position.set(8, 40, 22); ceil.target.position.set(0, 0, -1); ceil.visible = false; W.group.add(ceil, ceil.target);
-  for (const L of [moon, ceil]) if (q > 0) {
-    L.castShadow = true; L.shadow.mapSize.set(q > 1 ? 4096 : 2048, q > 1 ? 4096 : 2048); const c = L.shadow.camera; c.left = -22; c.right = 22; c.top = 16; c.bottom = -16; c.near = 2; c.far = 80; L.shadow.bias = -0.0006; L.shadow.normalBias = 0.03; L.shadow.radius = 2.5;
+  if (q > 0) { moon.castShadow = true; moon.shadow.mapSize.set(1024, 1024); moon.shadow.camera.near = 25; moon.shadow.camera.far = 120; moon.shadow.bias = -0.0008; moon.shadow.normalBias = 0.03; moon.shadow.radius = 2.5; }
+  for (const L of [ceil]) if (q > 0) {
+    L.castShadow = true; L.shadow.mapSize.set(1024, 1024); const c = L.shadow.camera; c.left = -40; c.right = 22; c.top = 30; c.bottom = -30; c.near = 2; c.far = 80; L.shadow.bias = -0.0006; L.shadow.normalBias = 0.03; L.shadow.radius = 2.5;
   }
   W.roomFill = new THREE.HemisphereLight(col(0xfff0d8), col(0x5a4a3a), 0); W.group.add(W.roomFill);
-  W.playerGlow = new THREE.PointLight(col(0xb9c4e6), 5, 14, 2); scene.add(W.playerGlow);
+  W.playerGlow = new THREE.PointLight(col(0xb9c4e6), 0.5, 7, 2);   // night eyes: just enough to see your own paws scene.add(W.playerGlow);
   // moonbeam shafts + drifting dust
   const beamMat = new THREE.MeshBasicMaterial({ color: col(0x8fa8ff), transparent: true, opacity: 0.028, blending: THREE.AdditiveBlending, depthWrite: false, side: THREE.DoubleSide, fog: false });
   W.beams = [];
@@ -146,7 +270,7 @@ function buildEnv() {
 }
 
 // ---------- props ----------
-function toaster(x0, z0) {
+function toaster(x0, z0, o = {}) {
   const x1 = x0 + 6, z1 = z0 + 3.5, H = 4.4, zc = (z0 + z1) / 2;
   rbox(x0, x1, 0.18, H, z0, z1, M.steel, { r: 0.55, uv: 0.2 }); rbox(x0 + 0.3, x1 - 0.3, 0, 0.3, z0 + 0.3, z1 - 0.3, M.black, { r: 0.1, solid: false });
   for (const dz of [-0.62, 0.62]) rbox(x0 + 0.9, x1 - 0.9, H - 0.02, H + 0.015, zc + dz - 0.27, zc + dz + 0.27, M.slot, { r: 0.01, solid: false, cast: false });
@@ -155,17 +279,22 @@ function toaster(x0, z0) {
   mesh(new THREE.CylinderGeometry(0.07, 0.07, 0.3, 8), M.white, x0 + 1.3, 1.78, z1 + 0.2, { rx: Math.PI / 2, cast: false });
   rbox(x0 + 2.4, x0 + 4.6, 1.9, 2.5, z1 - 0.02, z1 + 0.04, M.chrome, { r: 0.02, solid: false, cast: false });         // brand plate
   // cord to the wall
+  if (!o.pub) {
   const curve = new THREE.CatmullRomCurve3([new V3(x1 - 0.6, 0.5, z0 + 0.1), new V3(x1 - 0.2, 0.18, z0 - 0.5), new V3(x1 + 0.9, 0.2, z0 - 0.2), new V3(x1 + 1.2, 1.6, -5.95), new V3(x1 + 1.2, 3.2, -5.95)]);
   mesh(new THREE.TubeGeometry(curve, 40, 0.11, 8), M.rubber, 0, 0, 0); rbox(x1 + 0.7, x1 + 1.7, 2.9, 4.1, -6.0, -5.9, M.white, { r: 0.04, solid: false });
+  }
   const g1 = grip(x0 - 0.12, x0 - 0.02, 0.3, H + 0.05, z1 - 1.25, z1 - 0.45), g2 = grip(x0 - 0.1, x0 + 0.9, H, H + 0.07, z1 - 1.25, z1 - 0.45); void g1; void g2;
   const knob = grip(x0 - 0.7, x0, 3.9 - 0.13, 3.9 + 0.13, zc - 0.3, zc + 0.3, { lever: true });
   W.st.toaster = { slot: { min: new V3(x0 + 0.8, H, zc - 1.0), max: new V3(x1 - 0.8, H + 0.6, zc + 1.0) }, lever: knob, top: 3.9, bot: 1.25, ejectFrom: new V3(x0 + 1.6, H + 0.35, zc), slotMat: M.slot, pos: new V3((x0 + x1) / 2, H, zc), light: null, standTop: new V3(x0 + 0.5, H, z1 - 0.85), base: new V3(x0 - 0.55, 0, z1 - 0.85), leverStand: new V3(x0 + 0.2, H, zc) };
   const L = new THREE.PointLight(col(0xff5a1a), 0, 9, 2); L.position.set((x0 + x1) / 2, H + 0.5, zc); W.group.add(L); W.st.toaster.light = L;
   W.pins.push({ pos: new V3(x0 + 1.3, H - 0.02, z1 - 0.12), dir: 'up', name: 'toasterL' }, { pos: new V3(x1 - 0.4, H - 0.02, z1 - 0.12), dir: 'up', name: 'toasterR' });   // on the front lip of the toaster, so lines leave it cleanly
-  // plug-in night light on the backsplash: keeps the climbing side of the toaster readable
-  const nx = x0 - 1.3; rbox(nx - 0.35, nx + 0.35, 2.3, 3.5, -6.0, -5.82, M.white, { r: 0.05, solid: false });
-  mesh(new THREE.SphereGeometry(0.3, 14, 10), new THREE.MeshBasicMaterial({ color: col(0xffe2b0), fog: false }), nx, 3.0, -5.8, { cast: false, recv: false }).scale.set(1, 1.3, 0.5);
-  glow(nx, 3.0, -5.6, 2.2, 0xffc980); const nl = new THREE.PointLight(col(0xffd9a8), 10, 20, 2); nl.position.set(nx, 3.0, -5.2); W.group.add(nl); W.nightLight = nl;
+  if (!o.pub) nightLight(x0 - 1.3);
+}
+// plug-in night light on the backsplash: keeps the climbing side of things readable
+function nightLight(nx) {
+  rbox(nx - 0.35, nx + 0.35, 2.3, 3.5, -6.0, -5.82, M.flat(0x6e675c, 0.7), { r: 0.05, solid: false });
+  mesh(new THREE.SphereGeometry(0.3, 14, 10), new THREE.MeshBasicMaterial({ color: new THREE.Color(0.95, 0.6, 0.26), fog: false }), nx, 3.0, -5.8, { cast: false, recv: false }).scale.set(1, 1.3, 0.5);
+  const nl = new THREE.PointLight(col(0xffc890), 3.2, 14, 2); nl.position.set(nx, 3.0, -5.3); if (MC.opt.quality > 1) { nl.castShadow = true; nl.shadow.mapSize.set(512, 512); nl.shadow.bias = -0.004; nl.shadow.radius = 4; nl.shadow.camera.near = 0.3; nl.shadow.camera.far = 16; } W.group.add(nl); W.nightLight = nl;   // no halo: a dim frosted lamp, its light falling off across the tiles
 }
 function breadBox(x0, z0) {
   const x1 = x0 + 7, z1 = z0 + 3.3, H = 4.4;
@@ -186,11 +315,11 @@ function breadBox(x0, z0) {
   W.sources.push({ type: 'cheese', min: new V3(sx - 1.1, H, sz - 1.0), max: new V3(sx + 1.0, H + 1.15, sz + 0.6), out: new V3(sx + 1.3, H + 0.4, sz + 0.9), stand: new V3(sx + 1.4, H, sz + 1.1), high: true });
   W.pins.push({ pos: new V3(x0 + 0.5, H - 0.02, z1 - 0.12), dir: 'up', name: 'breadboxL' }, { pos: new V3(x1 - 0.5, H - 0.02, z1 - 0.12), dir: 'up', name: 'breadboxR' });
 }
-function diner(x0) {
-  const x1 = x0 + 5.2, z0 = -4.5, z1 = -3.7;
+function diner(x0, wz = -6) {   // wz: the wall the bar stands against
+  const x1 = x0 + 5.2, z0 = wz + 1.5, z1 = wz + 2.3, Z = d => wz + 6 + d;
   const lc = document.createElement('canvas'); lc.width = 512; lc.height = 128; const g = lc.getContext('2d');
   g.fillStyle = '#b3392b'; g.fillRect(0, 0, 512, 128); g.fillStyle = '#f6e7c4'; g.fillRect(8, 8, 496, 112); g.fillStyle = '#1e2a4a'; g.fillRect(14, 14, 484, 100);
-  g.fillStyle = '#f6c95a'; g.font = 'bold 44px Georgia,serif'; g.textAlign = 'center'; g.fillText('MIDNIGHT CRUMBS', 256, 62); g.font = '22px Georgia,serif'; g.fillStyle = '#f6e7c4'; g.fillText('· open till dawn ·', 256, 98);
+  g.fillStyle = '#f6c95a'; g.font = 'bold 44px Georgia,serif'; g.textAlign = 'center'; g.fillText('MIDNIGHT CRUMBS', 256, 62); g.font = '22px Georgia,serif'; g.fillStyle = '#f6e7c4'; g.fillText('· pub & kitchen · open till dawn ·', 256, 98);
   const lt = new THREE.CanvasTexture(lc); lt.colorSpace = THREE.SRGBColorSpace;
   rbox(x0, x1, 0, 0.9, z0, z1, M.card, { r: 0.04, uv: 0.5 });
   mesh(new THREE.PlaneGeometry(x1 - x0 - 0.1, 0.8), new THREE.MeshStandardMaterial({ map: lt, roughness: 0.8 }), (x0 + x1) / 2, 0.45, z1 + 0.012, { cast: false });
@@ -202,10 +331,10 @@ function diner(x0) {
   const fl = new THREE.PointLight(col(0xffc98a), 5, 12, 2); fl.position.set((x0 + x1) / 2, 3.2, z0 + 2.2); W.group.add(fl); W.fairy = fl;
   const capProfile = [[0, 0], [0.44, 0], [0.5, 0.1], [0.46, 0.1], [0.4, 0.035], [0, 0.035]];
   for (let i = 0; i < 3; i++) {
-    const sx = x0 + 0.8 + i * 1.45; lathe(capProfile, M.tin, sx, 0.9, -4.1);
-    W.seats.push({ i, x: sx, plate: new V3(sx, 0.94, -4.1), zone: { min: new V3(sx - 0.55, 0.9, z0 - 0.05), max: new V3(sx + 0.55, 1.75, z1 + 0.15) }, ticket: new V3(sx, 2.7, z0 + 0.2), cust: new V3(sx, 1.25, -4.98), serve: new V3(sx, 0, z1 + 0.75) });
+    const sx = x0 + 0.8 + i * 1.45; lathe(capProfile, M.tin, sx, 0.9, Z(-4.1));
+    W.seats.push({ i, x: sx, plate: new V3(sx, 0.94, Z(-4.1)), zone: { min: new V3(sx - 0.55, 0.9, z0 - 0.05), max: new V3(sx + 0.55, 1.75, z1 + 0.15) }, ticket: new V3(sx, 2.7, z0 + 0.2), cust: new V3(sx, 1.25, Z(-4.98)), serve: new V3(sx, 0, z1 + 0.75) });
   }
-  rbox(x0 + 0.05, x1 - 0.05, 0, 1.25, -5.98, z0 - 0.12, M.card, { r: 0.04, uv: 0.5, solid: false });   // the customers' bench: a second matchbox behind the bar
+  rbox(x0 + 0.05, x1 - 0.05, 0, 1.25, Z(-5.98), z0 - 0.12, M.card, { r: 0.04, uv: 0.5, solid: false });   // the customers' bench: a second matchbox behind the bar
   for (const s of W.seats) {   // twine + clothespin holding each ticket under the light string
     mesh(new THREE.CylinderGeometry(0.008, 0.008, 0.62, 4), M.flat(0xc9b48a, 1), s.x, 3.74, z0 + 0.13, { cast: false, rx: -0.15 });
     const cp = new THREE.Group(); cp.position.set(s.x, 3.45, z0 + 0.18); cp.rotation.x = 0.28; W.group.add(cp);
@@ -213,20 +342,20 @@ function diner(x0) {
     mesh(new THREE.TorusGeometry(0.045, 0.01, 6, 12), M.chrome, 0, 0.02, 0.025, { parent: cp, cast: false });
   }
   // cool back-light over the seats, so dark critters separate from the counter
-  const bl = new THREE.DirectionalLight(col(0x9fb4ff), 1.2); bl.position.set((x0 + x1) / 2, 6, -9); bl.target.position.set((x0 + x1) / 2, 1, -3.5); W.group.add(bl, bl.target);
+  const bl = new THREE.DirectionalLight(col(0x9fb4ff), 1.2); bl.position.set((x0 + x1) / 2, 6, Z(-9)); bl.target.position.set((x0 + x1) / 2, 1, Z(-3.5)); W.group.add(bl, bl.target);
   // candle = the noise meter
-  const cx = x1 - 0.42; lathe([[0, 0], [0.3, 0], [0.32, 0.26], [0.29, 0.26], [0.28, 0.03], [0, 0.03]], M.tin, cx, 0.9, -4.1); cyl(cx, -4.1, 0.27, 0.93, 1.13, M.wax, { solid: false });
-  W.candle = flame(cx, 1.16, -4.1, { I: 7, shadow: true, s: 1.1 });
+  const cx = x1 - 0.42; lathe([[0, 0], [0.3, 0], [0.32, 0.26], [0.29, 0.26], [0.28, 0.03], [0, 0.03]], M.tin, cx, 0.9, Z(-4.1)); cyl(cx, Z(-4.1), 0.27, 0.93, 1.13, M.wax, { solid: false });
+  W.candle = flame(cx, 1.16, Z(-4.1), { I: 7, shadow: true, s: 1.1 });
   // mouse hole in the backsplash
   const hs = new THREE.Shape(); hs.moveTo(-0.7, 0); hs.lineTo(-0.7, 0.8); hs.absarc(0, 0.8, 0.7, Math.PI, 0, true); hs.lineTo(0.7, 0); hs.closePath();
-  mesh(new THREE.ShapeGeometry(hs, 16), new THREE.MeshBasicMaterial({ color: 0x050302 }), (x0 + x1) / 2, 0, -5.985, { cast: false, recv: false });
-  glow((x0 + x1) / 2, 0.5, -5.9, 1.6, 0x6a3510);
-  W.st.board = { pos: new V3((x0 + x1) / 2, 5.45, -5.9), w: 4.6, h: 1.7 };
-  W.st.diner = { x0, x1, z0, z1, hole: new V3((x0 + x1) / 2, 0, -5.6) };
-  const ko = P.addBox(x0 - 0.1, x1 + 0.1, 0, 6, -6, z0, { playerOnly: true }); W.keepOut.push(ko);   // the customers' side of the counter
-  W.pins.push({ pos: new V3(x1 + 0.9, 2.2, -5.9), dir: 'wall', name: 'diner' });
+  mesh(new THREE.ShapeGeometry(hs, 16), new THREE.MeshBasicMaterial({ color: 0x050302 }), (x0 + x1) / 2, 0, Z(-5.985), { cast: false, recv: false });
+  glow((x0 + x1) / 2, 0.5, Z(-5.9), 1.6, 0x6a3510);
+  W.st.board = { pos: new V3((x0 + x1) / 2, 5.45, Z(-5.9)), w: 4.6, h: 1.7 };
+  W.st.diner = { x0, x1, z0, z1, hole: new V3((x0 + x1) / 2, 0, Z(-5.6)) };
+  const ko = P.addBox(x0 - 0.1, x1 + 0.1, 0, 6, wz, z0, { playerOnly: true }); W.keepOut.push(ko);   // the customers' side of the counter
+  W.pins.push({ pos: new V3(x1 + 0.9, 2.2, Z(-5.9)), dir: 'wall', name: 'diner' });
 }
-function stoves(x, z) {
+function stoves(x, z, wz = -6) {
   cyl(x + 1, z, 2.3, 0, 0.1, M.cork, { solid: false, seg: 40 });
   const cup = [[0, 0], [0.55, 0], [0.57, 0.36], [0.53, 0.36], [0.52, 0.04], [0, 0.04]];
   const mk = (sx, name) => {
@@ -245,7 +374,7 @@ function stoves(x, z) {
   const soup = water.mesh; soup.position.set(x + 2, 1.62, z); W.group.add(soup); W.water = water;
   W.st.pan = { pos: new V3(x, 1.12, z), zone: { min: new V3(x - 0.75, 1.0, z - 0.75), max: new V3(x + 0.75, 1.9, z + 0.75) }, flame: f1, stand: new V3(x, 0, z + 1.85) };
   W.st.pot = { pos: new V3(x + 2, 1.62, z), zone: { min: new V3(x + 1.25, 1.3, z - 0.75), max: new V3(x + 2.75, 2.6, z + 0.75) }, box: { min: new V3(x + 1.28, 0.9, z - 0.72), max: new V3(x + 2.72, 1.95, z + 0.72) }, soup, flame: f2, stand: new V3(x + 2, 0, z + 1.85) };
-  W.pins.push({ pos: new V3(x + 3.6, 1.15, -5.9), dir: 'wall', name: 'stoves' });
+  W.pins.push({ pos: new V3(x + 3.6, 1.15, wz + 0.1), dir: 'wall', name: 'stoves' });
 }
 function cuttingBoard(x0, z0) {
   const x1 = x0 + 4.4, z1 = z0 + 3;
@@ -358,11 +487,11 @@ function pinMesh(p) {
 
 // ---------- home layouts ----------
 const HOMES = MC.HOMES = [
-  { name: 'The Flat', blurb: 'A student flat. Small, quiet, forgiving.', pal: {}, build() { breadBox(-14.5, -4.7); diner(-6.6); stoves(1.6, -4.0); sponge(4.6, -5.6); toaster(6.6, -4.6); cuttingBoard(-5.2, 1.6); breadSlice(2.5, 3.3); peaLid(-9.6, 3.4); mug(5.8, 3.4); kettle(14.4, -0.1); shaker(13.2, 4.2, 0); shaker(14.6, 3.6, 1); cookiePlate(9.6, 3.2); phone(-13.2, 1.2); W.spawn = new V3(0, 0, 0.2); } },   // toaster and bread box stand 1.0 off the wall: mouse alleys behind them
-  { name: 'The Family Kitchen', blurb: 'Bright tiles, spaghetti night leftovers, and a cat.', pal: { woodA: 0xd9c8a8, woodB: 0xb39a72, tileA: 0x86b9b5, tileB: 0x6fa5a1, grout: 0xe9e5da, enamel: 0xc2463a, mugC: 0xf0c040, cab: 0xe6dfcf, sky: '#27376a', hemiSky: 0x7f94e0, towelA: 0x3f74c9, towelB: 0xf4f1e6 },
-    build() { toaster(-13.4, -4.6); sponge(-15.5, -5.1); stoves(-5.2, -4.0); kettle(0.4, -4.1); diner(3.4); breadBox(9, -4.7); cuttingBoard(-1.6, 1.8); breadSlice(-8.2, 3.3); noodles(-4.2, 0.4); peaLid(6.6, 3.6); mug(11.6, 3.0); shaker(14.2, 2.2, 0); shaker(15.1, 3.7, 1); cookiePlate(-13.0, 2.4); phone(-0.6, -0.6); cookbooks(6.3, -0.2); skewer(8.9, -0.9, 2.0, 'skewer'); W.spawn = new V3(-1, 0, 0.4); } },
+  { name: 'The Flat', hole: -5.5, blurb: 'A student flat. Small, quiet, forgiving.', pal: {}, build() { breadBox(-14.5, -4.7); sponge(4.6, -5.6); breadSlice(2.5, 3.3); peaLid(-9.6, 3.4); mug(5.8, 3.4); kettle(14.4, -0.1); shaker(13.2, 4.2, 0); shaker(14.6, 3.6, 1); cookiePlate(9.6, 3.2); phone(-13.2, 1.2); W.spawn = new V3(0, 0, 0.2); } },   // toaster and bread box stand 1.0 off the wall: mouse alleys behind them
+  { name: 'The Family Kitchen', hole: -9, blurb: 'Bright tiles, spaghetti night leftovers, and a cat.', pal: { woodA: 0xd9c8a8, woodB: 0xb39a72, tileA: 0x86b9b5, tileB: 0x6fa5a1, grout: 0xe9e5da, enamel: 0xc2463a, mugC: 0xf0c040, cab: 0xe6dfcf, sky: '#27376a', hemiSky: 0x7f94e0, towelA: 0x3f74c9, towelB: 0xf4f1e6 },
+    build() { sponge(-15.5, -5.1); kettle(0.4, -4.1); breadBox(9, -4.7); breadSlice(-8.2, 3.3); noodles(-4.2, 0.4); peaLid(6.6, 3.6); mug(11.6, 3.0); shaker(14.2, 2.2, 0); shaker(15.1, 3.7, 1); cookiePlate(-13.0, 2.4); phone(-0.6, -0.6); cookbooks(6.3, -0.2); skewer(8.9, -0.9, 2.0, 'skewer'); W.spawn = new V3(-1, 0, 0.4); } },
   { name: "The Baker's House", blurb: 'Dark slate, eggs on the counter, a flour canister to scale, ants in the walls, and the cat is never far.', pal: { woodA: 0x5a4c40, woodB: 0x3a302a, tileA: 0x46505d, tileB: 0x3a434f, grout: 0x20242a, enamel: 0xd9a441, mugC: 0x3f7d5a, cab: 0x34454a, sky: '#1a2450', hemiSky: 0x8a9ce6, towelA: 0x4f8a3a, towelB: 0xefe3c4 },
-    build() { diner(-11.6); kettle(-14.1, -0.6); breadBox(-4.2, -4.7); sponge(3.4, -5.1); toaster(5.5, -4.6); stoves(12.5, -4.0); cuttingBoard(6.4, 1.8); breadSlice(4.2, 2.6); peaLid(0.6, 4.4); eggStand(-6.4, 2.4); noodles(-1.8, 1.2); mug(12.2, 3.2); shaker(-8.6, -1.7, 0); shaker(-7.1, -0.6, 1); cookiePlate(-12.6, 3.4); phone(2.0, 0.4); canister(14.6, 0.0); skewer(-5.4, -2.0, 2.0, 'skewer'); W.spawn = new V3(0, 0, -0.6); } },
+    build() { kettle(-14.1, -0.6); breadBox(-4.2, -4.7); sponge(3.4, -5.1); breadSlice(4.2, 2.6); peaLid(0.6, 4.4); eggStand(-6.4, 2.4); noodles(-1.8, 1.2); mug(12.2, 3.2); shaker(-8.6, -1.7, 0); shaker(-7.1, -0.6, 1); cookiePlate(-12.6, 3.4); phone(2.0, 0.4); canister(14.6, 0.0); skewer(-5.4, -2.0, 2.0, 'skewer'); W.spawn = new V3(0, 0, -0.6); } },
 ];
 W.build = function (homeId = 0, seed = 1) {
   if (W.group) { scene.remove(W.group); W.group.traverse(o => { if (o.geometry) o.geometry.dispose(); }); }
@@ -371,10 +500,12 @@ W.build = function (homeId = 0, seed = 1) {
   const home = HOMES[homeId % HOMES.length]; W.home = home; W.seed = seed;
   if (!GLOW) { GLOW = glowTex(); FLAME = flameTex(); }
   if (W.palKey !== homeId) { MC.buildMaterials(home.pal); W.palKey = homeId; }
-  shell(home.pal); lights(home.pal); home.build(MC.rng(seed));
+  W.hole = new V3(home.hole == null ? -9 : home.hole, 0, -7);
+  shell(home.pal); pub(home.pal); pubLife(); lights(home.pal); home.build(MC.rng(seed)); nightLight(W.hole.x + 1.9);
+  W.spawn = new V3(-19, 0, -17);   // the night starts at home, in the pub
   W.pins.forEach(pinMesh); tap(home.tap || [15.2, -5.95]);
   buildEnv(); W.captureEnv(); scene.environment = W.envNight;
-  P.buildGrid(CX0, CX1, CZ0, CZ1, 0.5);
+  P.buildGrid(PX0, CX1, PZ0, CZ1, 0.5);
   W.lit = 0; W.litTarget = 0; W.power = 1; W.flash = 0; W.clockDead = false; W.moonI = null; W.hemiI = null;
   MC.emit('world:built');
 };
@@ -383,17 +514,23 @@ W.build = function (homeId = 0, seed = 1) {
 W.setLit = v => { W.litTarget = v; };
 W.update = function (dt, head) {
   if (W.water) W.water.update(dt);
+  if (W.patrons) { const hd = head || MC.player.head, near = hd && hd.z < -6.5; W.pt = (W.pt || 0) + dt;
+    if (near && W.pt > 1 / 20) { const d = W.pt; W.pt = 0; for (const P of W.patrons) {
+      if (P.route) { const hold = P.talkT > 0 || (hd && Math.hypot(hd.x - P.root.position.x, hd.z - P.root.position.z) < 1.6);   // a walker stops for you, and at each stop for a while
+        if (P.talkT > 0) P.talkT -= d; if (P.wait > 0 || hold) { if (!hold) P.wait -= d; P.play(P.idle, 0.3); if (hold && hd) { const a = Math.atan2(hd.x - P.root.position.x, hd.z - P.root.position.z); let q = a - P.root.rotation.y; q = Math.atan2(Math.sin(q), Math.cos(q)); P.root.rotation.y += q * Math.min(1, d * 5); } }
+        else { const t = P.route[(P.leg + 1) % P.route.length], dx = t[0] - P.root.position.x, dz = t[1] - P.root.position.z, l = Math.hypot(dx, dz); P.play(P.walk, 0.3, 1.2); if (l < 0.15) { P.leg = (P.leg + 1) % P.route.length; P.wait = 3 + Math.random() * 6; } else { const st = Math.min(l, 1.1 * d); P.root.position.x += dx / l * st; P.root.position.z += dz / l * st; let q = Math.atan2(dx, dz) - P.root.rotation.y; q = Math.atan2(Math.sin(q), Math.cos(q)); P.root.rotation.y += q * Math.min(1, d * 6); } P.pos.set(P.root.position.x, 0.5, P.root.position.z); } }
+      P.mixer.update(d); } } }   // the patrons move only while you are in the pub, at 20 frames a second
   W.t += dt; const t = W.t;
   for (const f of W.flames) {
     const n = Math.sin(t * 11 + f.ph) * 0.5 + Math.sin(t * 23.7 + f.ph * 2) * 0.3 + Math.sin(t * 5.1 + f.ph) * 0.2, k = 1 + n * (0.08 + f.wild * 0.5);
     f.mesh.scale.set(0.2 * f.s * (1 - n * 0.08), 0.44 * f.s * (1 + n * 0.14 + f.wild * 0.7), 1); f.mesh.material.rotation = n * 0.06 * (1 + f.wild * 5);
-    f.light.intensity = f.I * k * (f.on === false ? 0 : 1); f.glow.material.opacity = (0.7 + n * 0.2) * (f.on === false ? 0 : 1); f.mesh.visible = f.on !== false;
+    f.light.intensity = f.I * k * (f.on === false ? 0 : 1); f.glow.material.opacity = (0.3 + n * 0.08) * (f.on === false ? 0 : 1); f.mesh.visible = f.on !== false;
   }
   // lights-on blend (human in the kitchen)
   const d = W.litTarget - W.lit; if (Math.abs(d) > 1e-3) W.lit += d * Math.min(1, dt * (d > 0 ? 14 : 3)); else W.lit = W.litTarget;
   W.ceil.visible = W.lit > 0.01; W.ceil.intensity = 3.4 * W.lit; W.roomFill.intensity = 1.5 * W.lit; W.lamp.material.color.setRGB(0.02 + W.lit * 1.6, 0.02 + W.lit * 1.45, 0.02 + W.lit * 1.1);
   MC.scene.environment = W.lit > 0.5 ? W.envLit : W.envNight;
-  MC.renderer.toneMappingExposure = lerp(W.baseExposure || 1.15, 0.8, W.lit);
+  MC.renderer.toneMappingExposure = lerp(W.baseExposure || 0.95, 0.8, W.lit); MC.scene.environmentIntensity = lerp(0.22, 0.8, W.lit);
   MC.scene.fog.density = lerp(0.011, 0.004, W.lit);
   if (W.flash > 0) W.flash = Math.max(0, W.flash - dt * (W.flash > 0.6 ? 9 : 2.2));
   // dawn: the moonlight warms into sunrise through the window
@@ -401,7 +538,7 @@ W.update = function (dt, head) {
   const dw = W.dawn = (W.dawn || 0) + ((G0.mode === 'dawn' ? 1 : pre) - (W.dawn || 0)) * Math.min(1, dt * 0.6);
   const tp = W.st.tap; if (tp && tp.t >= 0) { tp.t += dt; const fy = tp.from.y - 9.8 * tp.t * tp.t; if (fy <= tp.land.y) { tp.t = -1; tp.drop.visible = false; MC.sfx.drip(tp.land, tp.metal); } else tp.drop.position.y = fy; }
   W.moon.color.copy(MOON_C).lerp(SUN_C, dw); W.hemi.color.copy(W.hemiC).lerp(DAWN_C, dw); W.sky.material.color.setRGB(1 + dw * 2.2, 1 + dw * 1.1, 1 + dw * 0.5);
-  const fl = (W.flash || 0) * ({ full: 1, dim: 0.3, off: 0 }[MC.opt.flash] ?? 1); W.moon.intensity = ((W.moonI == null ? 2.6 : W.moonI) + dw * 2.2) * (1 - W.lit * 0.8) * (1 + fl * 7); W.hemi.intensity = ((W.hemiI || 0.5) + dw * 0.9) * (1 + fl * 5);
+  const fl = (W.flash || 0) * ({ full: 1, dim: 0.3, off: 0 }[MC.opt.flash] ?? 1); W.moon.intensity = ((W.moonI == null ? 2.6 : W.moonI) + dw * 2.2) * (1 - W.lit * 0.8) * (1 + fl * 7); W.hemi.intensity = ((W.hemiI || 0.07) + dw * 0.9) * (1 + fl * 5);
   const pw = W.power == null ? 1 : W.power; if (W.nightLight) W.nightLight.intensity = 10 * pw; if (W.fairy) W.fairy.intensity = 5 * pw; if (W.bulbs) for (const b of W.bulbs) b.visible = pw > 0.5;
   for (const b of W.beams) b.material.opacity = 0.028 * (1 - W.lit) * (W.moonI == null ? 1 : W.moonI / 2.6);
   W.dust.material.opacity = 0.35 * (1 - W.lit * 0.7);

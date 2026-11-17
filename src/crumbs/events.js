@@ -140,7 +140,7 @@ E.list.snacker = {
       if (E.watch(eye, dt, cone ? { cone, center: look } : { center: look }) || byHand) { a.caught = true; G.caught(byHand ? 'The hand brushed right against you!' : 'The human saw a mouse!'); H.look = 0; a.ph = 5; a.pt = 0; if (H.carried) { H.carried.group.visible = false; H.carried = null; } }
     } else if (a.ph === 0) { E.state = 'coming'; }
   },
-  end() { if (H) { H.g.visible = false; H.torch.intensity = 0; if (H.carried) { H.carried.group.visible = false; H.carried = null; } } W.setLit(0); W.door.material.opacity = 0; MC.game.hiding = false; MC.game.spot = 0; E.state = null; if (MC.game.mode === 'play') MC.say('Safe. The diner is open again.', 3); },
+  end() { if (H) { H.g.visible = false; H.torch.intensity = 0; if (H.carried) { H.carried.group.visible = false; H.carried = null; } } W.setLit(0); W.door.material.opacity = 0; MC.game.hiding = false; MC.game.spot = 0; E.state = null; if (MC.game.mode === 'play') MC.say('Safe. Back to work.', 3); },
   reset() { if (H) H.g.visible = false; if (W.door) W.door.material.opacity = 0; E.state = null; },
 };
 
@@ -276,9 +276,9 @@ E.list.ants = {
   update(a, dt) {
     const C = MC.cook, hole = W.st.diner.hole, home = new V3(hole.x, 0, hole.z + 0.9), over = a.t > 30; let alive = 0;
     for (const n of a.ants) {
-      if (n.done) continue; alive++; if (n.wait > 0) { n.wait -= dt; continue; } n.g.visible = true; const p = n.g.position;
+      if (n.done) continue; alive++; if (n.wait > 0) { n.wait -= dt; continue; } n.g.visible = true; const p = n.g.position; if (!isFinite(p.x + p.z)) p.set(home.x, 0, home.z);
       const goto = (t, sp) => { n.re -= dt; if (!n.path || n.re <= 0) { const r = P.path(p.x, p.z, t.x, t.z); n.path = r ? r.pts.concat([[t.x, t.z]]) : [[t.x, t.z]]; n.pi = 0; n.re = 1.5; }
-        const w = n.path[Math.min(n.pi, n.path.length - 1)], dx = w[0] - p.x, dz = w[1] - p.z, d = Math.hypot(dx, dz); if (d < 0.2) { n.pi++; return n.pi >= n.path.length; } p.x += dx / d * sp * dt; p.z += dz / d * sp * dt; n.g.rotation.y = Math.atan2(dx, dz) + Math.PI; p.y = Math.abs(Math.sin(a.t * 30 + p.x)) * 0.02; return false; };
+        const w = n.path[Math.min(n.pi, n.path.length - 1)], dx = w[0] - p.x, dz = w[1] - p.z, d = Math.hypot(dx, dz); if (!(d >= 0.2)) { n.pi++; return n.pi >= n.path.length; } p.x += dx / d * sp * dt; p.z += dz / d * sp * dt; n.g.rotation.y = Math.atan2(dx, dz) + Math.PI; p.y = Math.abs(Math.sin(a.t * 30 + p.x)) * 0.02; return false; };
       const near = Math.hypot(PL.head.x - p.x, PL.head.z - p.z) < 1.5 && PL.rigY < 1.5;
       if (near && n.state !== 'flee') { if (n.it) { C.free(n.it, new V3(p.x, 0.3, p.z)); n.it.quietT = 1; n.it = null; S.pick(p); } n.state = 'flee'; n.fear = 3.5; n.path = null; S.skit(p); }
       if (n.state === 'flee') { n.fear -= dt; if (goto(home, 4.5) || n.fear <= 0) { if (over) { n.done = true; n.g.visible = false; } else if (n.fear <= 0) { n.state = 'seek'; n.path = null; } } }

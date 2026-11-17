@@ -33,6 +33,7 @@ K.ell = function (parent, mat, x, y, z, sx, sy, sz, o = {}) {
 };
 // Shell fur: stacked cut-out copies of a mesh, each pushed further out along the normals.
 K.fur = function (mesh, o = {}) {
+  if (MC.opt.fur !== true) return [];   // shell fur is off: the look is low-poly, and twelve layers a body is overdraw
   const layers = o.layers || 12, len = o.len || 0.06, root = col(o.root == null ? 0x3a3028 : o.root), tip = col(o.tip == null ? 0xb8a890 : o.tip), g0 = mesh.geometry, sc = mesh.scale, rep = o.repeat || 5, droop = o.droop == null ? 0.35 : o.droop;
   const p0 = g0.attributes.position, n0 = g0.attributes.normal, out = [];
   for (let i = 1; i <= layers; i++) {

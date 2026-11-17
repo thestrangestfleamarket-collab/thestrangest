@@ -5,9 +5,9 @@ import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
 import { TYPES, RULES } from './sim.js';
 import { buildCosmos } from '../space/cosmos.js';
 
-const BASE = '/turret-assets/', MODEL = { fighter: 'fighter2', ace: 'fighter', bomber: 'frigate2', torp: 'mine', drone: 'turret2', cruiser: 'mother2', pod: 'turret' };
+const BASE = '/turret-assets/', MODEL = { fighter: 'fighter2', ace: 'fighter', bomber: 'frigate2', torp: 'mine', drone: 'mine2', cruiser: 'mother2', pod: 'turret' };
 const WRECK = { fighter: 6, ace: 6, drone: 4, bomber: 9, torp: 3, cruiser: 18, pod: 4 }, HUD = 3;
-const NAMES = ['cruiser', 'fighter', 'fighter2', 'frigate2', 'mother2', 'turret', 'turret2', 'mine', 'rock1', 'rock2', 'rock3'];
+const NAMES = ['cruiser', 'fighter', 'fighter2', 'frigate2', 'mother2', 'turret', 'mine2', 'mine', 'rock1', 'rock2', 'rock3'];
 const UP = new THREE.Vector3(0, 1, 0), ZERO = new THREE.Vector3(), SUN = new THREE.Vector3(-0.55, 0.42, 0.72).normalize(), CRUISE = 60;
 const _v = new THREE.Vector3(), _w = new THREE.Vector3(), _m = new THREE.Matrix4(), _q = new THREE.Quaternion(), _q2 = new THREE.Quaternion(), _s = new THREE.Vector3(), _c = new THREE.Color(), FWD = new THREE.Vector3(0, 0, 1);
 const V = a => _v.set(a[0], a[1], a[2]);

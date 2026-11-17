@@ -5,23 +5,23 @@ const { chromium } = require('playwright'), fs = require('fs'), path = require('
 const ROOT = path.resolve(__dirname, '..'), HF = 'https://huggingface.co/datasets/allenai/objaverse/resolve/main/glbs/', SKY = 'https://cdn.eso.org/images/large/eso0932a.jpg';
 // out: [Sketchfab uid, Objaverse shard, options]. fwd, up: the way the model's nose and top point as it comes; tris: most triangles kept; tex: picture size; mats: materials kept (1 or 2); mesh: use only the n-th mesh (a pack of several); drop: leave out nodes whose name matches; clear: leave out see-through parts
 const LIST = {
-  mother: ['20f2e424303d47e4a5078f0255ef5689', '000-107', { fwd: '-z', tris: 16000, tex: 1024, mats: 2 }],
-  cruiser: ['9f99de3657234c939b58610bc99333ed', '000-129', { fwd: '-z', tris: 9000, tex: 1024, mats: 2 }],
-  frigate: ['63ce372c1aa843e98bf1548109e055d8', '000-081', { fwd: '+z', tris: 5000, tex: 512 }],
-  fighter: ['891bb91d22ac4115a8e3c423efb44457', '000-085', { fwd: '-z', tris: 2000, tex: 512, mats: 1 }],
-  turret: ['28fb90b851b5454589f5170b08c8c66d', '000-068', { fwd: '+x', tris: 3000, tex: 512 }],
+  mother: ['474f62d00ed54212b37f93ce91569c53', '000-134', { fwd: '+x', tris: 40000, tex: 1024, mats: 2 }],
+  cruiser: ['781e531c00d94c9e89dcc8ad9b967d87', '000-087', { fwd: '+z', tris: 14000, tex: 1024, mats: 2 }],
+  frigate: ['4cccb0378e474f8a8d3c7079e2e56d63', '000-049', { fwd: '+z', tris: 8000, tex: 1024 }],
+  fighter: ['99c1d15965c74f3aa7b5999e2d4e42e1', '000-024', { fwd: '+z', tris: 3500, tex: 1024, mats: 1 }],
+  turret: ['5ebad179815d44a8a8fa221d203fb383', '000-073', { fwd: '-z', tris: 6000, tex: 1024 }],
   mine: ['609990d577c645689181a2e1fc82ab1f', '000-024', { fwd: '+z', tris: 900, tex: 512 }],
   relay: ['7a5556a83ec24141b93c7fcce82a01de', '000-130', { fwd: '+z', tris: 4000, tex: 512 }],
   rock1: ['adde1ecf129e4509be8af61b84bafa85', '000-037', { mesh: 0, tris: 900, tex: 512 }],
   rock2: ['adde1ecf129e4509be8af61b84bafa85', '000-037', { mesh: 4, tris: 900, tex: 512 }],
   rock3: ['adde1ecf129e4509be8af61b84bafa85', '000-037', { mesh: 7, tris: 900, tex: 512 }],
   // the second fleet
-  mother2: ['c8e9020d658649238ee3cfc1c1d64a68', '000-149', { fwd: '-z', tris: 14000, tex: 1024, mats: 2 }],
-  cruiser2: ['ecc16e103e79448faf9730f172a1d7e8', '000-158', { fwd: '+z', tris: 9000, tex: 1024, mats: 2 }],
-  frigate2: ['502d0ff399d64eda8a7d932db619ce95', '000-080', { fwd: '+z', tris: 5000, tex: 512, mats: 2 }],
+  mother2: ['1b121a8965e241ada855288eef2732ba', '000-069', { fwd: '-x', tris: 36000, tex: 1024, mats: 2 }],
+  cruiser2: ['a53147cc2da943e7ae07f1e0b0a31518', '000-128', { fwd: '-z', tris: 32000, tex: 1024, mats: 2 }],
+  frigate2: ['025fb009e24746eba87d3458fb7db7d9', '000-123', { fwd: '-z', tris: 8000, tex: 1024 }],
   fighter2: ['303d3e5b8d544653bfde45189ca10c73', '000-051', { fwd: '-z', tris: 2000, tex: 512 }],
-  turret2: ['75cc87e9b5d54b84b91ba2439837f604', '000-061', { fwd: '+z', tris: 3000, tex: 512 }],
-  mine2: ['9932b325620c4d0db612671064cea986', '000-093', { fwd: '+z', tris: 900, tex: 512 }],
+  turret2: ['59b72a8e3ec24a0bb7b072cf6e130574', '000-036', { fwd: '+x', tris: 6000, tex: 1024, mats: 2 }],
+  mine2: ['5df948888c3748479a8b83ac1c5e0066', '000-044', { fwd: '+z', tris: 5000, tex: 512 }],
 };
 const NM = '/node_modules/', PAGE = `<script type="importmap">{"imports":{"three":"${NM}three/build/three.module.js","three/addons/":"${NM}three/examples/jsm/"}}</script><script type="module">
 import * as THREE from 'three';import {GLTFLoader} from 'three/addons/loaders/GLTFLoader.js';import {GLTFExporter} from 'three/addons/exporters/GLTFExporter.js';import {mergeGeometries,mergeVertices} from 'three/addons/utils/BufferGeometryUtils.js';import {MeshoptSimplifier as MS} from '${NM}meshoptimizer/meshopt_simplifier.js';

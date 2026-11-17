@@ -35,9 +35,9 @@ let cosmos = null;
 fetch(BASE + 'stars.json').then(r => r.json()).then(cat => { cosmos = buildCosmos(cat, SUN); space.add(cosmos); }).catch(() => {});
 // what the hulls' metal mirrors: a plain lit room, dim in open space so the sun does the work
 { const pm = new THREE.PMREMGenerator(renderer); scene.environment = pm.fromScene(new RoomEnvironment(), 0.04).texture; pm.dispose(); }
-const panel = new Panel(), banner = new Banner(), guide = new Guide(), post = new Post(renderer), HUD = 3; scene.add(banner.mesh, guide.mesh);
+const panel = new Panel(), banner = new Banner(), guide = new Guide(), post = new Post(renderer), HUD = 3; scene.add(banner.mesh, guide.mesh, panel.mesh);
 for (const m of [panel.mesh, banner.mesh, guide.mesh]) m.layers.set(HUD); camera.layers.enable(HUD);   // what the lens must leave sharp is on its own layer, drawn after it
-const G = { state: 'load', me: 0, sim: null, bots: [], view: null, net: null, host: false, peer: false, acc: 0, ar: false, canAR: false, over: false, placed: -1, alarm: 0, last: 0, paused: false, tOff: 0, fx: !Q.has('nofx'), fwd: new THREE.Vector3(0, 0, -1), fac: Q.get('navy') === '1' ? 1 : 0, peerFac: 1 };
+const G = { state: 'load', me: 0, sim: null, bots: [], view: null, net: null, host: false, peer: false, acc: 0, ar: false, canAR: false, over: false, placed: -1, alarm: 0, last: 0, paused: false, tOff: 0, fx: Q.has('fx') || (() => { try { return localStorage.getItem('spaceLens') === '1'; } catch (e) { return false; } })(), fwd: new THREE.Vector3(0, 0, -1), fac: Q.get('navy') === '1' ? 1 : 0, peerFac: 1 };
 const gnow = () => performance.now() - G.tOff;   // the battle's own clock: it stands still while the battle is paused
 function setView(ar) { post.rest(); G.ar = ar && G.canAR; space.visible = !G.ar; fill.intensity = G.ar ? 0.7 : 0.1; scene.environmentIntensity = G.ar ? 0.8 : 0.4; if (SIM) scene.background = null; }
 const _v = new THREE.Vector3(), _w = new THREE.Vector3(), _d = new THREE.Vector3(), _o = new THREE.Vector3(), _q = new THREE.Quaternion(), _m = new THREE.Matrix4(), _m2 = new THREE.Matrix4(), _up = new THREE.Vector3();
@@ -96,18 +96,21 @@ function place() {
 }
 
 // ---- hands -------------------------------------------------------------------------------------------------
-const ray = new THREE.Raycaster(), hands = [0, 1].map((i) => {
+const ray = new THREE.Raycaster(); ray.layers.enableAll();   // the console is on the lens's sharp layer; the pointer must still reach it
+const hands = [0, 1].map((i) => {
   const c = renderer.xr.getController(i), g = renderer.xr.getControllerGrip(i); scene.add(c, g);
   const pos = new Float32Array(18), geo = new THREE.BufferGeometry(); geo.setAttribute('position', new THREE.BufferAttribute(pos, 3).setUsage(THREE.DynamicDrawUsage));
   const lines = new THREE.LineSegments(geo, new THREE.LineBasicMaterial({ color: 0x9fd0ff, transparent: true, opacity: 0.7, depthWrite: false, toneMapped: false })); lines.frustumCulled = false; lines.visible = false; scene.add(lines);
   const dot = new THREE.Mesh(new THREE.SphereGeometry(1, 12, 8), new THREE.MeshBasicMaterial({ color: 0x66ff99, transparent: true, opacity: 0.9, depthWrite: false, toneMapped: false })); dot.visible = false; scene.add(dot);
   const bub = new THREE.Mesh(new THREE.SphereGeometry(1, 24, 16), new THREE.MeshBasicMaterial({ color: 0x66ccff, transparent: true, opacity: 0.14, depthWrite: false, toneMapped: false })); bub.visible = false; scene.add(bub);
   for (const m of [lines, dot, bub]) m.layers.set(HUD);
-  const h = { i, c, g, pos, lines, dot, bub, src: null, on: false, mode: null, d: 0.4, t0: 0, id: 0, ui: -1, grip: false, g0: new THREE.Vector3(), o: new THREE.Vector3(), dir: new THREE.Vector3(), cur: new THREE.Vector3(), c0: new THREE.Vector3(), start: new THREE.Vector3(), lo: new THREE.Vector3(), ld: new THREE.Vector3(), lc: new THREE.Vector3(), btn: [false, false, false] };
-  c.addEventListener('connected', (e) => { h.src = e.data; h.on = true; lines.visible = true; if (e.data.handedness === 'left') g.add(panel.mesh); });
+  const h = { i, c, g, pos, lines, dot, bub, src: null, on: false, mode: null, d: 0.4, t0: 0, id: 0, ui: -1, grip: false, g0: new THREE.Vector3(), o: new THREE.Vector3(), dir: new THREE.Vector3(), cur: new THREE.Vector3(), c0: new THREE.Vector3(), start: new THREE.Vector3(), lo: new THREE.Vector3(), ld: new THREE.Vector3(), lc: new THREE.Vector3(), btn: [false, false, false], onPanel: false, carry: false, off: new THREE.Matrix4() };
+  c.addEventListener('connected', (e) => { h.src = e.data; h.on = true; lines.visible = true;  });
   c.addEventListener('disconnected', () => { h.src = null; h.on = false; lines.visible = dot.visible = bub.visible = false; h.mode = null; h.grip = false; regrab(); });
   c.addEventListener('selectstart', () => press(h)); c.addEventListener('selectend', () => release(h));
-  c.addEventListener('squeezestart', () => { h.grip = true; regrab(); }); c.addEventListener('squeezeend', () => { h.grip = false; regrab(); });
+  // a grip on the console carries the console; anywhere else it takes hold of the field
+  c.addEventListener('squeezestart', () => { if (h.onPanel) { h.carry = true; c.updateMatrixWorld(); panel.mesh.updateMatrixWorld(); h.off.copy(c.matrixWorld).invert().multiply(panel.mesh.matrixWorld); buzz(h); return; } h.grip = true; regrab(); });
+  c.addEventListener('squeezeend', () => { if (h.carry) { h.carry = false; panel.pinned = true; return; } h.grip = false; regrab(); });
   return h; });
 const buzz = (h, a = 0.4, ms = 25) => { try { h.src?.gamepad?.hapticActuators?.[0]?.pulse(a, ms); } catch {} };
 const M0 = new THREE.Matrix4();
@@ -121,7 +124,8 @@ function grabWorld() {
   _m.decompose(arena.position, arena.quaternion, arena.scale); fitLight(); if (_v.copy(arena.position).applyMatrix4(_m2.copy(M0).invert()).lengthSq() > 0.0004) guide.mark('moved');
 }
 function press(h) {
-  if (h.ui >= 0) { const b = panel.btn[h.ui]; buzz(h); if (!b) return; if (b.id === 'ar') { if (G.canAR) { setView(!G.ar); sfx('ui_click', null, 0.6); } else sfx('ui_deny', null, 0.5); } else if (b.id === 'all') cmd.all(); else if (b.id === 'pause') cmd.pause(); else if (b.id === 'guide') { sfx('ui_click', null, 0.6); if (guide.on) guide.stop(); else guide.start(); } else if (b.id === 'fx') { G.fx = !G.fx; post.rest(); sfx('ui_click', null, 0.6); } else if (b.id === 'x') { sfx('ui_click', null, 0.6); if (G.state === 'wait') solo(); else cmd.again(); } else cmd.build(+b.id.slice(1)); return; }
+  if (h.onPanel && h.ui < 0) return;   // on the console but between its buttons: nothing, and not a bubble behind it
+  if (h.ui >= 0) { const b = panel.btn[h.ui]; buzz(h, 0.8, 40); panel.press(h.ui); G.last = 0; if (!b) return; if (b.id === 'ar') { if (G.canAR) { setView(!G.ar); sfx('ui_click', null, 0.6); } else sfx('ui_deny', null, 0.5); } else if (b.id === 'all') cmd.all(); else if (b.id === 'pause') cmd.pause(); else if (b.id === 'guide') { sfx('ui_click', null, 0.6); if (guide.on) guide.stop(); else guide.start(); } else if (b.id === 'fx') { G.fx = !G.fx; try { localStorage.setItem('spaceLens', G.fx ? '1' : '0'); } catch (e) {} post.rest(); sfx('ui_click', null, 0.6); } else if (b.id === 'x') { sfx('ui_click', null, 0.6); if (G.state === 'wait') solo(); else cmd.again(); } else cmd.build(+b.id.slice(1)); return; }
   guide.mark('go'); if (G.state !== 'play') return; const V = G.view, u = V.units.get(V.hover[h.i]);
   if (u && u.side === G.me) { if (h.tap === u.id && performance.now() - h.t0 < 450) { h.tap = 0; cmd.stop(V.sel.has(u.id) ? [...V.sel] : [u.id]); buzz(h, 0.8, 60); return; } h.tap = u.id; if (!V.sel.has(u.id)) { V.sel.clear(); V.sel.add(u.id); } h.mode = 'drag'; h.id = u.id; h.d = world(u.pos).distanceTo(h.o); h.t0 = performance.now(); h.c0.copy(h.o).addScaledVector(h.dir, h.d); buzz(h); sfx('select', world(u.pos), 0.6); }
   else if (u && V.sel.size) { cmd.order([...V.sel], 1, null, u.id, true); buzz(h, 0.7, 40); }
@@ -144,11 +148,11 @@ function hand(h, dt) {
         fitLight(); guide.mark('moved'); if (hands.some(x => x.grip)) regrab(); } }
     if (h.mode && gp.axes.length > 3 && Math.abs(gp.axes[3]) > 0.15) h.d = THREE.MathUtils.clamp(h.d - gp.axes[3] * dt * 1.3, 0.08, 5); }
   // the panel, then the field
-  h.ui = -1; let len = 0.35;
-  if (!h.mode && panel.mesh.parent && panel.mesh.parent !== h.g) { ray.set(h.o, h.dir); ray.far = 1.5; const hit = ray.intersectObject(panel.mesh, false)[0]; if (hit && hit.uv) { h.ui = panel.at(hit.uv); len = hit.distance; } }
-  if (panel.mesh.parent && panel.mesh.parent !== h.g) panel.hot = h.ui;
+  h.ui = -1; h.onPanel = false; let len = 0.35;
+  if (h.carry) { h.c.updateMatrixWorld(); _m.multiplyMatrices(h.c.matrixWorld, h.off).decompose(panel.mesh.position, panel.mesh.quaternion, _v); panel.t.copy(panel.mesh.position); }
+  else if (!h.mode) { ray.set(h.o, h.dir); ray.far = 2.5; const hit = ray.intersectObject(panel.mesh, false)[0]; if (hit && hit.uv) { h.onPanel = true; h.ui = panel.at(hit.uv); len = hit.distance; } }
   arena.worldToLocal(h.lo.copy(h.o)); _q.copy(arena.quaternion).invert(); h.ld.copy(h.dir).applyQuaternion(_q);
-  V.hover[h.i] = !h.mode && h.ui < 0 && G.state === 'play' ? V.pick(h.lo, h.ld, s, 4 / s) : 0;
+  V.hover[h.i] = !h.mode && !h.onPanel && !h.carry && G.state === 'play' ? V.pick(h.lo, h.ld, s, 4 / s) : 0;
   if (V.hover[h.i] && !h.mode) { const u = V.units.get(V.hover[h.i]); len = world(u.pos).distanceTo(h.o); if (u.side === G.me) guide.mark('hover'); }
   h.cur.copy(h.o).addScaledVector(h.dir, h.mode ? h.d : len); arena.worldToLocal(h.lc.copy(h.cur));
   P[0] = h.o.x; P[1] = h.o.y; P[2] = h.o.z; P[3] = h.cur.x; P[4] = h.cur.y; P[5] = h.cur.z; for (let k = 6; k < 18; k++) P[k] = 0;
@@ -157,7 +161,9 @@ function hand(h, dt) {
       h.dot.visible = true; h.dot.position.copy(_w); h.dot.scale.setScalar(0.008); h.dot.material.color.set(foe ? 0xff4030 : 0x66ff99);
       P[6] = _w.x; P[7] = _w.y; P[8] = _w.z; world(u.pos); P[9] = _w.x; P[10] = _w.y; P[11] = _w.z;
       world(h.lc); P[12] = _w.x; P[13] = _w.y; P[14] = _w.z; world(_v.set(h.lc.x, 0, h.lc.z)); P[15] = _w.x; P[16] = _w.y; P[17] = _w.z; } }
+  else if (h.onPanel) { h.dot.visible = true; h.dot.position.copy(h.cur); h.dot.scale.setScalar(0.007); h.dot.material.color.set(h.ui >= 0 ? 0xffffff : 0x8090a8); }
   else if (h.mode === 'marq') { _v.addVectors(h.lc, h.start).multiplyScalar(0.5); const r = h.lc.distanceTo(h.start) / 2; world(_v); h.bub.visible = r * s > 0.01; h.bub.position.copy(_w); h.bub.scale.setScalar(r * s); }
+  if (!h.mode && !h.onPanel) h.dot.visible = false;
   h.lines.geometry.attributes.position.needsUpdate = true;
 }
 
@@ -175,16 +181,16 @@ function wire(V) { V.onEvent = (kind, a, b) => {
 let prev = 0;
 function frame(time) {
   const real = performance.now(), dt = Math.min(0.05, (time - prev) / 1000 || 0.011); if (G.paused) G.tOff += Math.max(0, time - prev) || 0; prev = time; const now = gnow(), V = G.view; if (!V) return renderer.render(scene, camera);
-  if (G.state !== 'lobby') { step(dt, now); grabWorld(); for (const h of hands) hand(h, dt); }
+  if (G.state !== 'lobby') { step(dt, now); grabWorld(); for (const h of hands) hand(h, dt); panel.hot = hands[0].on ? hands[0].ui : -1; panel.hot2 = hands[1].on ? hands[1].ui : -1; }
   V.draw(now, G.paused ? 0 : dt, camera);
   // the end, the alarm, the engines' voice
   if (G.state === 'play' && V.winner >= 0 && !G.over) { G.over = true; const won = V.winner === G.me; banner.set(V.winner === 2 ? 'DRAW' : won ? 'VICTORY' : 'DEFEAT', won ? '#6fe0a0' : '#ff6a5a'); sfx(won ? 'win' : 'lose', null, 0.8); }
   let thr = 0, n = 0, mine = 0; for (const u of V.units.values()) { thr += u.thr; n++; if (u.side === G.me && u.type !== MOTHER) mine++; if (u.type === MOTHER && u.side === G.me && now - u.hit < 300 && now - G.alarm > 14000 && !G.over) { G.alarm = now; sfx('alarm', null, 0.5); banner.set('MOTHERSHIP UNDER ATTACK', '#ff6a5a', 2.5); } }
   loop('engine', n ? 0.06 + 0.2 * thr / n : 0); loop('ambience', G.state === 'lobby' ? 0 : 0.3);
   camera.getWorldPosition(_o); camera.getWorldDirection(_d); _up.set(0, 1, 0).applyQuaternion(camera.getWorldQuaternion(_q)); listen({ position: _o }, _d, _up);
-  shell.position.copy(_o); G.fwd.copy(_d).setY(0); if (G.fwd.lengthSq() < 1e-4) G.fwd.set(0, 0, -1); G.fwd.normalize(); guide.tick(real, _o, G.fwd);
+  shell.position.copy(_o); G.fwd.copy(_d).setY(0); if (G.fwd.lengthSq() < 1e-4) G.fwd.set(0, 0, -1); G.fwd.normalize(); guide.tick(real, _o, G.fwd); panel.mesh.visible = G.state !== 'lobby'; if (G.state !== 'lobby' && !hands.some(h => h.carry)) panel.follow(_o, G.fwd);
   banner.tick(real); banner.mesh.position.copy(arena.position); banner.mesh.position.y += 0.62 * arena.scale.x; banner.mesh.scale.setScalar(Math.max(0.6, arena.scale.x * 1.6)); banner.mesh.lookAt(_o);
-  if (now - G.last > 200) { G.last = now; panel.draw({ credits: V.credits[G.me], income: V.income[G.me], count: mine, queue: V.queue[G.me] || [], me: G.me, ar: G.ar, canAR: G.canAR, state: G.over ? 'over' : G.state, costs: table(V.fac[G.me]), paused: G.paused, fx: G.fx, guide: guide.on, extra: G.state === 'wait' ? 'PLAY THE BOT' : G.over ? 'PLAY AGAIN' : '' }); }
+  if (real - G.last > 150) { G.last = real; panel.draw({ credits: V.credits[G.me], income: V.income[G.me], count: mine, queue: V.queue[G.me] || [], me: G.me, ar: G.ar, canAR: G.canAR, state: G.over ? 'over' : G.state, costs: table(V.fac[G.me]), paused: G.paused, fx: G.fx, guide: guide.on, extra: G.state === 'wait' ? 'PLAY THE BOT' : G.over ? 'PLAY AGAIN' : '' }); }
   // open space goes through the lens, focused on the ship nearest the middle of your sight (the field's middle when there is none); your room does not
   if (!G.ar && G.fx) { let best = 0.9, f = Math.max(0.3, _v.copy(arena.position).sub(_o).length()); for (const u of V.units.values()) { world(u.pos).sub(_o); const d = _w.length(), c = _w.dot(_d) / (d || 1); if (c > best) { best = c; f = d; } } post.render(scene, camera, f); }
   else renderer.render(scene, camera);

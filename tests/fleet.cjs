@@ -43,19 +43,6 @@ const IWER = fs.readFileSync(require.resolve('iwer/build/iwer.min.js'), 'utf8');
     ok(SPACE.clean({ t: 's', a: [1, 2, 3] }, 0).a.length === 3 && SPACE.clean({ t: 's', a: [1] }, 1) === null && SPACE.clean({ t: 'o', ids: [3], k: 1, p: [0, 9, 0], tid: 4 }, 1).p[1] === 2 && SPACE.clean({ t: 'b', u: 99 }, 1).u === 5 && SPACE.clean({ t: 'cheat' }, 0) === null && SPACE.slot([0]) === 1,
       'the room passes the host\'s pictures, orders and builds, drops the rest, and seats the second player'); ok(SPACE.clean({ t: 'm', ids: [1, 2], m: 7 }, 1).m === 2 && SPACE.clean({ t: 'o', ids: [3], k: 0, p: [0, 0, 0], tid: 0, m: 1 }, 1).m === 1, 'and how ships are to go about their orders'); }
 
-  // ---- a ship flown by hand ----
-  { const s = new Sim(), f = s.units.find(u => u.side === 0 && u.type === FIGHTER), g = s.units.filter(u => u.side === 0 && u.type === FIGHTER)[1];
-    ok(!s.fly(1, f.id, { x: 0, y: 0, z: -1, thr: 1 }) && s.fly(0, f.id, { x: 1, y: 0, z: 0, thr: 1 }), 'CONTROL: you may fly your own ship, not the other side\'s');
-    const z0 = f.z; for (let i = 0; i < 30; i++) { s.fly(0, f.id, { x: 1, y: 0.3, z: 0, thr: 1 }); s.step(); } ok(f.x > 0.4 && f.y > 0.1 && Math.abs(f.z - z0) < 0.12 && Math.abs(f.yaw - Math.PI / 2) < 0.1, 'it turns its nose to where you point and thrusts along it');
-    const x0 = f.x; for (let i = 0; i < 20; i++) { s.fly(0, f.id, { x: 1, y: 0, z: 0, thr: 0 }); s.step(); } const x1 = f.x; for (let i = 0; i < 10; i++) { s.fly(0, f.id, { x: 1, y: 0, z: 0, thr: 0 }); s.step(); } ok(f.x - x1 < 0.01 && x1 > x0, 'no thrust: it coasts to a stop');
-    ok(read(s.snap()).units.find(u => u.id === f.id).k === 3, 'the picture says which ship is flown by hand'); s.order(0, [f.id], 0, [0, 0, 0]); s.fly(0, f.id, { x: 0, y: 0, z: 1, thr: 0 }); s.step(); ok(f.fly && Math.hypot(f.vx, f.vz) < 0.05, 'an order does not take it out of your hands');
-    s.fly(0, g.id, { x: 0, y: 0, z: 1, thr: 0 }); ok(g.fly && !f.fly, 'one ship a side is flown: taking another hands the first back');
-    for (let i = 0; i < 3; i++) { s.fly(0, g.id, { x: 0, y: 1, z: 0, thr: 0, fire: 1 }); s.step(); } ok(read(s.snap()).ev.includes(5), 'a shot at empty space is told to the headsets as a miss');
-    for (let i = 0; i < 14; i++) s.step(); ok(!g.fly && g.k === 0, 'with no word from its pilot for a second it is handed back and holds'); }
-  { const s = new Sim(); s.units = s.units.filter(u => u.type === MOTHER); const c = s.spawn(CRUISER, 0, [0, 0, 0.3]), t = s.spawn(FRIGATE, 1, [0.3, 0, 0.3]), t2 = s.spawn(FRIGATE, 1, [-0.3, 0, 0.3]); t.k = t2.k = 1; t.gx = 0.3; t2.gx = -0.3; t.gz = t2.gz = 0.3; const h = t.hp + t.sh, h2 = t2.hp + t2.sh;
-    for (let i = 0; i < 40; i++) { s.fly(0, c.id, { x: t.x - c.x, y: t.y - c.y, z: t.z - c.z, thr: 0, fire: 1 }); s.step(); } ok(t.hp + t.sh < h - 100 && t2.hp + t2.sh === h2, 'its guns fire where you point: the ship on that line is hit, the one behind you is not');
-    const far = s.spawn(FRIGATE, 1, [0.3, 0, -1]), hf = far.hp + far.sh; far.k = 1; far.gx = 0.3; far.gz = -1; for (let i = 0; i < 20; i++) { s.fly(0, c.id, { x: far.x - c.x, y: 0, z: far.z - c.z, thr: 0, fire: 1 }); s.step(); } ok(far.hp + far.sh === hf, 'nothing out of reach is hit'); }
-  { const { SPACE } = await import(pathToFileURL(path.resolve('worker/space.js'))); const m = SPACE.clean({ t: 'fl', id: 7, d: [9, 0.5, -9], th: 4, f: 1, x: 'y' }, 1); ok(m && m.id === 7 && m.d[0] === 1 && m.d[2] === -1 && m.th === 1 && m.f === 1 && !('x' in m), 'the room passes a pilot\'s word, cut to what it may hold'); }
 
   // ---- the page alone against the bot ----
   await new Promise(res => srv.listen(0, '127.0.0.1', res)); const URL = 'http://127.0.0.1:' + srv.address().port + '/' + path.basename(PAGE);
@@ -78,13 +65,6 @@ const IWER = fs.readFileSync(require.resolve('iwer/build/iwer.min.js'), 'utf8');
     const p1 = await pg.evaluate(() => __space.G.view.bodies.filter(b => b.kind === 1).map(b => [b.p.x, b.p.y, b.p.z]));
     ok(p0.length >= 8 && p0.every(a => a[3] > 0.002) && p0.some(a => a[4] > 0.2) && p1.some((a, i) => p0[i] && Math.hypot(a[0] - p0[i][0], a[1] - p0[i][1], a[2] - p0[i][2]) > 0.01), 'a destroyed cruiser breaks into ' + p0.length + ' pieces of its own hull, each flying and spinning on its own');
     if (OUT) await pg.screenshot({ path: path.join(OUT, 'space-solo.png') });
-    // CONTROL on the console: pick one ship, press it, and you are on its back; a grip (or leaving) puts the field back
-    const st = await pg.evaluate(() => { const S = __space, V = S.G.view, f = [...V.units.values()].find(u => u.side === 0 && u.type === 1); if (!f) return null; V.sel.clear(); V.sel.add(f.id); const i = S.panel.btn.findIndex(b => b.id === 'fly'); S.hands[0].ui = i; return { id: f.id, i, s0: S.arena.scale.x }; });
-    if (st) { await pg.waitForTimeout(400); await pg.evaluate(() => { const S = __space, V = S.G.view, one = [...V.sel][0]; S.takeControl(one); S.pilot.in = { dir: [0.4, 0.2, -0.9], thr: 1, fire: 0 }; }); await pg.waitForTimeout(2500);
-      const fl = await pg.evaluate((id) => { const S = __space, u = S.G.sim.byId.get(id), v = S.G.view.units.get(id); const w = v ? S.arena.localToWorld(v.pos.clone()) : null; return { pilot: S.pilot.id, fly: !!(u && u.fly), scale: S.arena.scale.x, near: w ? w.distanceTo(S.camera.position) : 99, panel: S.panel.mesh.visible, sight: S.scene.children.some(o => o.isMesh && o.visible && o.geometry.type === 'RingGeometry' && o.renderOrder === 30) }; }, st.id);
-      ok(st.i >= 0, 'the console has a CONTROL button'); ok(fl.pilot === st.id && fl.fly && fl.scale > 100 && fl.near < 8 && !fl.panel && fl.sight, 'CONTROL: the field grows round you until you sit on that ship (' + fl.near.toFixed(1) + ' m from it), your sight ahead, and it flies as you point');
-      if (OUT) await pg.screenshot({ path: path.join(OUT, 'space-control.png') });
-      await pg.evaluate(() => __space.leaveControl()); const bk = await pg.evaluate((id) => { const S = __space, u = S.G.sim.byId.get(id); return { pilot: S.pilot.id, fly: !!(u && u.fly), scale: S.arena.scale.x }; }, st.id); ok(bk.pilot === 0 && !bk.fly && Math.abs(bk.scale - st.s0) < 1e-6, 'handing it back puts the field where it was and the ship on guard'); }
     await pg.close(); }
 
   // ---- two linked pages ----

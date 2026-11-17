@@ -24,7 +24,7 @@ class Panel {
   // s: { credits, income, count, queue, me, ar, canAR, state, extra, paused, fx, guide, costs }
   draw(s) {
     const lit = this.flash >= 0 && performance.now() - this.flashAt < 220 ? this.flash : -1; if (lit < 0) this.flash = -1;
-    const key = [s.mode, s.col, lit, s.fly, s.paused, s.fx, s.guide, s.costs && s.costs[1].cost, s.credits | 0, s.income, s.count, s.queue.map(q => q.type + ':' + Math.round(q.done * 20)).join(), s.me, s.ar, s.state, s.extra, this.hot, this.hot2].join('|'); if (key === this.key) return; this.key = key;
+    const key = [s.mode, s.col, lit, s.paused, s.fx, s.guide, s.costs && s.costs[1].cost, s.credits | 0, s.income, s.count, s.queue.map(q => q.type + ':' + Math.round(q.done * 20)).join(), s.me, s.ar, s.state, s.extra, this.hot, this.hot2].join('|'); if (key === this.key) return; this.key = key;
     const x = this.x, play = s.state === 'play'; x.clearRect(0, 0, W, H); x.fillStyle = 'rgba(6,10,18,0.94)'; x.beginPath(); x.roundRect(3, 3, W - 6, H - 6, 34); x.fill(); x.strokeStyle = COL[s.col | 0]; x.lineWidth = 6; x.stroke();
     x.textBaseline = 'middle'; x.textAlign = 'left'; x.fillStyle = '#ffd766'; x.font = 'bold 64px system-ui,sans-serif'; x.fillText('\u25C8 ' + (s.credits | 0), 36, 62);
     x.fillStyle = '#9fb0c8'; x.font = '32px system-ui,sans-serif'; x.fillText('+' + s.income + ' a second', 330, 66); x.textAlign = 'right'; x.fillStyle = s.count >= CAP ? '#ff6a5a' : '#cfd8e6'; x.fillText('FLEET ' + s.count + ' / ' + CAP, W - 36, 66);
@@ -46,11 +46,8 @@ class Panel {
     const y = 532, bh = 84, row = (k, n, label, id, on, glow) => { const bw = (W - 72 - 14 * (n - 1)) / n, x0 = 36 + k * (bw + 14), i = this.btn.length; x.fillStyle = lit === i ? '#3f8f5f' : (this.hot === i || this.hot2 === i) ? '#2b4f86' : glow ? '#285a3c' : on ? '#1b3050' : '#10151e'; x.beginPath(); x.roundRect(x0, y, bw, bh, 18); x.fill(); if (this.hot === i || this.hot2 === i) { x.strokeStyle = '#7fc0ff'; x.lineWidth = 5; x.stroke(); }
       x.textAlign = 'center'; x.fillStyle = on ? '#fff' : '#66707f'; x.font = 'bold 28px system-ui,sans-serif'; x.fillText(label, x0 + bw / 2, y + bh / 2 + 2); this.btn.push({ x0, y0: y, x1: x0 + bw, y1: y + bh, id }); };
     row(0, 5, s.paused ? 'RESUME' : 'PAUSE', 'pause', play, s.paused); row(1, 5, s.extra || 'PICK ALL', s.extra ? 'x' : 'all', true, !!s.extra); row(2, 5, s.ar ? 'SEE SPACE' : 'SEE ROOM', 'ar', s.canAR); row(3, 5, s.guide ? 'SKIP GUIDE' : 'GUIDE', 'guide', true, s.guide); row(4, 5, s.fx ? 'LENS ON' : 'LENS OFF', 'fx', !s.ar, s.fx && !s.ar);
-    // CONTROL: fly the one ship you have picked yourself
-    { const y0 = 618, bh = 62, i = this.btn.length, hot = this.hot === i || this.hot2 === i, on = play && s.fly; x.fillStyle = lit === i ? '#3f8f5f' : hot ? '#2b4f86' : on ? '#3a2f12' : '#10151e'; x.beginPath(); x.roundRect(36, y0, W - 72, bh, 18); x.fill(); if (hot || on) { x.strokeStyle = hot ? '#7fc0ff' : '#ffd766'; x.lineWidth = hot ? 5 : 3; x.stroke(); }
-      x.textAlign = 'center'; x.fillStyle = on ? '#ffd766' : '#66707f'; x.font = 'bold 30px system-ui,sans-serif'; x.fillText(on ? 'CONTROL  \u2014  fly the picked ship yourself' : 'CONTROL  \u2014  pick one of your ships first', W / 2, y0 + bh / 2 + 2); this.btn.push({ x0: 36, y0, x1: W - 36, y1: y0 + bh, id: 'fly' }); }
     x.textAlign = 'center'; x.fillStyle = '#7f8ea6'; x.font = '21px system-ui,sans-serif';
-    x.fillText('TRIGGER a ship and drag: send it.  Drop it on an enemy: attack.  Tap twice: stop.', W / 2, 704); x.fillText('RIGHT stick: zoom, turn.  LEFT stick: fly.  Click a stick: pause.  GRIP: drag the field or this board.', W / 2, 734, W - 60);
+    x.fillText('TRIGGER a ship and drag: send it.  Drop it on an enemy: attack.  Tap twice: stop.', W / 2, 660); x.fillText('RIGHT stick: zoom, turn.  LEFT stick: fly.  Click a stick: pause.  GRIP: drag the field or this board.', W / 2, 702, W - 60);
     this.tex.needsUpdate = true;
   }
   // which button a spot on the board (uv 0..1) is on

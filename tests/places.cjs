@@ -40,7 +40,9 @@ const TOUR=[
 ];
 (async()=>{
   fs.mkdirSync(OUT,{recursive:true});
-  const w=spawn('npx',['wrangler','dev','--port',String(PORT),'--ip','127.0.0.1','--var','DEV_AUTH:1','--show-interactive-dev-session=false'],{stdio:['ignore','pipe','pipe'],detached:true,env:{...process.env,WRANGLER_SEND_METRICS:'false'}});
+  // as tests/site.cjs: the AI binding is always remote under wrangler dev and needs a Cloudflare token the check does not have, so the worker starts from a copy of the config without it
+  const CFG=path.join(__dirname,'..','.places-wrangler.jsonc'); fs.writeFileSync(CFG,fs.readFileSync(path.join(__dirname,'..','wrangler.jsonc'),'utf8').replace(/^\s*"ai"\s*:\s*\{[^}]*\},?\s*$/m,'')); process.on('exit',()=>{ try{ fs.unlinkSync(CFG); }catch(e){} });
+  const w=spawn('npx',['wrangler','dev','-c',CFG,'--port',String(PORT),'--ip','127.0.0.1','--var','DEV_AUTH:1','--show-interactive-dev-session=false'],{stdio:['ignore','pipe','pipe'],detached:true,env:{...process.env,WRANGLER_SEND_METRICS:'false'}});
   const stop=()=>{ try{ process.kill(-w.pid,'SIGKILL'); }catch(e){ try{ w.kill('SIGKILL'); }catch(_){} } };   // the worker's whole group: wrangler leaves workerd on the port otherwise, and the next test on it talks to this one
   let log=''; w.stdout.on('data',d=>log+=d); w.stderr.on('data',d=>log+=d);
   let up=false; for(let i=0;i<120&&!up;i++){ await wait(1000); up=await fetch(BASE+'/').then(r=>r.ok).catch(()=>false); }

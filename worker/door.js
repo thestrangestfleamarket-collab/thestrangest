@@ -138,6 +138,9 @@ export default {
     // AR DUEL (src/duel/): its own page at /duel, to anyone with the link; its pictures under /duel-assets/
     if ((request.method === "GET" || request.method === "HEAD") && p === "/duel") return page(env, url, "/duel", request, "no-cache");
     if (p === "/duel/") return Response.redirect(url.origin + "/duel" + url.search, 301);
+    // SLOWFIRE DUEL (src/qzar/): its own page at /qzar, to anyone with the link
+    if ((request.method === "GET" || request.method === "HEAD") && p === "/qzar") return page(env, url, "/qzar", request, "no-cache");
+    if (p === "/qzar/") return Response.redirect(url.origin + "/qzar" + url.search, 301);
     // DEAD END (src/hide/): its own page at /hide, to anyone with the link; its pictures, models and sounds under /hide-assets/; the thing's mind and voice (POST /hide/mind, /hide/say) to anyone who plays
     if ((request.method === "GET" || request.method === "HEAD") && p === "/hide") return page(env, url, "/hide", request, "no-cache");
     if (p === "/hide/") return Response.redirect(url.origin + "/hide" + url.search, 301);

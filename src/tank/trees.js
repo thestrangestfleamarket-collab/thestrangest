@@ -83,7 +83,42 @@ const MTREE={n:0,bake(set,i){
   let wd=0;for(let k=0;k<p.length;k+=3){p[k]=m.p[k]/H;p[k+1]=m.p[k+1]/H;p[k+2]=m.p[k+2]/H;wd=Math.max(wd,Math.abs(p[k]),Math.abs(p[k+2]));}for(let k=0;k<c.length;k++)c[k]=Math.pow(m.c[k]/255,2.2);
   g.setAttribute('position',new T.BufferAttribute(p,3));g.setAttribute('normal',new T.BufferAttribute(m.n,3));g.setAttribute('color',new T.BufferAttribute(c,3));{const uv=new Float32Array(m.uv);if(!rec.sum)for(let t=0;t<m.k.length;t++)for(let v=0;v<3;v++){const q=(t*3+v)*2;if(m.k[t]){uv[q]=.97;uv[q+1]=.5;}else uv[q]*=.44;}g.setAttribute('uv',new T.BufferAttribute(uv,2));}
   const mat=new T.MeshLambertMaterial({vertexColors:true,side:T.DoubleSide,map:TREEGEN.leaf(),alphaTest:.5}),sc=new T.Scene(),mesh=new T.Mesh(g,mat);sc.add(mesh);
-  const sun=new T.DirectionalLight(0xfff0d8,2.6);sun.position.set(.6,.9,.7);sc.add(sun,new T.HemisphereLight(0xbfd4ff,0x4a4030,1.5));
+  const sun=new T.DirectionalLight(0xfff0d8,1.9);sun.position.set(.6,.9,.7);sc.add(sun,new T.HemisphereLight(0xbfd4ff,0x4a4030,.85));
   const w=Math.max(.2,wd*2.06),cam=new T.OrthographicCamera(-w/2,w/2,.52,-.51,.1,20),tm=renderer.toneMapping,cc=renderer.getClearColor(new T.Color()).clone(),ca=renderer.getClearAlpha(),tex=[],rts=[];renderer.toneMapping=T.NoToneMapping;renderer.setClearColor(0x2a3a1c,0);
   for(const a of[0,Math.PI/2]){const rt=new T.WebGLRenderTarget(512,512,{depthBuffer:true});rt.texture.generateMipmaps=true;rt.texture.minFilter=T.LinearMipmapLinearFilter;rt.texture.anisotropy=4;cam.position.set(Math.sin(a)*8,.5,Math.cos(a)*8);cam.lookAt(0,.5,0);renderer.setRenderTarget(rt);renderer.clear();renderer.render(sc,cam);tex.push(rt.texture);rts.push(rt);}
   renderer.setRenderTarget(null);renderer.toneMapping=tm;renderer.setClearColor(cc,ca);g.dispose();mat.dispose();MTREE.n++;return{w,tex,rts};}};
+// THE MARKET's big park trees (its src/144d-bigtrees.js, copied in): a thick lumpy trunk with roots, one massive branch and four to eight smaller ones, a dense crown of leaf puffs; in metres, standing at the origin
+const BIGT=(()=>{
+  const hs=(a,b)=>{const s=Math.sin(a*127.1+b*311.7)*43758.5453;return s-Math.floor(s);};
+  const KIND={A:{h:62,r0:3.2,r1:.5,br:[[13,0,1.9],[14,7,1.5],[15,14,1.1],[15.5,20,.8],[16.5,26,.5]]},B:{h:58,r0:3,r1:.5,br:[[8,0,2],[11.5,6,1.6],[15.5,12,1.25],[20,18,.9],[24.5,24,.55]]},C:{h:55,r0:3.6,r1:.55,br:[[6,0,2.1],[5.2,7,1.7],[4.4,14,1.35],[4.8,20,1],[6.5,25,.7],[9,29,.45]]}};
+  const GREEN=[[.37,.6,.32],[.43,.67,.36],[.5,.72,.4],[.31,.54,.28]];
+  const tube=(pts,P)=>{const c=new T.CatmullRomCurve3(pts.map(q=>new T.Vector3(q[0],q[1],q[2]))),n=Math.max(8,pts.length*8),rad=pts.map(q=>q[3]);
+    const geo=new T.TubeGeometry(c,n,1,12,false),ps=geo.attributes.position,nr=geo.attributes.normal;
+    for(let i=0;i<=n;i++){const u=i/n,f=u*(pts.length-1),k=Math.min(pts.length-2,Math.floor(f)),r=rad[k]+(rad[k+1]-rad[k])*(f-k),cp=c.getPointAt(u);
+      for(let j=0;j<=12;j++){const a=i*13+j,w=1+.08*Math.sin(j*2.1+i*.7)+.05*Math.sin(j*5.3);ps.setXYZ(a,cp.x+nr.getX(a)*r*w,cp.y+nr.getY(a)*r*w,cp.z+nr.getZ(a)*r*w);}}
+    const A=geo.toNonIndexed().attributes.position.array;for(let i=0;i<A.length;i++)P.push(A[i]);geo.dispose();};
+  const make=(kind,i)=>{const M=1,sz=1,PK=1,S=KIND[kind],x=0,y=0,z=0,face=i*1.9,dx=Math.cos(face),dz=Math.sin(face),P=[],puffs=[];let nl=0;
+    const rAt=h=>S.r0+(S.r1-S.r0)*Math.pow(Math.max(0,h)/S.h,.7),at=(h,a,d)=>[x+Math.cos(a)*d,y+h*M,z+Math.sin(a)*d];
+    const puff=(px,py,pz,r)=>{const q=Math.hypot(px-x,pz-z),need=(rAt((py-y)/M)+1.5)*M+r*.5;if(q<need){const k=need/(q||1);px=x+(px-x)*k;pz=z+(pz-z)*k;}puffs.push([px,py,pz,r,Math.floor(hs(i,puffs.length)*4)]);};
+    const trunk=[];for(let k=0;k<=8;k++){const u=k/8;trunk.push([x+Math.sin(u*3+face)*.4*M*u,y+u*S.h*M-.5*M,z+Math.cos(u*2.3+face)*.3*M*u,rAt(u*S.h)*M*(k?1:1.35)]);}tube(trunk,P);
+    const branch=(pts,big)=>{tube(pts,P);nl+=pts.length-1;const c=new T.CatmullRomCurve3(pts.map(q=>new T.Vector3(q[0],q[1],q[2]))),L=c.getLength(),n=Math.max(3,Math.round(L/(1.2*M)*sz));
+      for(let k=0;k<n;k++){const u=.25+.75*(k+.5)/n,p=c.getPointAt(u),s=i*31+nl*7+k;for(let j=0;j<4;j++){const t=s*5+j,r=(1.6+1.4*hs(t,1))*M*(big?1.3:1)*PK,a=hs(t,2)*6.28,d=(.6+2.6*hs(t,3))*M;
+        puff(p.x+Math.cos(a)*d,p.y+(.4+2.4*hs(t,4))*M-(j===3?1.2*M:0),p.z+Math.sin(a)*d,r);}}};
+    branch(S.br.map(([h,d,r])=>[x+dx*d*M-dz*Math.sin(d*.25)*1.2*M,y+h*M,z+dz*d*M+dx*Math.sin(d*.25)*1.2*M,r*M]),true);
+    const L0=S.br[S.br.length-1][1],R0=S.br[0][2],nb=4+Math.floor(hs(i,9)*5);
+    for(let k=0;k<nb;k++){const s=.25+.25*hs(i,20+k),a=face+.9+k/nb*(6.28-1.8)+(hs(i,40+k)-.5)*.5,h=S.h*(.18+.55*(k+hs(i,60+k))/nb),L=L0*s,r=Math.min(R0*s*1.1,rAt(h)*.8),up=.25+.55*hs(i,80+k),pts=[];
+      for(let q=0;q<=4;q++){const u=q/4;pts.push([...at(h+L*up*u*(.6+.4*u),a,L*u*M),Math.max(.12,r*(1-.75*u))*M]);}branch(pts,false);}
+    for(let k=0;k<6;k++){const a=k/6*6.28+.4+face;tube([[x,y+2.5*M,z,1.6*M],[...at(.3,a,4*M),.9*M],[...at(-.3,a,6.5*M),.25*M]],P);}
+    for(let h=S.h*.55;h<S.h+4;h+=1.4/sz){const w=1-Math.max(0,(h-S.h*.9)/(S.h*.1+4))*.6,n=9+Math.floor(hs(i,h)*4);for(let k=0;k<n;k++){const a=hs(i,h+k)*6.28;puff(...at(h,a,(rAt(h)+1.5+6*w*hs(h,k))*M),(2+1.8*hs(k,h))*M*PK);}}
+    return{P:new Float32Array(P),puffs};};
+  // one of them drawn from two sides for a pair of crossed cards
+  const bake=(kind,i)=>{const t=make(kind,i),sc=new T.Scene(),grp=new T.Group(),geo=new T.BufferGeometry();geo.setAttribute('position',new T.BufferAttribute(t.P,3));geo.computeVertexNormals();
+    grp.add(new T.Mesh(geo,new T.MeshLambertMaterial({color:new T.Color(0x6a5040).convertSRGBToLinear(),flatShading:true})));
+    const PG=new T.IcosahedronGeometry(1,1),IM=new T.InstancedMesh(PG,new T.MeshLambertMaterial({color:0xffffff}),t.puffs.length),m4=new T.Matrix4(),q=new T.Quaternion(),v=new T.Vector3(),s=new T.Vector3(),c=new T.Color(),EU=new T.Euler();let H=0,wd=0;
+    t.puffs.forEach(([x,y,z,r,k],j)=>{IM.setMatrixAt(j,m4.compose(v.set(x,y,z),q.setFromEuler(EU.set(j*2.399%6.283,j*1.618%6.283,j*.737%6.283)),s.setScalar(r)));const G=GREEN[k];IM.setColorAt(j,c.setRGB(Math.pow(G[0],2.2),Math.pow(G[1],2.2),Math.pow(G[2],2.2)));H=Math.max(H,y+r);wd=Math.max(wd,Math.abs(x)+r,Math.abs(z)+r);});
+    grp.add(IM);grp.scale.setScalar(1/H);sc.add(grp);const sun=new T.DirectionalLight(0xfff0d8,1.9);sun.position.set(.6,.9,.7);sc.add(sun,new T.HemisphereLight(0xbfd4ff,0x3a3426,.75));
+    const w=wd*2.04/H,cam=new T.OrthographicCamera(-w/2,w/2,.52,-.51,.1,20),tm=renderer.toneMapping,cc=renderer.getClearColor(new T.Color()).clone(),ca=renderer.getClearAlpha(),tex=[],rts=[];renderer.toneMapping=T.NoToneMapping;renderer.setClearColor(0x2a3a1c,0);
+    for(const a of[0,Math.PI/2]){const rt=new T.WebGLRenderTarget(512,512,{depthBuffer:true});rt.texture.generateMipmaps=true;rt.texture.minFilter=T.LinearMipmapLinearFilter;rt.texture.anisotropy=4;cam.position.set(Math.sin(a)*8,.5,Math.cos(a)*8);cam.lookAt(0,.5,0);renderer.setRenderTarget(rt);renderer.clear();renderer.render(sc,cam);tex.push(rt.texture);rts.push(rt);}
+    renderer.setRenderTarget(null);renderer.toneMapping=tm;renderer.setClearColor(cc,ca);geo.dispose();PG.dispose();return{w,tex,rts,puffs:t.puffs.length};};
+  return{make,bake,KIND};
+})();

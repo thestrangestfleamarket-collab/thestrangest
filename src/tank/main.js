@@ -44,7 +44,7 @@ function tex(file,o={}){return count(new Promise((ok,no)=>texL.load(BASE+'tex/'+
 const pbr=async(n,rep)=>{const[d,nm,a]=await Promise.all([tex(n+'_d.jpg',{srgb:1}),tex(n+'_n.jpg'),tex(n+'_a.jpg')]);for(const t of[d,nm,a])t.repeat.set(rep,rep);return{d,n:nm,a};};
 const model=n=>count(new Promise((ok,no)=>gltfL.load(BASE+'m/'+n+'.glb',g=>{g.scene.userData.clips=g.animations;ok(g.scene);},null,()=>no(new Error('model '+n)))));
 const jget=f=>count(fetch(BASE+f).then(r=>r.json()));
-const TREES=[['A',0,17],['C',1,22],['AL',2,14],['CL',3,24],['E',0,30],['B',0,2.6]];
+const TREES=[['BIG','A',34],['BIG','B',31],['BIG','C',28],['E',0,24],['A',0,15],['B',0,2.6]];
 let A0;
 try{
   const names=['hero','ally','foe','seat','console','display','switchbox','radio','helmet','barn','cars','pipes','sconce','ammobox','rocks','h6','row','h9','shop','cork','flats','white','cottage','villa','mill','works','church','watertower','silos','stacks','mast','pylon','pole','stonewall','lamp','hay','brokenwall','rubble','trabant','lada','van','tractor','truck','busstop','hand_l','hand_r','crag','deadtree','sandbags','hedgehog','wreck','grenade','pistol','soldier','breech','mfd','shell','mine','hatch'];
@@ -184,7 +184,7 @@ landMat.onBeforeCompile=s=>{s.uniforms.tDry={value:A0.dry};s.uniforms.tSoil={val
 //@include trees.js
 // trees and hedges: each a pair of crossed cards drawn from one of THE MARKET's trees
 const solids=[],ITEMS=[],TREEL=[];
-const TSCALE=[1,1,1,1,1,1],TREEJ={},TCARD=[];renderer.xr.enabled=false;TREES.forEach((n,k)=>{const b=MTREE.bake(n[0],n[1]);TCARD[k]=b.tex;TREEJ[k]={w:b.w*n[2],h:n[2]};});renderer.xr.enabled=true;
+const TSCALE=[1,1,1,1,1,1],TREEJ={},TCARD=[];renderer.xr.enabled=false;TREES.forEach((n,k)=>{const b=n[0]==='BIG'?BIGT.bake(n[1],k+1):MTREE.bake(n[0],n[1]);TCARD[k]=b.tex;TREEJ[k]={w:b.w*n[2],h:n[2]};});renderer.xr.enabled=true;
 (function buildTrees(){
   const r=rng(1944),spots=TREES.map(()=>[]);const put=(k,x,z,s)=>{if(Math.hypot(x,z)<30||Math.hypot(x,z)>1700||roadDist(x,z)<9||Math.hypot(x-150,z-300)<150||Math.hypot(x+480,z+640)<95||Math.hypot(x-420,z+560)<70||Math.hypot(x,z)<55||pondAt(x,z)&&Math.hypot(x-pondAt(x,z)[0],z-pondAt(x,z)[1])<pondAt(x,z)[2]*1.05)return;spots[k].push([x,z,s*(.75+r()*.5)*(k<4&&r()<.12?1.6:1),Math.atan2(SUN.x,SUN.z)+(r()-.5)*1.2+(r()<.5?Math.PI:0)]);};
   for(let cx=-9;cx<=9;cx++)for(let cz=-12;cz<=12;cz++){
@@ -199,7 +199,7 @@ const TSCALE=[1,1,1,1,1,1],TREEJ={},TCARD=[];renderer.xr.enabled=false;TREES.for
   const dm=new T.Object3D();let n_=0;
   TREES.forEach((n,k)=>{const J=TREEJ[k],S=TSCALE[k],all=spots[k];if(!all.length)return;const near=all.filter(t=>Math.hypot(t[0],t[1])<620),far=all.filter(t=>Math.hypot(t[0],t[1])>=620);
     for(let v=0;v<2;v++)for(const[list,sh]of v?[[near,true]]:[[near,true],[far,false]]){if(!list.length)continue;const g=new T.PlaneGeometry(J.w*S,J.h*S*1.03,1,3);g.translate(0,J.h*S*1.03/2-J.h*S*.01-.1,0);{const ps=g.attributes.position,c=new Float32Array(ps.count*3);for(let i=0;i<ps.count;i++){const k=.42+.75*clamp(ps.getY(i)/(J.h*S),0,1);c[i*3]=k*1.04;c[i*3+1]=k;c[i*3+2]=k*.9;}g.setAttribute('color',new T.BufferAttribute(c,3));}if(v)g.rotateY(Math.PI/2);
-      const mat=new T.MeshLambertMaterial({map:TCARD[k][v],vertexColors:true,alphaTest:.5,side:T.DoubleSide,color:new T.Color(1.5,1.5,1.4),emissive:new T.Color(.12,.13,.1),emissiveMap:TCARD[k][v]});
+      const mat=new T.MeshLambertMaterial({map:TCARD[k][v],vertexColors:true,alphaTest:.5,side:T.DoubleSide,color:new T.Color(1.15,1.15,1.08),emissive:new T.Color(.07,.08,.06),emissiveMap:TCARD[k][v]});
       const im=new T.InstancedMesh(g,mat,list.length);list.forEach((t,i)=>{dm.position.set(t[0],hAt(t[0],t[1]),t[1]);dm.rotation.set(0,t[3],0);dm.scale.setScalar(t[2]);dm.updateMatrix();im.setMatrixAt(i,dm.matrix);if(list===near)(t.im||(t.im=[])).push(im,i);});
       if(list===near)im.instanceColor=new T.InstancedBufferAttribute(new Float32Array(list.length*3).fill(1),3);
       im.frustumCulled=false;im.castShadow=sh;land.add(im);n_+=list.length;}
@@ -1021,6 +1021,6 @@ drawStat();renderer.setAnimationLoop(frame);
 $('loading').hidden=true;
 if(document.fonts&&document.fonts.load)document.fonts.load('600 40px "IBM Plex Mono"').then(drawStat).catch(()=>{});
 
-window.game={MTREE,TREEGEN,MT:A0.MT,snap,SNAP,throwNade,get hold(){return hold;},get time(){return time;},get state(){return state;},get wave(){return wave;},get cover(){return cover;},get xr(){return xrActive;},get expo(){return expo;},P,foes,shells,WAVES,ROOF,FLOOR,hAt,los,tank,inside,friends,crews,mines,nades,INV,addCrew,takeItem,useItem,NET,get rem(){return NET.peers.values().next().value||noRem;},G,MODES,SET,WORLD,startMission,get mis(){return mis;},isHost,TYPES,setType,get type(){return tyKey;},hands,view,supply:land.userData.supply,fire,trigger,lase,popSmoke,selectAmmo,toggleZoom,toggleThermal,extinguish,hurt:hurtPlayer,toggleHatch,toggleSight,addFoe,live,renderer,camera,rig,sounds:A,
+window.game={MTREE,TREEGEN,BIGT,MT:A0.MT,snap,SNAP,throwNade,get hold(){return hold;},get time(){return time;},get state(){return state;},get wave(){return wave;},get cover(){return cover;},get xr(){return xrActive;},get expo(){return expo;},P,foes,shells,WAVES,ROOF,FLOOR,hAt,los,tank,inside,friends,crews,mines,nades,INV,addCrew,takeItem,useItem,NET,get rem(){return NET.peers.values().next().value||noRem;},G,MODES,SET,WORLD,startMission,get mis(){return mis;},isHost,TYPES,setType,get type(){return tyKey;},hands,view,supply:land.userData.supply,fire,trigger,lase,popSmoke,selectAmmo,toggleZoom,toggleThermal,extinguish,hurt:hurtPlayer,toggleHatch,toggleSight,addFoe,live,renderer,camera,rig,sounds:A,
   skip(){waveT=0;},kill(e){killFoe(e);P.kills++;}};
 })();

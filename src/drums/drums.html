@@ -32,6 +32,8 @@
   dd { margin: 0; }
   #help { position: fixed; left: 50%; bottom: 10px; transform: translateX(-50%); max-width: calc(100% - 20px); padding: 7px 12px; background: rgba(8,8,10,.7); font-size: 12px; letter-spacing: .04em; text-align: center; pointer-events: none; }
   #help b { color: #ffb347; }
+  #say { position: fixed; left: 50%; bottom: 64px; transform: translateX(-50%); width: min(520px, calc(100% - 24px)); padding: 10px 12px; background: rgba(8,8,10,.88); border: 1px solid #ffb347; color: inherit; font: inherit; font-size: 15px; }
+  #sub { position: fixed; left: 50%; bottom: 108px; transform: translateX(-50%); max-width: min(640px, calc(100% - 24px)); padding: 8px 14px; background: rgba(8,8,10,.8); font-size: 15px; text-align: center; pointer-events: none; }
   #readout { position: fixed; left: 50%; top: 14px; transform: translateX(-50%); padding: 8px 16px; background: rgba(8,8,10,.8); font-weight: 700; letter-spacing: .08em; }
 </style>
 </head>
@@ -58,9 +60,12 @@
             <dt>Left trigger</dt><dd>open the hi-hat</dd>
             <dt>Grip on a cymbal</dt><dd>choke it</dd>
             <dt>Right stick ↕</dt><dd>stick angle</dd>
+            <dt>Right grip + stick ↕</dt><dd>body forward or back</dd>
             <dt>Left stick ↕</dt><dd>seat height</dd>
             <dt>Left stick ↔</dt><dd>timing, earlier or later</dd>
-            <dt>Hold A or X</dt><dd>sit me at the kit again</dd>
+            <dt>Left stick click</dt><dd>garage door up or down</dd>
+            <dt>Hold A</dt><dd>talk to a neighbour</dd>
+            <dt>Hold X</dt><dd>sit me at the kit again</dd>
             <dt>B or Y</dt><dd>hide the guide</dd>
           </dl>
         </div>
@@ -76,14 +81,25 @@
             <dt>E · R</dt><dd>ride · its bell</dd>
             <dt>Shift · V</dt><dd>harder · softer</dd>
             <dt>M · [ ]</dt><dd>metronome · tempo</dd>
+            <dt>O · N</dt><dd>garage door · an hour on</dd>
+            <dt>Enter</dt><dd>type to a neighbour</dd>
             <dt>Drag · H</dt><dd>look around · hide the guide</dd>
           </dl>
+        </div>
+      </div>
+      <div class="cols">
+        <div>
+          <h2>THE STREET</h2>
+          <dl id="folk"></dl>
+          <p class="tip" id="lognote"></p>
         </div>
       </div>
     </div>
   </div>
 </div>
-<div id="help" hidden><b>CLICK</b> the kit · <b>SPACE</b> kick · <b>S</b> snare · <b>A</b> hi-hat (<b>Q</b> open) · <b>D F G</b> toms · <b>W T</b> crashes · <b>E R</b> ride, bell · <b>SHIFT</b> harder · <b>M</b> metronome · <b>H</b> guide</div>
+<div id="help" hidden><b>CLICK</b> the kit · <b>SPACE</b> kick · <b>S</b> snare · <b>A</b> hi-hat (<b>Q</b> open) · <b>D F G</b> toms · <b>W T</b> crashes · <b>E R</b> ride, bell · <b>SHIFT</b> harder · <b>O</b> door · <b>ENTER</b> talk · <b>N</b> hour on · <b>M</b> metronome · <b>H</b> guide</div>
+<input id="say" maxlength="240" placeholder="Say something to your neighbour, then Enter" autocomplete="off" hidden>
+<div id="sub" hidden></div>
 <div id="readout" hidden></div>
 <script type="module">__DRUMS__</script>
 </body>

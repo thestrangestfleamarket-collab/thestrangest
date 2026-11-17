@@ -28,6 +28,9 @@ export class GripHand {
     });
     this.chains = FINGERS.map((f) => (f === 'thumb' ? PARTS.thumb : PARTS.other).map((p) => { const b = bones[f + '-' + p]; return { b, p: b.position.clone(), q: b.quaternion.clone() }; }));
     this.wristBone = bones.wrist;
+    // a sleeve's cuff over the join of hand and arm
+    const cuff = new THREE.Mesh(new THREE.CylinderGeometry(0.035, 0.04, 0.075, 12).rotateX(Math.PI / 2).translate(0, 0, 0.045), new THREE.MeshStandardMaterial({ color: 0x6a5648, roughness: 0.9 }));
+    cuff.castShadow = true; this.wristBone = bones.wrist; this.wristBone.add(cuff);
     this.inner = scene;
     this.group.add(scene);
     this.curl(0);

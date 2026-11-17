@@ -129,7 +129,7 @@ let last = performance.now(), frames = 0, statT = 0;
 // if frames still run long, shadows go (the costliest thing left)
 let emaMs = 14, slowT = 0; G.quality = params.has('low') ? 1 : 0;
 const shadowLights = []; scene.traverse((o) => { if (o.isLight && o.castShadow) shadowLights.push(o); });
-const spotSh = shadowLights.filter((l) => l.isSpotLight); spotSh.forEach((l) => (l.shadow.autoUpdate = false));   // the stall's lamp's shadows: only while it burns, laid every other frame
+const spotSh = shadowLights.filter((l) => l.isSpotLight); spotSh.forEach((l) => { l.shadow.autoUpdate = false; l.shadow.needsUpdate = true; });   // the stall's lamp's shadows: only while it burns, laid every other frame
 const CART = new THREE.Vector3(0, 1, 0), _ce = new THREE.Vector3();
 function lean2() { for (const l of spotSh) if (l.castShadow && l.intensity > 0.05 && !(frames & 1)) l.shadow.needsUpdate = true;
   G.itemRoot.visible = camera.getWorldPosition(_ce).distanceTo(CART) < 20; }   // the stall's small loose things are not drawn from far up the street (lost in the haze there)

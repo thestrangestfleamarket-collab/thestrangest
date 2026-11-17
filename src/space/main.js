@@ -13,7 +13,7 @@ import { initAudio, sfx, loop, listen } from './audio.js';
 const $ = (id) => document.getElementById(id), Q = new URLSearchParams(location.search), SIM = Q.has('sim'), FAST = SIM ? +Q.get('fast') || 1 : 1;   // ?sim: the check's way in, no headset; ?fast=n runs the battle n times as fast
 const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, powerPreference: 'high-performance' });
 renderer.setPixelRatio(Math.min(devicePixelRatio, 2)); renderer.setSize(innerWidth, innerHeight); renderer.setClearColor(0x000000, 0);
-renderer.toneMapping = THREE.ACESFilmicToneMapping; renderer.toneMappingExposure = 1.15; renderer.outputColorSpace = THREE.SRGBColorSpace;
+renderer.toneMapping = THREE.ACESFilmicToneMapping; renderer.toneMappingExposure = 0.95; renderer.outputColorSpace = THREE.SRGBColorSpace;
 renderer.shadowMap.enabled = true; renderer.shadowMap.type = THREE.PCFShadowMap;
 renderer.xr.enabled = true; renderer.xr.setReferenceSpaceType('local-floor'); renderer.xr.setFoveation(0.7);
 document.body.appendChild(renderer.domElement);
@@ -22,9 +22,9 @@ addEventListener('resize', () => { if (renderer.xr.isPresenting) return; camera.
 
 // the field: everything of the battle is inside this group, which your grips move, turn and size
 const arena = new THREE.Group(); scene.add(arena);
-// one hard sun, fixed in the sky (turn the field and the shadows turn on the hulls), and a little fill
-const SUN = new THREE.Vector3(0.55, 0.62, 0.56).normalize(), sun = new THREE.DirectionalLight(0xfff4e6, 3.6), fill = new THREE.HemisphereLight(0x8fa8d0, 0x1a1410, 0.1);
-const rim = new THREE.DirectionalLight(0x6f9cff, 0.55); scene.add(rim, rim.target); sun.castShadow = true; sun.shadow.mapSize.set(SIM ? 2048 : 1024, SIM ? 2048 : 1024); scene.add(sun, sun.target, fill);
+// space light: one hard sun, fixed in the sky (turn the field and the shadows turn on the hulls); the side away from it is near black, with only a trace of fill and of light off the galaxy, and nothing is lit past white
+const SUN = new THREE.Vector3(0.55, 0.62, 0.56).normalize(), sun = new THREE.DirectionalLight(0xfff4e6, 3.8), fill = new THREE.HemisphereLight(0x8fa8d0, 0x1a1410, 0.05);
+const rim = new THREE.DirectionalLight(0x6f9cff, 0.22); scene.add(rim, rim.target); sun.castShadow = true; sun.shadow.mapSize.set(SIM ? 2048 : 1024, SIM ? 2048 : 1024); scene.add(sun, sun.target, fill);
 let shadowS = 0;
 function fitLight() { const s = arena.scale.x; sun.target.position.copy(arena.position); rim.target.position.copy(arena.position); rim.position.copy(arena.position).addScaledVector(SUN, -3 * s); rim.position.y += 1.5 * s; sun.position.copy(arena.position).addScaledVector(SUN, 3 * s);
   if (s !== shadowS) { shadowS = s; const c = sun.shadow.camera; c.left = c.bottom = -1.75 * s; c.right = c.top = 1.75 * s; c.near = 0.8 * s; c.far = 5.2 * s; c.updateProjectionMatrix(); sun.shadow.bias = -0.0006; sun.shadow.normalBias = 0.004 * s; } }
@@ -39,7 +39,7 @@ const panel = new Panel(), banner = new Banner(), guide = new Guide(), post = ne
 for (const m of [panel.mesh, banner.mesh, guide.mesh]) m.layers.set(HUD); camera.layers.enable(HUD);   // what the lens must leave sharp is on its own layer, drawn after it
 const G = { state: 'load', me: 0, sim: null, bots: [], view: null, net: null, host: false, peer: false, acc: 0, ar: false, canAR: false, over: false, placed: -1, alarm: 0, last: 0, paused: false, tOff: 0, fx: Q.has('fx') || (() => { try { return localStorage.getItem('spaceLens') === '1'; } catch (e) { return false; } })(), fwd: new THREE.Vector3(0, 0, -1), fac: Q.get('navy') === '1' ? 1 : 0, peerFac: 1 };
 const gnow = () => performance.now() - G.tOff;   // the battle's own clock: it stands still while the battle is paused
-function setView(ar) { post.rest(); G.ar = ar && G.canAR; space.visible = !G.ar; fill.intensity = G.ar ? 0.7 : 0.1; scene.environmentIntensity = G.ar ? 0.8 : 0.4; if (SIM) scene.background = null; }
+function setView(ar) { post.rest(); G.ar = ar && G.canAR; space.visible = !G.ar; fill.intensity = G.ar ? 0.45 : 0.05; scene.environmentIntensity = G.ar ? 0.45 : 0.16; if (SIM) scene.background = null; }
 const _v = new THREE.Vector3(), _w = new THREE.Vector3(), _d = new THREE.Vector3(), _o = new THREE.Vector3(), _q = new THREE.Quaternion(), _m = new THREE.Matrix4(), _m2 = new THREE.Matrix4(), _up = new THREE.Vector3();
 const world = (p) => arena.localToWorld(_w.copy(p));
 

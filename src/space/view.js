@@ -66,7 +66,7 @@ class View {
     this.arena = arena; this.scene = scene; this.units = new Map(); this.tSnap = 0; this.tick = 0; this.winner = -1; this.credits = [0, 0]; this.income = [0, 0]; this.queue = [[], []];
     this.nodes = NODES.map(() => ({ owner: -1, prog: 0 })); this.sel = new Set(); this.plan = new Map(); this.hover = [0, 0]; this.me = 0; this.onEvent = null; this.time = 0; this.shake = 0;
     // ships: an InstancedMesh for each part of each kind for each side
-    this.fac = [0, 1]; this.shipsF = [0, 1].map(fc => FILES.map((f, type) => [0, 1].map(side => (models[f + (fc ? '2' : '')] || models[f]).map(p => { const mat = p.mat.clone(); mat.color.multiply(TINT[side]); if (mat.emissiveMap) { mat.emissive.set(0xffffff); mat.emissiveIntensity = 1.6; } mat.metalness = Math.min(mat.metalness, 0.55); mat.color.multiplyScalar(fc ? 0.95 : 1.6);   // the Admiralty's hulls are near black as they come
+    this.fac = [0, 1]; this.shipsF = [0, 1].map(fc => FILES.map((f, type) => [0, 1].map(side => (models[f + (fc ? '2' : '')] || models[f]).map(p => { const mat = p.mat.clone(); mat.color.multiply(TINT[side]); if (mat.emissiveMap) { mat.emissive.set(0xffffff); mat.emissiveIntensity = 1.25; } mat.metalness = Math.min(mat.metalness, 0.55); mat.color.multiplyScalar(fc ? 0.9 : 1.45);   // the Admiralty's hulls are near black as they come
       const im = new THREE.InstancedMesh(p.geo, mat, type === MOTHER ? 1 : MAXU); im.castShadow = im.receiveShadow = true; im.frustumCulled = false; im.count = 0; im.instanceMatrix.setUsage(THREE.DynamicDrawUsage); arena.add(im); return im; }))));
     // engine glow, one soft flame a ship
     const add = (geo, color, n, opt = {}) => { const im = new THREE.InstancedMesh(geo, new THREE.MeshBasicMaterial({ color, blending: THREE.AdditiveBlending, transparent: true, depthWrite: false, toneMapped: false, ...opt }), n); im.frustumCulled = false; im.instanceMatrix.setUsage(THREE.DynamicDrawUsage);
@@ -91,7 +91,7 @@ class View {
     const sg = new THREE.BufferGeometry(); sg.setAttribute('position', new THREE.BufferAttribute(this.spP, 3).setUsage(THREE.DynamicDrawUsage)); sg.setAttribute('color', new THREE.BufferAttribute(this.spC, 3).setUsage(THREE.DynamicDrawUsage));
     this.sparks = new THREE.Points(sg, new THREE.PointsMaterial({ size: 0.007, map: dotTex(), vertexColors: true, blending: THREE.AdditiveBlending, transparent: true, depthWrite: false, toneMapped: false, sizeAttenuation: true })); this.sparks.frustumCulled = false; arena.add(this.sparks);
     // the flash of a blast on the hulls around it
-    this.flash = [0, 1].map(() => { const l = new THREE.PointLight(0xffb070, 0, 0.6, 0); l.t = 1; arena.add(l); return l; }); this.flashI = 0;
+    this.flash = [0, 1].map(() => { const l = new THREE.PointLight(0xffb070, 0, 0.6, 2); l.t = 1; arena.add(l); return l; }); this.flashI = 0;
     // rings round what you have picked and what you point at, and hull bars over the damaged
     const ring = new THREE.RingGeometry(0.92, 1, 40); ring.rotateX(-Math.PI / 2);
     this.rings = add(ring, 0xffffff, MAXU + 4, { side: THREE.DoubleSide, blending: THREE.NormalBlending, opacity: 0.9 }); this.rings.count = 0;
@@ -244,7 +244,7 @@ class View {
     for (const im of this.rockIM) im.instanceMatrix.needsUpdate = true; this.shards.count = ns; this.shards.instanceMatrix.needsUpdate = true; this.shards.instanceColor.needsUpdate = true;
     for (let k = 0; k < this.spN; k++) { if (this.spL[k] <= 0) continue; this.spL[k] -= dt; const i = k * 3; if (this.spL[k] <= 0) { this.spP[i + 1] = 1e4; continue; } this.spP[i] += this.spV[i] * dt; this.spP[i + 1] += this.spV[i + 1] * dt; this.spP[i + 2] += this.spV[i + 2] * dt; const d = 1 - dt * 2.2; this.spC[i] *= d; this.spC[i + 1] *= d * d; this.spC[i + 2] *= d * d * d; }
     this.sparks.geometry.attributes.position.needsUpdate = true; this.sparks.geometry.attributes.color.needsUpdate = true;
-    for (const l of this.flash) { if (l.t >= 1) { l.intensity = 0; continue; } l.t += dt * 1.6; l.intensity = l.power * Math.max(0, 1 - l.t) ** 2; }
+    for (const l of this.flash) { if (l.t >= 1) { l.intensity = 0; continue; } l.t += dt * 1.6; l.intensity = l.power * 0.03 * this.arena.scale.x ** 2 * Math.max(0, 1 - l.t) ** 2; }
     let np = 0; for (const [id, L] of this.plan) { const u = this.units.get(id); if (!u) { this.plan.delete(id); continue; }
       while (L.length && (L[0].tid ? !this.units.has(L[0].tid) : u.pos.distanceTo(L[0].p) < 0.045)) L.shift(); if (L.length && u.k === 0 && now - L[L.length - 1].at > 1500) L.length = 0; if (!L.length || !this.sel.has(id)) continue;
       _a.copy(u.pos); for (const o of L) { if (np >= 120) break; _b.copy(o.tid ? this.units.get(o.tid).pos : o.p); const k = np++ * 6; this.pathP[k] = _a.x; this.pathP[k + 1] = _a.y; this.pathP[k + 2] = _a.z; this.pathP[k + 3] = _b.x; this.pathP[k + 4] = _b.y; this.pathP[k + 5] = _b.z; _a.copy(_b); } }

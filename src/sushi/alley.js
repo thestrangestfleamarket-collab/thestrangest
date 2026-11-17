@@ -14,7 +14,7 @@ import { weatherAt } from './weather.js';
 
 export const FOG = 0xb8c4cc;
 export function buildAlley(scene, o = {}) {
-  const rich = !!o.rich;   // a screen: the richer path (finer shadows, the brazier's shadows); a headset: the lean one
+  const rich = !!o.rich;   // a screen: the richer path (a wider, softer sun shadow); a headset: the lean one
   const city = new THREE.Group(); scene.add(city); const glow = new THREE.Group(); city.add(glow); const ups = [], R = T.rng(1862);
   const glowMap = T.glowTex(), S = { easy: true };
   const halo = (color, size, x, y, z, parent = glow, op = 0.5) => { const s = new THREE.Sprite(new THREE.SpriteMaterial({ map: glowMap, color, blending: THREE.AdditiveBlending, depthWrite: false, transparent: true, opacity: op, fog: true })); s.scale.set(size, size, 1); s.position.set(x, y, z); parent.add(s); s.userData.nopick = true; return s; };
@@ -125,15 +125,14 @@ export function buildAlley(scene, o = {}) {
   put('tree_stump_01', [[23.8, NZ - 1.5, 0], [W0 + 6, FZ + 0.8, 2]]); put('shrub_02', [[-23.6, NZ - 0.6, 0], [-18.4, FZ + 0.6, 1], [17.6, NZ - 0.6, 2], [23.2, FZ + 0.8, 3], [W0 + 3.4, NZ - 0.4, 1], [W0 + 3.4, FZ + 0.5, 2]], 0x8a9a80);
   // ---- the light, after THE MARKET's: the real sun and moon over Edo on the run's clock (sky.js, ephem.js), the light from whichever is up and its shadows, the hemisphere's fill by the sky's colour, the air's haze and mist (air.js) by the hour and the weather (weather.js); and the village's lanterns and braziers
   const fill = new THREE.HemisphereLight(0xbcd0ec, 0x6a5a40, 1.05); scene.add(fill);
-  const sun = new THREE.DirectionalLight(0xfff2dc, 2.4); sun.castShadow = true; const SH = rich ? 15 : 10; sun.shadow.mapSize.set(rich ? 2048 : 1024, rich ? 2048 : 1024); Object.assign(sun.shadow.camera, { left: -SH, right: SH, top: SH, bottom: -SH, near: 1, far: 90 }); sun.shadow.bias = -0.0012; sun.shadow.normalBias = 0.02; sun.shadow.radius = rich ? 2.5 : 1.2; scene.add(sun, sun.target);
-  sun.shadow.camera.layers.set(2); sun.shadow.autoUpdate = false; sun.shadow.needsUpdate = true; let shT = 0; ups.push((dt) => { if ((shT -= dt) <= 0) { shT = 1; sun.shadow.needsUpdate = true; } });   // the sun's (and the moon's) shadows are the still village's (layer 2), laid again once a second as the light creeps; what moves takes its shadows from the lanterns near the stall
+  const sun = new THREE.DirectionalLight(0xfff2dc, 2.4); sun.castShadow = true; const SH = rich ? 14 : 10; sun.shadow.mapSize.set(1024, 1024); Object.assign(sun.shadow.camera, { left: -SH, right: SH, top: SH, bottom: -SH, near: 1, far: 90 }); sun.shadow.bias = -0.0012; sun.shadow.normalBias = 0.02; sun.shadow.radius = rich ? 2 : 1.2; scene.add(sun, sun.target);
+  sun.shadow.camera.layers.set(2); sun.shadow.autoUpdate = false; sun.shadow.needsUpdate = true; let shT = 0; ups.push((dt) => { if ((shT -= dt) <= 0) { shT = 3; sun.shadow.needsUpdate = true; } });   // the sun's (and the moon's) shadows are the still village's (layer 2, only its larger things), laid again every three seconds as the light creeps; what moves takes its shadows from the lanterns near the stall
   const moon = sun, sky = buildSky(scene);
   // the day the run is set on: 11 May 1862 (Bunkyū 2), in Edo's own time, the young rice just planted and the moon two days from full; the clock's hours run true through the day and the dusk, and the night is drawn so the sun comes up as the dawn's light does (clock.js: dawn 29 to 30.5)
   const BASE = Date.UTC(1862, 4, 11) - (E.LON / 15) * 3600e3, R0 = (() => { for (let h = 3; h < 8; h += 0.01) if (E.seen('sun', E.jdOf(BASE + (24 + h) * 3600e3)).alt > -0.83) return 24 + h; return 29; })();
   const realH = (h) => (h <= 19.5 ? h : h <= 29 ? 19.5 + ((h - 19.5) * (R0 - 1.15 - 19.5)) / 9.5 : R0 - 1.15 + (h - 29));
   city.jd = (h) => E.jdOf(BASE + realH(h) * 3600e3);
   const lampLights = [[-4.6, 1.75, FZ + 0.8], [10.6, 1.75, NZ - 0.85], [-16.9, 1.75, NZ - 0.85]].map(([x, y, z]) => { const p = new THREE.PointLight(0xff9a48, 0, 13, 1.6); p.position.set(x, y + 0.25, z); scene.add(p); return p; });
-  if (rich) { const b = lampLights[0]; b.castShadow = true; b.shadow.mapSize.set(512, 512); b.shadow.camera.near = 0.3; b.shadow.camera.far = 14; b.shadow.bias = -0.004; b.shadow.radius = 2; b.shadow.camera.layers.set(2); b.shadow.autoUpdate = false; b.shadow.needsUpdate = true; ups.push(() => { if (b.intensity > 0.05 && !b.userData.laid) { b.userData.laid = 1; b.shadow.needsUpdate = true; } }); }   // (on a screen the brazier across the street throws the village's shadows too, laid once when it is lit)
   // the braziers (kagaribi): an iron basket of pine on three legs, its fire a slow breath (never a flicker), its smoke going up into the haze
   const flameT = T.canvasTex(64, 128, (g, w, h) => { g.clearRect(0, 0, w, h); for (const [c, k] of [['rgba(255,120,30,0.55)', 1], ['rgba(255,190,90,0.7)', 0.62], ['rgba(255,240,200,0.9)', 0.3]]) { g.fillStyle = c; g.beginPath(); g.moveTo(w / 2, h * (1 - 0.95 * k) ); g.bezierCurveTo(w / 2 + w * 0.42 * k, h * (1 - 0.55 * k), w / 2 + w * 0.46 * k, h * 0.96, w / 2, h * 0.98); g.bezierCurveTo(w / 2 - w * 0.46 * k, h * 0.96, w / 2 - w * 0.42 * k, h * (1 - 0.55 * k), w / 2, h * (1 - 0.95 * k)); g.fill(); } }), flameG = new THREE.PlaneGeometry(0.42, 0.62).translate(0, 0.27, 0);
   const iron = mat({ color: 0x2a2622 }), fireM = new THREE.MeshBasicMaterial({ map: flameT, color: 0xffffff, transparent: true, opacity: 0, blending: THREE.AdditiveBlending, depthWrite: false, side: THREE.DoubleSide, fog: true }), smokeT = T.smokeTex(), braz = [];
@@ -150,15 +149,15 @@ export function buildAlley(scene, o = {}) {
   const paint = () => { const K = G.clock, h = K ? K.hour : 11, w = G.weather ? G.weather.now : weatherAt(K ? K.frac : 0), jd = city.jd(h);
     const Sk = sky.set(jd, w, null), e = Sk.e, day = sm(-10, 8, e);   // (the twilight counts: the dawn brightens the street before the sun is up)
     // the air's colour: the horizon's, greyed (more under cloud and in the mist), as THE MARKET's haze
-    const l = Sk.horizon.r * 0.3 + Sk.horizon.g * 0.59 + Sk.horizon.b * 0.11; fogC.copy(Sk.horizon).lerp(tmp.setRGB(l, l, l), 0.3 + 0.35 * w.cloud + 0.2 * w.mist);
-    if (scene.fog) { scene.fog.color.copy(fogC); scene.fog.density = 0.0042 + 0.0035 * (1 - day) + 0.012 * (G.rainK || 0) + 0.004 * w.mist; } scene.background = fogC;
-    AIR.mist[0] = 0.0015 + 0.024 * w.mist; AIR.mist[1] = 1 / (1.8 + 2.4 * w.mist); AIR.mist[2] = -0.1;
+    const l = Sk.horizon.r * 0.3 + Sk.horizon.g * 0.59 + Sk.horizon.b * 0.11; fogC.copy(Sk.horizon).lerp(tmp.setRGB(l, l, l), 0.3 + 0.35 * w.cloud + 0.2 * w.mist); fogC.lerp(tmp.copy(Sk.zen).lerp(Sk.horizon, 0.55), 0.22 * day * (1 - w.cloud));   // by day the far air goes bluer, toward the sky's own
+    if (scene.fog) { scene.fog.color.copy(fogC); scene.fog.density = 0.0068 + 0.004 * (1 - day) + 0.014 * (G.rainK || 0) + 0.006 * w.mist; } scene.background = fogC;
+    AIR.mist[0] = 0.003 + 0.03 * w.mist + 0.012 * (1 - day) + 0.01 * (G.rainK || 0); AIR.mist[1] = 1 / (1.8 + 2.4 * w.mist); AIR.mist[2] = -0.1;
     sky.U.uFogC.value.copy(fogC); sky.U.uFogK.value = 0.5 + 0.4 * w.mist;
     // the light: the sun's while it is up, the moon's after (the same light, so one shadow map), passing between them through the twilight
     const f = sm(1, -5, e), sunK = sm(-1, 9, e) * 2.7 * (1 - 0.6 * clamp((w.cloud - 0.25) / 0.7, 0, 1)), mk = (1 - sm(-4, 2, e)) * clamp((Sk.moonAlt + 2) / 12, 0, 1) * (0.25 + 0.75 * Sk.moonLit) * (1 - 0.55 * clamp((w.cloud - 0.3) / 0.6, 0, 1));
     _mp.copy(Sk.sunDir).lerp(Sk.moonDir, f); _mp.y = Math.max(0.12, _mp.y); _mp.normalize(); sun.position.copy(_mp).multiplyScalar(40); sun.target.position.set(0, 0, 0);
     sun.color.copy(Sk.sunC).lerp(MOONC, f); sun.intensity = sunK * (1 - f) + 1.15 * mk * f;
-    AIR.sun[0] = _mp.x; AIR.sun[1] = _mp.y; AIR.sun[2] = _mp.z; const glow = sm(-3, 3, e) * (0.35 + 0.65 * (1 - clamp((e - 5) / 25, 0, 1))) * 0.16 * (1 - 0.7 * w.cloud);
+    AIR.sun[0] = _mp.x; AIR.sun[1] = _mp.y; AIR.sun[2] = _mp.z; const glow = sm(-3, 3, e) * (0.35 + 0.65 * (1 - clamp((e - 5) / 25, 0, 1))) * 0.22 * (1 - 0.7 * w.cloud);
     tmp.copy(Sk.sunC).multiplyScalar(glow).lerp(tmp2.copy(MOONC).multiplyScalar(0.03 * mk), f); AIR.sunC[0] = tmp.r; AIR.sunC[1] = tmp.g; AIR.sunC[2] = tmp.b;
     fill.color.copy(NIGHTF).lerp(DAYF, day).lerp(Sk.sunC, 0.22 * day * (1 - clamp(e / 20, 0, 1))).lerp(tmp2.setRGB(0.6, 0.62, 0.66), 0.3 * w.cloud * day); fill.groundColor.copy(EARTH).multiplyScalar(0.25 + 0.75 * day);
     fill.intensity = (0.9 + 0.42 * day + 0.3 * mk) * (S.easy ? 1.2 : 1);

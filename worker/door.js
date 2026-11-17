@@ -3,6 +3,7 @@ import { getServerByName, routePartykitRequest, Server } from "partyserver";
 import { DISH, DISHK } from "./dish.js";
 import { JAM } from "./jam.js";
 import { LASER } from "./laser.js";
+import { TAG } from "./tag.js";
 import { TANK } from "./tank.js";
 import { SPACE } from "./space.js";
 import { MAPPATCH } from "./mappatch.js";
@@ -131,9 +132,15 @@ export default {
     // LASER TAG (src/laser/): its own page at /laser, to anyone with the link; its one public room is the Laser Durable Object
     if ((request.method === "GET" || request.method === "HEAD") && p === "/laser") return page(env, url, "/laser", request, "no-cache");
     if (p === "/laser/") return Response.redirect(url.origin + "/laser" + url.search, 301);
+    // SENSOR TAG (src/tag/): its own page at /tag, to anyone with the link; its one public room is the Tag Durable Object
+    if ((request.method === "GET" || request.method === "HEAD") && p === "/tag") return page(env, url, "/tag", request, "no-cache");
+    if (p === "/tag/") return Response.redirect(url.origin + "/tag" + url.search, 301);
     // AR DUEL (src/duel/): its own page at /duel, to anyone with the link; its pictures under /duel-assets/
     if ((request.method === "GET" || request.method === "HEAD") && p === "/duel") return page(env, url, "/duel", request, "no-cache");
     if (p === "/duel/") return Response.redirect(url.origin + "/duel" + url.search, 301);
+    // SLOWFIRE DUEL (src/qzar/): its own page at /qzar, to anyone with the link
+    if ((request.method === "GET" || request.method === "HEAD") && p === "/qzar") return page(env, url, "/qzar", request, "no-cache");
+    if (p === "/qzar/") return Response.redirect(url.origin + "/qzar" + url.search, 301);
     // DEAD END (src/hide/): its own page at /hide, to anyone with the link; its pictures, models and sounds under /hide-assets/; the thing's mind and voice (POST /hide/mind, /hide/say) to anyone who plays
     if ((request.method === "GET" || request.method === "HEAD") && p === "/hide") return page(env, url, "/hide", request, "no-cache");
     if (p === "/hide/") return Response.redirect(url.origin + "/hide" + url.search, 301);
@@ -230,9 +237,9 @@ export default {
       return skyFeed(sky[1], request); }
     if (p.startsWith("/parties/")) return (await routePartykitRequest(request, env, {
       onBeforeConnect: async (req, { party, name }) => {
-        const room = party === "block" || party === "jam" || party === "crumbs" ? ROOM.test(name) : party === "laser" || party === "tank" || party === "space" ? name === "public" : party === "dish" && name === "petri";   // the dish: one for the whole market, the arcade's PETRI; LASER TAG: one public room
+        const room = party === "block" || party === "jam" || party === "crumbs" ? ROOM.test(name) : party === "laser" || party === "tag" || party === "tank" || party === "space" ? name === "public" : party === "dish" && name === "petri";   // the dish: one for the whole market, the arcade's PETRI; LASER TAG: one public room
         if (!room || (request.headers.get("Origin") !== url.origin && !dev)) return new Response("not found", { status: 404 });
-        if (party === "laser" || party === "tank" || party === "space") { const r = new Request(req); r.headers.set("x-partykit-room", name); return r; }   // LASER TAG's room: to anyone with the link, like its page
+        if (party === "laser" || party === "tag" || party === "tank" || party === "space") { const r = new Request(req); r.headers.set("x-partykit-room", name); return r; }   // LASER TAG's room: to anyone with the link, like its page
         if (party === "crumbs") { const r = new Request(req); r.headers.set("x-partykit-room", name); return r; }   // MIDNIGHT CRUMBS' houses: to anyone with the link, like its page
         if (party === "jam") { const r = new Request(req); r.headers.set("x-partykit-room", name); return r; }   // STADIUM JAM's rooms: to anyone with the link, like its page
         const id = await who(env, request, dev); if (!id) return new Response("login", { status: 401 });
@@ -1100,19 +1107,22 @@ export class Dish extends Server {
 // LASER TAG's room: the one public game, two players; it gives each a pack (RED, GREEN) and passes poses, pack states, shots and tags on to the other (worker/laser.js says what passes)
 export class Laser extends Server {
   static options = { hibernate: false };
+  get R() { return LASER; }
   peers(not) { const a = []; for (const o of this.getConnections()) if (o.id !== not && o.state) a.push({ id: o.id, ...o.state }); return a; }
   onMessage(c, raw) {
     if (typeof raw !== "string" || raw.length > 1024) return; let m; try { m = JSON.parse(raw); } catch (e) { return; }
     const now = Date.now(), rl = c.rl || (c.rl = { t: now, n: 0 }); if (now - rl.t > 1000) { rl.t = now; rl.n = 0; } if (++rl.n > 120) return;
     if (m && m.t === "join") { if (c.state) return; const peers = this.peers(c.id);
-      if (peers.length >= LASER.MAX) { c.send('{"t":"full"}'); return c.close(4002, "full"); }
-      const st = { slot: LASER.slot(peers.map(q => q.slot)) }; c.setState(st);
+      if (peers.length >= this.R.MAX) { c.send('{"t":"full"}'); return c.close(4002, "full"); }
+      const st = { slot: this.R.slot(peers.map(q => q.slot)) }; c.setState(st);
       c.send(JSON.stringify({ t: "welcome", id: c.id, slot: st.slot, peers })); return this.broadcast(JSON.stringify({ t: "peer-join", id: c.id, ...st }), [c.id]); }
-    if (!c.state) return; const out = LASER.clean(m); if (!out) return;
+    if (!c.state) return; const out = this.R.clean(m); if (!out) return;
     out.id = c.id; this.broadcast(JSON.stringify(out), [c.id]); }
   onClose(c) { if (c.state) this.broadcast(JSON.stringify({ t: "peer-leave", id: c.id }), [c.id]); }
   onError(c) { this.onClose(c); }
 }
+// SENSOR TAG's room: the same relay as LASER TAG's, with its own filter (worker/tag.js)
+export class Tag extends Laser { get R() { return TAG; } }
 
 // SPACE FLEET's room: the one public battle, two players; the first in is the host, whose pictures of the battle go to the other, whose orders come back (worker/space.js says what passes)
 export class Space extends Server {

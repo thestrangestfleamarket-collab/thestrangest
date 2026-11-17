@@ -20,3 +20,5 @@ data/full/tank/
 data/full/space/
 data/full/sushi/snd/
 .site-wrangler.jsonc
+.places-wrangler.jsonc
+data/full/rocketbox/

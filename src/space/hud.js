@@ -1,38 +1,56 @@
-// SPACE FLEET's words in the headset: the command panel on your left wrist (credits, the shipyard's buttons, the room/space switch) and the notice that hangs over the field
+// SPACE FLEET's words in the headset: the console that floats beside you (credits, the shipyard, pause, the view, the guide, the lens), the notice that hangs over the field, and the guide
 import * as THREE from 'three';
 import { TYPES, CAP, QMAX } from './sim.js';
 
-const W = 512, H = 644, KEYS = [1, 2, 3, 4, 5], COL = ['#3aa0ff', '#ff6a2a'];
-const NOTE = ['', 'fast, hunts big ships', 'all-round, swats fighters', 'heavy beam, breaks hulls', 'slow gun platform', 'waits, then blasts'];
+const W = 1000, H = 760, KEYS = [1, 2, 3, 4, 5], COL = ['#4da8ff', '#59f080'];
+const NOTE = ['', ['fast swarm', 'beats cruisers'], ['line ship', 'beats fighters'], ['heavy beam', 'beats frigates'], ['gun platform', 'holds a spot'], ['hidden', 'blasts what nears']];
 
+// the console: one board that floats at your left hand's side, big enough to read at a glance. Point EITHER controller at a button and pull the trigger; hold a grip on it to carry it somewhere else
 class Panel {
   constructor() {
-    this.c = document.createElement('canvas'); this.c.width = W; this.c.height = H; this.x = this.c.getContext('2d');
+    this.c = document.createElement('canvas'); this.c.width = W; this.c.height = H; this.x = this.c.getContext('2d'); this.w = 0.5; this.h = 0.38;
     this.tex = new THREE.CanvasTexture(this.c); this.tex.colorSpace = THREE.SRGBColorSpace; this.tex.anisotropy = 4;
-    this.mesh = new THREE.Mesh(new THREE.PlaneGeometry(0.2, 0.25), new THREE.MeshBasicMaterial({ map: this.tex, transparent: true, toneMapped: false, side: THREE.DoubleSide }));
-    this.mesh.position.set(0.02, 0.13, -0.05); this.mesh.rotation.set(-0.75, 0.35, 0); this.btn = []; this.key = ''; this.hot = -1;
+    this.mesh = new THREE.Mesh(new THREE.PlaneGeometry(this.w, this.h), new THREE.MeshBasicMaterial({ map: this.tex, transparent: true, toneMapped: false, side: THREE.DoubleSide, depthTest: false })); this.mesh.renderOrder = 25;
+    this.btn = []; this.key = ''; this.hot = -1; this.hot2 = -1; this.pinned = false; this.placed = false; this.t = new THREE.Vector3(); this.flash = -1; this.flashAt = 0;
   }
-  // s: { credits, income, count, queue, me, ar, canAR, state, extra }
+  // it keeps to your left, low, turned to your face; once you have carried it somewhere it stays there
+  // (never while a controller points at it: a board that slides under your pointer cannot be pressed)
+  follow(head, fwd, dt, busy, force) { const m = this.mesh; if (busy && this.placed && !force) return; if (!this.pinned || force) { const tx = head.x + fwd.x * 0.5 + fwd.z * 0.42, tz = head.z + fwd.z * 0.5 - fwd.x * 0.42, ty = head.y - 0.33; if (force) this.pinned = false;
+      if (!this.placed || force || Math.hypot(m.position.x - tx, m.position.z - tz) > 0.55 || Math.abs(m.position.y - ty) > 0.35) { this.t.set(tx, ty, tz); if (!this.placed || force) m.position.copy(this.t); this.placed = true; }
+      m.position.lerp(this.t, 1 - Math.exp(-dt * 12)); m.lookAt(head); } }
+  // where a button's middle is in the room (for the check, and for the pointer)
+  spot(i, out) { const b = this.btn[i]; return this.mesh.localToWorld(out.set(((b.x0 + b.x1) / 2 / W - 0.5) * this.w, (0.5 - (b.y0 + b.y1) / 2 / H) * this.h, 0)); }
+  press(i) { this.flash = i; this.flashAt = performance.now(); this.key = ''; }
+  // s: { credits, income, count, queue, me, ar, canAR, state, extra, paused, fx, guide, costs }
   draw(s) {
-    const key = [s.paused, s.fx, s.guide, s.costs && s.costs[1].cost, s.credits | 0, s.income, s.count, s.queue.map(q => q.type + ':' + Math.round(q.done * 20)).join(), s.me, s.ar, s.state, s.extra, this.hot].join('|'); if (key === this.key) return; this.key = key;
-    const x = this.x; x.clearRect(0, 0, W, H); x.fillStyle = 'rgba(6,10,18,0.9)'; x.beginPath(); x.roundRect(0, 0, W, H, 28); x.fill(); x.strokeStyle = COL[s.me]; x.lineWidth = 4; x.stroke();
-    x.textBaseline = 'middle'; x.textAlign = 'left'; x.fillStyle = '#ffd766'; x.font = 'bold 44px system-ui,sans-serif'; x.fillText('◈ ' + (s.credits | 0), 26, 46);
-    x.fillStyle = '#9fb0c8'; x.font = '24px system-ui,sans-serif'; x.fillText('+' + s.income + '/s', 230, 50); x.textAlign = 'right'; x.fillStyle = s.count >= CAP ? '#ff6a5a' : '#cfd8e6'; x.fillText('FLEET ' + s.count + '/' + CAP, W - 26, 50);
-    this.btn = []; const play = s.state === 'play';
-    KEYS.forEach((t, i) => { const T = (s.costs || TYPES)[t], y = 86 + i * 82, ok = play && s.credits >= T.cost && s.queue.length < QMAX && s.count + s.queue.length < CAP, n = s.queue.filter(q => q.type === t).length, hot = this.hot === i;
-      x.fillStyle = hot && ok ? '#24406a' : ok ? '#15243c' : '#10151e'; x.beginPath(); x.roundRect(18, y, W - 36, 72, 14); x.fill();
-      const first = s.queue[0] && s.queue[0].type === t ? s.queue[0].done : 0; if (first) { x.fillStyle = 'rgba(80,220,140,0.35)'; x.beginPath(); x.roundRect(18, y, (W - 36) * first, 72, 14); x.fill(); }
-      x.textAlign = 'left'; x.fillStyle = ok ? '#fff' : '#66707f'; x.font = 'bold 30px system-ui,sans-serif'; x.fillText(T.name, 36, y + 26); x.font = '19px system-ui,sans-serif'; x.fillStyle = ok ? '#9fb0c8' : '#566070'; x.fillText(NOTE[t], 36, y + 54);
-      x.textAlign = 'right'; x.font = 'bold 30px system-ui,sans-serif'; x.fillStyle = ok ? '#ffd766' : '#7a6a3a'; x.fillText(T.cost, W - 36, y + 26); if (n) { x.font = '20px system-ui,sans-serif'; x.fillStyle = '#6fe0a0'; x.fillText('building ' + n, W - 36, y + 54); }
-      this.btn.push({ x0: 18, y0: y, x1: W - 18, y1: y + 72, id: 'b' + t }); });
-    const y = 86 + 5 * 82 + 6, half = (W - 46) / 2;
-    const b2 = (x0, label, id, on, hot) => { x.fillStyle = hot ? '#2c4a78' : on ? '#1b3050' : '#10151e'; x.beginPath(); x.roundRect(x0, y, half, 60, 14); x.fill(); x.textAlign = 'center'; x.fillStyle = on ? '#fff' : '#66707f'; x.font = 'bold 24px system-ui,sans-serif'; x.fillText(label, x0 + half / 2, y + 31); this.btn.push({ x0, y0: y, x1: x0 + half, y1: y + 60, id }); };
-    b2(18, s.ar ? 'VIEW: ROOM' : 'VIEW: SPACE', 'ar', s.canAR, this.hot === 5); b2(28 + half, s.extra || 'ALL SHIPS', s.extra ? 'x' : 'all', true, this.hot === 6);
-    const y2 = y + 68, third = (W - 56) / 3, b3 = (k, label, id, on, lit) => { const x0 = 18 + k * (third + 10); x.fillStyle = this.hot === 7 + k ? '#2c4a78' : lit ? '#2a5a3a' : on ? '#1b3050' : '#10151e'; x.beginPath(); x.roundRect(x0, y2, third, 60, 14); x.fill(); x.textAlign = 'center'; x.fillStyle = on ? '#fff' : '#66707f'; x.font = 'bold 22px system-ui,sans-serif'; x.fillText(label, x0 + third / 2, y2 + 31); this.btn.push({ x0, y0: y2, x1: x0 + third, y1: y2 + 60, id }); };
-    b3(0, s.paused ? 'RESUME' : 'PAUSE', 'pause', play, s.paused); b3(1, s.guide ? 'SKIP GUIDE' : 'GUIDE', 'guide', true, s.guide); b3(2, s.fx ? 'LENS: ON' : 'LENS: OFF', 'fx', !s.ar, s.fx && !s.ar);
+    const lit = this.flash >= 0 && performance.now() - this.flashAt < 220 ? this.flash : -1; if (lit < 0) this.flash = -1;
+    const key = [s.mode, s.col, lit, s.paused, s.fx, s.guide, s.costs && s.costs[1].cost, s.credits | 0, s.income, s.count, s.queue.map(q => q.type + ':' + Math.round(q.done * 20)).join(), s.me, s.ar, s.state, s.extra, this.hot, this.hot2].join('|'); if (key === this.key) return; this.key = key;
+    const x = this.x, play = s.state === 'play'; x.clearRect(0, 0, W, H); x.fillStyle = 'rgba(6,10,18,0.94)'; x.beginPath(); x.roundRect(3, 3, W - 6, H - 6, 34); x.fill(); x.strokeStyle = COL[s.col | 0]; x.lineWidth = 6; x.stroke();
+    x.textBaseline = 'middle'; x.textAlign = 'left'; x.fillStyle = '#ffd766'; x.font = 'bold 64px system-ui,sans-serif'; x.fillText('\u25C8 ' + (s.credits | 0), 36, 62);
+    x.fillStyle = '#9fb0c8'; x.font = '32px system-ui,sans-serif'; x.fillText('+' + s.income + ' a second', 330, 66); x.textAlign = 'right'; x.fillStyle = s.count >= CAP ? '#ff6a5a' : '#cfd8e6'; x.fillText('FLEET ' + s.count + ' / ' + CAP, W - 36, 66);
+    x.textAlign = 'left'; x.fillStyle = '#7f8ea6'; x.font = '26px system-ui,sans-serif'; x.fillText('BUILD  \u2014  point at a ship and pull the trigger', 36, 128);
+    this.btn = []; const tw = (W - 36 * 2 - 14 * 4) / 5;
+    KEYS.forEach((t, i) => { const T = (s.costs || TYPES)[t], x0 = 36 + i * (tw + 14), y0 = 156, th = 268, full = s.count + s.queue.length >= CAP || s.queue.length >= QMAX, ok = play && s.credits >= T.cost && !full, n = s.queue.filter(q => q.type === t).length, hot = this.hot === i || this.hot2 === i;
+      x.fillStyle = lit === i ? '#3f8f5f' : hot ? (ok ? '#2b4f86' : '#2a2f3a') : ok ? '#172a46' : '#10151e'; x.beginPath(); x.roundRect(x0, y0, tw, th, 20); x.fill(); if (hot) { x.strokeStyle = ok ? '#7fc0ff' : '#5a6474'; x.lineWidth = 5; x.stroke(); }
+      const first = s.queue[0] && s.queue[0].type === t ? s.queue[0].done : 0; if (first) { x.fillStyle = 'rgba(80,220,140,0.4)'; x.beginPath(); x.roundRect(x0, y0 + th - 26, tw * first, 26, [0, 0, 20, 20]); x.fill(); }
+      x.textAlign = 'center'; x.fillStyle = ok ? '#fff' : '#66707f'; x.font = 'bold 32px system-ui,sans-serif'; x.fillText(T.name, x0 + tw / 2, y0 + 44);
+      x.font = 'bold 70px system-ui,sans-serif'; x.fillStyle = ok ? '#ffd766' : '#7a6a3a'; x.fillText(T.cost, x0 + tw / 2, y0 + 112);
+      x.font = '24px system-ui,sans-serif'; x.fillStyle = ok ? '#9fb0c8' : '#566070'; x.fillText(NOTE[t][0], x0 + tw / 2, y0 + 168); x.fillText(NOTE[t][1], x0 + tw / 2, y0 + 196);
+      x.font = 'bold 24px system-ui,sans-serif'; x.fillStyle = n ? '#6fe0a0' : !play ? '#566070' : full ? '#ff8a6a' : s.credits < T.cost ? '#b8894a' : '#566070'; x.fillText(n ? 'building ' + n : !play ? '' : full ? 'yard full' : s.credits < T.cost ? 'need ' + (T.cost - (s.credits | 0)) : '', x0 + tw / 2, y0 + 230);
+      this.btn.push({ x0, y0, x1: x0 + tw, y1: y0 + th, id: 'b' + t }); });
+    // how ships go about the orders you give next (and the ones you have picked, at once)
+    x.textAlign = 'left'; x.fillStyle = '#7f8ea6'; x.font = '24px system-ui,sans-serif'; x.fillText('ORDERS GO AS', 36, 477);
+    [['ATTACK', 'chase what they meet', '#66ff99'], ['DEFEND', 'hold, never chase', '#66aaff'], ['SNEAK', 'slow, silent, unseen', '#c080ff'], ['FALL BACK', 'home to the mothership', '#ffd766']].forEach(([name, note, col], k) => { const bw = (W - 72 - 200 - 12 * 3) / 4, x0 = 236 + k * (bw + 12), y0 = 438, i = this.btn.length, on = k < 3 && s.mode === k, hot = this.hot === i || this.hot2 === i;
+      x.fillStyle = lit === i ? '#3f8f5f' : hot ? '#2b4f86' : on ? '#23314a' : '#141b28'; x.beginPath(); x.roundRect(x0, y0, bw, 78, 16); x.fill(); if (on || hot) { x.strokeStyle = on ? col : '#7fc0ff'; x.lineWidth = on ? 6 : 4; x.stroke(); }
+      x.textAlign = 'center'; x.fillStyle = on ? col : '#dfe6f0'; x.font = 'bold 26px system-ui,sans-serif'; x.fillText(name, x0 + bw / 2, y0 + 28); x.fillStyle = '#8a97ab'; x.font = '17px system-ui,sans-serif'; x.fillText(note, x0 + bw / 2, y0 + 57); this.btn.push({ x0, y0, x1: x0 + bw, y1: y0 + 78, id: k < 3 ? 'm' + k : 'home' }); });
+    const y = 532, bh = 84, row = (k, n, label, id, on, glow) => { const bw = (W - 72 - 14 * (n - 1)) / n, x0 = 36 + k * (bw + 14), i = this.btn.length; x.fillStyle = lit === i ? '#3f8f5f' : (this.hot === i || this.hot2 === i) ? '#2b4f86' : glow ? '#285a3c' : on ? '#1b3050' : '#10151e'; x.beginPath(); x.roundRect(x0, y, bw, bh, 18); x.fill(); if (this.hot === i || this.hot2 === i) { x.strokeStyle = '#7fc0ff'; x.lineWidth = 5; x.stroke(); }
+      x.textAlign = 'center'; x.fillStyle = on ? '#fff' : '#66707f'; x.font = 'bold 28px system-ui,sans-serif'; x.fillText(label, x0 + bw / 2, y + bh / 2 + 2); this.btn.push({ x0, y0: y, x1: x0 + bw, y1: y + bh, id }); };
+    row(0, 5, s.paused ? 'RESUME' : 'PAUSE', 'pause', play, s.paused); row(1, 5, s.extra || 'PICK ALL', s.extra ? 'x' : 'all', true, !!s.extra); row(2, 5, s.ar ? 'SEE SPACE' : 'SEE ROOM', 'ar', s.canAR); row(3, 5, s.guide ? 'SKIP GUIDE' : 'GUIDE', 'guide', true, s.guide); row(4, 5, s.fx ? 'LENS ON' : 'LENS OFF', 'fx', !s.ar, s.fx && !s.ar);
+    x.textAlign = 'center'; x.fillStyle = '#7f8ea6'; x.font = '21px system-ui,sans-serif';
+    x.fillText('TRIGGER a ship and drag: send it.  Drop it on an enemy: attack.  Tap twice: stop.', W / 2, 660); x.fillText('RIGHT stick: zoom, turn.  LEFT stick: fly.  Click a stick: pause.  GRIP: drag the field or this board.', W / 2, 702, W - 60);
     this.tex.needsUpdate = true;
   }
-  // which button a spot on the panel (uv 0..1) is on
+  // which button a spot on the board (uv 0..1) is on
   at(uv) { const px = uv.x * W, py = (1 - uv.y) * H; for (let i = 0; i < this.btn.length; i++) { const b = this.btn[i]; if (px >= b.x0 && px <= b.x1 && py >= b.y0 && py <= b.y1) return i; } return -1; }
 }
 
@@ -50,9 +68,10 @@ const STEPS = [
   ['SEND A SHIP', ['Hold the TRIGGER (index finger) on your ship, drag', 'the green dot to where it should go, and let go.', 'Order it again and it does that next: a mission.', 'Tap a ship twice to cancel its mission.'], 'ordered'],
   ['PICK MANY', ['Hold the TRIGGER on empty space and drag: a bubble', 'grows between where you began and where you point.', 'Let go with two or more ships inside it.', '(B or Y picks every warship at once.)'], 'multi'],
   ['ATTACK', ['Drag a picked ship ONTO an enemy (the dot turns red)', 'and let go: everything you picked goes for it.', 'Or just pull the trigger on an enemy.'], 'attacked'],
-  ['BUILD', ['Your LEFT WRIST is the shipyard. Point your other', 'hand at a ship on it and pull the trigger.', 'Fighters beat cruisers, frigates beat fighters,', 'cruisers beat frigates.'], 'built'],
+  ['ORDERS', ['On the CONSOLE at your left, choose how ships go:', 'ATTACK chases what it meets. DEFEND holds its place.', 'SNEAK goes slow and unseen until it fires.', 'FALL BACK brings them home. Press one now.'], 'mode'],
+  ['BUILD', ['The CONSOLE floats at your left. Point either', 'controller at a ship on it and pull the trigger.', 'Fighters beat cruisers, frigates beat fighters,', 'cruisers beat frigates.'], 'built'],
   ['ZOOM AND FLY', ['RIGHT thumbstick up/down: zoom in on what you point at.', 'RIGHT stick left/right: turn the field.', 'LEFT thumbstick: fly through it.', 'Or hold a GRIP to drag the field; both to size it.'], 'moved'],
-  ['PAUSE', ['Click a thumbstick in (or PAUSE on your wrist) to freeze', 'the battle. You can still look around, zoom in and give', 'orders. Click again to go on.'], 'paused'],
+  ['PAUSE', ['Click a thumbstick in (or PAUSE on the console) to freeze', 'the battle. You can still look around, zoom in and give', 'orders. Click again to go on.'], 'paused'],
   ['WIN', ['Hold the ringed relays for more income.', 'Destroy the enemy mothership to win.', 'A or X: your room, or open space.', '', 'Pull a trigger to begin.'], 'go'],
 ];
 class Guide {
@@ -65,11 +84,11 @@ class Guide {
   tick(now, head, fwd) {
     if (!this.on) return; const st = STEPS[this.i]; if (this.did[st[2]] && now - this.at > 1800) { this.did = {}; this.i++; this.at = now; if (this.i >= STEPS.length) return this.stop(); }
     // it keeps to your right, a little ahead, and follows only when you have turned well away
-    const tx = head.x + fwd.x * 0.95 - fwd.z * 0.62, tz = head.z + fwd.z * 0.95 + fwd.x * 0.62, ty = head.y - 0.02, m = this.mesh; if (!this.placed || Math.hypot(m.position.x - tx, m.position.z - tz) > 0.7) { this.placed = true; this.tx = tx; this.ty = ty; this.tz = tz; if (m.position.lengthSq() === 0) m.position.set(tx, ty, tz); }
+    const tx = head.x + fwd.x * 0.95 - fwd.z * 0.52, tz = head.z + fwd.z * 0.95 + fwd.x * 0.52, ty = head.y - 0.02, m = this.mesh; if (!this.placed || Math.hypot(m.position.x - tx, m.position.z - tz) > 0.7) { this.placed = true; this.tx = tx; this.ty = ty; this.tz = tz; if (m.position.lengthSq() === 0) m.position.set(tx, ty, tz); }
     m.position.x += (this.tx - m.position.x) * 0.08; m.position.y += (this.ty - m.position.y) * 0.08; m.position.z += (this.tz - m.position.z) * 0.08; m.lookAt(head);
     const done = this.did[STEPS[this.i][2]] ? 1 : 0, key = this.i * 2 + done; if (key === this.key) return; this.key = key; const x = this.c.getContext('2d'), s = STEPS[this.i]; x.clearRect(0, 0, 1100, 620);
     x.fillStyle = 'rgba(6,10,18,0.92)'; x.beginPath(); x.roundRect(0, 0, 1100, 620, 36); x.fill(); x.strokeStyle = done ? '#6fe0a0' : '#3aa0ff'; x.lineWidth = 6; x.stroke();
-    x.textBaseline = 'middle'; x.textAlign = 'left'; x.fillStyle = '#7f8ea6'; x.font = '30px system-ui,sans-serif'; x.fillText('HOW TO PLAY   ' + (this.i + 1) + ' of ' + STEPS.length, 50, 60); x.textAlign = 'right'; x.fillText('SKIP GUIDE is on your left wrist', 1050, 60);
+    x.textBaseline = 'middle'; x.textAlign = 'left'; x.fillStyle = '#7f8ea6'; x.font = '30px system-ui,sans-serif'; x.fillText('HOW TO PLAY   ' + (this.i + 1) + ' of ' + STEPS.length, 50, 60); x.textAlign = 'right'; x.fillText('SKIP GUIDE is on the console at your left', 1050, 60);
     x.textAlign = 'left'; x.fillStyle = done ? '#6fe0a0' : '#ffffff'; x.font = 'bold 78px system-ui,sans-serif'; x.fillText(s[0] + (done ? '  \u2713' : ''), 50, 160); x.fillStyle = '#d6deea'; x.font = '40px system-ui,sans-serif'; s[1].forEach((l, k) => x.fillText(l, 50, 260 + k * 62)); this.tex.needsUpdate = true; }
 }
 export { Panel, Banner, Guide, STEPS };

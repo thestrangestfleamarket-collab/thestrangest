@@ -5,22 +5,34 @@ import { pbr as drawn, fbm } from '../jam/textures.js';
 
 export const BASE = '/drums-assets/';
 const TL = new THREE.TextureLoader(), GL = new GLTFLoader(), sets = {}, models = {}, made = new Map();
-export const TEX = ['floor', 'block', 'ply', 'carpet', 'door', 'drive', 'paint', 'fence', 'brick', 'fabric', 'grass'];
+export const TEX = ['floor', 'block', 'ply', 'carpet', 'door', 'drive', 'paint', 'fence', 'brick', 'fabric', 'grass', 'road'];
 export const MODELS = ['steel_frame_shelves_01', 'steel_frame_shelves_02', 'metal_tool_chest', 'metal_toolbox', 'bench_vice_01', 'drill_01', 'adjustable_wrench', 'combination_wrench', 'cross_pein_hammer', 'handsaw_wood', 'pipe_wrench',
   'ratchet_wrench', 'boombox', 'cardboard_box_01', 'plastic_crate_01', 'plastic_crate_02', 'metal_jerrycan', 'plastic_jerrycan', 'propane_tank', 'spray_paint_bottles', 'lubricant_spray', 'small_oil_can_01', 'tire_pump',
   'garden_hose_wall_mounted_01', 'korean_fire_extinguisher_01', 'ladder_sectioned_01', 'metal_trash_can', 'trashbag', 'plastic_broom', 'mounted_fluorescent_lights', 'hanging_industrial_lamp', 'power_box_01', 'utility_box_01',
   'television_01', 'sofa_01', 'wall_clock', 'metal_stool_01', 'desk_lamp_arm_01', 'bleach_bottle', 'plastic_bottle_gallon', 'wooden_ladder', 'watering_can_metal_01', 'american_football', 'old_military_crate', 'wooden_crate_02',
-  'tool_cart', 'cassette_player', 'potted_plant_01', 'potted_plant_04', 'planter_box_01', 'worn_metal_rack', 'industrial_wall_lamp', 'can_rusted', 'multi_cleaner_bottle'];
+  'tool_cart', 'cassette_player', 'potted_plant_01', 'potted_plant_04', 'planter_box_01', 'worn_metal_rack', 'industrial_wall_lamp', 'can_rusted', 'multi_cleaner_bottle', 'armchair_01', 'coffeetable_01', 'painted_wooden_cabinet', 'dartboard', 'wooden_bookshelf_worn', 'car', 'street_lamp_01', 'fire_hydrant'];
+export const PEOPLE = ['Male_Adult_03', 'Male_Adult_05', 'Male_Adult_06', 'Male_Adult_08', 'Female_Adult_01', 'Female_Adult_02', 'Female_Adult_04', 'Female_Adult_09', 'Security_Male_01'];
+// the street's people (Microsoft Rocketbox avatars) and their recorded motion, and the car's five paints
+export const P = { body: {}, clip: { m: {}, f: {} }, car: [], trees: {} };
+const FACE = /Eye|Jaw|lip|Tongue|Mouth|Masseter|Caninus|Cheek|Nose|Finger|Toe|Footsteps|Nub/i;
 
 const one = (url, srgb, aniso) => TL.loadAsync(url).then((t) => { t.wrapS = t.wrapT = THREE.RepeatWrapping; t.colorSpace = srgb ? THREE.SRGBColorSpace : THREE.NoColorSpace; t.anisotropy = aniso; return t; }).catch(() => null);
 export async function loadAssets(onProgress = () => { }, aniso = 4) {
-  let n = 0; const all = TEX.length + MODELS.length, tick = (v) => { onProgress(++n / all); return v; };
+  let n = 0; const all = TEX.length + MODELS.length + PEOPLE.length + 14, tick = (v) => { onProgress(++n / all); return v; };
   await Promise.all([
-    ...TEX.map((k) => Promise.all([one(`${BASE}tex/${k}_c.jpg`, true, aniso), one(`${BASE}tex/${k}_n.jpg`, false, aniso), one(`${BASE}tex/${k}_r.jpg`, false, aniso)]).then((t) => { sets[k] = t; }).then(tick)),
+    ...TEX.map((k) => Promise.all([one(`${BASE}tex/${k}_c.jpg`, true, aniso), one(`${BASE}tex/${k}_n.jpg`, false, aniso), k === 'road' ? null : one(`${BASE}tex/${k}_r.jpg`, false, aniso)]).then((t) => { sets[k] = t; }).then(tick)),
     ...MODELS.map((k) => GL.loadAsync(`${BASE}m/${k}.glb`).then((d) => {
-      d.scene.traverse((o) => { if (o.isMesh) { o.castShadow = true; o.receiveShadow = true; o.material.envMapIntensity = 0.6; if (o.material.emissiveIntensity > 0.5) o.material.emissiveIntensity = 0.5; if (o.material.transmission > 0) { o.material.transmission = 0; o.material.transparent = true; o.material.opacity = 0.35; } } });
+      d.scene.traverse((o) => { if (o.isMesh) { o.castShadow = true; o.receiveShadow = true; o.material.envMapIntensity = 0.6; if (o.material.emissiveIntensity > 0.1) o.material.emissiveIntensity = 0.1; if (o.material.transmission > 0) { o.material.transmission = 0; o.material.transparent = true; o.material.opacity = 0.35; } } });
       models[k] = d.scene;
     }).catch((e) => console.warn('no model', k, e)).then(tick)),
+    // each avatar sized to 1.76 m; each motion kept as turns of the body's bones and the hips' rise, its walk held in place
+    ...PEOPLE.map((n) => GL.loadAsync(`${BASE}p/${n}.glb`).then((g) => { g.scene.updateMatrixWorld(true); const b = new THREE.Box3().setFromObject(g.scene); g.scene.traverse((m) => { if (m.isMesh && m.material.transparent) { m.material.transparent = false; m.material.alphaTest = 0.4; } }); P.body[n] = { scene: g.scene, fit: 1.76 / (b.max.y - b.min.y) }; }).catch((e) => console.warn('no person', n, e)).then(tick)),
+    ...['m', 'f'].flatMap((s) => ['walk', 'idle', 'talk', 'run'].map((c) => GL.loadAsync(`${BASE}p/a_${s}_${c}.glb`).then((g) => { const clip = g.animations[0], keep = [];
+      for (const t of clip.tracks) { if (FACE.test(t.name)) continue; if (t.name.endsWith('.quaternion')) keep.push(t); else if (/Pelvis\.position$/.test(t.name)) { const v = t.values, n = v.length / 3; for (let a = 0; a < 3; a++) { const d = v[(n - 1) * 3 + a] - v[a]; if (Math.abs(d) > 8) for (let i = 0; i < n; i++) v[i * 3 + a] = v[a] + (v[i * 3 + a] - v[a] - d * i / (n - 1)); } keep.push(t); } }
+      clip.tracks = keep; clip.name = c; P.clip[s][c] = clip; }).catch((e) => console.warn('no motion', s, c, e)).then(tick))),
+    // HULL DOWN's trees: each species' size and its two views
+    fetch(BASE + 'trees.json').then((r) => r.json()).then((d) => Promise.all(Object.keys(d).map((k) => Promise.all([0, 1].map((i) => TL.loadAsync(`${BASE}tex/${k}_${i}_d.webp`).then((t) => { t.colorSpace = THREE.SRGBColorSpace; return t; }))).then((v) => { P.trees[k] = { ...d[k], v }; })))).catch((e) => console.warn('no trees', e)).then(tick),
+    ...[0, 1, 2, 3, 4].map((i) => TL.loadAsync(`${BASE}tex/car_${i}.jpg`).then((t) => { t.colorSpace = THREE.SRGBColorSpace; t.flipY = false; t.wrapS = t.wrapT = THREE.RepeatWrapping; P.car[i] = t; }).catch(() => null).then(tick)),
   ]);
 }
 

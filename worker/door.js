@@ -3,6 +3,7 @@ import { getServerByName, routePartykitRequest, Server } from "partyserver";
 import { DISH, DISHK } from "./dish.js";
 import { JAM } from "./jam.js";
 import { LASER } from "./laser.js";
+import { TAG } from "./tag.js";
 import { TANK } from "./tank.js";
 import { SPACE } from "./space.js";
 import { MAPPATCH } from "./mappatch.js";
@@ -15,11 +16,11 @@ import { FLYBOT } from "./flybot.js";
 import { HOLMES } from "./holmes.js";
 import { CANTINA } from "./cantina.js";
 import { CRUMBS } from "./crumbs.js";
+import { DRUMS } from "./drums.js";
 import { SUSHI } from "./sushi.js";
 import { SALOON } from "./saloon.js";
 import { HIDE } from "./hide.js";
 import { ZOMBIE } from "./zombie.js";
-import { OUTBREAK } from "./outbreak.js";
 import LIVESDATA from "../data/lives.json";
 import ITEMDATA from "../data/items.json";
 import WORLD from "../data/world.json";
@@ -33,11 +34,11 @@ const APPF = /^\/(app\.webmanifest|icon-(192|512)\.png)$/;   // the installable 
 const EDMAP = /^\/edmap\/t\d{1,2}_\d{1,2}\.jpg$/;
 const SCAREA = /^\/scare-assets\/[a-z0-9_-]+\.glb$/;   // VESPER WARD's models: to anyone
 const SNIPA = /^\/sniper-assets\/(sky|tex|m|snd|p)\/[A-Za-z0-9_-]+\.(glb|json|mp3|jpg|webp)$/, SNIPT = { glb: "model/gltf-binary", json: "application/json", mp3: "audio/mpeg", jpg: "image/jpeg", webp: "image/webp" };   // COLD BORE's skies, surfaces, models and sounds: to anyone
-const SPCA = /^\/space-assets\/((m|snd)\/[A-Za-z0-9_-]+\.(glb|mp3)|stars\.json)$/;   // SPACE FLEET's models, sky and sounds: to anyone
+const SPCA = /^\/space-assets\/((m|snd)\/[A-Za-z0-9_-]+\.(glb|mp3)|tex\/[a-z0-9_]+\.jpg|stars\.json)$/;   // SPACE FLEET's models, sky and sounds: to anyone
 const JAMA = /^\/jam-assets\/[a-z0-9_-]+\.(glb|json|mp3)$/, JAMT = { glb: "model/gltf-binary", json: "application/json", mp3: "audio/mpeg" };   // STADIUM JAM's avatars, hands and samples: to anyone
-const DRUMA = /^\/drums-assets\/(?:(?:tex|m)\/)?[a-z0-9_-]+\.(glb|json|mp3|jpg)$/, DRUMT = { glb: "model/gltf-binary", json: "application/json", mp3: "audio/mpeg", jpg: "image/jpeg" };   // THE GARAGE's recorded kit, models and surfaces: to anyone
+const DRUMA = /^\/drums-assets\/(?:(?:tex|m|p)\/)?[A-Za-z0-9_-]+\.(glb|json|mp3|jpg|webp)$/, DRUMT = { glb: "model/gltf-binary", json: "application/json", mp3: "audio/mpeg", jpg: "image/jpeg", webp: "image/webp" };   // THE GARAGE's recorded kit, models and surfaces: to anyone
 const SAYNO = new Map();
-const GOLFA = /^\/(golf|duel|cantina|hide|zombie|sushi|tank|saloon)-assets\/(?!.*\.\.)[A-Za-z0-9_.\/-]+\.(jpg|json|txt|glb|mp3|hdr|fbx|webp|mp4)$/;   // HALCYON GREENS' pictures and models, AR DUEL's pictures, THE CANTINA's models and pictures, DEAD END's pictures, models and sounds, EYES DOWN's pictures and models, HULL DOWN's sky, surfaces, models and sounds, RAMEN's: to anyone
+const GOLFA = /^\/(golf|duel|cantina|hide|zombie|sushi|tank|saloon|turret)-assets\/(?!.*\.\.)[A-Za-z0-9_.\/-]+\.(jpg|json|txt|glb|mp3|hdr|fbx|webp|mp4)$/;   // HALCYON GREENS' pictures and models, AR DUEL's pictures, THE CANTINA's models and pictures, DEAD END's pictures, models and sounds, EYES DOWN's pictures and models, HULL DOWN's sky, surfaces, models and sounds, RAMEN's: to anyone
 const BOOK = /^\/book\/(\d{1,6})\.txt$/, FILM = /^\/film\/([A-Za-z0-9_.-]{1,80})\/([A-Za-z0-9_.-]{1,120}\.mp4)$/, IA = /^\/ia\/([A-Za-z0-9_.-]{1,80})\.jpg$/, YT = /^\/yt\/([A-Za-z0-9_-]{11})\.jpg$/, BLANK = "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYGD4DwABBAEAHnOcQAAAAABJRU5ErkJggg==";
 const SKYJD = () => { const d = new Date(); return Date.UTC(1985, d.getUTCMonth(), d.getUTCDate()) / 864e5 + 2440587.5; },   // the sky's year is 1985 (src/134b DN.YEAR): that year's comets
    SBDB = "https://ssd-api.jpl.nasa.gov/sbdb_query.api?", SWPC = "https://services.swpc.noaa.gov/";
@@ -93,7 +94,7 @@ export default {
     if ((request.method === "GET" || request.method === "HEAD") && JAMA.test(p)) {
       const r = await env.ASSETS.fetch(new Request(url.origin + p)); if (!r.ok) return new Response("not found", { status: 404 });
       const out = new Response(r.body, r); out.headers.set("content-type", JAMT[p.split(".").pop()]); out.headers.set("cache-control", "public, max-age=86400"); out.headers.set("x-robots-tag", "noindex"); return out; }
-    // THE GARAGE (src/drums/): a drum kit in a garage, its own page at /drums, to anyone with the link; its recorded kit, models and surfaces under /drums-assets/
+    // THE GARAGE (src/drums/): a drum kit in a garage, its own page at /drums, to anyone with the link; its recorded kit, models, people and surfaces under /drums-assets/; its neighbours' talk (POST /drums/talk), how you stand with them (/drums/save, /drums/load) only to a login
     if ((request.method === "GET" || request.method === "HEAD") && p === "/drums") return page(env, url, "/drums", request, "no-cache");
     if ((request.method === "GET" || request.method === "HEAD") && DRUMA.test(p)) {
       const r = await env.ASSETS.fetch(new Request(url.origin + p)); if (!r.ok) return new Response("not found", { status: 404 });
@@ -125,12 +126,21 @@ export default {
       const id = await who(env, request, dev).catch(() => null), key = id || "ip:" + (request.headers.get("CF-Connecting-IP") || "?"); let body; try { body = await request.json(); } catch (e) { body = {}; } if (!body || typeof body !== "object") body = {};
       if (!env.ANTHROPIC_API_KEY) return json({ why: "the website has no ANTHROPIC_API_KEY secret yet" }); if (tooMany("space:" + key, 24)) return json({ why: "too much at once, wait a minute" }, 429);
       const H = homeOf(env); return json(await SPACE.think(env, { get: () => H.botGet("space:" + key), put: v => H.botPut("space:" + key, v) }, body)); }
+    // SWIVEL (src/turret/): a gunship's ball turret for a headset or a screen, its own page at /turret (also /swivel), to anyone with the link; its models and sounds under /turret-assets/
+    if ((request.method === "GET" || request.method === "HEAD") && (p === "/turret" || p === "/swivel")) return page(env, url, "/turret", request, "no-cache");
+    if (p === "/turret/" || p === "/swivel/") return Response.redirect(url.origin + "/turret" + url.search, 301);
     // LASER TAG (src/laser/): its own page at /laser, to anyone with the link; its one public room is the Laser Durable Object
     if ((request.method === "GET" || request.method === "HEAD") && p === "/laser") return page(env, url, "/laser", request, "no-cache");
     if (p === "/laser/") return Response.redirect(url.origin + "/laser" + url.search, 301);
+    // SENSOR TAG (src/tag/): its own page at /tag, to anyone with the link; its one public room is the Tag Durable Object
+    if ((request.method === "GET" || request.method === "HEAD") && p === "/tag") return page(env, url, "/tag", request, "no-cache");
+    if (p === "/tag/") return Response.redirect(url.origin + "/tag" + url.search, 301);
     // AR DUEL (src/duel/): its own page at /duel, to anyone with the link; its pictures under /duel-assets/
     if ((request.method === "GET" || request.method === "HEAD") && p === "/duel") return page(env, url, "/duel", request, "no-cache");
     if (p === "/duel/") return Response.redirect(url.origin + "/duel" + url.search, 301);
+    // SLOWFIRE DUEL (src/qzar/): its own page at /qzar, to anyone with the link
+    if ((request.method === "GET" || request.method === "HEAD") && p === "/qzar") return page(env, url, "/qzar", request, "no-cache");
+    if (p === "/qzar/") return Response.redirect(url.origin + "/qzar" + url.search, 301);
     // DEAD END (src/hide/): its own page at /hide, to anyone with the link; its pictures, models and sounds under /hide-assets/; the thing's mind and voice (POST /hide/mind, /hide/say) to anyone who plays
     if ((request.method === "GET" || request.method === "HEAD") && p === "/hide") return page(env, url, "/hide", request, "no-cache");
     if (p === "/hide/") return Response.redirect(url.origin + "/hide" + url.search, 301);
@@ -227,9 +237,9 @@ export default {
       return skyFeed(sky[1], request); }
     if (p.startsWith("/parties/")) return (await routePartykitRequest(request, env, {
       onBeforeConnect: async (req, { party, name }) => {
-        const room = party === "block" || party === "jam" || party === "crumbs" ? ROOM.test(name) : party === "laser" || party === "tank" || party === "space" ? name === "public" : party === "dish" && name === "petri";   // the dish: one for the whole market, the arcade's PETRI; LASER TAG: one public room
+        const room = party === "block" || party === "jam" || party === "crumbs" ? ROOM.test(name) : party === "laser" || party === "tag" || party === "tank" || party === "space" ? name === "public" : party === "dish" && name === "petri";   // the dish: one for the whole market, the arcade's PETRI; LASER TAG: one public room
         if (!room || (request.headers.get("Origin") !== url.origin && !dev)) return new Response("not found", { status: 404 });
-        if (party === "laser" || party === "tank" || party === "space") { const r = new Request(req); r.headers.set("x-partykit-room", name); return r; }   // LASER TAG's room: to anyone with the link, like its page
+        if (party === "laser" || party === "tag" || party === "tank" || party === "space") { const r = new Request(req); r.headers.set("x-partykit-room", name); return r; }   // LASER TAG's room: to anyone with the link, like its page
         if (party === "crumbs") { const r = new Request(req); r.headers.set("x-partykit-room", name); return r; }   // MIDNIGHT CRUMBS' houses: to anyone with the link, like its page
         if (party === "jam") { const r = new Request(req); r.headers.set("x-partykit-room", name); return r; }   // STADIUM JAM's rooms: to anyone with the link, like its page
         const id = await who(env, request, dev); if (!id) return new Response("login", { status: 401 });
@@ -250,7 +260,7 @@ export default {
       const id = await who(env, request, dev); if (!id) return json({ why: "login" }, 401); if (!env.AI) return json({ why: "the website has no AI binding yet" }); if (tooMany("hear:" + id, 12)) return json({ why: "too much at once, wait a minute" }, 429);
       const buf = await request.arrayBuffer(); if (!buf.byteLength || buf.byteLength > 2 << 20) return json({ why: "too long, say it shorter" }, 400);
       try { const r = await env.AI.run("@cf/openai/whisper", { audio: [...new Uint8Array(buf)] }); return json({ text: String((r && r.text) || "").trim().slice(0, 400) }); } catch (e) { return json({ why: "it could not be made out" }); } }
-    if (request.method === "POST" && (p === "/post" || p === "/admin" || p === "/home" || p === "/owned" || p === "/name" || p === "/scores" || p === "/art" || p === "/orchard" || p === "/bot" || p === "/holmes" || p === "/cantina/talk" || p === "/crumbs/talk" || p === "/sushi/talk" || p === "/sushi/say" || p === "/sushi/report" || p === "/tank/report" || p === "/sushi/log" || p === "/zombie/mind" || p === "/zombie/save" || p === "/saloon/talk" || p === "/saloon/save")) {
+    if (request.method === "POST" && (p === "/post" || p === "/admin" || p === "/home" || p === "/owned" || p === "/name" || p === "/scores" || p === "/art" || p === "/orchard" || p === "/bot" || p === "/holmes" || p === "/cantina/talk" || p === "/crumbs/talk" || p === "/sushi/talk" || p === "/sushi/say" || p === "/sushi/report" || p === "/crumbs/report" || p === "/tank/report" || p === "/sushi/log" || p === "/zombie/mind" || p === "/zombie/save" || p === "/saloon/talk" || p === "/saloon/save" || p === "/drums/talk" || p === "/drums/save" || p === "/drums/load")) {
       if (request.headers.get("Origin") !== url.origin && !(dev && !request.headers.get("Origin"))) return json({ why: "not from the game's page" }, 403);
       const id = await who(env, request, dev); if (!id) return json({ why: "login" }, 401);
       let body; try { body = await request.json(); } catch (e) { body = {}; } if (!body || typeof body !== "object") body = {};
@@ -260,12 +270,12 @@ export default {
       if (p === "/sushi/log") { if (!UUID.test(id)) return json({ why: "login" }, 401); if (tooMany("slog:" + id, 20)) return json({ why: "too much at once" }, 429); if (!env.SUPABASE_SERVICE_KEY) return json({ why: "no service key" }, 501); // YATAI '86: everything said at the cart, kept for the owner to read back (Supabase sushi_talk)
         const lines = (Array.isArray(body.lines) ? body.lines : []).slice(0, 60).map(l => { const o = {}; for (const k of ["at", "gt", "seats", "who", "to", "kind", "text", "heard", "live", "voice", "thinkMs", "voiceMs", "secs", "dropped", "cut", "problem"]) { const x = l && l[k]; if (typeof x === "string") o[k] = word(x, 260); else if (typeof x === "number" || typeof x === "boolean") o[k] = x; } return o; }); if (!lines.length) return json({ ok: true });
         const r = await fetch(env.SUPABASE_URL + "/rest/v1/sushi_talk", { method: "POST", headers: { ...svc(env), "content-type": "application/json", Prefer: "return=minimal" }, body: JSON.stringify({ player: id, sid: word(body.sid, 40), lines }) }).catch(() => null); return json(r && r.ok ? { ok: true } : { why: "not kept" }, r && r.ok ? 200 : 502); }
-      if (p === "/sushi/report" || p === "/tank/report") { const tk = p === "/tank/report"; if (!UUID.test(id)) return json({ why: "login" }, 401); if (tooMany("rep:" + id, 6)) return json({ why: "too many at once, wait a minute" }, 429);
+      if (p === "/sushi/report" || p === "/crumbs/report" || p === "/tank/report") { const CR = p === "/crumbs/report", tk = p === "/tank/report"; if (!UUID.test(id)) return json({ why: "login" }, 401); if (tooMany("rep:" + id, 6)) return json({ why: "too many at once, wait a minute" }, 429);
         const jpg = typeof body.jpg === "string" && body.jpg.startsWith("data:image/jpeg;base64,") && body.jpg.length < 900000 ? body.jpg : "", audio = typeof body.audio === "string" && body.audio.length < 700000 && /^[A-Za-z0-9+/=]*$/.test(body.audio) ? body.audio : "";
         let said = ""; if (audio && env.AI) { try { const r = await env.AI.run("@cf/openai/whisper", { audio: [...Uint8Array.from(atob(audio), ch => ch.charCodeAt(0))] }); said = String((r && r.text) || "").trim().slice(0, 600); if (/^(\W*(thank you( very much)?|thanks for watching|you|bye)\W*)+$/i.test(said)) said = ""; } catch (e) { } }   // what the speech model makes of silence is not words
         let ctx = {}; try { const c = JSON.stringify(body.context || {}); if (c.length < 4000) ctx = JSON.parse(c); } catch (e) { }
         const rid = crypto.randomUUID(), h = { ...svc(env), "content-type": "application/json", Prefer: "return=minimal" };
-        const r1 = await fetch(env.SUPABASE_URL + "/rest/v1/bug_reports", { method: "POST", headers: h, body: JSON.stringify({ id: rid, player: id, body: tk ? "[HULL DOWN] a picture from the game" : "[YATAI '86] " + (said || "(no words heard)"), context: { game: tk ? "tank" : "sushi", ...ctx, ...(audio ? { audio: "data:" + (word(body.mime, 40) || "audio/webm") + ";base64," + audio } : {}) }, shots: jpg ? 1 : 0 }) }).catch(() => null);
+        const r1 = await fetch(env.SUPABASE_URL + "/rest/v1/bug_reports", { method: "POST", headers: h, body: JSON.stringify({ id: rid, player: id, body: (tk ? "[HULL DOWN] " : CR ? "[MIDNIGHT CRUMBS] " : ctx.game === "drums" ? "[THE GARAGE] " : "[YATAI '86] ") + (said || (CR || tk ? "(a picture from the game)" : ctx.game === "drums" ? "a picture from the kit" : "(no words heard)")), context: { game: "sushi", ...ctx, ...(tk ? { game: "tank" } : {}), ...(CR ? { game: "crumbs" } : {}), ...(audio ? { audio: "data:" + (word(body.mime, 40) || "audio/webm") + ";base64," + audio } : {}) }, shots: jpg ? 1 : 0 }) }).catch(() => null);
         if (r1 && r1.ok && jpg) await fetch(env.SUPABASE_URL + "/rest/v1/bug_shots", { method: "POST", headers: h, body: JSON.stringify({ report: rid, player: id, jpg }) }).catch(() => null);
         return json({ ok: !!(r1 && r1.ok), said }); }
       // a patron's line said aloud (Workers AI, the AI binding): the page plays it from their seat
@@ -296,6 +306,17 @@ export default {
         const out = await CANTINA.MINDS[c].ask(env, { get: () => H.botGet(k + "~" + c), put: v => H.botPut(k + "~" + c, v) }, { say: body.say, state: body.state, name: await H.nameGet(id) });
         if (out.say) await H.botPut(k, { day, n: D.day === day ? D.n + 1 : 1 });
         return json(out); }
+      // a neighbour of THE GARAGE answers the drummer (worker/drums.js); what the two have said is the player's, kept beside their bot's; how they stand is the player's too
+      if (p === "/drums/talk") { if (!env.ANTHROPIC_API_KEY) return json({ why: "the website has no ANTHROPIC_API_KEY secret yet" });
+        const c = word(body.who, 24); if (!DRUMS.has(c)) return json({ why: "nobody by that name here" }, 400);
+        if (tooMany("bot:" + id, 12)) return json({ why: "too much at once, wait a minute" }, 429);
+        const H = homeOf(env), k = id + "~drums", day = new Date().toISOString().slice(0, 10), D = (await H.botGet(k)) || {}, max = (+env.BOT_DAILY || FLYBOT.DAY) * 2;
+        if (D.day === day && D.n >= max) return json({ why: "the street has talked enough for one day; come back tomorrow" });
+        const out = await DRUMS.MINDS[c].ask(env, { get: () => H.botGet(k + "~" + c), put: v => H.botPut(k + "~" + c, v) }, { say: body.say, state: body.state, name: await H.nameGet(id) });
+        if (out.say) await H.botPut(k, { day, n: D.day === day ? D.n + 1 : 1 });
+        return json(out); }
+      if (p === "/drums/save") { const H = homeOf(env); return json(await DRUMS.save({ put: v => H.botPut("drums-street:" + id, v) }, body)); }
+      if (p === "/drums/load") { const H = homeOf(env); return json(await DRUMS.load({ get: () => H.botGet("drums-street:" + id) })); }
       // a regular of MIDNIGHT CRUMBS answers the cook (worker/crumbs.js); what the two have said is the player's, kept beside their bot's; the day's count is one for the whole counter
       if (p === "/crumbs/talk") { if (!env.ANTHROPIC_API_KEY) return json({ why: "the website has no ANTHROPIC_API_KEY secret yet" });
         const c = word(body.who, 24); if (!CRUMBS.has(c)) return json({ why: "nobody by that name here" }, 400);
@@ -314,10 +335,6 @@ export default {
       if (p === "/zombie/mind") { if (!env.ANTHROPIC_API_KEY) return json({ why: "the website has no ANTHROPIC_API_KEY secret yet" });
         if (tooMany("zombie:" + id, 40)) return json({ why: "too much at once, wait a minute" }, 429);
         const H = homeOf(env); return json(await ZOMBIE.think(env, { get: () => H.botGet("zombie:" + id), put: v => H.botPut("zombie:" + id, v) }, body)); }
-      // RAMEN's turned think together (worker/outbreak.js): which side of the cart to press; the page goes on by instinct without it
-      if (p === "/sushi/mind" || p === "/ramen/mind") { if (!env.ANTHROPIC_API_KEY) return json({ why: "the website has no ANTHROPIC_API_KEY secret yet" });
-        if (tooMany("ramen:" + id, 30)) return json({ why: "too much at once, wait a minute" }, 429);
-        const H = homeOf(env); return json(await OUTBREAK.think(env, { get: () => H.botGet("ramen-mind:" + id), put: v => H.botPut("ramen-mind:" + id, v) }, body)); }
       // a townsperson of THE LAST CHANCE says a line (worker/saloon.js); the day's count is the player's, in Home
       if (p === "/saloon/talk") { if (!env.ANTHROPIC_API_KEY) return json({ why: "the website has no ANTHROPIC_API_KEY secret yet" });
         if (tooMany("saloon:" + id, 30)) return json({ why: "too much at once, wait a minute" }, 429);
@@ -1090,19 +1107,22 @@ export class Dish extends Server {
 // LASER TAG's room: the one public game, two players; it gives each a pack (RED, GREEN) and passes poses, pack states, shots and tags on to the other (worker/laser.js says what passes)
 export class Laser extends Server {
   static options = { hibernate: false };
+  get R() { return LASER; }
   peers(not) { const a = []; for (const o of this.getConnections()) if (o.id !== not && o.state) a.push({ id: o.id, ...o.state }); return a; }
   onMessage(c, raw) {
     if (typeof raw !== "string" || raw.length > 1024) return; let m; try { m = JSON.parse(raw); } catch (e) { return; }
     const now = Date.now(), rl = c.rl || (c.rl = { t: now, n: 0 }); if (now - rl.t > 1000) { rl.t = now; rl.n = 0; } if (++rl.n > 120) return;
     if (m && m.t === "join") { if (c.state) return; const peers = this.peers(c.id);
-      if (peers.length >= LASER.MAX) { c.send('{"t":"full"}'); return c.close(4002, "full"); }
-      const st = { slot: LASER.slot(peers.map(q => q.slot)) }; c.setState(st);
+      if (peers.length >= this.R.MAX) { c.send('{"t":"full"}'); return c.close(4002, "full"); }
+      const st = { slot: this.R.slot(peers.map(q => q.slot)) }; c.setState(st);
       c.send(JSON.stringify({ t: "welcome", id: c.id, slot: st.slot, peers })); return this.broadcast(JSON.stringify({ t: "peer-join", id: c.id, ...st }), [c.id]); }
-    if (!c.state) return; const out = LASER.clean(m); if (!out) return;
+    if (!c.state) return; const out = this.R.clean(m); if (!out) return;
     out.id = c.id; this.broadcast(JSON.stringify(out), [c.id]); }
   onClose(c) { if (c.state) this.broadcast(JSON.stringify({ t: "peer-leave", id: c.id }), [c.id]); }
   onError(c) { this.onClose(c); }
 }
+// SENSOR TAG's room: the same relay as LASER TAG's, with its own filter (worker/tag.js)
+export class Tag extends Laser { get R() { return TAG; } }
 
 // SPACE FLEET's room: the one public battle, two players; the first in is the host, whose pictures of the battle go to the other, whose orders come back (worker/space.js says what passes)
 export class Space extends Server {

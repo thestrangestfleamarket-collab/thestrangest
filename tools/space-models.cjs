@@ -2,29 +2,54 @@
 // each model: centred on the origin, nose +Z, up +Y, longest side 1 unit, all transforms baked in, one mesh a material and two materials at most (a model that comes with more has its pictures packed side by side into one), thinned, pictures 1024 px or less as JPEG, plain GLB (no Draco, meshopt or KTX2)
 // the models as they come are kept in data/full/space/<uid>.glb (not in git), fetched when missing from Objaverse's copy of Sketchfab; the sky is ESO's Milky Way panorama; credits in docs/space-credits.md
 const { chromium } = require('playwright'), fs = require('fs'), path = require('path'), http = require('http'), { execFileSync } = require('child_process');
-const ROOT = path.resolve(__dirname, '..'), HF = 'https://huggingface.co/datasets/allenai/objaverse/resolve/main/glbs/', SKY = 'https://cdn.eso.org/images/large/eso0932a.jpg';
-// out: [Sketchfab uid, Objaverse shard, options]. fwd, up: the way the model's nose and top point as it comes; tris: most triangles kept; tex: picture size; mats: materials kept (1 or 2); mesh: use only the n-th mesh (a pack of several); drop: leave out nodes whose name matches; clear: leave out see-through parts
+const ROOT = path.resolve(__dirname, '..'), HF = 'https://huggingface.co/datasets/allenai/objaverse/resolve/main/glbs/', SKY = 'https://cdn.eso.org/images/large/eso0932a.jpg', OGA = 'https://opengameart.org/sites/default/files/';
+// out: [Sketchfab uid, Objaverse shard, options], or [folder, {zip: where its archive comes from, file: the model in it, maps: an .obj's pictures}, options] for one from OpenGameArt. fwd, up: the way the model's nose and top point as it comes; tris: most triangles kept; tex: picture size; mats: materials kept (1 or 2); mesh: use only the n-th mesh (a pack of several); drop: leave out nodes whose name matches; clear: leave out see-through parts
 const LIST = {
   mother: ['20f2e424303d47e4a5078f0255ef5689', '000-107', { fwd: '-z', tris: 16000, tex: 1024, mats: 2 }],
-  cruiser: ['9f99de3657234c939b58610bc99333ed', '000-129', { fwd: '-z', tris: 9000, tex: 1024, mats: 2 }],
-  frigate: ['63ce372c1aa843e98bf1548109e055d8', '000-081', { fwd: '+z', tris: 5000, tex: 512 }],
-  fighter: ['891bb91d22ac4115a8e3c423efb44457', '000-085', { fwd: '-z', tris: 2000, tex: 512, mats: 1 }],
-  turret: ['28fb90b851b5454589f5170b08c8c66d', '000-068', { fwd: '+x', tris: 3000, tex: 512 }],
+  cruiser: ['781e531c00d94c9e89dcc8ad9b967d87', '000-087', { fwd: '+z', tris: 14000, tex: 1024, mats: 2 }],
+  frigate: ['4cccb0378e474f8a8d3c7079e2e56d63', '000-049', { fwd: '+z', tris: 8000, tex: 1024 }],
+  fighter: ['99c1d15965c74f3aa7b5999e2d4e42e1', '000-024', { fwd: '+z', tris: 3500, tex: 1024, mats: 1 }],
+  turret: ['5ebad179815d44a8a8fa221d203fb383', '000-073', { fwd: '-z', tris: 6000, tex: 1024 }],
   mine: ['609990d577c645689181a2e1fc82ab1f', '000-024', { fwd: '+z', tris: 900, tex: 512 }],
   relay: ['7a5556a83ec24141b93c7fcce82a01de', '000-130', { fwd: '+z', tris: 4000, tex: 512 }],
   rock1: ['adde1ecf129e4509be8af61b84bafa85', '000-037', { mesh: 0, tris: 900, tex: 512 }],
   rock2: ['adde1ecf129e4509be8af61b84bafa85', '000-037', { mesh: 4, tris: 900, tex: 512 }],
   rock3: ['adde1ecf129e4509be8af61b84bafa85', '000-037', { mesh: 7, tris: 900, tex: 512 }],
   // the second fleet
-  mother2: ['c8e9020d658649238ee3cfc1c1d64a68', '000-149', { fwd: '-z', tris: 14000, tex: 1024, mats: 2 }],
-  cruiser2: ['ecc16e103e79448faf9730f172a1d7e8', '000-158', { fwd: '+z', tris: 9000, tex: 1024, mats: 2 }],
-  frigate2: ['502d0ff399d64eda8a7d932db619ce95', '000-080', { fwd: '+z', tris: 5000, tex: 512, mats: 2 }],
+  mother2: ['1b121a8965e241ada855288eef2732ba', '000-069', { fwd: '-x', tris: 36000, tex: 1024, mats: 2 }],
+  cruiser2: ['a53147cc2da943e7ae07f1e0b0a31518', '000-128', { fwd: '-z', tris: 32000, tex: 1024, mats: 2 }],
+  frigate2: ['025fb009e24746eba87d3458fb7db7d9', '000-123', { fwd: '-z', tris: 8000, tex: 1024 }],
   fighter2: ['303d3e5b8d544653bfde45189ca10c73', '000-051', { fwd: '-z', tris: 2000, tex: 512 }],
-  turret2: ['75cc87e9b5d54b84b91ba2439837f604', '000-061', { fwd: '+z', tris: 3000, tex: 512 }],
-  mine2: ['9932b325620c4d0db612671064cea986', '000-093', { fwd: '+z', tris: 900, tex: 512 }],
+  turret2: ['59b72a8e3ec24a0bb7b072cf6e130574', '000-036', { fwd: '+x', tris: 6000, tex: 1024, mats: 2 }],
+  mine2: ['5df948888c3748479a8b83ac1c5e0066', '000-044', { fwd: '+z', tris: 5000, tex: 512 }],
+  // the third round: two more hulls of each kind for each navy, <kind>-<navy>-<n>
+  'mother-0-2': ['oga-hahn1', { zip: OGA + 'spaceships01.zip', file: 'carrier01.obj', maps: { map: 'carrier01_diffuse.png', normalMap: 'carrier01_normal.png', emissiveMap: 'carrier01_emission.png' } }, { fwd: '+z', tris: 12000, tex: 512 }],
+  'mother-0-3': ['474f62d00ed54212b37f93ce91569c53', '000-134', { fwd: '+x', tris: 40000, tex: 1024, mats: 2 }],
+  'mother-1-2': ['oga-proteron', { zip: OGA + 'gltf.zip', file: 'gltf/pythagoras.glb' }, { fwd: '+z', tris: 12000, tex: 512, mats: 2 }],
+  'mother-1-3': ['76c18dcb6a0043d6ab05ed9f9c26330b', '000-104', { fwd: '-z', tris: 12000, tex: 512, mats: 2 }],
+  'cruiser-0-2': ['20a3bf99baf943f2887cb586b5195224', '000-007', { fwd: '-z', tris: 7000, tex: 512, mats: 2 }],
+  'cruiser-0-3': ['oga-hahn1', { zip: OGA + 'spaceships01.zip', file: 'cruiser01.obj', maps: { map: 'cruiser01_diffuse.png', normalMap: 'cruiser01_normal.png', emissiveMap: 'cruiser01_emission.png' } }, { fwd: '+z', tris: 7000, tex: 512 }],
+  'cruiser-1-2': ['oga-proteron', { zip: OGA + 'gltf.zip', file: 'gltf/archimedes.glb' }, { fwd: '+z', tris: 7000, tex: 512, mats: 2 }],
+  'cruiser-1-3': ['oga-hahn2', { zip: OGA + 'spaceships2.zip', file: 'cruiser03.obj', maps: { map: 'cruiser03_diffuse.png', normalMap: 'cruiser03_normal.png', emissiveMap: 'cruiser03_emission.png' } }, { fwd: '+z', tris: 7000, tex: 512 }],
+  'frigate-0-2': ['oga-hahn1', { zip: OGA + 'spaceships01.zip', file: 'destroyer01.obj', maps: { map: 'destroyer01_diffuse.png', normalMap: 'destroyer01_normal.png', emissiveMap: 'destroyer01_emission.png' } }, { fwd: '+z', tris: 4000, tex: 512 }],
+  'frigate-0-3': ['oga-proteron', { zip: OGA + 'gltf.zip', file: 'gltf/hippocrates.glb' }, { fwd: '+z', tris: 4000, tex: 512, mats: 2 }],
+  'frigate-1-2': ['oga-hahn2', { zip: OGA + 'spaceships2.zip', file: 'frigate03.obj', maps: { map: 'frigate03_diffuse.png', normalMap: 'frigate03_normal.png', emissiveMap: 'frigate03_emission.png' } }, { fwd: '+z', tris: 4000, tex: 512 }],
+  'frigate-1-3': ['c9f86bbff8664954a22bef08545ff1f1', '000-143', { fwd: '-x', tris: 4000, tex: 512, mats: 2 }],
+  'fighter-0-2': ['oga-hahn1', { zip: OGA + 'spaceships01.zip', file: 'corvette01.obj', maps: { map: 'corvette01_diffuse.png', normalMap: 'corvette01_normal.png', emissiveMap: 'corvette01_emission.png' } }, { fwd: '+z', tris: 1800, tex: 256 }],
+  'fighter-0-3': ['oga-quaternius', { zip: OGA + 'ultimate_spaceships_-_may_2021.zip', file: 'Ultimate Spaceships - May 2021/Striker/OBJ/Striker.obj', maps: { map: 'Ultimate Spaceships - May 2021/Striker/Textures/Striker_Blue.png' } }, { fwd: '+z', tris: 1800, tex: 256 }],
+  'fighter-1-2': ['oga-hahn2', { zip: OGA + 'spaceships2.zip', file: 'corvette03.obj', maps: { map: 'corvette03_diffuse.png', normalMap: 'corvette03_normal.png', emissiveMap: 'corvette03_emission.png' } }, { fwd: '+z', tris: 1800, tex: 256 }],
+  'fighter-1-3': ['oga-quaternius', { zip: OGA + 'ultimate_spaceships_-_may_2021.zip', file: 'Ultimate Spaceships - May 2021/Spitfire/OBJ/Spitfire.obj', maps: { map: 'Ultimate Spaceships - May 2021/Spitfire/Textures/Spitfire_Red.png' } }, { fwd: '+z', tris: 1800, tex: 256 }],
+  'turret-1-2': ['oga-proteron', { zip: OGA + 'gltf.zip', file: 'gltf/dalton.glb' }, { fwd: '+z', tris: 2500, tex: 256, mats: 2 }],
+  'turret-0-2': ['e1d7f0dd183f468fa4e845f32501f989', '000-007', { fwd: '+z', tris: 2500, tex: 256, mats: 1 }],
+  'turret-0-3': ['ff2ede3b4ffe42d4afe7c42470c20c05', '000-000', { fwd: '+z', tris: 2500, tex: 256, mats: 1 }],
+  'turret-1-3': ['1839a4af10684320bdbc53ee9fd67f07', '000-108', { fwd: '+z', tris: 2500, tex: 256, mats: 1 }],
+  'mine-0-2': ['a61f31fe73cc48ea811f12f874f69d6f', '000-113', { fwd: '+z', tris: 800, tex: 256, mats: 1 }],
+  'mine-0-3': ['97722aab15da42ef94b708cd23714962', '000-111', { fwd: '+z', tris: 800, tex: 256, mats: 1 }],
+  'mine-1-2': ['892fcbfab0b54cbb82e04e2e464502c0', '000-104', { fwd: '+z', tris: 800, tex: 256, mats: 1 }],
+  'mine-1-3': ['cda53985aa7643cdb60f4400cb1432bb', '000-142', { fwd: '+z', tris: 800, tex: 256, mats: 1 }],
 };
 const NM = '/node_modules/', PAGE = `<script type="importmap">{"imports":{"three":"${NM}three/build/three.module.js","three/addons/":"${NM}three/examples/jsm/"}}</script><script type="module">
-import * as THREE from 'three';import {GLTFLoader} from 'three/addons/loaders/GLTFLoader.js';import {GLTFExporter} from 'three/addons/exporters/GLTFExporter.js';import {mergeGeometries,mergeVertices} from 'three/addons/utils/BufferGeometryUtils.js';import {MeshoptSimplifier as MS} from '${NM}meshoptimizer/meshopt_simplifier.js';
+import * as THREE from 'three';import {GLTFLoader} from 'three/addons/loaders/GLTFLoader.js';import {OBJLoader} from 'three/addons/loaders/OBJLoader.js';import {GLTFExporter} from 'three/addons/exporters/GLTFExporter.js';import {mergeGeometries,mergeVertices} from 'three/addons/utils/BufferGeometryUtils.js';import {MeshoptSimplifier as MS} from '${NM}meshoptimizer/meshopt_simplifier.js';
 const V=(x,y,z)=>new THREE.Vector3(x,y,z),AX={'+x':V(1,0,0),'-x':V(-1,0,0),'+y':V(0,1,0),'-y':V(0,-1,0),'+z':V(0,0,1),'-z':V(0,0,-1)},b64=u=>{let s='';for(let i=0;i<u.length;i+=32768)s+=String.fromCharCode.apply(null,u.subarray(i,i+32768));return btoa(s);};
 // every mesh wanted, moved into the world's frame (a mirrored one turned right side out), joined one mesh a material
 function gather(scene,o){const by=new Map();let n=-1;const drop=o.drop&&new RegExp(o.drop,'i');
@@ -64,7 +89,12 @@ function pack(ps,S,name,warn){const n=ps.length,cols=Math.ceil(Math.sqrt(n)),row
   const T=(k,srgb)=>{const t=new THREE.CanvasTexture(can[k]);t.flipY=false;t.wrapS=t.wrapT=THREE.RepeatWrapping;t.colorSpace=srgb?THREE.SRGBColorSpace:THREE.NoColorSpace;t.userData.mimeType='image/jpeg';return t;};
   const m=new THREE.MeshStandardMaterial({name,color:0xffffff,metalness:1,roughness:1,side:ps.some(p=>p.mat.side===THREE.DoubleSide)?THREE.DoubleSide:THREE.FrontSide});m.map=T('map',1);if(has.normalMap)m.normalMap=T('normalMap');const orm=T('orm');m.roughnessMap=m.metalnessMap=orm;if(has.ao)m.aoMap=orm;if(has.emissiveMap){m.emissiveMap=T('emissiveMap',1);m.emissive.set(0xffffff);}
   return{mat:m,geo:n>1?mergeGeometries(ps.map(p=>p.geo),false):ps[0].geo,from:ps.map(p=>p.mat.name),maps:['map','normalMap','roughnessMap','aoMap','emissiveMap'].filter(k=>m[k])};}
-window.prep=async(url,o,name)=>{await MS.ready;const scene=(await new GLTFLoader().loadAsync(url)).scene;scene.updateMatrixWorld(true);const warn=[];let ps=gather(scene,o);if(!ps.length)throw new Error('no meshes');
+// an .obj and its pictures, as one material; its uv turned to count from the top as a glTF's does
+async function obj(url,maps){const dir=url.slice(0,url.lastIndexOf('/')+1),g=await new OBJLoader().loadAsync(encodeURI(url)),m=new THREE.MeshStandardMaterial({name:'hull',roughness:.6,metalness:.3});
+  for(const[k,f]of Object.entries(maps||{})){if(k==='abs')continue;const t=await new THREE.TextureLoader().loadAsync(encodeURI(maps.abs?f:dir+f));t.flipY=false;t.colorSpace=k==='map'||k==='emissiveMap'?THREE.SRGBColorSpace:THREE.NoColorSpace;m[k]=t;}
+  if(m.emissiveMap)m.emissive.set(0xffffff);if(m.roughnessMap)m.roughness=1;if(m.metalnessMap)m.metalness=1;
+  g.traverse(c=>{if(!c.isMesh)return;c.material=m;const uv=c.geometry.attributes.uv;if(uv)for(let i=0;i<uv.count;i++)uv.setY(i,1-uv.getY(i));});return g;}
+window.prep=async(url,o,name,maps)=>{await MS.ready;const scene=/\\.obj$/i.test(url)?await obj(url,maps):(await new GLTFLoader().loadAsync(encodeURI(url))).scene;scene.updateMatrixWorld(true);const warn=[];let ps=gather(scene,o);if(!ps.length)throw new Error('no meshes');
   // turn the nose to +Z and the top to +Y, put the middle of the box on the origin, make the longest side 1
   const f=AX[o.fwd||'+z'],u=AX[o.up||'+y'],r=new THREE.Vector3().crossVectors(u,f),M=new THREE.Matrix4().set(r.x,r.y,r.z,0,u.x,u.y,u.z,0,f.x,f.y,f.z,0,0,0,0,1);ps.forEach(p=>p.geo.applyMatrix4(M));
   const before=count(ps),tris=thin(ps,o.tris,o.flags);ps=ps.filter(p=>p.geo.index.count).map(p=>({mat:p.mat,geo:prune(p.geo)}));
@@ -87,10 +117,12 @@ const fetchTo = (url, f) => { execFileSync('curl', ['-sSfL', '--retry', '3', '-A
   const b = await chromium.launch({ ...(process.env.PWCHROME ? { executablePath: process.env.PWCHROME } : {}), args: ['--use-gl=swiftshader', '--enable-unsafe-swiftshader', '--ignore-gpu-blocklist'] });
   const open = async () => { const pg = await b.newPage(); pg.on('pageerror', e => console.log(e.message)); await pg.goto('http://127.0.0.1:' + srv.address().port + '/dist/_space_models.html'); await pg.waitForFunction(() => window.ready); return pg; };
   const J = fs.existsSync('data/space/models.json') ? JSON.parse(fs.readFileSync('data/space/models.json')) : {}, only = process.argv.slice(2);
-  for (const [name, [uid, shard, o]] of Object.entries(LIST)) { if (only.length && !only.includes(name)) continue; const f = 'data/full/space/' + uid + '.glb';
-    if (!fs.existsSync(f)) fetchTo(HF + shard + '/' + uid + '.glb', f);
-    const pg = await open(), r = await pg.evaluate(([u, o, n]) => prep(u, o, n), ['/' + f, o, name]).catch(e => console.log(name, 'FAILED', e.message.slice(0, 300))); await pg.close(); if (!r) continue;
-    const buf = Buffer.from(r.b64, 'base64'); fs.writeFileSync('data/space/m/' + name + '.glb', buf); J[name] = { file: 'm/' + name + '.glb', uid, bytes: buf.length, ...r.info }; r.warn.forEach(w => console.log('  ! ' + w));
+  for (const [name, [uid, shard, o]] of Object.entries(LIST)) { if (only.length && !only.includes(name)) continue; const zip = typeof shard === 'object' && shard, dir = 'data/full/space/' + uid, f = zip ? dir + '/' + zip.file : dir + '.glb';
+    if (zip && !fs.existsSync(f)) { fs.mkdirSync(dir, { recursive: true }); fetchTo(zip.zip, dir + '/a.zip'); execFileSync('unzip', ['-qo', dir + '/a.zip', '-d', dir]); fs.rmSync(dir + '/a.zip'); }
+    if (!zip && !fs.existsSync(f)) fetchTo(HF + shard + '/' + uid + '.glb', f);
+    const maps = zip && zip.maps && { ...Object.fromEntries(Object.entries(zip.maps).map(([k, v]) => [k, '/' + dir + '/' + v])), abs: 1 };
+    const pg = await open(), r = await pg.evaluate(([u, o, n, m]) => prep(u, o, n, m), ['/' + f, o, name, maps]).catch(e => console.log(name, 'FAILED', e.message.slice(0, 300))); await pg.close(); if (!r) continue;
+    const buf = Buffer.from(r.b64, 'base64'); fs.writeFileSync('data/space/m/' + name + '.glb', buf); J[name] = { file: 'm/' + name + '.glb', uid: zip ? uid + '/' + zip.file : uid, bytes: buf.length, ...r.info }; r.warn.forEach(w => console.log('  ! ' + w));
     console.log(name, r.info.tris + ' of ' + r.info.was + ' tris', r.info.materials.map(m => m.from.length + '>' + m.maps.join('+')).join(' | '), 'size ' + r.info.size.join(' x '), Math.round(buf.length / 1024) + ' KB'); }
   if (!only.length || only.includes('sky')) { const f = 'data/full/space/eso0932a.jpg'; if (!fs.existsSync(f)) fetchTo(SKY, f); const pg = await open(); let buf, q = .86;
     do { buf = Buffer.from(await pg.evaluate(([u, q]) => sky(u, 4096, 2048, q), ['/' + f, q]), 'base64'); q -= .05; } while (buf.length > 1.05e6 && q > .4); await pg.close(); fs.writeFileSync('data/space/sky.jpg', buf); console.log('sky', Math.round(buf.length / 1024) + ' KB'); }

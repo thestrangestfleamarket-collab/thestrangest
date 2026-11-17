@@ -1,4 +1,4 @@
-// RAMEN, a village ramen stall in the 1860s at /ramen (a headset game), one day and one night: the renderer in THE MARKET's look at full resolution (its sky, air, weather and shadows: sky.js, air.js, weather.js), the loop, the way in
+// RAMEN, a village ramen stall in the 1860s at /ramen (a headset game), one day and one night: the renderer in THE MARKET's look below full resolution, the resolution governed by the frame time (its sky, air, weather and shadows: sky.js, air.js, weather.js), the loop, the way in
 import * as THREE from 'three';
 import { G, clamp, mergeStatic } from './ctx.js';
 import { buildAlley, FOG } from './alley.js';
@@ -12,7 +12,8 @@ import { updateItems } from './items.js';
 import * as Items from './items.js';
 import { GameAudio } from './audio.js';
 import { loadAvatars, makePerson } from './avatars.js';
-import { PF } from './pf.js';
+import { RB } from './rb.js';
+import { tenantFigure } from './tenant.js';
 import { buildLife } from './life.js';
 import { buildTalk } from './talk.js';
 import { buildGrit } from './grit.js';
@@ -24,7 +25,7 @@ import { buildLive } from './live.js';
 import { buildCook } from './cook.js';
 import { buildShare } from './share.js';
 import { buildGuest } from './guest.js';
-import { buildOutbreak } from './outbreak.js';
+import { buildDawn } from './dawn.js';
 import { NET } from '../holo/net.js';
 import { PH } from './physics.js';
 import * as T from './tex.js';
@@ -38,11 +39,16 @@ installAir();   // (before any material is drawn)
 // a headset (or ?low) takes the lean path: coarser shadows, no brazier shadow, fewer raindrops; a screen the richer one (owner, 17 Nov 2026: THE MARKET's look, full resolution, holding the headset's frame rate)
 const lean = params.has('low') || !!(await (navigator.xr?.isSessionSupported?.('immersive-vr') || Promise.resolve(false)).catch(() => false)); G.rich = !lean;
 const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, powerPreference: 'high-performance' });
-renderer.setPixelRatio(G.rich ? Math.min(devicePixelRatio || 1, 1.5) : 1); renderer.setSize(innerWidth, innerHeight);
+// drawn below the screen's resolution and scaled up smoothly by the browser (owner, 17 Nov 2026: "lower quality of render"); G.rscale moves with the frame time (govern)
+const RS = { min: 0.5, max: G.rich ? 0.8 : 0.75 }; G.rscale = +params.get('scale') || 0.7;
+const ratio = () => Math.min(devicePixelRatio || 1, 1) * G.rscale;
+renderer.setPixelRatio(ratio()); renderer.setSize(innerWidth, innerHeight);
 renderer.outputColorSpace = THREE.SRGBColorSpace;
 renderer.toneMapping = THREE.ACESFilmicToneMapping; renderer.toneMappingExposure = 1.0;
 renderer.shadowMap.enabled = true; renderer.shadowMap.type = THREE.PCFShadowMap;
-renderer.xr.enabled = true; renderer.xr.setReferenceSpaceType('local-floor'); renderer.xr.setFoveation?.(0.5); renderer.xr.setFramebufferScaleFactor?.(1);   // the headset's own resolution, the edges blurred only a little (easier on the eyes and on the frame rate)
+renderer.xr.enabled = true; renderer.xr.setReferenceSpaceType('local-floor'); renderer.xr.setFoveation?.(0.5); renderer.xr.setFramebufferScaleFactor?.(0.8);   // in the headset a little under its own resolution, the edges blurred a little more (easier on the frame rate)
+// in the headset the governor shrinks each eye's picture inside that buffer (the browser's viewport scaling, where it has it)
+if (globalThis.XRWebGLLayer && !XRWebGLLayer.prototype.__rs) { const gv = XRWebGLLayer.prototype.getViewport; XRWebGLLayer.prototype.getViewport = function (v) { if (v && v.requestViewportScale) v.requestViewportScale(G.vrScale || 1); return gv.call(this, v); }; XRWebGLLayer.prototype.__rs = 1; }
 
 const scene = new THREE.Scene();
 scene.fog = new THREE.FogExp2(FOG, 0.006); scene.background = new THREE.Color(0x05060c);
@@ -74,14 +80,14 @@ const grit = buildGrit(scene, city, cart);
 const guide = buildGuide(scene, cart);
 T.metreUV(cart.group);
 G.baked = mergeStatic(cart.group) + mergeStatic(city.group);
-for (const g of [cart.group, city.group]) g.traverse((o) => { if (o.isMesh && !o.userData.dyn && !o.userData.item) o.layers.enable(2); });   // the still village and stall cast the sun's shadows
+for (const g of [cart.group, city.group]) g.traverse((o) => { if (o.isMesh && !o.userData.dyn && !o.userData.item && o.castShadow) { if (!o.geometry.boundingSphere) o.geometry.computeBoundingSphere(); if (o.geometry.boundingSphere.radius * Math.max(o.scale.x, o.scale.y, o.scale.z) > 0.12) o.layers.enable(2); } });   // the still village and stall cast the sun's shadows (not their small things)
 const tank = buildTank(scene), live = buildLive(), cook = buildCook(), story = buildStory(scene);
 if (G.guest) G.buttons.length = 0;   // (the cart's knobs, switch and boards are the cook's)
 const share = buildShare(live), guest = G.guest ? buildGuest(live) : null;
-const outbreak = buildOutbreak(scene);   // the night it turns: the director, the turned, what you fight with, blood
+const dawn = buildDawn(scene);   // the run's end at dawn: its card
 
 function render() { renderer.render(scene, camera); }   // straight to the screen at its own resolution (THE MARKET's look: no PlayStation 2 pass, owner 17 Nov 2026)
-addEventListener('resize', () => { if (renderer.xr.isPresenting) return; camera.aspect = innerWidth / innerHeight; camera.updateProjectionMatrix(); renderer.setSize(innerWidth, innerHeight); });
+addEventListener('resize', () => { if (renderer.xr.isPresenting) return; camera.aspect = innerWidth / innerHeight; camera.updateProjectionMatrix(); renderer.setPixelRatio(ratio()); renderer.setSize(innerWidth, innerHeight); });
 
 // ---------- the way in ----------
 function begin() { G.audio.init(); if (G.guest) { if (guide.on) guide.set(false); } else talk.listen(true); }
@@ -113,7 +119,7 @@ function tick(dt) {
   game.update(dt, G.t);
   city.update(dt, G.t);
   life.update(dt, G.t);
-  talk.update(dt); tank.update(dt); story.update(dt); live.update(dt); share.update(dt); outbreak.update(dt); if (!guest) cook.update(dt);
+  talk.update(dt); tank.update(dt); story.update(dt); live.update(dt); share.update(dt); if (!guest) cook.update(dt);
   grit.update(dt, G.t);
   guide.update(dt, G.t); gameMenu.update(dt); report.update(dt);
   G.fx.update(dt);
@@ -123,8 +129,19 @@ let last = performance.now(), frames = 0, statT = 0;
 // if frames still run long, shadows go (the costliest thing left)
 let emaMs = 14, slowT = 0; G.quality = params.has('low') ? 1 : 0;
 const shadowLights = []; scene.traverse((o) => { if (o.isLight && o.castShadow) shadowLights.push(o); });
+const spotSh = shadowLights.filter((l) => l.isSpotLight); spotSh.forEach((l) => { l.shadow.autoUpdate = false; l.shadow.needsUpdate = true; });   // the stall's lamp's shadows: only while it burns, laid every other frame
+const CART = new THREE.Vector3(0, 1, 0), _ce = new THREE.Vector3();
+function lean2() { for (const l of spotSh) if (l.castShadow && l.intensity > 0.05 && !(frames & 1)) l.shadow.needsUpdate = true;
+  G.itemRoot.visible = camera.getWorldPosition(_ce).distanceTo(CART) < 20; }   // the stall's small loose things are not drawn from far up the street (lost in the haze there)
 function applyQuality() { shadowLights.forEach((l) => (l.castShadow = G.quality < 1)); if (G.set) G.set.shadows = G.quality < 1; }
-function govern(dt) { if (frames < 120 || G.frozen || G.quality >= 1) return; emaMs += (dt * 1000 - emaMs) * 0.05; G.emaMs = emaMs; const ses = renderer.xr.isPresenting && renderer.xr.getSession(), hz = (ses && ses.frameRate) || 72; slowT = emaMs > (ses ? 1150 / hz : 30) ? slowT + dt : 0;
+// the resolution follows the frame time: down a step when frames run long for a moment, up a step after a while with room to spare (steps, never a pulse)
+let rsT = 0; G.vrScale = 1;
+function governScale(dt) { if (frames < 60 || G.frozen || params.has('scale')) return; const ses = renderer.xr.isPresenting && renderer.xr.getSession(), hz = (ses && ses.frameRate) || 60, budget = 1000 / hz, ms = G.emaMs || emaMs;
+  rsT += dt; if (rsT < (ms > budget * 1.08 ? 1 : 4)) return; rsT = 0;
+  if (ses) { const v = G.vrScale; G.vrScale = ms > budget * 1.08 ? Math.max(0.6, v - 0.1) : ms < budget * 0.8 ? Math.min(1, v + 0.05) : v; return; }
+  const r = G.rscale, n = ms > budget * 1.08 ? Math.max(RS.min, r - 0.1) : ms < budget * 0.75 ? Math.min(RS.max, r + 0.05) : r;
+  if (Math.abs(n - r) > 0.001) { G.rscale = +n.toFixed(2); renderer.setPixelRatio(ratio()); } }
+function govern(dt) { emaMs += (dt * 1000 - emaMs) * 0.05; G.emaMs = emaMs; governScale(dt); if (frames < 120 || G.frozen || G.quality >= 1) return; const ses = renderer.xr.isPresenting && renderer.xr.getSession(), hz = (ses && ses.frameRate) || 72; slowT = emaMs > (ses ? 1150 / hz : 30) ? slowT + dt : 0;
   if (slowT > 3) { slowT = 0; if (ses && hz > 72 && ses.updateTargetFrameRate) ses.updateTargetFrameRate(72).catch(() => { }); else { G.quality = 1; applyQuality(); } } }   // too slow: first back to 72 a second, then the shadows go
 if (G.quality) applyQuality();
 const report = buildReport(scene, camera, renderer, talk);
@@ -139,14 +156,14 @@ function frame(now) {
   const dt = clamp((now - last) / 1000, 0, 0.05); last = now;
   if (G.mode === 'menu' && !renderer.xr.isPresenting && !G.manualCam) { const a = G.t * 0.05; camera.position.set(2.9 + Math.sin(a) * 0.9, 1.75, -5.4 + Math.cos(a) * 0.4); rig.position.set(0, 0, 0); camera.lookAt(0, 1.6, -0.4); }
   if (!G.frozen) tick(dt);
-  govern(dt); frames++;
+  govern(dt); frames++; lean2();
   render();
   if (G.afterRender) { const f = G.afterRender; G.afterRender = null; f(); }
-  if (G.mode === 'desktop') { $('hover').textContent = G.hoverText || ''; statT -= dt; if (statT <= 0) { statT = 0.5; $('stat').textContent = G.outHint || G.guideText || G.hint; } }
+  if (G.mode === 'desktop') { $('hover').textContent = G.ended ? '' : G.hoverText || ''; statT -= dt; if (statT <= 0) { statT = 0.5; $('stat').textContent = G.ended ? '' : G.guideText || G.hint; } }
 }
 renderer.setAnimationLoop(frame);
 
-G.debug = { weather, outbreak, Items, PH, person: makePerson, PF, city, guide, menu: gameMenu, report, tick, frame, render, input, startDesktop, startVR, THREE, share, guest, tank };
+G.debug = { weather, dawn, Items, PH, person: makePerson, RB, tenant: tenantFigure, city, guide, menu: gameMenu, report, tick, frame, render, input, startDesktop, startVR, THREE, share, guest, tank };
 if (G.guest) { menu.querySelector('h2').textContent = 'RAMEN, as yourself: walk the village street up to the ramen stall, take a stool, order a bowl and pay for it. The cook, the customers and everyone passing are the same people every page in the village sees.'; $('help').innerHTML = '<div><b>Browser</b> WASD walk · mouse look · V first / third person · E sit at a stool or get up · click the menu to order · M settings</div><div><b>VR</b> left stick walk · right stick turn · trigger by a stool to sit · step away to get up · poke the menu to order</div><div><b>Back</b> walk out at the end of the street, or LEAVE, to THE MARKET</div>'; $('keys').textContent = 'WASD walk · V view · E sit / get up · click: order · M settings · Esc: free mouse'; deskBtn.textContent = 'Walk the village in this browser'; }
 window.G = G;
 { const box = $('say'); // on a screen: M the settings board, G the guide, T to type what you say if you would rather not speak it

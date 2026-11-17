@@ -2,7 +2,7 @@
 import { G, V3, pick } from './ctx.js';
 import { SEATS, RECIPES, DRINKS } from './cart.js';
 import { mon as usd } from './till.js';
-import { PF } from './pf.js';
+import { RB } from './rb.js';
 
 const NAMES = { m: ['Kichibei', 'Sukeroku', 'Heiji', 'Matsuzō', 'Old Genbei', 'Tamekichi', 'Shinsuke', 'Rokubei', 'Kanta', 'Yohei'], f: ['O-Hana', 'O-Sei', 'O-Toku', 'O-Kiku', 'Old O-Tatsu', 'O-Shin', 'O-Natsu', 'O-Fuku', 'O-Yae', 'O-Matsu'] };
 const JOBS = ['a carpenter mending the temple roof', 'a packhorse driver on the road to the castle town', 'a charcoal burner down from the hills', 'a weaver from the next village', 'a pilgrim on the way to the great shrine', 'a boatman from the river ferry', 'a cooper who makes barrels for the sake house', 'a straw-sandal maker', 'a lantern maker who paints the paper himself', 'a travelling medicine seller', 'a woman who sells pickles from a basket', 'a mat maker who weaves tatami'];
@@ -10,7 +10,7 @@ const MOODS = ['tired but friendly', 'a little merry from sake and talkative', '
 const STYLES = ['speaks in short, plain sentences', 'talks fast and laughs at their own jokes', 'is formal and very polite', 'speaks slowly, with long pauses', 'is blunt and a little loud', 'is warm and asks questions back'];
 const STORIES = ['The headman scolded you in front of everyone today.', 'Your ox went lame and the field is only half ploughed.', 'You had good news today and want to tell someone.', 'The rice tax is due and you are short.', 'You lost a bet on the cockfight.', 'You are to meet a go-between about a marriage and you are nervous.', 'You have been on your feet since before dawn.', 'You found a few mon on the road this morning.', 'Your sister is to be married at the new moon.', 'You have only lately come to this village and everything is new.'];
 const QUIRKS = ['You have eaten at this stall for years.', 'This is your first time at the stall; you have never had Chinese noodles before.', 'You compare everything to the soba in the castle town.', 'You always ask for the news from the road.', 'You think things were better in your grandfather\'s day.', 'You bow a great deal.', 'You are superstitious about which stool you take.', 'You are counting your coppers carefully today.'];
-const FITS = PF; // each person's voice and age (pf.js)
+const FITS = RB; // each person's voice and age (rb.js)
 const VOICES = { m: ['orion', 'perseus'], f: ['luna', 'stella'] };
 const CANNED = {
   order: ['Hello. {order}, please.', 'Hi there. Could I get a {order}?', 'Evening. {order} for me, please.'], more: ['Oh, and could I get a {drink} too?', 'Can I also have a {drink}?', 'And a {drink}, please.'], gotdrink: ['Thank you.', 'Thanks.', 'Ah, thank you.'],
@@ -18,7 +18,7 @@ const CANNED = {
   good: ['Ahh. That warms the belly.', 'Excellent. Just what I needed.', 'This is why I come to your stall.'], ok: ['Not bad. Thank you.', 'Mm. It will do.'],
   bad: ['Hm. This is not what I asked for.', 'Something is wrong with this bowl.'], angry: ['Enough. I cannot wait any longer.'],
   reply: ['Ha. If you say so.', 'Is that so?', 'Indeed, indeed.'], wave: ['Good day to you!', 'Ah, cook! Busy today?', 'Ah, hello!'],
-  react: ['Oh! Is everything all right back there?', 'Careful!', 'Ha. Clumsy hands today.'], chat: ['Fine weather for the rice, eh?', 'Long day. This is the best part of it.', 'It smells wonderful today.', 'Have you been open long today?'],
+  react: ['Oh! Is everything all right back there?', 'Careful!', 'Ha. Clumsy hands today.'], chatnight: ['Quiet tonight. I like it like this.', 'Nothing like a hot bowl on a wet night.', 'The lanterns look fine in the rain.', 'Long day. Glad you are still open.'], chat: ['Fine weather for the rice, eh?', 'Long day. This is the best part of it.', 'It smells wonderful today.', 'Have you been open long today?'],
   noise: ['Forgive me? I did not hear you.', 'Hm? Say that again?', 'What was that?'],
   pay: ['Here you are.', 'That should cover it.', 'There you are, cook.'], thanks: ['Thank you. Good day.', 'Much obliged. Until next time.', 'Thank you, take care.'],
   short: ['Wait, I think you have short-changed me.', 'Hold on, that is not right.'], shorted: ['Never mind. Good day.'], over: ['Oh, you gave me too much. Here.', 'That is too much, cook.'],
@@ -155,7 +155,7 @@ export function buildTalk() {
 
   async function say(c, kind, situation, facts, cookSaid) {
     if (c.guest) return; // a tenant from THE MARKET speaks for themself
-    const v = voiceOf(c), reply = kind === 'reply' || kind === 'hurt' || kind === 'police', must = reply || kind === 'order' || kind === 'more' || kind === 'gotdrink' || kind === 'taste' || kind === 'angry' || kind === 'pay' || kind === 'short' || kind === 'over' || kind === 'thanks' || kind === 'greet2' || kind === 'cry';
+    const v = voiceOf(c), reply = kind === 'reply' || kind === 'hurt' || kind === 'police', must = reply || kind === 'order' || kind === 'more' || kind === 'gotdrink' || kind === 'taste' || kind === 'angry' || kind === 'pay' || kind === 'short' || kind === 'over' || kind === 'thanks' || kind === 'greet2';
     if (c.p.cast && c.p.cast.name) v.story = G.block.story(c.p.cast);
     if (reply) { v.gen = (v.gen || 0) + 1; c.chatT = Math.max(c.chatT || 0, 30); talk.floorT = G.t + 6; for (const o of G.game.customers) if (o !== c) o.chatT = Math.max(o.chatT || 0, 12); }
     else if (v.busy || (v.until || 0) > G.t || (!must && (D.cur || D.q.some((x) => x.prio >= 4) || cookBusy() || G.t < (talk.floorT || 0)))) return; // nobody starts small talk while you are speaking or being answered
@@ -186,6 +186,7 @@ export function buildTalk() {
     else if (kind === 'taste') { c.p.gesture?.(r.score >= 80 ? 'nod' : r.score >= 50 ? 'shrug' : 'no'); say(c, r.score >= 80 ? 'good' : r.score >= 50 ? 'ok' : 'bad', 'The cook just set your bowl in front of you and you took your first taste. Thank them and say what you think of it, briefly, as anyone would.', `Quality ${r.score}/100. ${r.issues.length ? 'Problems with the bowl: ' + r.issues.join('; ') + '.' : 'It is exactly what you ordered, hot and well made.'} ${r.pay ? `You will pay${r.tip ? ' and leave a tip' : ', no tip'}.` : 'It is so wrong you refuse to pay.'}`); }
     else if (kind === 'wave') say(c, 'wave', 'The cook just caught your eye and waved at you from behind the counter. You wave back and say something.', c.result ? 'You have your food.' : 'You are still waiting for your food.');
     else if (kind === 'react') { c.p.gesture?.(Math.random() < 0.5 ? 'laugh' : 'no'); say(c, 'react', `Right in front of you, the cook just ${r}. You react out loud.`, ''); }
+    else if (kind === 'chat' && G.clock && G.clock.phase === 'night') say(c, 'chatnight', 'It is late at night, the lanterns are lit and a light rain may be falling; the street is quiet. You are at the stall with a bowl and want to talk with the cook in an easy, unhurried way: the day\'s news, village gossip, the weather, the festival, your work, someone you know.', c.result ? `Your bowl scored ${c.result.score}/100.` : 'Your bowl has not arrived yet.');
     else if (kind === 'chat') say(c, 'chat', c.state === 'eating' ? 'You are eating and want to talk: ask the cook a question or tell them something, about the food, your day, the weather, the harvest or the village.' : 'You are waiting and want to talk: ask the cook a question (how they are doing, how long they have had the stall, anything this person would ask) or tell them about your day.', c.result ? `Your bowl scored ${c.result.score}/100.` : 'Your bowl has not arrived yet.');
     else if (kind === 'pay') say(c, 'pay', 'You finished your ramen and are paying the cook in cash. Say something short as you hand it over.', r);
     else if (kind === 'thanks') say(c, 'thanks', 'You have paid and are getting up to leave the cart. Say goodbye.', r);
@@ -200,7 +201,6 @@ export function buildTalk() {
     else if (kind === 'hello') say(c, 'hello', 'You are walking along the village street past the ramen stall, and you know its cook. Call out a short greeting as you pass.', 'You are not at the counter.');
     else if (kind === 'story') { CANNED.story = [r.line]; say(c, 'story', r.prompt + ' Say it in a sentence or two.', 'You are not at the counter.'); }
     else if (kind === 'snub') say(c, 'snub', 'You are walking along the village street past the ramen stall. The cook is trying to get your attention, but you are angry with them after what they did to you earlier. Say something short and cold.', 'You are not at the counter.');
-    else if (kind === 'cry') { CANNED.cry = r.lines; say(c, 'cry', r.situation, r.facts || ''); }   // the night's own words (outbreak.js): what someone cries out, as they would
     else if (kind === 'angry') say(c, 'angry', 'You waited far too long, never got your food, and are getting up to leave.', `You waited about ${waited} seconds and were never served.`);
   };
   // who you are speaking to: the only one at the counter; or, of several, the one you are looking at

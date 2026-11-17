@@ -1,25 +1,9 @@
-// the people: Polyfork's (polyfork.dev) bodies on their 15 bones and their recorded motion (data/sushi/cast.json, from tools/sushi-cast.cjs), as THE SPECKLED BAND's are, with what the cart asks of them: walking, standing, sitting on a stool, hands that talk, a nod, a head shake, a laugh, a wave from the shoulder, a blow taken as it really lands (the struck limb and what it hangs from knocked about their joints and sprung back, a step back or a fall past what the feet can hold, a hand to where it hurts, a duck), marks on their clothes, chopsticks to the mouth, a head that turns to what it looks at, eyes that blink
+// Polyfork's (polyfork.dev) people on their 15 bones and their recorded motion (a game's cast.json, from tools/sushi-cast.cjs), as THE SPECKLED BAND's are; THE LAST CHANCE's (src/saloon/) since RAMEN's became Rocketbox's (rb.js), with what the cart asks of them: walking, standing, sitting on a stool, hands that talk, a nod, a head shake, a laugh, a wave from the shoulder, a blow taken as it really lands (the struck limb and what it hangs from knocked about their joints and sprung back, a step back or a fall past what the feet can hold, a hand to where it hurts, a duck), marks on their clothes, chopsticks to the mouth, a head that turns to what it looks at, eyes that blink
 import * as THREE from 'three';
 import { mat } from './ctx.js';
 
-// who can be at the cart: [sex, voice, pitch, youngest, oldest, what they do] (the voice names are worker/door.js's /sushi/say)
-export const PF = {
-  carving_chef: ['m', 'zeus', 0.96, 45, 60, 'the cook'],
-  // the village's people, in the dress of the 1860s: Polyfork's Japanese villagers as they are, and the nearest of its other bodies with their clothes dyed to period colours (DRESS below)
-  hanga_roa_fisherman: ['m', 'zeus', 0.95, 48, 58, 'a fishmonger who carries the morning catch up from the coast in two baskets on a pole'],
-  townswoman_medieval_japan: ['f', 'hera', 0.98, 30, 50, 'a townswoman who keeps a shop on the street'],
-  male_villager: ['m', 'arcas', 0.96, 50, 65, 'a potter with a kiln behind his house'],
-  farmer_medieval_japan: ['m', 'angus', 0.96, 30, 50, 'a rice farmer in from the paddies east of the village'],
-  buddhist_monk: ['m', 'orion', 0.94, 45, 65, 'a monk from the temple up behind the shrine'],
-  townswoman_frontier_town: ['f', 'asteria', 1.03, 20, 28, 'a geisha of the teahouse on the street'],
-  samurai_warrior: ['m', 'perseus', 0.97, 28, 40, 'a ronin, a masterless samurai, two swords at his belt'],
-  ashigaru_foot_soldier: ['m', 'helios', 0.98, 25, 45, 'a foot soldier of the domain on his way through'],
-  village_child: ['m', 'orpheus', 1.18, 8, 11, 'a village boy sent out for a bowl'],
-  grandmother_in_a_rebozo: ['f', 'luna', 0.95, 62, 75, 'an old woman who has lived on this street all her life'],
-  farmer_cozy_farm: ['m', 'angus', 0.97, 35, 55, 'a peddler of needles, combs and medicines on the road between villages'],
-  village_gardener: ['m', 'arcas', 0.96, 30, 55, 'a woodcutter down from the hills with a load of firewood'],
-  daimyo_lord: ['m', 'zeus', 0.95, 40, 55, ''],
-};
+// who: [sex, voice, pitch, youngest, oldest, what they do]
+export const PF = {};   // filled by the game that uses them (THE LAST CHANCE: src/saloon/cast.js)
 // the dye for a body that came in later clothes: its cloth (everything that is not skin or hair) recoloured by shade into a period palette: [dark, middle, light]
 export const DRESS = {
   carving_chef: [0x1c2440, 0x2c3a62, 0xd8d0bc], hanga_roa_fisherman: [0x2a2a30, 0x3a4a6a, 0xc8bca0], male_villager: [0x2e2620, 0x5a4a38, 0xb8a888],
@@ -31,7 +15,6 @@ export function dye(C, pal, keep) { if (!pal) return C; const P = pal.map((x) =>
   for (let i = 0; i < C.length; i += 3) { if (keep && keep(i / 3)) continue; _c.setRGB(C[i], C[i + 1], C[i + 2]); _c.getHSL(_h); const skin = _h.h > 0.015 && _h.h < 0.12 && _h.s > 0.2 && _h.s < 0.8 && _h.l > 0.08 && _h.l < 0.75, hair = _h.l < 0.035;
     if (skin || hair) continue; const k = Math.min(1, _h.l / 0.45), c = k < 0.5 ? P[0].clone().lerp(P[1], k * 2) : P[1].clone().lerp(P[2], (k - 0.5) * 2); C[i] = c.r; C[i + 1] = c.g; C[i + 2] = c.b; }
   return C; }
-export const CUSTOMERS = Object.keys(PF).filter((k) => PF[k][5] && k !== 'carving_chef' && k !== 'village_child');
 
 const b64 = (s) => Uint8Array.from(atob(s), (c) => c.charCodeAt(0)), i16 = (s) => new Int16Array(b64(s).buffer), u16 = (s) => new Uint16Array(b64(s).buffer);
 const lin = (C, n) => { const out = new Float32Array(n), c = new THREE.Color(); for (let i = 0; i < n; i += 3) { c.setRGB(C[i] / 255, C[i + 1] / 255, C[i + 2] / 255, THREE.SRGBColorSpace); out[i] = c.r; out[i + 1] = c.g; out[i + 2] = c.b; } return out; };
@@ -110,23 +93,7 @@ export function pfPerson(key, sticks) {
       else if (!seated && !st.down && jh >= STEP_J) st.push = { v: new THREE.Vector3(imp.x, 0, imp.z).normalize().multiplyScalar(Math.min(0.8, jh / 12)), t: 0.7 };
       return head ? 'head' : 'body'; },
     hit(dir, at, f = 0.6) { return this.push(at.y > bones[HEAD].getWorldPosition(_w).y - 0.08 ? 'head' : 'torso', dir.clone().setLength(f * FALL_J), at); },
-    rest: O, mesh, lost: new Set(),
-    // cut off at a bone (gore.js): that bone and all it carries leave the body by bone weight; the piece as it is posed now, in the world, to fall on its own
-    sever(name) {
-      const i = BONES.indexOf(name); if (i < 0 || this.lost.has(name) || !CH[i]) return null; const sub = new Set(CH[i].set), g = mesh.geometry, si = g.attributes.skinIndex, sw = g.attributes.skinWeight, ix = g.index.array, keep = [], cut = [];
-      const dom = (v) => (sw.getX(v) >= 0.5 ? si.getX(v) : si.getY(v));
-      for (let t = 0; t < ix.length; t += 3) (sub.has(dom(ix[t])) || sub.has(dom(ix[t + 1])) || sub.has(dom(ix[t + 2])) ? cut : keep).push(ix[t], ix[t + 1], ix[t + 2]);
-      if (!cut.length) return null; root.updateMatrixWorld(true); mesh.skeleton.update();
-      const map = new Map(), pos = [], colr = [], idx = [], C = g.attributes.color, v = new THREE.Vector3(), c = new THREE.Vector3();
-      for (const o of cut) { let k = map.get(o); if (k == null) { map.set(o, k = map.size); mesh.getVertexPosition(o, v).applyMatrix4(mesh.matrixWorld); pos.push(v.x, v.y, v.z); c.add(v); colr.push(C.getX(o), C.getY(o), C.getZ(o)); } idx.push(k); }
-      c.divideScalar(map.size); for (let k = 0; k < pos.length; k += 3) { pos[k] -= c.x; pos[k + 1] -= c.y; pos[k + 2] -= c.z; }
-      const pg = new THREE.BufferGeometry(); pg.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3)); pg.setAttribute('color', new THREE.Float32BufferAttribute(colr, 3)); pg.setIndex(idx); pg.computeVertexNormals(); pg.computeBoundingBox();
-      const ng = new THREE.BufferGeometry(); for (const k in g.attributes) ng.setAttribute(k, g.attributes[k]); ng.setIndex(keep); mesh.geometry = ng;   // (the body's own copy of its triangles; the points stay shared)
-      for (const b of sub) { this.lost.add(BONES[b]); for (const o of bones[b].children) o.visible = false; }
-      return { geo: pg, center: c, joint: bones[i].getWorldPosition(new THREE.Vector3()), parent: bones[PI[i]] }; },
-    // down for good, or down now whoever pushed (a turning, a death)
-    fall(d) { if (!st.down) st.down = { t: 0, d: new THREE.Vector3(d.x, 0, d.z).normalize() }; st.duck = null; },
-    stay: false,
+    rest: O,
     duck() { if (!st.duck && !st.down) st.duck = { t: 0 }; },
     down() { return !!st.down; },
     reeling() { return !!(st.down || st.push); },
@@ -160,7 +127,7 @@ export function pfPerson(key, sticks) {
       // a duck folds forward; a blow past what the feet hold floors them and they get up again
       const H = st.hit; if (H) { H.t += dt; if (H.t > 3.2) st.hit = null; }
       const D = st.duck; let de = 0; if (D) { D.t += dt; de = D.t < 0.16 ? sm(D.t / 0.16) : D.t < 0.8 ? 1 : 1 - sm((D.t - 0.8) / 0.5); if (D.t > 1.3) st.duck = null; else lean(0, 1, de * 0.7, de * 0.35); }
-      const F = st.down; let fa = 0, fl = 0; if (F) { F.t += dt; if (this.stay) F.t = Math.min(F.t, 2.6); const t = F.t; if (t < 0.55) fa = 1.45 * (t / 0.55) ** 2; else if (t < 2.7) fa = 1.45 - 0.07 * Math.max(0, Math.sin((t - 0.55) * 8)) * Math.max(0, 1 - (t - 0.55) * 2.5); else if (t < 4.3) fa = 1.45 * (1 - sm((t - 2.7) / 1.6)); else st.down = null; fl = Math.sin(Math.PI * Math.min(1, t / 0.9)); }
+      const F = st.down; let fa = 0, fl = 0; if (F) { F.t += dt; const t = F.t; if (t < 0.55) fa = 1.45 * (t / 0.55) ** 2; else if (t < 2.7) fa = 1.45 - 0.07 * Math.max(0, Math.sin((t - 0.55) * 8)) * Math.max(0, 1 - (t - 0.55) * 2.5); else if (t < 4.3) fa = 1.45 * (1 - sm((t - 2.7) / 1.6)); else st.down = null; fl = Math.sin(Math.PI * Math.min(1, t / 0.9)); }
       if (st.down) { body.quaternion.setFromAxisAngle(ax.set(F.d.z, 0, -F.d.x), fa); body.position.y = Math.sin(fa) * 0.11; } else if (body.position.y || body.quaternion.w < 1) { body.quaternion.identity(); body.position.y = 0; }
       J[0].copy(hp).multiplyScalar(ks).add(O[0]); for (let i = 1; i < NB; i++) { const p = PI[i]; J[i].copy(O[i]).sub(O[p]).applyQuaternion(R[p]).add(J[p]); }
       // seated at the counter: hands on it, the right one to the mouth with the chopsticks while eating; a wave is the right hand up by the head

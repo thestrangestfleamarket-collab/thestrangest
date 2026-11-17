@@ -1,6 +1,8 @@
 // SLOWFIRE DUEL (/qzar): a one-on-one dodge duel of slow shots, against a bot or another player, on a screen or in a headset (VR or passthrough)
 import * as THREE from 'three';
 import { Peer } from 'peerjs';
+import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
+import { WCOL, makeGun, makeShield, makeShot, glowTex } from './guns.js';
 const $=id=>document.getElementById(id);
 const app=$('app'),canvas=$('view'),note=$('note'),statusEl=$('status');
 const V3=THREE.Vector3;
@@ -15,7 +17,6 @@ const W={
   buckler:{name:'Buckler',hint:'blocks for 4 seconds', shield:true,dur:4}
 };
 const KEYS=['pip','needle','scatter','drifter'];
-const WCOL={pip:0xffd166,needle:0xffffff,scatter:0xb388ff,drifter:0x7cffb2,buckler:0x9ad0ff};
 const POOL=['pip','pip','pip','needle','needle','scatter','scatter','drifter','buckler'];
 const DIFF={
   easy:  {speed:1.0,window:.7, err:.50,lead:.3,regrab:3.6,gap:1.3},
@@ -44,6 +45,7 @@ function flatCamera(){camera.position.set(0,2.7,3.8);camera.lookAt(0,1.0,BZ);}
 flatCamera();
 scene.add(new THREE.HemisphereLight(0xbfd0ff,0x1a1f3a,2.8));
 const sun=new THREE.DirectionalLight(0xffffff,2.2);sun.position.set(3,8,4);scene.add(sun);
+scene.environment=new THREE.PMREMGenerator(renderer).fromScene(new RoomEnvironment(),.04).texture;scene.environmentIntensity=.55;
 
 const env=new THREE.Group();scene.add(env);          // hidden in passthrough so the real room shows
 const floor=new THREE.Mesh(new THREE.CircleGeometry(40,48),new THREE.MeshStandardMaterial({color:0x121a36,roughness:1}));
@@ -64,6 +66,8 @@ for(let i=0;i<10;i++){            // distant pylons give the lane some depth
   p.position.set(side*(5+Math.random()*3),h/2,-12+i*2.4);env.add(p);
 }
 
+scene.traverse(o=>{if(o.material&&o.material.isMeshStandardMaterial)o.material.envMapIntensity=.12;});
+
 function body(col,opacity){
   const g=new THREE.Group();
   const m=new THREE.MeshStandardMaterial({color:col,roughness:.5,transparent:opacity<1,opacity});
@@ -72,30 +76,33 @@ function body(col,opacity){
   scene.add(g);return g;
 }
 function shieldMesh(col){
-  const s=new THREE.Mesh(new THREE.CircleGeometry(.32,28),new THREE.MeshBasicMaterial({color:col,transparent:true,opacity:.45,side:THREE.DoubleSide}));
-  s.visible=false;return s;
+  const s=makeShield(col);s.visible=false;return s;
 }
-function heldMesh(){
-  const m=new THREE.Mesh(new THREE.BoxGeometry(.07,.07,.16),new THREE.MeshBasicMaterial({color:0xffffff}));
-  m.visible=false;return m;
+function rack(turned){                 // one of each weapon, only the one in use shown
+  const g=new THREE.Group(),guns={};
+  for(const k of [...KEYS,'buckler']){const m=makeGun(k);m.visible=false;if(turned)m.rotation.y=Math.PI;g.add(m);guns[k]=m;}
+  g.userData.guns=guns;
+  g.userData.show=key=>{for(const k in guns)guns[k].visible=k===key;return key?guns[key]:null;};
+  return g;
 }
 
 /* ---------- fighters ---------- */
 const youBody=body(YOU,.4), foeBody=body(FOE,1);
 const you={hp:MAX_HP,head:new V3(0,1.5,PZ),vel:new V3(),wins:0};
-const foe={hp:MAX_HP,head:new V3(0,1.5,BZ),wins:0,held:null,cool:0,grabT:1,goal:new V3(0,1.5,BZ),wanderT:0,shield:shieldMesh(FOE),shieldT:0,netShield:null};
+const foe={hp:MAX_HP,head:new V3(0,1.5,BZ),wins:0,held:null,cool:0,grabT:1,goal:new V3(0,1.5,BZ),wanderT:0,shield:shieldMesh(FOE),shieldT:0,netShield:null,netW:-1,rack:rack(true)};
+foe.rack.position.set(-.3,-.2,.15);foe.rack.scale.setScalar(1.5);foeBody.add(foe.rack);
 foeBody.add(foe.shield);
 
 function makeHand(parent,visPos,shieldPos){
-  const h={parent,held:null,cool:0,want:false,vis:heldMesh(),shield:shieldMesh(YOU),shieldT:0,pad:null};
+  const h={parent,held:null,cool:0,want:false,vis:rack(),shield:shieldMesh(YOU),shieldT:0,pad:null,kick:0,base:visPos};
   h.vis.position.copy(visPos);h.shield.position.copy(shieldPos);
   parent.add(h.vis);parent.add(h.shield);return h;
 }
-const flatHand=makeHand(youBody,new V3(.3,-.2,-.15),new V3(0,-.15,-.5));
+const flatHand=makeHand(youBody,new V3(.3,-.2,-.15),new V3(0,-.15,-.5));flatHand.vis.scale.setScalar(1.5);
 const vrHands=[0,1].map(i=>{
   const c=renderer.xr.getController(i);rig.add(c);
   c.add(new THREE.Mesh(new THREE.SphereGeometry(.035,12,8),new THREE.MeshBasicMaterial({color:YOU})));
-  const h=makeHand(c,new V3(0,0,-.08),new V3(0,0,-.14));
+  const h=makeHand(c,new V3(0,-.01,0),new V3(0,0,-.14));
   c.addEventListener('selectstart',()=>{ if(state==='menu'||state==='over')tryStart(); else h.want=true; });
   c.addEventListener('connected',e=>{h.pad=e.data&&e.data.gamepad||null;});
   c.addEventListener('disconnected',()=>{h.pad=null;});
@@ -106,13 +113,15 @@ const hands=()=>mode==='vr'?vrHands:[flatHand];
 
 /* ---------- weapon slots around the player ---------- */
 const slots=SLOTS_FLAT.map(()=>{
-  const mesh=new THREE.Mesh(new THREE.OctahedronGeometry(.09),new THREE.MeshBasicMaterial({color:0xffffff}));
-  mesh.visible=false;scene.add(mesh);
-  return {mesh,type:null,timer:0,pos:new V3()};
+  const mesh=new THREE.Group(),r=rack(),ring=new THREE.Mesh(new THREE.TorusGeometry(.085,.006,8,32),new THREE.MeshBasicMaterial({color:0xffffff}));
+  const lamp=new THREE.Sprite(new THREE.SpriteMaterial({map:glowTex,color:0xffffff,blending:THREE.AdditiveBlending,depthWrite:false,transparent:true,opacity:.5}));
+  ring.rotation.x=Math.PI/2;ring.position.y=-.11;lamp.position.y=-.1;lamp.scale.set(.3,.12,1);
+  mesh.add(r,ring,lamp);mesh.visible=false;scene.add(mesh);
+  return {mesh,rack:r,ring,lamp,type:null,timer:0,pos:new V3()};
 });
 function placeSlots(){
   const src=mode==='vr'?SLOTS_VR:SLOTS_FLAT;
-  slots.forEach((s,i)=>{s.pos.set(src[i][0],src[i][1],PZ+src[i][2]);s.mesh.position.copy(s.pos);});
+  slots.forEach((s,i)=>{s.pos.set(src[i][0],src[i][1],PZ+src[i][2]);s.mesh.position.copy(s.pos);s.rack.scale.setScalar(mode==='vr'?1:1.5);});
 }
 placeSlots();
 
@@ -121,9 +130,8 @@ const shots=[],mine=new Map(),remote=new Map(),deadRemote=new Set();
 let shotId=1,kills=[];
 function spawn(owner,key,pos,vel){
   const w=W[key];
-  const mesh=new THREE.Mesh(new THREE.SphereGeometry(w.r,14,10),
-    new THREE.MeshBasicMaterial({color:owner===you?YOU:FOE,transparent:!!w.absorb,opacity:w.absorb?.6:1}));
-  mesh.position.copy(pos);scene.add(mesh);
+  const mesh=makeShot(key,owner===you?YOU:FOE);
+  mesh.position.copy(pos);mesh.lookAt(tmp.copy(pos).add(vel));scene.add(mesh);
   const s={mesh,pos:mesh.position,vel,owner,key,r:w.r,dmg:w.dmg,absorb:w.absorb||0,life:0,dead:false,id:0,far:false};
   shots.push(s);return s;
 }
@@ -135,7 +143,25 @@ function fire(owner,key,origin,dir){
     const s=spawn(owner,key,origin,d.multiplyScalar(w.speed));
     if(owner===you){s.id=shotId++;mine.set(s.id,s);}
   }
+  puff(origin,owner===you?YOU:FOE,key==='drifter'?.7:.32,.09,null);
   beep(owner===you?520:300,.06,'square',.05);
+}
+const fx=[];
+function puff(pos,col,size,life,vel){
+  const s=new THREE.Sprite(new THREE.SpriteMaterial({map:glowTex,color:col,blending:THREE.AdditiveBlending,depthWrite:false,transparent:true}));
+  s.position.copy(pos);s.scale.setScalar(size);scene.add(s);fx.push({s,life,max:life,vel});
+}
+function burst(pos,col,big){
+  puff(pos,col,big?1.2:.5,.2,null);
+  for(let i=0;i<(big?14:7);i++)puff(pos,col,.07,.45,new V3(Math.random()-.5,Math.random()-.3,Math.random()-.5).multiplyScalar(big?3.4:2.4));
+}
+function updateFx(dt){
+  for(let i=fx.length-1;i>=0;i--){
+    const f=fx[i];
+    if((f.life-=dt)<=0){scene.remove(f.s);f.s.material.dispose();fx.splice(i,1);continue;}
+    if(f.vel){f.s.position.addScaledVector(f.vel,dt);f.vel.y-=4*dt;}
+    f.s.material.opacity=f.life/f.max;
+  }
 }
 function killRemote(p){p.dead=true;if(p.far){deadRemote.add(p.id);kills.push(p.id);}}
 function clearShots(){shots.forEach(s=>scene.remove(s.mesh));shots.length=0;mine.clear();remote.clear();deadRemote.clear();kills=[];}
@@ -173,7 +199,7 @@ function tryStart(){
 function startMatch(){you.wins=0;foe.wins=0;menu.hidden=true;startRound();}
 function resetRound(){
   you.hp=foe.hp=MAX_HP;clock=ROUND_TIME;clearShots();overShown=false;say('');
-  [flatHand,...vrHands].forEach(h=>{h.held=null;h.shieldT=0;h.cool=0;h.want=false;});
+  [flatHand,...vrHands].forEach(h=>{h.held=null;h.shieldT=0;h.cool=0;h.want=false;});foe.netW=-1;foe.rack.userData.show(null);
   foe.held=null;foe.shieldT=0;foe.netShield=null;foe.grabT=1.2;foe.head.set(0,1.5,BZ);foe.goal.copy(foe.head);
   slots.forEach((s,i)=>{s.type=null;s.timer=.4+i*.5;});
 }
@@ -226,7 +252,8 @@ function tx(){
   const s=[];
   for(const p of shots)if(p.owner===you&&!p.dead&&s.length<30)
     s.push([p.id,KEYS.indexOf(p.key),r2(p.pos.x),r2(p.pos.y),r2(p.pos.z),r2(p.vel.x),r2(p.vel.y),r2(p.vel.z)]);
-  const pk={q:Date.now(),r:net.role,rn:roundNo,h:[r2(you.head.x),r2(you.head.y),r2(you.head.z)],hp:Math.round(you.hp),sh,s,k:kills.slice(-30)};
+  const pk={q:Date.now(),r:net.role,rn:roundNo,h:[r2(you.head.x),r2(you.head.y),r2(you.head.z)],hp:Math.round(you.hp),sh,s,k:kills.slice(-30),w:-1};
+  for(const h of hands())if(h.held)pk.w=KEYS.indexOf(h.held.key);
   if(net.role==='host')pk.ph=[PH.indexOf(state),r2(timer),r2(clock),you.wins,foe.wins,roundNo,result];
   net.link.send(pk);
 }
@@ -239,6 +266,7 @@ function rx(pk){                           // everything in here is untrusted in
   foe.goal.set(clamp(-num(h[0]),-1.6,1.6),clamp(num(h[1]),.3,2.4),clamp(-num(h[2]),BZ-1.3,BZ+1.3));
   if(net.role==='guest'&&Array.isArray(pk.ph))follow(pk.ph);
   if(pk.rn===roundNo)foe.hp=clamp(num(pk.hp),0,MAX_HP);
+  foe.netW=typeof pk.w==='number'?pk.w:-1;
   foe.netShield=Array.isArray(pk.sh)?new V3(-num(pk.sh[0]),num(pk.sh[1]),-num(pk.sh[2])):null;
   const seen=new Set();
   (Array.isArray(pk.s)?pk.s.slice(0,40):[]).forEach(a=>{
@@ -297,24 +325,34 @@ function updatePlayer(dt){
         for(const s of slots){ if(s.type&&s.pos.distanceTo(hp)<reach){setHeld(h,s.type);s.type=null;s.timer=2.4+Math.random()*1.6;break;} }
       }
       if(h.want&&h.held&&h.cool<=0){
-        const w=W[h.held.key];let dir;
+        const w=W[h.held.key],gun=h.vis.userData.guns[h.held.key];let dir;
+        gun.updateWorldMatrix(true,false);const o=gun.localToWorld(gun.userData.muzzle.clone());
         if(mode==='vr'){dir=new V3(0,0,-1).applyQuaternion(h.parent.getWorldQuaternion(new THREE.Quaternion()));}
-        else{hp.y-=.15;hp.z-=.3;dir=new V3().copy(foe.head).sub(hp).normalize();}
-        fire(you,h.held.key,hp.clone(),dir);buzz(h,25);
+        else dir=new V3().copy(foe.head).sub(o).normalize();
+        fire(you,h.held.key,o,dir);h.kick=1;buzz(h,25);
         h.cool=w.cool;if(--h.held.ammo<=0)h.held=null;
       }
     }
     h.want=false;
     if(h.shieldT>0)h.shieldT-=dt;
     h.shield.visible=h.shieldT>0;
-    h.vis.visible=!!h.held;
-    if(h.held)h.vis.material.color.setHex(WCOL[h.held.key]);
+    h.shield.userData.life(Math.min(1,h.shieldT/W.buckler.dur));
+    const gun=h.vis.userData.show(h.shieldT>0?'buckler':h.held?h.held.key:null);
+    if(gun&&h.held)gun.userData.setAmmo(h.held.ammo);
+    if(gun&&gun.userData.tick)gun.userData.tick(performance.now()/1000);
+    h.kick*=Math.max(0,1-dt*10);h.vis.position.z=h.base.z+h.kick*.035;h.vis.rotation.x=h.kick*.22;
   }
+}
+function showFoeGun(key,ammo){
+  const gun=foe.rack.userData.show(key||null);
+  if(gun&&ammo>=0)gun.userData.setAmmo(ammo); else if(gun)gun.userData.setAmmo(9);
+  if(gun&&gun.userData.tick)gun.userData.tick(performance.now()/1000);
 }
 function updateRemote(dt){
   foe.head.lerp(foe.goal,Math.min(1,dt*14));foeBody.position.copy(foe.head);
   foe.shield.visible=!!foe.netShield;
   if(foe.netShield)foe.shield.position.copy(foe.netShield).sub(foe.head);
+  showFoeGun(foe.netShield?'buckler':state==='play'?KEYS[foe.netW]:null,-1);
 }
 function updateBot(dt){
   // dodge the most urgent incoming shot, otherwise drift around the platform
@@ -341,7 +379,8 @@ function updateBot(dt){
   foeBody.position.copy(foe.head);
 
   if(foe.shieldT>0)foe.shieldT-=dt;
-  foe.shield.position.set(0,-.15,.5);foe.shield.visible=foe.shieldT>0;
+  foe.shield.position.set(0,-.15,.5);foe.shield.visible=foe.shieldT>0;foe.shield.userData.life(Math.min(1,foe.shieldT/W.buckler.dur));
+  showFoeGun(foe.shieldT>0?'buckler':foe.held?foe.held.key:null,foe.held?foe.held.ammo:-1);
   if(!foe.held){
     if((foe.grabT-=dt)<=0){
       const key=pick(POOL),w=W[key];
@@ -363,7 +402,8 @@ function updateShots(dt){
   for(const p of shots){
     if(p.dead)continue;
     p.pos.addScaledVector(p.vel,dt);p.life+=dt;
-    if(p.life>9||Math.abs(p.pos.z)>9){p.dead=true;continue;}
+    if(p.mesh.userData.tick)p.mesh.userData.tick(dt);
+    if(p.life>9||Math.abs(p.pos.z)>9){p.dead=p.gone=true;continue;}
     if(p.owner===foe){
       for(const h of hands()){ if(!p.dead&&h.shieldT>0&&h.shield.getWorldPosition(tmp).distanceTo(p.pos)<.34+p.r){killRemote(p);beep(400,.04,'sine',.06);buzz(h,40);} }
       if(!p.dead&&hitsBody(p,you)){killRemote(p);hurt(you,p.dmg);}
@@ -381,14 +421,17 @@ function updateShots(dt){
   }
   for(let i=shots.length-1;i>=0;i--){
     const s=shots[i];
-    if(s.dead){scene.remove(s.mesh);if(s.far)remote.delete(s.id);else mine.delete(s.id);shots.splice(i,1);}
+    if(s.dead){if(!s.gone)burst(s.pos,s.owner===you?YOU:FOE,s.key==='drifter');scene.remove(s.mesh);if(s.far)remote.delete(s.id);else mine.delete(s.id);shots.splice(i,1);}
   }
 }
 function updateSlots(dt,now){
   for(const s of slots){
-    if(!s.type&&(s.timer-=dt)<=0&&state==='play'){s.type=pick(POOL);s.mesh.material.color.setHex(WCOL[s.type]);}
-    s.mesh.visible=!!s.type;s.mesh.rotation.y=now*1.5;
-    s.mesh.scale.setScalar(s.type==='buckler'?1.3:1);
+    if(!s.type&&(s.timer-=dt)<=0&&state==='play'){
+      s.type=pick(POOL);const g=s.rack.userData.show(s.type);g.userData.setAmmo(9);
+      s.ring.material.color.setHex(WCOL[s.type]);s.lamp.material.color.setHex(WCOL[s.type]);
+    }
+    s.mesh.visible=!!s.type;s.rack.rotation.y=now*1.2;s.rack.position.y=Math.sin(now*2+s.pos.x*3)*.012;
+    const g=s.type&&s.rack.userData.guns[s.type];if(g&&g.userData.tick)g.userData.tick(now);
   }
 }
 
@@ -458,7 +501,7 @@ function update(dt,now){
   else if(state==='play')updateBot(dt);
   else foeBody.position.copy(foe.head);
   if(state==='play'||state==='roundEnd'||state==='over')updateShots(dt);
-  updateSlots(dt,now);updateHud(dt);
+  updateSlots(dt,now);updateFx(dt);updateHud(dt);
   if(net.on&&net.link&&(net.sendT-=dt)<=0){net.sendT=1/15;tx();}
 }
 let last=performance.now();
@@ -535,4 +578,4 @@ mrBtn.addEventListener('click',()=>enterXR('immersive-ar'));
   vrBtn.hidden=!vr;mrBtn.hidden=!mr;
   if(!vr&&!mr)note.textContent='VR and passthrough buttons appear when this page is opened directly in a headset browser over HTTPS.';
 })();
-window.__qzar={you,foe,shots,net,get state(){return state;},get round(){return roundNo;},hurt};
+window.__qzar={scene,camera,makeGun,makeShield,makeShot,you,foe,shots,net,get state(){return state;},get round(){return roundNo;},hurt};

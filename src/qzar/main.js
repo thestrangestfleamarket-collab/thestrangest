@@ -2,7 +2,7 @@
 import * as THREE from 'three';
 import { Peer } from 'peerjs';
 import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
-import { WCOL, makeGun, makeShield, makeShot, glowTex } from './guns.js';
+import { WCOL, makeGun, makeShield, makeShot, glowTex, setEnv } from './guns.js';
 const $=id=>document.getElementById(id);
 const app=$('app'),canvas=$('view'),note=$('note'),statusEl=$('status');
 const V3=THREE.Vector3;
@@ -45,7 +45,7 @@ function flatCamera(){camera.position.set(0,2.7,3.8);camera.lookAt(0,1.0,BZ);}
 flatCamera();
 scene.add(new THREE.HemisphereLight(0xbfd0ff,0x1a1f3a,2.8));
 const sun=new THREE.DirectionalLight(0xffffff,2.2);sun.position.set(3,8,4);scene.add(sun);
-scene.environment=new THREE.PMREMGenerator(renderer).fromScene(new RoomEnvironment(),.04).texture;scene.environmentIntensity=.55;
+setEnv(new THREE.PMREMGenerator(renderer).fromScene(new RoomEnvironment(),.04).texture);
 
 const env=new THREE.Group();scene.add(env);          // hidden in passthrough so the real room shows
 const floor=new THREE.Mesh(new THREE.CircleGeometry(40,48),new THREE.MeshStandardMaterial({color:0x121a36,roughness:1}));
@@ -65,8 +65,6 @@ for(let i=0;i<10;i++){            // distant pylons give the lane some depth
   const p=new THREE.Mesh(new THREE.BoxGeometry(.6,h,.6),new THREE.MeshStandardMaterial({color:0x1b2550,roughness:1}));
   p.position.set(side*(5+Math.random()*3),h/2,-12+i*2.4);env.add(p);
 }
-
-scene.traverse(o=>{if(o.material&&o.material.isMeshStandardMaterial)o.material.envMapIntensity=.12;});
 
 function body(col,opacity){
   const g=new THREE.Group();

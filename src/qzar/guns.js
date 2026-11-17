@@ -3,7 +3,9 @@ import * as THREE from 'three';
 
 const WCOL = { pip: 0xffd166, needle: 0xdff3ff, scatter: 0xb388ff, drifter: 0x7cffb2, buckler: 0x9ad0ff };
 const OFF = 0x1a2036, H = Math.PI / 2;
-const metal = (c, o = {}) => new THREE.MeshStandardMaterial({ color: c, metalness: .78, roughness: .36, ...o });
+const mats = []; let env = null;
+const metal = (c, o = {}) => { const m = new THREE.MeshStandardMaterial({ color: c, metalness: .78, roughness: .36, envMap: env, envMapIntensity: .8, ...o }); mats.push(m); return m; };
+function setEnv(t) { env = t; for (const m of mats) { m.envMap = t; m.needsUpdate = true; } }
 const steel = metal(0x33405f), dark = metal(0x161c30, { roughness: .55 }), bright = metal(0xb4c0e0, { roughness: .2 });
 const rubber = new THREE.MeshStandardMaterial({ color: 0x0b0e18, metalness: .05, roughness: .92 });
 const lit = c => new THREE.MeshBasicMaterial({ color: c });
@@ -24,7 +26,6 @@ function halo(col, size) {
 
 function grip(g, z = .035) {
   put(g, box(.03, .09, .038), rubber, 0, -.052, z, .32);
-  for (let i = 0; i < 4; i++) put(g, box(.0315, .004, .0395), dark, 0, -.03 - i * .016, z - .0073 + i * .0053, .32);
   put(g, tor(.017, .003, 14), dark, 0, -.024, z - .04, 0, H, 0);
   put(g, box(.005, .02, .006), bright, 0, -.022, z - .036, -.25);
 }
@@ -134,4 +135,4 @@ function makeShot(key, col) {
   return g;
 }
 
-export { WCOL, makeGun, makeShield, makeShot, glowTex };
+export { WCOL, makeGun, makeShield, makeShot, glowTex, setEnv };

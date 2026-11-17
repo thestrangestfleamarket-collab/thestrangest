@@ -38,11 +38,12 @@ const exe = process.env.PW_CHROMIUM || (fs.existsSync('/opt/pw-browsers/chromium
     await pg.goto(URL); ok(await pg.waitForFunction(() => !document.getElementById('screen').disabled, null, { timeout: 180000 }).then(() => true, () => false), 'the ships load and PLAY ON THIS SCREEN opens');
     await pg.click('#screen'); await pg.waitForTimeout(600); ok(await pg.evaluate(() => __turret.mode === 'screen' && __turret.sim.state === 'ready' && __turret.world.said === 'SWIVEL'), 'in the turret, waiting for the first click');
     if (OUT) await pg.screenshot({ path: path.join(OUT, '01-ready.png') });
-    await pg.mouse.click(480, 300); await pg.mouse.up(); ok(await pg.waitForFunction(() => __turret.sim.state === 'play', null, { timeout: 20000 }).then(() => true, () => false), 'a click starts the fight');
+    await pg.mouse.click(480, 300); await pg.mouse.up(); ok(await pg.waitForFunction(() => __turret.sim.state === 'play', null, { timeout: 20000 }).then(() => true, () => false), 'a click starts the fight'); ok(await pg.evaluate(() => __turret.guide.step === 1 && __turret.world.said.startsWith('HOLD')), 'a first fight opens with the guide\'s first step');
     await pg.evaluate(() => { const S = __turret.sim; S.rest = 1e9; S.spawn('fighter', { p: [120, 60, -220], d: [-1, 0, 0], st: 'break', bt: 9, side: [0, 1, 0], rout: 1e9 }); });
     await pg.evaluate(() => { __turret.auto = setInterval(() => { const T = __turret, s = T.sim.ships[0]; if (!s) return; const tt = Math.hypot(...s.p) / 700, p = s.p.map((v, i) => v + s.v[i] * tt), l = Math.hypot(...p); T.look(Math.atan2(-p[0], -p[2]), Math.asin(p[1] / l)); T.held = true; }, 16); });
     ok(await pg.waitForFunction(() => __turret.sim.kills === 1, null, { timeout: 90000 }).then(() => true, () => false), 'looking ahead of a fighter and holding fire kills it: the bolts leave the barrels and meet at the sight');
     if (OUT) await pg.screenshot({ path: path.join(OUT, '02-kill.png') });
+    ok(await pg.evaluate(() => __turret.guide.step >= 3), 'the first fight\'s guide moved on as each thing was done (fire, then a kill)'); ok(await pg.evaluate(() => __turret.post.valid && __turret.scene.background === null), 'the picture goes through the lens');
     const y = await pg.evaluate(() => { clearInterval(__turret.auto); __turret.held = false; __turret.look(2, 0.3); return new Promise(r => requestAnimationFrame(() => requestAnimationFrame(() => r(__turret.world.yoke.rotation.y)))); }); ok(Math.abs(y - 2) < 0.01, 'the guns swing to where you look');
     ok(errs.length === 0, 'no page errors' + (errs.length ? ': ' + errs.slice(0, 3).join(' | ') : '')); await pg.close(); }
 

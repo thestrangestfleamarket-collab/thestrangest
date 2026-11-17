@@ -22,9 +22,13 @@
   button.alt { background: #1b2a33; color: #cfeee6; }
   button:disabled { background: #1a2126; color: #6f8a85; cursor: default; }
   #status { min-height: 22px; color: #ffcc66; margin-top: 12px; }
+  #words { position: fixed; left: 0; right: 0; top: 24%; text-align: center; pointer-events: none; z-index: 5; opacity: 0; text-shadow: 0 2px 14px #000; }
+  #words b { display: block; font-size: min(7vw, 64px); font-weight: 800; letter-spacing: 2px; color: #eafff8; }
+  #words i { display: block; font-style: normal; font-size: min(3vw, 26px); font-weight: 600; color: #9fd6c8; margin-top: 4px; }
 </style>
 </head>
 <body>
+<div id="words"></div>
 <div id="lobby">
   <div class="card">
     <h1>SWIVEL</h1>

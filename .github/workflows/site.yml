@@ -79,7 +79,7 @@ jobs:
           k duel    'src/duel/|data/duel/|tools/duel\.cjs|tests/duel\.cjs'
           k laser   'src/laser/|worker/laser|tools/laser\.cjs|tests/laser\.cjs'
           k fleet   'src/space/|data/space/|worker/space|tools/space|tests/fleet\.cjs'
-          k turret  'src/turret/|data/space/|tools/turret\.cjs|tests/turret\.cjs'
+          k turret  'src/turret/|src/space/(cosmos|post)|data/space/|data/tank/|tools/turret\.cjs|tests/turret\.cjs'
           k vrbody  'src/162c|src/111b|vrbody\.cjs'
           k riders  'src/117a|src/009c|riders\.cjs'
           k loopmap 'src/159c|src/009b|loopmap\.cjs'

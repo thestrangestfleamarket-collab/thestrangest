@@ -25,7 +25,7 @@ export const RECIPES = {
   shio: { name: 'SHIO', jp: '塩ラーメン', price: 16, broth: 'chicken', tare: 'shio', tops: { chashu: 2, menma: 1, negi: 1, egg: 1 } },
   miso: { name: 'MISO', jp: '味噌ラーメン', price: 20, broth: 'chicken', tare: 'miso', tops: { chashu: 2, corn: 1, negi: 1, menma: 1 } },
   tonkotsu: { name: 'TONKOTSU', jp: '豚骨ラーメン', price: 24, broth: 'tonkotsu', tare: 'shio', tops: { chashu: 2, egg: 1, negi: 1, nori: 1 } },
-  nokori: { name: 'NOKORI', jp: '残り汁', price: 4, broth: 'chicken', tare: 'shio', tops: { negi: 1 }, night: true },   // the night's bowl for the frightened: noodles in what broth is left, a little onion, a few mon or nothing
+  yonaki: { name: 'YONAKI', jp: '夜鳴きそば', price: 12, broth: 'chicken', tare: 'shoyu', tops: { negi: 1, menma: 1, nori: 1 }, night: true },   // the night stall's plain bowl, cheaper, for whoever is out late
 };
 export const DAYDISH = Object.keys(RECIPES).filter((k) => !RECIPES[k].night);
 
@@ -225,6 +225,7 @@ export function buildCart(scene, city) {
     const mark = box(0.012, 0.03, 0.03, black, 0.032, 0, 0, kb);   // the draught door's wooden slide and its pull
     const lt = mesh(new THREE.PlaneGeometry(0.16, 0.035), new THREE.MeshBasicMaterial({ map: T.labelTex(d.label, { w: 256, h: 56, fs: 26, bg: '#3a2414', fg: '#e8e0c8' }) }), -0.699, 0.76, d.z, cart); lt.rotation.y = Math.PI / 2; lt.castShadow = false;
     
+    p.vent = () => bn.on;   // (its brazier's vent open, whether or not the pot stands on it)
     p.setOn = (on) => { bn.on = on; kb.position.z = d.z + (on ? 0.05 : 0); bn.flames.forEach((f) => (f.visible = on)); G.audio.play('knob', _bp4.set(-0.67, 0.7, d.z)); };
     km.userData.button = kb.userData.button = mark.userData.button = { getPos: () => _bp.set(-0.67, 0.7, d.z), r: 0.045, press: () => p.setOn(!bn.on), name: `${d.id} brazier vent` };
     G.buttons.push(km.userData.button);

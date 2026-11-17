@@ -182,6 +182,7 @@ landMat.onBeforeCompile=s=>{s.uniforms.tDry={value:A0.dry};s.uniforms.tSoil={val
   const far=new T.Mesh(fg,landMat);far.frustumCulled=false;land.add(far);
 })();
 //@include trees.js
+//@include fruit.js
 // trees and hedges: each a pair of crossed cards drawn from one of THE MARKET's trees
 const solids=[],ITEMS=[],TREEL=[];
 const TSCALE=[1,1,1,1,1,1],TREEJ={},TCARD=[];renderer.xr.enabled=false;TREES.forEach((n,k)=>{const b=n[0]==='BIG'?BIGT.bake(n[1],k+1):MTREE.bake(n[0],n[1]);TCARD[k]=b.tex;TREEJ[k]={w:b.w*n[2],h:n[2]};});renderer.xr.enabled=true;
@@ -1021,6 +1022,6 @@ drawStat();renderer.setAnimationLoop(frame);
 $('loading').hidden=true;
 if(document.fonts&&document.fonts.load)document.fonts.load('600 40px "IBM Plex Mono"').then(drawStat).catch(()=>{});
 
-window.game={MTREE,TREEGEN,BIGT,MT:A0.MT,snap,SNAP,throwNade,get hold(){return hold;},get time(){return time;},get state(){return state;},get wave(){return wave;},get cover(){return cover;},get xr(){return xrActive;},get expo(){return expo;},P,foes,shells,WAVES,ROOF,FLOOR,hAt,los,tank,inside,friends,crews,mines,nades,INV,addCrew,takeItem,useItem,NET,get rem(){return NET.peers.values().next().value||noRem;},G,MODES,SET,WORLD,startMission,get mis(){return mis;},isHost,TYPES,setType,get type(){return tyKey;},hands,view,supply:land.userData.supply,fire,trigger,lase,popSmoke,selectAmmo,toggleZoom,toggleThermal,extinguish,hurt:hurtPlayer,toggleHatch,toggleSight,addFoe,live,renderer,camera,rig,sounds:A,
+window.game={MTREE,TREEGEN,BIGT,FRUIT,MT:A0.MT,snap,SNAP,throwNade,get hold(){return hold;},get time(){return time;},get state(){return state;},get wave(){return wave;},get cover(){return cover;},get xr(){return xrActive;},get expo(){return expo;},P,foes,shells,WAVES,ROOF,FLOOR,hAt,los,tank,inside,friends,crews,mines,nades,INV,addCrew,takeItem,useItem,NET,get rem(){return NET.peers.values().next().value||noRem;},G,MODES,SET,WORLD,startMission,get mis(){return mis;},isHost,TYPES,setType,get type(){return tyKey;},hands,view,supply:land.userData.supply,fire,trigger,lase,popSmoke,selectAmmo,toggleZoom,toggleThermal,extinguish,hurt:hurtPlayer,toggleHatch,toggleSight,addFoe,live,renderer,camera,rig,sounds:A,
   skip(){waveT=0;},kill(e){killFoe(e);P.kills++;}};
 })();

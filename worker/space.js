@@ -55,9 +55,11 @@ const SPACE = {
   clean: (m, slot) => {
     if (!m || typeof m !== "object") return null;
     if (m.t === "s") return slot === 0 && Array.isArray(m.a) && m.a.length <= 1200 ? { t: "s", a: m.a.map(v => num(v, -99999, 9999999) | 0) } : null;   // the host's picture of the battle
-    if (m.t === "o") return Array.isArray(m.ids) && m.ids.length <= 40 && Array.isArray(m.p) && m.p.length === 3 ? { t: "o", ids: m.ids.map(v => num(v, 0, 1e9) | 0), k: m.k ? 1 : 0, p: m.p.map(v => num(v, -2, 2)), tid: num(m.tid, 0, 1e9) | 0 } : null;
+    if (m.t === "o") return Array.isArray(m.ids) && m.ids.length <= 40 && Array.isArray(m.p) && m.p.length === 3 ? { t: "o", ids: m.ids.map(v => num(v, 0, 1e9) | 0), k: m.k ? 1 : 0, p: m.p.map(v => num(v, -2, 2)), tid: num(m.tid, 0, 1e9) | 0, a: m.a ? 1 : 0 } : null;
     if (m.t === "b") return { t: "b", u: num(m.u, 1, 5, 1) | 0 };
     if (m.t === "again") return { t: "again" };
+    if (m.t === "p") return slot === 1 ? { t: "p" } : null;   // the second player asks for a pause; the host says when it is on
+    if (m.t === "ps") return slot === 0 ? { t: "ps", on: m.on ? 1 : 0 } : null;
     if (m.t === "f") return { t: "f", f: m.f ? 1 : 0 };   // which navy the joining player flies
     return null; },
 };

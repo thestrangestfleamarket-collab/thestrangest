@@ -11,4 +11,4 @@ for (const [dir, mark] of [['edge', '__EDGE__'], ['tank', '__TANK__']]) {
   const html = fs.readFileSync('src/' + dir + '/' + dir + '.html', 'utf8').replace('__THREE147__', () => safe(dir === 'tank' ? three + ';\n' + gltf : three)).replace(mark, () => safe(js));
   fs.writeFileSync('dist/' + dir + '.html', html); console.log('dist/' + dir + '.html', html.length, 'bytes');
 }
-fs.rmSync('dist/tank-assets', { recursive: true, force: true }); fs.cpSync('data/tank', 'dist/tank-assets', { recursive: true }); fs.copyFileSync('data/trees.json', 'dist/tank-assets/trees-market.json'); console.log('dist/tank-assets/ copied');
+fs.rmSync('dist/tank-assets', { recursive: true, force: true }); fs.cpSync('data/tank', 'dist/tank-assets', { recursive: true }); fs.copyFileSync('data/trees.json', 'dist/tank-assets/trees-market.json'); { const f = JSON.parse(fs.readFileSync('data/forest.json', 'utf8')), o = {}; for (const k in f) if (!/Rock/.test(k)) o[k] = { p: f[k].p, c: f[k].c, k: f[k].k }; fs.writeFileSync('dist/tank-assets/trees-pack.json', JSON.stringify(o)); } console.log('dist/tank-assets/ copied');

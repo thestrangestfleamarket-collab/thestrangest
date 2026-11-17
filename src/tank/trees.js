@@ -122,3 +122,32 @@ const BIGT=(()=>{
     renderer.setRenderTarget(null);renderer.toneMapping=tm;renderer.setClearColor(cc,ca);geo.dispose();PG.dispose();return{w,tex,rts,puffs:t.puffs.length};};
   return{make,bake,KIND};
 })();
+// THE MARKET's low-poly pack (its data/forest.json: three oaks, two elders, a spruce, a willow, the giant), made real for the cards: every flat leaf facet grown over with leaves, the wood rounded and barked from a photograph, greens deeper low and inside the crown
+const PACK=(()=>{
+  const b64=t=>{const a=atob(t),u=new Uint8Array(a.length);for(let q=0;q<a.length;q++)u[q]=a.charCodeAt(q);return u;};
+  const LOOK={Spruce1:{fine:1,size:.6,tint:[.42,.62,.5],down:.5,dens:1.5},Willow1:{fine:1,size:.7,tint:[.8,.95,.5],down:.8,dens:1.3},Giant1:{size:.9,tint:[.62,.82,.5]},Elder1:{size:.85,tint:[.6,.8,.48]},Elder2:{size:.85,tint:[.66,.8,.44]},OakTree1:{tint:[.6,.78,.46]},OakTree2:{tint:[.66,.8,.42]},OakTree3:{tint:[.56,.76,.48]}};
+  const build=(name,real)=>{const E=A0.PK[name],p=new Float32Array(b64(E.p).buffer),c8=b64(E.c),kk=b64(E.k),L=LOOK[name]||{},r=rng(name.length*977+name.charCodeAt(0)*31),grp=new T.Group();
+    let H=0,wd=0;for(let i=0;i<p.length;i+=3){H=Math.max(H,p[i+1]);wd=Math.max(wd,Math.abs(p[i]),Math.abs(p[i+2]));}
+    const wp=[],lp=[],lc=[];for(let t=0;t<kk.length;t++)for(let v=0;v<3;v++){const j=t*9+v*3;if(kk[t])wp.push(p[j]/H,p[j+1]/H,p[j+2]/H);else{lp.push(p[j]/H,p[j+1]/H,p[j+2]/H);lc.push(Math.pow(c8[j]/255,2.2),Math.pow(c8[j+1]/255,2.2),Math.pow(c8[j+2]/255,2.2));}}
+    if(!real){const g=new T.BufferGeometry(),c=new Float32Array(c8.length),q=new Float32Array(p.length);for(let i=0;i<c.length;i++)c[i]=Math.pow(c8[i]/255,2.2);for(let i=0;i<q.length;i++)q[i]=p[i]/H;g.setAttribute('position',new T.BufferAttribute(q,3));g.setAttribute('color',new T.BufferAttribute(c,3));g.computeVertexNormals();
+      grp.add(new T.Mesh(g,new T.MeshLambertMaterial({vertexColors:true,flatShading:true,side:T.DoubleSide})));return{grp,w:wd*2.06/H};}
+    // the wood: one rounded skin, the bark's picture wrapped round it
+    {let g=new T.BufferGeometry();g.setAttribute('position',new T.Float32BufferAttribute(wp,3));g=T.BufferGeometryUtils.mergeVertices(g,1e-4);g.computeVertexNormals();const ps=g.attributes.position,uv=new Float32Array(ps.count*2);for(let i=0;i<ps.count;i++){uv[i*2]=Math.atan2(ps.getX(i),ps.getZ(i))/6.2832*2+ps.getY(i)*.6;uv[i*2+1]=ps.getY(i)*5;}g.setAttribute('uv',new T.BufferAttribute(uv,2));
+      const bk=A0.bark.clone();bk.wrapS=bk.wrapT=T.RepeatWrapping;bk.needsUpdate=true;grp.add(new T.Mesh(g,new T.MeshLambertMaterial({map:bk,color:new T.Color(.95,.86,.78),side:T.DoubleSide})));}
+    // the crown: its middle and reach, a dark mass inside, and leaves grown over every facet
+    let cx=0,cy=0,cz=0,n=lp.length/3;for(let i=0;i<lp.length;i+=3){cx+=lp[i];cy+=lp[i+1];cz+=lp[i+2];}cx/=n;cy/=n;cz/=n;let cr=1e-3,lo=1e9;for(let i=0;i<lp.length;i+=3){cr=Math.max(cr,Math.hypot(lp[i]-cx,lp[i+1]-cy,lp[i+2]-cz));lo=Math.min(lo,lp[i+1]);}
+    {const g=new T.BufferGeometry(),q=new Float32Array(lp.length),c=new Float32Array(lp.length);for(let i=0;i<lp.length;i+=3){q[i]=cx+(lp[i]-cx)*.9;q[i+1]=cy+(lp[i+1]-cy)*.9;q[i+2]=cz+(lp[i+2]-cz)*.9;c[i]=lc[i]*.16;c[i+1]=lc[i+1]*.2;c[i+2]=lc[i+2]*.14;}g.setAttribute('position',new T.BufferAttribute(q,3));g.setAttribute('color',new T.BufferAttribute(c,3));g.computeVertexNormals();grp.add(new T.Mesh(g,new T.MeshLambertMaterial({vertexColors:true,side:T.DoubleSide})));}
+    const P=[],N=[],C=[],U=[],a=new T.Vector3(),b=new T.Vector3(),c=new T.Vector3(),o=new T.Vector3(),nr=new T.Vector3(),e=new T.Vector3(),Q=new T.Quaternion(),EU=new T.Euler(),VQ=[[-1,-1],[1,-1],[1,1],[-1,-1],[1,1],[-1,1]],tint=L.tint||[.62,.8,.46],SZ=.07*(L.size||1),fine=L.fine?.5:0;
+    for(let t=0;t<lp.length;t+=9){a.fromArray(lp,t);b.fromArray(lp,t+3);c.fromArray(lp,t+6);nr.copy(b).sub(a).cross(e.copy(c).sub(a));const area=nr.length()*.5;nr.normalize();o.copy(a).add(b).add(c).multiplyScalar(1/3);if(nr.dot(e.set(o.x-cx,o.y-cy,o.z-cz))<0)nr.negate();
+      const m=Math.max(1,Math.round(area*2600*(L.dens||1)+r()*.6));for(let i=0;i<m;i++){let u=r(),v=r();if(u+v>1){u=1-u;v=1-v;}o.copy(a).multiplyScalar(1-u-v).addScaledVector(b,u).addScaledVector(c,v).addScaledVector(nr,(r()-.25)*SZ*.7);
+        const hf=clamp((o.y-lo)/Math.max(1e-3,cy+cr-lo),0,1),df=clamp(Math.hypot(o.x-cx,o.y-cy,o.z-cz)/cr,0,1),f=(.5+.42*hf+.22*df*df)*(.8+r()*.4),hue=(r()-.5)*.16,col=[lc[t]*tint[0]*f*(1+hue),lc[t+1]*tint[1]*f,lc[t+2]*tint[2]*f*(1-hue)],sz=SZ*(.7+r()*.6);
+        e.set(o.x-cx,(o.y-cy)*1.2-(L.down||0)*cr*.5,o.z-cz).normalize().lerp(nr,.35).lerp(UP,.12).normalize();
+        for(let w=0;w<2;w++){Q.setFromEuler(EU.set(r()*6.28,r()*6.28,r()*6.28));for(const[x,y]of VQ){const q=new T.Vector3(x*sz/2,y*sz/2,0).applyQuaternion(Q).add(o);P.push(q.x,q.y,q.z);N.push(e.x,e.y,e.z);C.push(col[0],col[1],col[2]);U.push((x+1)/2*.44+fine,(y+1)/2);}}}}
+    {const g=new T.BufferGeometry();g.setAttribute('position',new T.Float32BufferAttribute(P,3));g.setAttribute('normal',new T.Float32BufferAttribute(N,3));g.setAttribute('color',new T.Float32BufferAttribute(C,3));g.setAttribute('uv',new T.Float32BufferAttribute(U,2));grp.add(new T.Mesh(g,new T.MeshLambertMaterial({vertexColors:true,map:TREEGEN.leaf(),alphaTest:.5,side:T.DoubleSide})));}
+    return{grp,w:(wd/H+SZ)*2.06,cards:P.length/18};};
+  const bake=(name,real)=>{const t=build(name,real),sc=new T.Scene();sc.add(t.grp);const sun=new T.DirectionalLight(0xfff0d8,1.9);sun.position.set(.6,.9,.7);sc.add(sun,new T.HemisphereLight(0xbfd4ff,0x4a4030,.85));
+    const w=Math.max(.2,t.w),cam=new T.OrthographicCamera(-w/2,w/2,.53,-.51,.1,20),tm=renderer.toneMapping,cc=renderer.getClearColor(new T.Color()).clone(),ca=renderer.getClearAlpha(),tex=[],rts=[];renderer.toneMapping=T.NoToneMapping;renderer.setClearColor(0x2a3a1c,0);
+    for(const a of[0,Math.PI/2]){const rt=new T.WebGLRenderTarget(512,512,{depthBuffer:true});rt.texture.generateMipmaps=true;rt.texture.minFilter=T.LinearMipmapLinearFilter;rt.texture.anisotropy=4;cam.position.set(Math.sin(a)*8,.5,Math.cos(a)*8);cam.lookAt(0,.5,0);renderer.setRenderTarget(rt);renderer.clear();renderer.render(sc,cam);tex.push(rt.texture);rts.push(rt);}
+    renderer.setRenderTarget(null);renderer.toneMapping=tm;renderer.setClearColor(cc,ca);t.grp.traverse(m=>{if(m.geometry)m.geometry.dispose();});return{w,tex,rts,cards:t.cards||0};};
+  return{build,bake,names:['OakTree1','OakTree2','OakTree3','Elder1','Elder2','Spruce1','Willow1','Giant1']};
+})();

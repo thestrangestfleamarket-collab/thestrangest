@@ -12,6 +12,7 @@ import { Sticks, TIP, speedToVel } from './sticks.js';
 import { loadAssets, kitTextures } from './assets.js';
 import { buildGarage } from './garage.js';
 import { GripHand, Body } from './hands.js';
+import { startLife } from './life.js';
 
 const Q = new URLSearchParams(location.search), LOW = Q.has('low');
 const $ = (id) => document.getElementById(id);
@@ -88,7 +89,7 @@ function card(lines, w = 0.86) {
   return m;
 }
 const VR_GUIDE = [['RIGHT TRIGGER', 'kick drum'], ['LEFT TRIGGER', 'open the hi-hat'], ['GRIP ON A CYMBAL', 'choke it'], ['RIGHT STICK  ↕', 'stick angle'], ['LEFT STICK  ↕', 'seat height'],
-  ['LEFT STICK  ↔', 'timing: earlier / later'], ['RIGHT STICK  ↔ / CLICK', 'metronome tempo / on-off'], ['HOLD A or X', 'sit me at the kit again'], ['B or Y', 'hide this guide']];
+  ['LEFT STICK  ↔', 'timing: earlier / later'], ['RIGHT STICK  ↔ / CLICK', 'metronome tempo / on-off'], ['LEFT STICK  CLICK', 'garage door up / down'], ['HOLD A', 'talk to a neighbour'], ['HOLD X', 'sit me at the kit again'], ['B or Y', 'hide this guide']];
 
 // a small readout that shows only while a setting is being changed
 const readout = (() => {
@@ -111,7 +112,7 @@ const readout = (() => {
 })();
 
 // ---------- build ----------
-let kit, sticks, garage, body, hands, metro;
+let kit, sticks, garage, body, hands, metro, life;
 const handMat = new THREE.MeshStandardMaterial({ color: 0xd9a984, roughness: 0.62 });
 const head = { pos: new THREE.Vector3(), quat: new THREE.Quaternion() };
 const seat = Object.assign(new THREE.Vector3(), { feet: [new THREE.Vector3(), new THREE.Vector3()] });
@@ -123,6 +124,8 @@ async function build() {
   await loadAssets((p) => { prog[0] = p; show(); }, 2);
   const T = kitTextures(LOW);
   garage = buildGarage(scene, LOW);
+  life = startLife({ scene, garage, sound, low: LOW, Q, readout, $ });
+  D.life = life; D.street = life.street;
   kit = buildKit(T, LOW);
   scene.add(kit.group);
   sticks = new Sticks(kit, T);
@@ -201,6 +204,7 @@ function onHit(piece, vel, zone, r, lx, lz, side) {
     rumble(side, cym ? 0.2 + 0.6 * vel : zone === 'rimshot' || zone === 'rim' || zone === 'cross' ? 0.5 + 0.4 * vel : 0.15 + 0.4 * vel, cym ? (piece === 'hat' ? 0.05 + 0.08 * sound.hat : 0.14) : 0.03);
     if (hands[side]) hands[side].kick = 1;
   }
+  life.note(vel);
   if (vel > 0.5) garage.jolt((vel - 0.5) * (cym ? 0.5 : 1));
   shake.v = Math.max(shake.v, vel * (piece === 'kick' ? 1 : 0.4));
   const l = guide.labels[piece];
@@ -289,7 +293,9 @@ function vrInput(dt, now) {
       if (Math.abs(sy) > 0.5 && Math.abs(sx) < 0.4) { set.height = Math.max(-0.4, Math.min(0.4, set.height - sy * dt * 0.2)); placeRig(); readout.show('SEAT ' + (set.height >= 0 ? '+' : '') + Math.round(set.height * 100) + ' cm', now); keep(); }
       if (Math.abs(sx) > 0.6 && Math.abs(sy) < 0.4) { set.lead = Math.max(0, Math.min(80, set.lead + sx * dt * 25)); sticks.lead = set.lead / 1000; readout.show('HITS ' + Math.round(set.lead) + ' ms EARLY', now); keep(); }
     }
-    if (a) { xr.hold += dt; if (xr.hold > 0.5 && !xr.seated) { placeRig(); xr.seated = 1; readout.show('SEATED', now); } }
+    if (side === 'left') { if (a) { xr.hold += dt; if (xr.hold > 0.5 && !xr.seated) { placeRig(); xr.seated = 1; readout.show('SEATED', now); } } else { xr.hold = 0; xr.seated = 0; } if (th && !P.th) { garage.toggleDoor(); readout.show(garage.door.want > 0.5 ? 'DOOR UP' : 'DOOR DOWN', now); } }
+    else if (a !== !!P.a) life.listen(a);
+    P.a = a;
     if (b && !P.b) { guide.on = !guide.on; }
     // a cymbal held is a cymbal stopped
     if (sq > 0.6) for (const p of kit.pieces) if (p.kind === 'cymbal') {
@@ -300,7 +306,6 @@ function vrInput(dt, now) {
     if (sq < 0.4) P.choke = false;
     P.trig = trig; P.th = th; P.b = b;
   }
-  if (!xr.slots.some((s) => s.source?.gamepad?.buttons?.[4]?.pressed)) { xr.hold = 0; xr.seated = 0; }
   for (const s of ['left', 'right']) if (!any[s]) sticks.set(s, _p, _q, false);
 }
 
@@ -328,12 +333,16 @@ function playKey(code, now) {
 }
 addEventListener('keydown', (e) => {
   if (D.mode !== 'screen') return;
+  if (e.target === $('say')) { if (e.code === 'Enter') { life.say($('say').value); $('say').value = ''; $('say').blur(); $('say').hidden = true; } else if (e.code === 'Escape') { $('say').blur(); $('say').hidden = true; } return; }
   if (e.repeat) { if (KEYMAP[e.code] || e.code === 'Space') e.preventDefault(); return; }
   scr.keys.add(e.code);
   const now = performance.now() / 1000;
   if (e.code === 'Space') { kick(e.shiftKey ? 1 : 0.7); e.preventDefault(); }
   else if (e.code === 'KeyQ') { sound.setHat(1); kit.setHat(1); }
   else if (e.code === 'KeyH') guide.on = !guide.on;
+  else if (e.code === 'KeyO') { garage.toggleDoor(); readout.show(garage.door.want > 0.5 ? 'DOOR UP' : 'DOOR DOWN', now); }
+  else if (e.code === 'KeyN') life.skip();
+  else if (e.code === 'Enter') { const b = $('say'); b.hidden = false; b.focus(); e.preventDefault(); }
   else if (e.code === 'KeyM') toggleMetro(now);
   else if (e.code === 'BracketLeft' || e.code === 'BracketRight') { set.bpm = Math.max(40, Math.min(240, set.bpm + (e.code === 'BracketLeft' ? -4 : 4))); readout.show('TEMPO ' + set.bpm, now); keep(); }
   else if (playKey(e.code, now)) e.preventDefault();
@@ -461,6 +470,7 @@ renderer.setAnimationLoop(() => {
     if (!body.skinned) { handMat.color.copy(body.skin); body.skinned = true; }
     body.pose(head.pos, head.quat, sticks.left.active ? hands.left.wrist : _a.set(-0.25, 0.8, -0.1), sticks.right.active ? hands.right.wrist : _b.set(0.25, 0.8, -0.1), seat, dt);
   }
+  life.update(dt, now);
   garage.update(dt, now);
   garage.haloM.opacity = vr ? 0.12 : 0; // a pane's glow: the bloom does it on a screen
   for (const n in guide.labels) guide.labels[n].visible = guide.on && !guide.labels[n].played;

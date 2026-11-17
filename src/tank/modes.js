@@ -54,7 +54,7 @@ const netOn={
   smoke(m){const r=NET.peers.get(m.id);if(!r)return;r.smokeT=time+22;for(let i=0;i<8;i++){const a=r.yaw+r.tyaw+(i-3.5)*.16,d=40,x=r.x-Math.sin(a)*d,z=r.z-Math.cos(a)*d,y=hAt(x,z);for(let k=0;k<5;k++)puff(x+(Math.random()-.5)*8,y+1+k*1.6,z+(Math.random()-.5)*8,{c:[.78,.78,.76],s0:5,s1:26,life:18,vy:.25,op:.95});}},
   // the first one in runs the mission and says when it starts, where its tanks are, what they fire and how it ends
   start(m){const r=NET.peers.get(m.id);if(!r||r.slot>NET.slot||state==='preview'||m.j&&mis&&!mis.over&&!G.wait)return;startMission(MODEK[m.m]||'battle',true);},
-  ready(){if(!isHost()||!G.multi||state==='preview')return;if(state==='over'||G.wait||G.mode==='duel')startMission(G.mode);else netSend({t:'start',m:MODEK.indexOf(G.mode),j:1});},
+  ready(){if(!isHost()||!G.multi||state==='preview')return;if(state==='over'||G.wait)startMission(G.mode);else netSend({t:'start',m:MODEK.indexOf(G.mode),j:1});},
   foes(m){if(isHost()||!mis)return;const a=m.a||[];for(let i=0;i*6<a.length;i++){const j=i*6;let e=foes[i];if(!e){e=addFoe(a[j],a[j+1],a[j],a[j+1]);e.state='net';}e.tx=a[j];e.tz=a[j+1];e.tyw=a[j+2];e.tty=a[j+3];
       if(a[j+5]===0&&e.state!=='dead')killFoe(e);else if(a[j+5]===2&&!e.gone){e.state='dead';e.gone=true;e.g.visible=false;}else if(e.state!=='dead')e.hp=a[j+4];}
     const o=m.o||[];for(let i=0;i*4<o.length&&i<mis.trucks.length;i++){const k=mis.trucks[i],j=i*4;k.tx=o[j];k.tz=o[j+1];k.tyw=o[j+2];if(o[j+3]<=0&&k.hp>0)truckDown(k);}
@@ -71,7 +71,7 @@ function joined(id,slot,late){
   if(NET.peers.has(id))return;addRem(id,slot);
   if(state==='preview')return;
   if(isHost()){if(G.wait||G.mode==='duel'||state==='over')startMission(G.mode);else{netSend({t:'start',m:MODEK.indexOf(G.mode),j:1});setHud('Another player has joined','They are in your fight now.',6);resetFriends();}}
-  else if(G.wait)setHud('Another player is here','Their mission starts for you both in a moment.',6);
+  else if(G.wait){setHud('Another player is here','Their mission starts for you both in a moment.',6);netSend({t:'ready'});}
 }
 function left(id){
   if(!NET.peers.has(id))return;dropRem(id);if(NET.peers.size||state==='preview')return;
@@ -83,7 +83,7 @@ function waitHere(why){resetAll();state='play';G.wait=true;mis=null;placeStart()
 function netOpen(){
   if(NET.opened)return;NET.opened=true;const q=new URLSearchParams(location.search);
   if(q.has('local')){const bc=NET.bc=new BroadcastChannel('tank-local'),id=NET.id='p'+Math.random().toString(36).slice(2,8),slot=+q.get('slot')||0;
-    bc.onmessage=e=>{const d=e.data;if(!d||d.from===id)return;if(d.hello){netOn['peer-join']({id:d.from,slot:d.slot});if(d.hello===1)bc.postMessage({from:id,hello:2,slot});return;}if(d.bye)return netOn['peer-leave']({id:d.from});if(d.m&&netOn[d.m.t]){d.m.id=d.from;netOn[d.m.t](d.m);}};
+    bc.onmessage=e=>{const d=e.data;if(!d||d.from===id)return;if(d.hello){if(d.hello===1)bc.postMessage({from:id,hello:2,slot});netOn['peer-join']({id:d.from,slot:d.slot});return;}if(d.bye)return netOn['peer-leave']({id:d.from});if(d.m&&netOn[d.m.t]){d.m.id=d.from;netOn[d.m.t](d.m);}};
     NET.on=true;NET.slot=slot;bc.postMessage({from:id,hello:1,slot});addEventListener('pagehide',()=>bc.postMessage({from:id,bye:1}));return;}
   if(location.protocol==='file:')return;let retry=1500;
   const open=()=>{let ws;try{ws=new WebSocket((location.protocol==='https:'?'wss':'ws')+'://'+location.host+'/parties/tank/public');}catch(e){return;}NET.ws=ws;

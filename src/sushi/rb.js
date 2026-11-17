@@ -53,7 +53,9 @@ const sample = (c, t, loop, i, q, p) => { const f = loop ? (((t / c.dur) % 1) + 
 const GEST = { nod: 'Agree', no: 'Head shake', laugh: 'Laughing', shrug: 'Shrug', think: 'Thoughtful', wave: 'Wave' };
 const UPPER = ['torso', 'neck', 'head', 'clavL', 'upperArmL', 'forearmL', 'handL', 'clavR', 'upperArmR', 'forearmR', 'handR'];
 const SEAT = 0.79; // where a hip sits on the cart's stools
-const NEAR = 7.5; // metres from the eyes: nearer, the whole body; farther, the lighter one
+const NEAR = 12, GONE = 34, SLOW = 14; // metres from the eyes: nearer, the whole body; farther, the lighter one, its pose worked every other frame; beyond GONE (deep in the haze) not drawn
+const FR = new THREE.Frustum(), _pm = new THREE.Matrix4(), _sp = new THREE.Sphere(); let frT = -1, frN = 0;
+const onScreen = (p) => { if (frT !== G.t) { frT = G.t; frN++; G.camera.updateMatrixWorld(); FR.setFromProjectionMatrix(_pm.multiplyMatrices(G.camera.projectionMatrix, G.camera.matrixWorldInverse)); } _sp.center.copy(p).y += 0.9; _sp.radius = 1.6; return FR.intersectsSphere(_sp); };
 // each limb about its own joint, with all it carries: moment of inertia (kg m²), how hard muscle pulls it back, how far it can go
 const LIMBS = { head: [0.06, 70, 0.7], torso: [3, 28, 0.5], upperArm: [0.35, 35, 1], forearm: [0.07, 45, 1], hand: [0.006, 80, 0.6], thigh: [2, 90, 0.35], shin: [0.25, 90, 0.4] };
 const STEP_J = 0.8, FALL_J = 4, FALL_HEAD_J = 3; // a push (N s) the feet answer with a step back; one they cannot hold
@@ -67,11 +69,11 @@ export function rbPerson(key, sticks, o = {}) {
   const root = new THREE.Group(), inner = new THREE.Group(), body = new THREE.Group(); root.add(inner); inner.add(body); if (o.scale) body.scale.setScalar(o.scale);
   const bones = D.bones.map((n) => Object.assign(new THREE.Bone(), { name: n })), skel = new THREE.Skeleton(bones, O.map((v) => new THREE.Matrix4().makeTranslation(-v.x, -v.y, -v.z))), M = materialOf(key, o.map);
   bones.forEach((bn, i) => { bn.position.copy(O[i]); body.add(bn); });
-  const lods = B.geo.map((g) => { const m = new THREE.SkinnedMesh(g, M); m.bind(skel, new THREE.Matrix4()); m.frustumCulled = false; body.add(m); return m; }); lods[1].visible = false; const mesh = lods[0];
+  const lods = B.geo.map((g) => { const m = new THREE.SkinnedMesh(g, M); m.bind(skel, new THREE.Matrix4()); m.boundingSphere = new THREE.Sphere(new THREE.Vector3(0, 0.9, 0), 1.4); body.add(m); return m; }); lods[1].visible = false; const mesh = lods[0];
   const ix = (n) => IX[n], ARM = { L: [ix('upperArmL'), ix('forearmL'), ix('handL')], R: [ix('upperArmR'), ix('forearmR'), ix('handR')] }, UP = UPPER.map(ix);
   const DIR = (a, c) => O[c].clone().sub(O[a]).normalize(), LEN = (a, c) => O[c].distanceTo(O[a]);
   const sitHip = clips.Sitting.P[1] * ks;
-  const st = { cur: { c: clips.Idle, t: Math.random() * 5, loop: true }, prev: null, fade: 0, fade0: 1, over: null, yaw: 0, pitch: 0, fold: 0, hit: null, down: null, duck: null, push: null, wd: 0, wl: 0, phys: 0, far: false };
+  const st = { cur: { c: clips.Idle, t: Math.random() * 5, loop: true }, prev: null, fade: 0, fade0: 1, over: null, yaw: 0, pitch: 0, fold: 0, hit: null, down: null, duck: null, push: null, wd: 0, wl: 0, phys: 0, far: false, par: Math.random() < 0.5 ? 1 : 0 };
   const CH = D.bones.map((n, i) => { const L = LIMBS[n.replace(/[LR]$/, '')]; if (!L) return null; const set = []; for (let k = 0; k < NB; k++) { let a = k; while (a > 0 && a !== i) a = PI[a]; if (a === i) set.push(k); } return { set, I: L[0], K: L[1], C: 2 * 0.65 * Math.sqrt(L[1]), max: L[2], a: new THREE.Vector3(), w: new THREE.Vector3() }; });
   const below = (i) => CH[i] ? CH[i].set : D.bones.map((_, k) => k).filter((k) => { let a = k; while (a > 0 && a !== i) a = PI[a]; return a === i; }), UPSET = below(TORSO);
   const LQ = D.bones.map(() => new THREE.Quaternion()), MQ = D.bones.map(() => new THREE.Quaternion()), J = D.bones.map(() => new THREE.Vector3()), R = D.bones.map(() => new THREE.Quaternion()), hp = new THREE.Vector3(), hq = new THREE.Vector3(), tgt = new THREE.Vector3(), inv = new THREE.Matrix4();
@@ -91,6 +93,7 @@ export function rbPerson(key, sticks, o = {}) {
     eyeY: (O[HEAD].y + 0.1) * (o.scale || 1),
     // an impulse imp (world, N s) landing at at on the named bone: it and each limb it hangs from turn about their joints by r × imp / I and spring back; the feet answer what reaches the hips
     push(name, imp, at) {
+      if (st.acc) { st.force = 1; this.update(0); st.force = 0; }   // (a pose left unworked while far or out of view is brought up to now before the blow lands)
       body.updateWorldMatrix(true, false); inv.copy(body.matrixWorld).invert(); body.getWorldQuaternion(qh).invert();
       const j = imp.clone().applyQuaternion(qh), a = at.clone().applyMatrix4(inv), seated = this.pose === 'sit' || this.pose === 'eat', r = new THREE.Vector3(); let i = IX[name] ?? -1; if (i < 0) i = TORSO;
       for (let k = i; k > 0; k = PI[k]) { const c = CH[k]; if (!c) continue; c.w.addScaledVector(r.copy(a).sub(J[k]).cross(j), 1 / c.I); st.phys = 3; }
@@ -115,6 +118,10 @@ export function rbPerson(key, sticks, o = {}) {
     stains,
     gesture(name) { const c = clips[GEST[name] || name]; if (!c) return; if (name === 'wave' && (this.pose !== 'stand' || st.down)) { this.waveT = 1.6; return; } if (this.pose !== 'walk') { st.over = { c, t: 0, w: 0, end: Math.min(c.dur, name === 'laugh' ? 3.2 : c.dur), wave: name === 'wave' }; if (name === 'wave') this.waveT = st.over.end; } },
     update(dt) {
+      // far or out of view: drawn lighter or not at all, the pose worked less often (time still passes for it)
+      st.acc = (st.acc || 0) + dt; if (G.camera && !this.hands) { root.getWorldPosition(_w); G.camera.getWorldPosition(_cam); const d = _w.distanceTo(_cam), vr = G.renderer && G.renderer.xr.isPresenting;
+        body.visible = d < GONE; if (!st.force && (!body.visible || (!vr && !onScreen(_w)) || (d > SLOW && (frN & 1) === st.par))) { if (st.acc < 0.25) return; } }
+      dt = st.acc; st.acc = 0;
       const seated = this.pose === 'sit' || this.pose === 'eat';
       this.talkT = Math.max(0, this.talkT - dt); if (st.fold > 0) st.fold -= dt;
       for (let i = stains.length - 1; i >= 0; i--) { const s = stains[i]; s.life -= dt; s.m.material.opacity = 0.85 * Math.min(1, s.life / 25); if (s.life <= 0) { s.m.removeFromParent(); s.m.material.dispose(); stains.splice(i, 1); } }

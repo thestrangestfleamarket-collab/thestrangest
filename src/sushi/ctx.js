@@ -28,11 +28,11 @@ export function mat(o = {}) { const p = {}; for (const k in o) if (!DROP.has(k) 
 // bake: still meshes of like material under one parent become one mesh (one draw instead of hundreds)
 export function mergeStatic(root) {
   const by = new Map(), inv = new THREE.Matrix4(), rel = new THREE.Matrix4();
-  const sig = (m) => { const a = m.material; return [a.type, a.color ? a.color.getHex() : 0, a.map ? a.map.uuid : 0, a.transparent, a.opacity, a.side, a.emissive ? a.emissive.getHex() : 0, a.emissiveMap ? a.emissiveMap.uuid : 0, a.emissiveIntensity, a.alphaTest, a.blending, a.toneMapped, a.depthWrite, a.depthTest, a.fog, a.vertexColors, m.castShadow, m.receiveShadow, m.renderOrder, m.userData.source ? m.userData.source.name : ''].join('|'); };
+  const sig = (m) => { const a = m.material; return [a.type, a.color ? a.color.getHex() : 0, a.map ? a.map.uuid : 0, a.transparent, a.opacity, a.side, a.emissive ? a.emissive.getHex() : 0, a.emissiveMap ? a.emissiveMap.uuid : 0, a.emissiveIntensity, a.alphaTest, a.blending, a.toneMapped, a.depthWrite, a.depthTest, a.fog, a.vertexColors, !!m.userData.nopick, m.castShadow, m.receiveShadow, m.renderOrder, m.userData.source ? m.userData.source.name : ''].join('|'); };
   root.updateWorldMatrix(true, true); inv.copy(root.matrixWorld).invert();
   const walk = (o) => { for (const m of o.children) {
     const u = m.userData; if (u.dyn || u.keep || u.button || u.item || !m.visible) continue; // moving or pressable things stay as they are
-    if (m.isMesh && !m.isInstancedMesh && !m.isSkinnedMesh && !Array.isArray(m.material) && !m.children.length && !u.nopick) { const g = m.geometry.attributes; if (g.position && g.normal && g.uv && !g.color) { const k = sig(m); if (!by.has(k)) by.set(k, []); by.get(k).push(m); } }
+    if (m.isMesh && !m.isInstancedMesh && !m.isSkinnedMesh && !Array.isArray(m.material) && !m.children.length) { const g = m.geometry.attributes; if (g.position && g.normal && g.uv && !g.color) { const k = sig(m); if (!by.has(k)) by.set(k, []); by.get(k).push(m); } }
     else if (!m.isMesh && !m.isSprite && !m.isLight && !m.isLine && !m.isPoints && m.children.length) walk(m);
   } };
   walk(root);
@@ -45,7 +45,7 @@ export function mergeStatic(root) {
       if (g.index) for (let i = 0; i < g.index.count; i++) idx.push(g.index.getX(i) + off); else for (let i = 0; i < p.count; i++) idx.push(i + off);
       off += p.count; g.dispose(); m.removeFromParent(); }
     const G2 = new THREE.BufferGeometry(); G2.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3)); G2.setAttribute('normal', new THREE.Float32BufferAttribute(nor, 3)); G2.setAttribute('uv', new THREE.Float32BufferAttribute(uv, 2)); G2.setIndex(idx);
-    const M = new THREE.Mesh(G2, list[0].material); M.castShadow = list[0].castShadow; M.receiveShadow = list[0].receiveShadow; M.renderOrder = list[0].renderOrder; if (list[0].userData.source) M.userData.source = list[0].userData.source; root.add(M); saved += list.length - 1;
+    const M = new THREE.Mesh(G2, list[0].material); M.castShadow = list[0].castShadow; M.receiveShadow = list[0].receiveShadow; M.renderOrder = list[0].renderOrder; if (list[0].userData.source) M.userData.source = list[0].userData.source; if (list[0].userData.nopick) M.userData.nopick = true; root.add(M); saved += list.length - 1;
   }
   return saved;
 }

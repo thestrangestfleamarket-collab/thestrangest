@@ -126,7 +126,7 @@ let kit, sticks, garage, body, hands, metro, life, gun, teach;
 const walk = { on: false, pos: new THREE.Vector3(0, 0, 0.5), bob: 0 };
 const mkHand = () => ({ pos: new THREE.Vector3(), quat: new THREE.Quaternion(), grip: false, gripDown: false, gripUp: false, trigDown: false });
 const ginp = { vr: false, R: mkHand(), L: mkHand(), head, feet: new THREE.Vector3(), screen: { fire: false, reload: false, pump: false, use: false } };
-D.walk = walk;
+D.walk = walk; D.head = head;
 const handMat = new THREE.MeshStandardMaterial({ color: 0xd9a984, roughness: 0.62 });
 const seat = Object.assign(new THREE.Vector3(), { feet: [new THREE.Vector3(), new THREE.Vector3()] });
 
@@ -283,11 +283,11 @@ function blocked(x, z) {
   return garage.door.open < 0.85 && hit(garage.doorGap);
 }
 // a step from (x, z): each way tried on its own, so a wall is slid along
-function step(x, z, dx, dz) { if (blocked(x + dx, z)) dx = 0; if (blocked(x + dx, z + dz)) dz = 0; return [dx, dz]; }
+function step(x, z, dx, dz) { if (blocked(x, z)) return [dx, dz]; if (blocked(x + dx, z)) dx = 0; if (blocked(x + dx, z + dz)) dz = 0; return [dx, dz]; }
 function stand(now) {
   if (walk.on) return;
   walk.on = true; sound.setHat(0); kit.setHat(0); kit.setPedal(0);
-  if (renderer.xr.isPresenting) { const c = renderer.xr.getCamera(), y = _a.copy(c.getWorldPosition(_a)).y - rig.position.y; rig.position.y = y < 1.35 ? 1.62 - y : 0; }
+  if (renderer.xr.isPresenting) { const c = renderer.xr.getCamera(), y = _a.copy(c.getWorldPosition(_a)).y - rig.position.y; rig.position.y = y < 1.35 ? 1.62 - y : 0; rig.position.x += SEAT.x - _a.x; rig.position.z += SEAT.z + 0.45 - _a.z; }
   else { walk.pos.set(SEAT.x, 0, SEAT.z + 0.45); scr.pitch = 0; }
   readout.show('ON YOUR FEET', now);
 }

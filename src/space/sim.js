@@ -21,8 +21,8 @@ const MASS = [1e9, 1, 8, 40, 12, 0.5], BOOM = [2, 6, 20];   // how heavy each ki
 const clamp = (v, lo, hi) => (v < lo ? lo : v > hi ? hi : v);
 
 // the two navies: the same six kinds of ship, each navy's own hulls and its own bent (the Admiralty's stronger force fields; the Corsairs' lighter, faster, cheaper ships)
-const NAVY = [{ name: 'ADMIRALTY', hp: 1, sh: 1.3, speed: 1, cost: 1 }, { name: 'CORSAIRS', hp: 0.8, sh: 0.65, speed: 1.1, cost: 0.95 }];
-const table = f => TYPES.map((t, i) => (i === MOTHER ? { ...t } : { ...t, hp: Math.round(t.hp * NAVY[f].hp), sh: Math.round(t.sh * NAVY[f].sh), speed: t.speed * NAVY[f].speed, acc: t.acc * NAVY[f].speed, cost: Math.round(t.cost * NAVY[f].cost / 5) * 5 }));
+const NAVY = [{ name: 'ADMIRALTY', hp: 1, sh: 1.3, speed: 1, cost: 1, dmg: 1 }, { name: 'CORSAIRS', hp: 0.85, sh: 0.7, speed: 1.1, cost: 0.95, dmg: 1.35 }];
+const table = f => TYPES.map((t, i) => (i === MOTHER ? { ...t } : { ...t, hp: Math.round(t.hp * NAVY[f].hp), sh: Math.round(t.sh * NAVY[f].sh), speed: t.speed * NAVY[f].speed, acc: t.acc * NAVY[f].speed, dmg: t.dmg * NAVY[f].dmg, cost: Math.round(t.cost * NAVY[f].cost / 5) * 5 }));
 
 class Sim {
   // fac: which navy each side flies (0 ADMIRALTY, 1 CORSAIRS)

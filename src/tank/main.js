@@ -467,16 +467,16 @@ composer.setPixelRatio(PR);composer.setSize(innerWidth,innerHeight);
 const renderPass=new T.RenderPass(scene,camera);composer.addPass(renderPass);
 composer.addPass(new T.UnrealBloomPass(new T.Vector2(innerWidth,innerHeight),.6,.8,.72));
 const lens=new T.ShaderPass({
-  uniforms:{tDiffuse:{value:null},thermal:{value:0},res:{value:new T.Vector2(innerWidth*PR,innerHeight*PR)},time:{value:0},grain:{value:.045},ca:{value:.005},blur:{value:0},desat:{value:0},vig:{value:.3}},
+  uniforms:{tDiffuse:{value:null},thermal:{value:0},res:{value:new T.Vector2(innerWidth*PR,innerHeight*PR)},time:{value:0},gainK:{value:1},grain:{value:.045},ca:{value:.005},blur:{value:0},desat:{value:0},vig:{value:.3}},
   vertexShader:'varying vec2 vUv;void main(){vUv=uv;gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.0);}',
-  fragmentShader:`uniform sampler2D tDiffuse;uniform vec2 res;uniform float time,grain,ca,blur,desat,vig,thermal;varying vec2 vUv;
+  fragmentShader:`uniform sampler2D tDiffuse;uniform vec2 res;uniform float time,grain,ca,blur,desat,vig,thermal,gainK;varying vec2 vUv;
   float hash(vec2 p){return fract(sin(dot(p,vec2(12.9898,78.233)))*43758.5453);}
   vec3 toSRGB(vec3 c){c=max(c,0.0);return mix(c*12.92,1.055*pow(c,vec3(1.0/2.4))-0.055,step(0.0031308,c));}
   void main(){vec2 c=vUv-.5;float asp=res.x/res.y;float r=length(c*vec2(asp,1.0));
     float k=ca*r*r;vec3 col;col.r=texture2D(tDiffuse,vUv-c*k).r;col.g=texture2D(tDiffuse,vUv).g;col.b=texture2D(tDiffuse,vUv+c*k).b;
     float pb=blur*smoothstep(.12,.7,r);
     if(pb>.001){vec3 acc=col;float px=pb*7.0/res.y;for(int i=0;i<12;i++){float a=float(i)*.5236;float d=(i<6)?1.0:2.0;acc+=texture2D(tDiffuse,vUv+vec2(cos(a)/asp,sin(a))*px*d).rgb;}col=acc/13.0;}
-    float l=dot(col,vec3(.2126,.7152,.0722));col=mix(col,vec3(l),desat+.16);col=mix(col*vec3(.9,.98,1.06),col*vec3(1.08,1.0,.88),smoothstep(.02,.5,l));col=pow(col,vec3(1.08));
+    col*=gainK;float l=dot(col,vec3(.2126,.7152,.0722));col=mix(col,vec3(l),desat+.16);col=mix(col*vec3(.9,.98,1.06),col*vec3(1.08,1.0,.88),smoothstep(.02,.5,l));col=pow(col,vec3(1.08));
     if(thermal>.5){float t=smoothstep(.02,.9,dot(col,vec3(.3,.5,.2))*1.25);col=vec3(t*.8,t,t*.8);}
     col*=1.0-vig*smoothstep(.35,1.05,r);
     ${LOOKS[SET.look][1]?'{vec3 c=clamp(col,0.,1.);'+LOOKS[SET.look][1]+'col=c;}':''}
@@ -863,7 +863,7 @@ function updateVision(dt){
   renderer.toneMappingExposure=expo*(1+(SET.calm?0:P.recoil*.25))*SET.bright;
   {const mu=monitorMat.uniforms;mu.gain.value=1.15/expo;mu.thermal.value=P.thermal?1:0;mu.snow.value=P.dmg.sight>0?(SET.calm?.3:1):0;mu.time.value=time;}
   {const turn=SET.tunnel&&xrActive?clamp(((P.turning||0)+Math.abs(P.yawRate||0))*1.5-.1,0,1):0;P.tun=lerp(P.tun||0,turn,Math.min(1,dt*5));const h=fx?P.hurt*.8:0,tu=P.tun*.9;vign.visible=xrActive&&(h>.01||tu>.02);vign.material.uniforms.amt.value=Math.max(h,tu);vign.material.uniforms.col.value.setRGB(h>tu?.25:0,h>tu?.02:0,0);vign.material.uniforms.inner.value=h>tu?.5:.62;}
-  const u=lens.uniforms;u.grain.value=SET.calm?0:.045;u.time.value=time;u.blur.value=fx?P.hurt*.7+P.shake*.12:0;u.ca.value=.004+(fx?P.hurt*.02+dmg*.005:0);u.desat.value=fx?dmg*.35+P.hurt*.3:0;u.vig.value=.28+(fx?P.hurt*.3:0);
+  const u=lens.uniforms;u.gainK.value=SET.bright;u.grain.value=SET.calm?0:.045;u.time.value=time;u.blur.value=fx?P.hurt*.7+P.shake*.12:0;u.ca.value=.004+(fx?P.hurt*.02+dmg*.005:0);u.desat.value=fx?dmg*.35+P.hurt*.3:0;u.vig.value=.28+(fx?P.hurt*.3:0);
   applyFade();
 }
 

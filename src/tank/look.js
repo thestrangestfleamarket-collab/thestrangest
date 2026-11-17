@@ -34,7 +34,7 @@ float pondD(vec2 p){float m=9.;${PONDS.map(q=>`m=min(m,(length(p-vec2(${q[0]}.,$
   float ph=dot(w,uWind.xy)*.22-uT*1.7,gu=.55+.45*sin(ph)*(.65+.35*sin(ph*.37+1.3));vec2 dv=uWind.z*(uWind.xy*gu+.22*vec2(sin(uT*2.3+w.x*1.7),sin(uT*2.1+w.y*1.7)))*(1.-down);
   p.xz+=dv*h*h*sz*.6;p.y-=.3*dot(dv,dv)*h*h*sz;
   vec3 transformed=vec3(w.x,hgt-.03,w.y)+p*sc;
-  vec3 g1=texture2D(tG,w/5.3).rgb,g2=texture2D(tG,w/31.).rgb;vec3 gr=g1*(.55+1.1*g2);vec3 dr=texture2D(tDry,q/6.1).rgb*vec3(1.25,1.12,.8);vec3 gc=mix(mix(gr,dr,kd),gr*vec3(.62,.66,.5),kw);
+  vec3 g1=texture2D(tG,w/5.3).rgb,g2=texture2D(tG,w/31.).rgb;vec3 gr=g1*(.55+1.1*g2);vec3 dr=texture2D(tDry,q/6.1).rgb*vec3(1.25,1.12,.8);vec3 gc=mix(mix(gr*vec3(.72,1.18,.5)*1.2,dr,kd),gr*vec3(.5,.8,.4),kw);
   float cl=texture2D(tG,w/1700.+vec2(uT*.0021,uT*.0009)).g*.6+texture2D(tG,w/640.-vec2(uT*.003,0.)).r*.4;gc*=mix(.55,1.08,smoothstep(.3,.56,cl))*vec3(.9,.93,.9);
   {vec4 c4=uShadeM*vec4(transformed,1.);vec3 sq=c4.xyz*.5+.5;float lit=(sq.x<0.||sq.x>1.||sq.y<0.||sq.y>1.)?1.:step(sq.z-.0016,unpackRGBAToDepth(texture2D(tShade,sq.xy)));gc*=mix(vec3(.26,.33,.5),vec3(1.),lit);}
   gc*=mix(1.,.2,gs.r)*mix(.62,1.3,h)*(.85+.3*fh(aO.xy));vGc=gc;`);
@@ -45,7 +45,7 @@ float pondD(vec2 p){float m=9.;${PONDS.map(q=>`m=min(m,(length(p-vec2(${q[0]}.,$
   // the trees' crowns and the hedges move with the same wind
   land.traverse(o=>{if(!o.isInstancedMesh||!o.instanceColor||!o.material.alphaTest||!o.material.vertexColors)return;const mt=o.material,hgt=o.geometry.boundingBox||(o.geometry.computeBoundingBox(),o.geometry.boundingBox);
     mt.onBeforeCompile=s=>{s.uniforms.uT=L.uT;s.uniforms.uWind=L.uWind;s.vertexShader=s.vertexShader.replace('#include <common>','#include <common>\nuniform float uT;uniform vec3 uWind;').replace('#include <begin_vertex>',`#include <begin_vertex>
-  {float h=max(position.y,0.)/${hgt.max.y.toFixed(2)};vec3 ip=instanceMatrix[3].xyz;float ph=ip.x*.31+ip.z*.17;float g=(.7+.3*sin(uT*.23+ph))*uWind.z*2.;transformed.x+=sin(uT*1.6+ph)*h*h*.22*g;transformed.z+=sin(uT*1.2+ph*1.7)*h*h*.16*g;}`);};mt.needsUpdate=true;});
+  {float h=max(position.y,0.)/${hgt.max.y.toFixed(2)};vec3 ip=instanceMatrix[3].xyz;float ph=ip.x*.31+ip.z*.17;float g=(.7+.3*sin(uT*.23+ph))*uWind.z*2.;float am=${(hgt.max.y*.024).toFixed(3)}*g;transformed.x+=sin(uT*1.6+ph)*h*h*am;transformed.z+=sin(uT*1.2+ph*1.7)*h*h*am*.7;transformed.x+=sin(uT*3.1+ph*2.3+position.y*.9)*h*am*.18;}`);};mt.needsUpdate=true;});
   // the ponds: wind ripples, and rings that run out from whatever hits the water
   const rings=[];for(let i=0;i<8;i++)rings.push(new T.Vector4(0,0,-99,0));
   land.traverse(o=>{if(!o.isMesh||!o.material.isMeshStandardMaterial||!o.geometry||o.geometry.type!=='CircleGeometry'||o.material.userData.water)return;const mt=o.material;mt.userData.water=1;mt.roughness=.04;mt.envMapIntensity=1.7;

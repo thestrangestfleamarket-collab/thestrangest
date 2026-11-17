@@ -1122,13 +1122,13 @@ export class Space extends Server {
   onError(c) { this.onClose(c); }
 }
 
-// HULL DOWN's room: the one public lobby, two players; a second player in turns the battle into one against one, and it passes each tank's pose, shots and hits on to the other (worker/tank.js says what passes)
+// HULL DOWN's room: the one public lobby, four players; the first one in runs the mission for the rest, and it passes each tank's pose, shots and hits on to the others (worker/tank.js says what passes)
 export class Tank extends Server {
   static options = { hibernate: false };
   peers(not) { const a = []; for (const o of this.getConnections()) if (o.id !== not && o.state) a.push({ id: o.id, ...o.state }); return a; }
   onMessage(c, raw) {
-    if (typeof raw !== "string" || raw.length > 1024) return; let m; try { m = JSON.parse(raw); } catch (e) { return; }
-    const now = Date.now(), rl = c.rl || (c.rl = { t: now, n: 0 }); if (now - rl.t > 1000) { rl.t = now; rl.n = 0; } if (++rl.n > 60) return;
+    if (typeof raw !== "string" || raw.length > 4096) return; let m; try { m = JSON.parse(raw); } catch (e) { return; }
+    const now = Date.now(), rl = c.rl || (c.rl = { t: now, n: 0 }); if (now - rl.t > 1000) { rl.t = now; rl.n = 0; } if (++rl.n > 90) return;
     if (m && m.t === "join") { if (c.state) return; const peers = this.peers(c.id);
       if (peers.length >= TANK.MAX) { c.send('{"t":"full"}'); return c.close(4002, "full"); }
       const st = { slot: TANK.slot(peers.map(q => q.slot)) }; c.setState(st);

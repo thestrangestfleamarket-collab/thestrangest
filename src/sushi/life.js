@@ -1,4 +1,4 @@
-// wind and what it moves, rain's splashes and drips, moths, a steaming manhole, the elevated train, the street's sounds
+// wind and what it moves (the stall's lanterns and noren here, the village's noren, trees and rice in their shaders), rain's splashes and drips, moths, a steaming manhole, the elevated train, the street's sounds
 import * as THREE from 'three';
 import { G, V3, mat, box, cyl, mesh, clamp } from './ctx.js';
 import * as T from './tex.js';
@@ -22,7 +22,8 @@ export function buildLife(scene, city, cart) {
   ups.push((dt, t) => {
     gustT -= dt; if (gustT <= 0) { gust = 0.5 + Math.random() * 0.6; gustT = 7 + Math.random() * 14; }
     gust = Math.max(0, gust - dt * 0.22);
-    env.wind = clamp(0.28 + 0.14 * Math.sin(t * 0.21) + 0.1 * Math.sin(t * 0.67 + 1) + gust, 0, 1.3);
+    env.wind = clamp((G.wind ?? 0.28) + 0.14 * Math.sin(t * 0.21) + 0.1 * Math.sin(t * 0.67 + 1) + gust, 0, 1.3);   // the weather's wind (weather.js), swelling and gusting
+    T.WIND.t.value += dt; T.WIND.k.value += (env.wind - T.WIND.k.value) * Math.min(1, dt * 0.8);   // what hangs and grows in the village moves with it (tex.js sway)
     cart.lanterns.forEach((pv, i) => swing(lp[i], pv, dt, 0.42, env.wind * 1.5, t, i));
     cart.bulbs.forEach((pv, i) => swing(bp[i], pv, dt, 0.26, env.wind * 0.35, t, i + 3));
     for (const n of cart.noren) { // cloth: pinned along the top edge, rippling more toward the hem

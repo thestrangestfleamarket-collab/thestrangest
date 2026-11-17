@@ -230,11 +230,11 @@ export function buildCart(scene, city) {
     G.buttons.push(km.userData.button);
     C.pots.push(p);
   });
-  // steel splash guard with noodle timers
+  // the plank screen and its noodle-timing wheels
   box(0.02, 0.82, 1.1, wood, -1.155, 1.23, 0.42, cart); box(0.05, 0.03, 0.5, woodDark, -1.13, 1.255, 0.05, cart);   // a plank screen behind the braziers
   C.dials = [0, 1].map((i) => {
     const t = T.panelTex(256, 256, () => { });
-    const m = mesh(new THREE.CircleGeometry(0.075, 32), new THREE.MeshBasicMaterial({ map: t, color: 0xb0b0b0 }), -1.088, 1.36, -0.05 + i * 0.2, cart); m.rotation.y = Math.PI / 2; m.castShadow = false;
+    const m = mesh(new THREE.CircleGeometry(0.075, 32), mat({ map: t, color: 0xd8d0c0 }), -1.088, 1.36, -0.05 + i * 0.2, cart);   // lit by the lamps like the wood round it m.rotation.y = Math.PI / 2; m.castShadow = false;
     cyl(0.08, 0.08, 0.055, woodDark, -1.117, 1.36, -0.05 + i * 0.2, cart, 24).rotation.z = Math.PI / 2; cyl(0.012, 0.012, 0.03, woodDark, -1.075, 1.36, -0.05 + i * 0.2, cart, 8).rotation.z = Math.PI / 2;
     mesh(new THREE.TorusGeometry(0.076, 0.007, 8, 32), woodDark, -1.088, 1.36, -0.05 + i * 0.2, cart).rotation.y = Math.PI / 2;
     return { t, last: -1 };
@@ -242,15 +242,19 @@ export function buildCart(scene, city) {
   const drawDial = (d, cook, has, i) => {
     const key = has ? Math.floor(cook * 4) : -2; if (key === d.last) return; d.last = key;
     d.t.redraw((g, w, h) => {
-      g.fillStyle = '#e4d6b4'; g.fillRect(0, 0, w, h); g.strokeStyle = 'rgba(90,60,30,0.25)'; for (let y = 0; y < h; y += 7) { g.beginPath(); g.moveTo(0, y); g.lineTo(w, y + 3); g.stroke(); }   // a noodle-timing wheel of brushed paper on wood, turned by hand
-      const seg = (a, b, c) => { g.beginPath(); g.strokeStyle = c; g.lineWidth = 26; g.arc(128, 128, 92, -Math.PI / 2 + (a / 34) * 6.283, -Math.PI / 2 + (b / 34) * 6.283); g.stroke(); };
-      seg(0, 9, '#c9c4b4'); seg(9, 14, '#e8c020'); seg(14, 23, '#2aa84a'); seg(23, 29, '#e8892a'); seg(29, 34, '#c8201c');
-      g.fillStyle = '#222'; g.font = `bold 22px ${T.MONO}`; g.textAlign = 'center';
-      g.fillText('RAW', 172, 62); g.fillText('FIRM', 196, 150); g.fillText('OK', 120, 212); g.fillText('SOFT', 52, 130);
-      g.font = `bold 26px ${T.JP}`; g.fillText(`麺 ${i + 1}`, 128, 100);
-      if (has) { const a = -Math.PI / 2 + (Math.min(cook, 33.5) / 34) * 6.283; g.strokeStyle = '#111'; g.lineWidth = 7; g.lineCap = 'round'; g.beginPath(); g.moveTo(128, 128); g.lineTo(128 + Math.cos(a) * 84, 128 + Math.sin(a) * 84); g.stroke(); }
-      g.fillStyle = '#111'; g.beginPath(); g.arc(128, 128, 10, 0, 7); g.fill();
-      if (has) { g.font = `bold 24px ${T.MONO}`; g.fillText(doneness(cook).label, 128, 168); }
+      // a wheel of turned keyaki: the zones washed on in mineral pigments with a brush (bare wood raw, ochre firm, verdigris right, persimmon soft, bengara over), the marks in ink, a bamboo needle on an iron pin
+      const wd = T.photoImg('wood_light'); if (wd) g.drawImage(wd, 0, 0, w, h); else { g.fillStyle = '#b08a5e'; g.fillRect(0, 0, w, h); }
+      g.fillStyle = 'rgba(120,80,40,0.25)'; g.fillRect(0, 0, w, h); const rg = g.createRadialGradient(128, 128, 60, 128, 128, 128); rg.addColorStop(0, 'rgba(0,0,0,0)'); rg.addColorStop(1, 'rgba(40,20,5,0.45)'); g.fillStyle = rg; g.fillRect(0, 0, w, h);
+      const R = T.rng(5 + i), seg = (a, b, c) => { for (let k = 0; k < 3; k++) { g.beginPath(); g.strokeStyle = c; g.globalAlpha = 0.38 + R() * 0.2; g.lineWidth = 22 + R() * 8; g.lineCap = 'round'; g.arc(128, 128, 90 + (R() - 0.5) * 6, -Math.PI / 2 + ((a + 0.3) / 34) * 6.283, -Math.PI / 2 + ((b - 0.3) / 34) * 6.283); g.stroke(); } g.globalAlpha = 1; };
+      seg(9, 14, '#c89a3c'); seg(14, 23, '#4f7f5c'); seg(23, 29, '#b8662e'); seg(29, 34, '#7e2418');
+      g.strokeStyle = 'rgba(20,14,8,0.85)'; g.lineWidth = 3; for (const v of [0, 9, 14, 23, 29]) { const a = -Math.PI / 2 + (v / 34) * 6.283; g.beginPath(); g.moveTo(128 + Math.cos(a) * 72, 128 + Math.sin(a) * 72); g.lineTo(128 + Math.cos(a) * 110, 128 + Math.sin(a) * 110); g.stroke(); }
+      g.fillStyle = '#1a120a'; g.textAlign = 'center'; g.textBaseline = 'middle'; g.font = `bold 26px ${T.JP}`;
+      for (const [v, k] of [[4.5, '生'], [11.5, '硬'], [18.5, '良'], [26, '柔'], [31.5, '過']]) { const a = -Math.PI / 2 + (v / 34) * 6.283; g.fillText(k, 128 + Math.cos(a) * 90, 128 + Math.sin(a) * 90); }
+      g.font = `italic 15px Georgia, 'Times New Roman', serif`; for (const [v, k] of [[4.5, 'raw'], [11.5, 'firm'], [18.5, 'good'], [26, 'soft']]) { const a = -Math.PI / 2 + (v / 34) * 6.283; g.fillText(k, 128 + Math.cos(a) * 58, 128 + Math.sin(a) * 58); }
+      g.font = `bold 22px ${T.JP}`; g.fillText(`麺 ${'一二'[i]}`, 128, 64);
+      if (has) { const a = -Math.PI / 2 + (Math.min(cook, 33.5) / 34) * 6.283; g.lineCap = 'round'; g.strokeStyle = 'rgba(0,0,0,0.35)'; g.lineWidth = 9; g.beginPath(); g.moveTo(130, 131); g.lineTo(130 + Math.cos(a) * 86, 131 + Math.sin(a) * 86); g.stroke(); g.strokeStyle = '#d8c48a'; g.lineWidth = 7; g.beginPath(); g.moveTo(128, 128); g.lineTo(128 + Math.cos(a) * 86, 128 + Math.sin(a) * 86); g.stroke(); g.strokeStyle = '#7a6230'; g.lineWidth = 7; for (const r of [36, 66]) { g.beginPath(); g.moveTo(128 + Math.cos(a) * r, 128 + Math.sin(a) * r); g.lineTo(128 + Math.cos(a) * (r + 3), 128 + Math.sin(a) * (r + 3)); g.stroke(); } }
+      g.fillStyle = '#2a2420'; g.beginPath(); g.arc(128, 128, 11, 0, 7); g.fill(); g.fillStyle = '#4a4440'; g.beginPath(); g.arc(126, 126, 5, 0, 7); g.fill();
+      if (has) { g.fillStyle = '#1a120a'; g.font = `italic bold 20px Georgia, 'Times New Roman', serif`; g.fillText(doneness(cook).label.toLowerCase(), 128, 98); }
     });
   };
 
@@ -401,7 +405,7 @@ export function buildCart(scene, city) {
     });
     const x = 20 + 4 * cw; g.fillStyle = '#12406a'; g.fillRect(x + 8, 22, cw - 16, 70); g.fillStyle = '#fff'; g.textAlign = 'center'; g.font = `bold 44px ${T.JP}`; g.fillText('HOW IT WORKS', x + cw / 2, 72);
     g.fillStyle = '#1b1b1b'; g.textAlign = 'left'; g.font = `bold 29px ${T.JP}`;
-    ['Vents (left) wake the braziers.', 'Noren peg (right post): open.', 'The ticket lists every step.', 'Tilt ladles/baskets to pour.', 'Chop on the board, fill bins.', 'Set the bowl on the placemat.', 'Dirty bowls → bus tub.', 'Drop a tool: it returns home.', 'FIRM = yellow zone on dial.', 'Coin only: the box is behind you.'].forEach((l, n) => g.fillText('・' + l, x + 14, 130 + n * 37, cw - 26));
+    ['Vents (left) wake the braziers.', 'Noren peg (right post): open.', 'The ticket lists every step.', 'Tilt ladles/baskets to pour.', 'Chop on the board, fill bins.', 'Set the bowl on the placemat.', 'Dirty bowls → bus tub.', 'Drop a tool: it returns home.', 'FIRM = the ochre on the wheel.', 'Coin only: the box is behind you.'].forEach((l, n) => g.fillText('・' + l, x + 14, 130 + n * 37, cw - 26));
   });
   T.dirty(rb, 9, { stains: 40, rings: 12, drips: 10, yellow: 1, scratches: 30 });
   const board = mesh(new THREE.PlaneGeometry(1.8, 0.45), new THREE.MeshBasicMaterial({ map: rb, color: 0x7a7468 }), 0, 2.24, -0.5, cart); board.rotation.x = 0.36; board.castShadow = false;

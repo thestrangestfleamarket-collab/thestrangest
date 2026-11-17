@@ -74,7 +74,7 @@ function build() {
   // the glass and the night outside the far window (the same sky the near window shows), and its moonlight across the table and floor
   const sky = new THREE.Mesh(new THREE.PlaneGeometry(ww, wh), new THREE.MeshBasicMaterial({ map: W.sky.material.map, fog: false })); sky.position.set(wx, wy, 53.95); sky.rotation.y = Math.PI; W.group.add(sky); W.sky2 = sky;
   const sp = new THREE.SpotLight(col(0xb9c9ff), 6, 0, 0.45, 0.4, 0); sp.position.set(wx, wy + 5, 52.8); sp.target.position.set(tx - 2, FLOOR, tz - 4); W.group.add(sp, sp.target); W.roomSpot = sp;   // moonlight falls in through the far window onto the table and floor, and nowhere else
-  if (MC.opt.quality > 1) { sp.castShadow = true; sp.shadow.mapSize.set(1024, 1024); sp.shadow.camera.near = 3; sp.shadow.camera.far = 80; sp.shadow.bias = -0.002; sp.shadow.radius = 3; }
+  if (MC.opt.quality > 1) { sp.castShadow = true; sp.shadow.mapSize.set(512, 512); sp.shadow.camera.near = 3; sp.shadow.camera.far = 80; sp.shadow.bias = -0.002; sp.shadow.radius = 3; }
   // its shaft in the air
   const bm = new THREE.MeshBasicMaterial({ color: col(0x8fa8ff), transparent: true, opacity: 0.035, blending: THREE.AdditiveBlending, depthWrite: false, side: THREE.DoubleSide, fog: false }); W.beams2 = [];
   for (let i = 0; i < 6; i++) { const x = wx - ww / 2 + 1 + i * (ww - 2) / 5, g = new THREE.BufferGeometry(); g.setAttribute('position', new THREE.Float32BufferAttribute([x, wy + wh / 2, 53, x, wy - wh / 2, 53, x - 5, FLOOR, 53 - (wy - wh / 2 - FLOOR) * 0.75, x - 5, FLOOR, 53 - (wy + wh / 2 - FLOOR) * 0.75], 3)); g.setIndex([0, 1, 2, 0, 2, 3]); const b = new THREE.Mesh(g, bm); W.group.add(b); W.beams2.push(b); }
@@ -82,33 +82,33 @@ function build() {
 }
 MC.on('world:built', () => { try { build(); W.captureEnv(); MC.scene.environment = W.envNight; } catch (e) { console.error('room', e); } });
 
-// ---------- the lens: depth of field on a screen (not in a headset: your own eyes focus there) ----------
-const R = MC.renderer; let rt = null, quad = null, qs = null, qc = null, focus = 6;
-const FS = `uniform sampler2D tC; uniform sampler2D tD; uniform vec2 px; uniform float near; uniform float far; uniform float focus; uniform float amt; varying vec2 vUv;
+// ---------- the picture: a PlayStation's (owner: "ps1 graphics, dont overrender"): 240 lines, 15-bit colour with an ordered dither, hard pixels ----------
+const R = MC.renderer; let rt = null, quad = null, qs = null, qc = null, focus = 6; const _o = new V3(), _d = new V3();
+const LINES = 240;
+const FS = `uniform sampler2D tC; uniform sampler2D tD; uniform vec2 res; uniform float near; uniform float far; uniform float focus; varying vec2 vUv;
 float lin(float d) { float z = d * 2.0 - 1.0; return 2.0 * near * far / (far + near - z * (far - near)); }
-void main() { float d = lin(texture2D(tD, vUv).x); float coc = clamp(abs(d - focus) / max(focus, 1.5) - 0.35, 0.0, 1.0) * amt; if (d < focus) coc *= 0.6;
-  vec3 c = texture2D(tC, vUv).rgb; float w = 1.0;
-  for (int i = 0; i < 16; i++) { float a = float(i) * 2.39996, r = sqrt((float(i) + 0.5) / 16.0); vec2 o = vec2(cos(a), sin(a)) * r * coc * 9.0 * px; float d2 = lin(texture2D(tD, vUv + o).x); float k = d2 > focus * 0.8 || d2 >= d - 0.5 ? 1.0 : 0.15; c += texture2D(tC, vUv + o).rgb * k; w += k; }
-  gl_FragColor = vec4(c / w, 1.0); }`;
-function setup() {
-  const s = R.getDrawingBufferSize(new THREE.Vector2());
-  if (rt) { rt.dispose(); rt.depthTexture.dispose(); }
-  rt = new THREE.WebGLRenderTarget(s.x, s.y, { samples: MC.opt.quality > 1 ? 4 : 0, type: THREE.HalfFloatType }); rt.depthTexture = new THREE.DepthTexture(s.x, s.y); rt.depthTexture.type = THREE.UnsignedIntType;
+float bayer(vec2 p) { vec2 q = floor(mod(p, 4.0)); float i = q.x + q.y * 4.0; float m = 0.0;
+  if (i < 0.5) m = 0.0; else if (i < 1.5) m = 8.0; else if (i < 2.5) m = 2.0; else if (i < 3.5) m = 10.0; else if (i < 4.5) m = 12.0; else if (i < 5.5) m = 4.0; else if (i < 6.5) m = 14.0; else if (i < 7.5) m = 6.0;
+  else if (i < 8.5) m = 3.0; else if (i < 9.5) m = 11.0; else if (i < 10.5) m = 1.0; else if (i < 11.5) m = 9.0; else if (i < 12.5) m = 15.0; else if (i < 13.5) m = 7.0; else if (i < 14.5) m = 13.0; else m = 5.0; return m / 16.0 - 0.5; }
+void main() { float d = lin(texture2D(tD, vUv).x), coc = clamp(abs(d - focus) / max(focus, 2.0) - 0.5, 0.0, 1.0) * (d < focus ? 0.5 : 1.0); vec3 c = texture2D(tC, vUv).rgb; float w = 1.0;
+  if (coc > 0.02) for (int i = 0; i < 8; i++) { float a = float(i) * 2.39996, r = sqrt((float(i) + 0.5) / 8.0); vec2 o = vec2(cos(a), sin(a)) * r * coc * 2.2 / res; float d2 = lin(texture2D(tD, vUv + o).x); float k = d2 >= d - 0.5 ? 1.0 : 0.2; c += texture2D(tC, vUv + o).rgb * k; w += k; }
+  gl_FragColor = vec4(c / w, 1.0);
+#include <tonemapping_fragment>
+#include <colorspace_fragment>
+  gl_FragColor.rgb = floor(gl_FragColor.rgb * 31.0 + 0.5 + bayer(vUv * res)) / 31.0; }`;
+function setup(w, h) {
+  if (rt) rt.dispose();
+  rt = new THREE.WebGLRenderTarget(w, h, { type: THREE.HalfFloatType, magFilter: THREE.NearestFilter, minFilter: THREE.NearestFilter, depthBuffer: true }); rt.depthTexture = new THREE.DepthTexture(w, h); rt.depthTexture.type = THREE.UnsignedIntType; rt.depthTexture.magFilter = rt.depthTexture.minFilter = THREE.NearestFilter;
   if (!quad) { qs = new THREE.Scene(); qc = new THREE.OrthographicCamera(-1, 1, 1, -1, 0, 1);
-    quad = new THREE.Mesh(new THREE.PlaneGeometry(2, 2), new THREE.ShaderMaterial({ uniforms: { tC: { value: null }, tD: { value: null }, px: { value: new THREE.Vector2() }, near: { value: 0.1 }, far: { value: 100 }, focus: { value: 6 }, amt: { value: 1 } }, vertexShader: 'varying vec2 vUv; void main() { vUv = uv; gl_Position = vec4(position.xy, 0.0, 1.0); }',
-      fragmentShader: FS.replace('gl_FragColor = vec4(c / w, 1.0); }', 'gl_FragColor = vec4(c / w, 1.0);\n#include <tonemapping_fragment>\n#include <colorspace_fragment>\n}'), depthTest: false, depthWrite: false }));
-    quad.frustumCulled = false; qs.add(quad); }
-  quad.material.uniforms.px.value.set(1 / s.x, 1 / s.y);
+    quad = new THREE.Mesh(new THREE.PlaneGeometry(2, 2), new THREE.ShaderMaterial({ uniforms: { tC: { value: null }, tD: { value: null }, res: { value: new THREE.Vector2() }, near: { value: 0.1 }, far: { value: 100 }, focus: { value: 6 } }, vertexShader: 'varying vec2 vUv; void main() { vUv = uv; gl_Position = vec4(position.xy, 0.0, 1.0); }', fragmentShader: FS, depthTest: false, depthWrite: false })); quad.frustumCulled = false; qs.add(quad); }
+  quad.material.uniforms.res.value.set(w, h); quad.material.uniforms.tC.value = rt.texture; quad.material.uniforms.tD.value = rt.depthTexture;
 }
-const _o = new V3(), _d = new V3();
-// draw the frame: through the lens on a screen at Medium and up, straight otherwise
-MC.draw = function (dt = 0.016) {
-  const on = !MC.isXR() && MC.opt.quality > 0 && MC.opt.dof !== false && MC.game.mode !== 'menu';
-  if (!on) { R.render(MC.scene, MC.camera); return; }
-  const s = R.getDrawingBufferSize(new THREE.Vector2()); if (!rt || rt.width !== s.x || rt.height !== s.y) setup();
-  // focus where you are looking, eased, never closer than your paws
-  MC.camera.getWorldPosition(_o); MC.camera.getWorldDirection(_d); const hit = MC.phys.ray(_o, _d, 80), want = Math.max(2.2, hit ? hit.t : 30); focus += (want - focus) * Math.min(1, dt * 4);
-  const u = quad.material.uniforms; u.tC.value = rt.texture; u.tD.value = rt.depthTexture; u.near.value = MC.camera.near; u.far.value = MC.camera.far; u.focus.value = focus; u.amt.value = 1;
+// draw the frame small and scale it up (on a screen; a headset draws straight, at a low eye resolution)
+MC.draw = function () {
+  if (MC.isXR() || MC.opt.crisp) { R.render(MC.scene, MC.camera); return; }
+  const s = R.getDrawingBufferSize(new THREE.Vector2()), h = LINES, w = Math.max(160, Math.round(h * s.x / s.y)); if (!rt || rt.width !== w || rt.height !== h) setup(w, h);
+  // the lens keeps its depth: focus eases to what you are looking at, the far room and what is under your nose go soft
+  MC.camera.getWorldPosition(_o); MC.camera.getWorldDirection(_d); const hit = MC.booted ? MC.phys.ray(_o, _d, 80) : null; focus += (Math.max(2.2, hit ? hit.t : 30) - focus) * 0.12; const u = quad.material.uniforms; u.near.value = MC.camera.near; u.far.value = MC.camera.far; u.focus.value = MC.game.mode === 'menu' ? 14 : focus;
   R.setRenderTarget(rt); R.render(MC.scene, MC.camera); R.setRenderTarget(null); R.render(qs, qc);
 };
 })();

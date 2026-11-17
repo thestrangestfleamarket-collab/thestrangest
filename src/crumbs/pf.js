@@ -57,6 +57,7 @@ function smooth(g) {
 }
 // fur shells on a skinned body: each shell shares the skeleton, so it bends with the body (UVs from a box projection; fur noise hides the seams)
 PF.fur = function (P, o = {}) {
+  if (MC.opt.fur !== true) return [];
   MC.creature.init(); const FUR = MC.creature.FUR, g0 = P.mesh.geometry, p0 = g0.attributes.position, n0 = g0.attributes.normal, n = p0.count, layers = o.layers || 10, len = (o.len || 0.1) / P.scale, rep = o.repeat || 6, out = [];
   const uv = new Float32Array(n * 2); for (let i = 0; i < n; i++) { const ax = Math.abs(n0.getX(i)), ay = Math.abs(n0.getY(i)); const u = ax > ay ? p0.getZ(i) : p0.getX(i), v = ax > ay || ay < 0.6 ? p0.getY(i) : p0.getZ(i); uv[i * 2] = u * P.scale * 0.25; uv[i * 2 + 1] = v * P.scale * 0.25; }
   const root = new THREE.Color(o.root == null ? 0x15120f : o.root), tip = new THREE.Color(o.tip == null ? 0x4a423a : o.tip), mask = o.skip ? o.skip(P) : null;

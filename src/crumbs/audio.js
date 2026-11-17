@@ -56,6 +56,8 @@ function loop(name, build, o = {}) {
 const noiseSrc = (filt, dest) => { const s = ctx.createBufferSource(); s.buffer = nbuf; s.loop = true; s.connect(filt); filt.connect(dest); s.start(0, Math.random()); return s; };
 const biq = (type, f, q = 0.7) => { const b = ctx.createBiquadFilter(); b.type = type; b.frequency.value = f; b.Q.value = q; return b; };
 function startLoops() {
+  // the pub's murmur: three bands of voice-shaped noise, each swelling and falling on its own, heard from the room's middle
+  loop('murmur', g => { for (const [f, q, r] of [[320, 3, 0.31], [540, 4, 0.23], [900, 5, 0.41]]) { const b = biq('bandpass', f, q), gg = ctx.createGain(), l = ctx.createOscillator(), lg = ctx.createGain(); gg.gain.value = 0.5; l.frequency.value = r; lg.gain.value = 0.35; l.connect(lg); lg.connect(gg.gain); l.start(); noiseSrc(b, gg); gg.connect(g); } }, { positional: true, wet: 0.5 });
   // fridge: 50 Hz fundamental plus 100-300 Hz partials and a compressor whine, so it still reads on small speakers
   loop('hum', g => { for (const [f, v] of [[50, 0.45], [100, 0.25], [150, 0.1], [200, 0.08], [300, 0.04]]) { const o = ctx.createOscillator(), gg = ctx.createGain(); o.frequency.value = f; gg.gain.value = v; o.connect(gg); gg.connect(g); o.start(); }
     const w = ctx.createOscillator(), lp = biq('lowpass', 450), wg = ctx.createGain(); w.type = 'sawtooth'; w.frequency.value = 100; wg.gain.value = 0.06; w.connect(lp); lp.connect(wg); wg.connect(g); w.start(); }, { positional: true, wet: 0.4 });

@@ -17,6 +17,7 @@ MC.tick = function (dt) {
     const sk = E.shake * (MC.opt.shake == null ? 1 : MC.opt.shake); if (!MC.isXR() && sk > 0.001) { MC.camera.position.x += (Math.random() - 0.5) * sk; MC.camera.position.y += (Math.random() - 0.5) * sk; }
   }
   W.update(dt, PL.head); U.update(dt);
+  if (W.st.pub) { const inPub = PL.head.z < -8; MC.audio.setLoop('murmur', G.mode === 'menu' ? 0 : inPub ? 0.05 : 0.012, 0.6); if (MC.audio.ctx && !MC.murmurAt) { MC.murmurAt = 1; MC.audio.loopPos('murmur', new V3(-14, 2, -17)); } }
   MC.audio.update(dt, (E.active || E.bg) && (E.active || E.bg).type, { sizzle: C.sizzle || 0, boil: C.boil || 0, panPos: W.st.pan && W.st.pan.pos, potPos: W.st.pot && W.st.pot.pos, busy: G.orders.filter(o => o.state === 'wait').length }); MC.audio.listener(PL.head, PL.fwdFull);
   if (W.st.tap && G.mode !== 'menu') { dripT -= dt; if (dripT <= 0) { dripT = 4 + Math.random() * 7; W.drip(); if (Math.random() < 0.2) setTimeout(() => W.drip(), 260); } }
   tickT -= dt; if (tickT <= 0) { tickT = 1; if (!W.clockDead && W.st.clock) MC.sfx.clock(W.st.clock); }
@@ -33,7 +34,7 @@ function vrPauseButton() {   // left controller X toggles pause in VR
   const s = MC.renderer.xr.getSession && MC.renderer.xr.getSession(); if (!s) return; let x = false; for (const src of s.inputSources) if (src.handedness === 'left' && src.gamepad && src.gamepad.buttons[4]) x = src.gamepad.buttons[4].pressed;
   if (x && !xPrev && G.mode === 'play') MC.paused = !MC.paused; xPrev = x; if (MC.paused) PL.wristNote('Paused. Press X to resume.');
 }
-MC.renderer.setAnimationLoop(() => { const dt = Math.min(clock.getDelta(), 0.05); if (MC.isXR()) vrPauseButton(); if (!MC.paused && !MC.manual) MC.tick(dt); if (MC.draw) MC.draw(dt); else MC.renderer.render(MC.scene, MC.camera); });
+MC.renderer.setAnimationLoop(() => { const dt = Math.min(clock.getDelta(), 0.05); if (MC.isXR()) vrPauseButton(); if (!MC.paused && !MC.manual) MC.tick(dt); if (MC.draw) MC.draw(); else MC.renderer.render(MC.scene, MC.camera); });
 
 // ---------- flow ----------
 MC.startNight = function (cfg) {
@@ -68,7 +69,7 @@ $('b-menu').onclick = () => MC.toMenu();
 if (navigator.xr && navigator.xr.isSessionSupported) navigator.xr.isSessionSupported('immersive-vr').then(ok => {
   if (!ok) return; setTimeout(() => MC.menuRender && MC.menuRender(), 0);
   MC.enterVR = cfg => navigator.xr.requestSession('immersive-vr', { optionalFeatures: ['local-floor', 'bounded-floor', 'hand-tracking'] }).then(s => {
-    MC.renderer.xr.setFramebufferScaleFactor(MC.opt.quality > 1 ? 1 : 0.85); MC.renderer.xr.setFoveation(MC.opt.quality > 1 ? 0.5 : 1); MC.renderer.xr.setSession(s); MC.startNight(cfg); MC.xrPerf(); MC.rig.scale.setScalar(1);
+    MC.renderer.xr.setFramebufferScaleFactor(0.6); MC.renderer.xr.setFoveation(1); MC.renderer.xr.setSession(s); MC.startNight(cfg); MC.xrPerf(); MC.rig.scale.setScalar(1);
     // height calibration: a standing player should see the counter from mouse height, not 1.6 m up
     setTimeout(() => { if (!MC.isXR() || !MC.opt.vrHeight) return; const xc = MC.renderer.xr.getCamera(MC.camera); xc.updateMatrixWorld(true); const hh = (xc.matrixWorld.elements[13] - MC.rig.position.y) / MC.rig.scale.x; if (hh > 0.3) MC.rig.scale.setScalar(MC.clamp(PL.EYE / hh, 0.55, 1.4)); }, 1200); s.addEventListener('visibilitychange', () => { if (s.visibilityState !== 'visible' && G.mode === 'play') MC.paused = true; }); s.addEventListener('end', () => { MC.furLOD(false); MC.rig.scale.setScalar(1); MC.camera.position.set(0, PL.EYE, 0); MC.resize(); if (G.mode !== 'menu') MC.toMenu(); });
   });

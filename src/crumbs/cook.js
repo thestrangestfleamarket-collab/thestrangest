@@ -70,6 +70,8 @@ function impact(it, v, other) {
 }
 C.setBody = function (it, on) { if (on !== it.inWorld) { P.enable(it.body, on); it.inWorld = on; } };
 C.free = function (it, pos, vel) {
+  if (it.state === 'gone' || !it.body || !it.body.rb) return;   // already taken away (its body is gone): nothing to set free
+  if (!isFinite(pos.x + pos.y + pos.z)) pos = it.lastSafe || W.spawn.clone().setY(0.3);   // never hand the physics a place that is not a number
   if (it.hand) it.hand.item = null; it.hand = null; it.state = 'free'; it.pos.copy(pos);
   const b = it.body; b.position.set(pos.x, pos.y, pos.z); b.velocity.set(vel ? vel.x : 0, vel ? vel.y : 0, vel ? vel.z : 0); b.angularVelocity.set(0, 0, 0); b.setQuaternion(0, 0, 0, 1);
   C.setBody(it, true); b.wakeUp(); it.mesh.visible = true;

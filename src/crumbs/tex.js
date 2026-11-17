@@ -17,6 +17,7 @@ MC.noise = { hash, vnoise, fbm, worley };
 
 // fn(u, v, o) fills o.h (height 0..1), o.r/g/b (sRGB 0..1), o.rough (0..1)
 function gen(N, fn, bump = 2) {
+  N = Math.min(N, 128);   // a PlayStation's worth of texture: small and unfiltered
   const colD = new Uint8ClampedArray(N * N * 4), rghD = new Uint8ClampedArray(N * N * 4), nrmD = new Uint8ClampedArray(N * N * 4), H = new Float32Array(N * N), o = {};
   for (let y = 0; y < N; y++) for (let x = 0; x < N; x++) {
     o.h = 0.5; o.r = o.g = o.b = 0.5; o.rough = 0.7; fn(x / N, y / N, o);
@@ -32,7 +33,7 @@ function gen(N, fn, bump = 2) {
   }
   const mk = (d, srgb) => {
     const c = document.createElement('canvas'); c.width = c.height = N; c.getContext('2d').putImageData(new ImageData(d, N, N), 0, 0);
-    const t = new THREE.CanvasTexture(c); t.wrapS = t.wrapT = THREE.RepeatWrapping; t.anisotropy = 4; if (srgb) t.colorSpace = THREE.SRGBColorSpace; return t;
+    const t = new THREE.CanvasTexture(c); t.wrapS = t.wrapT = THREE.RepeatWrapping; t.magFilter = THREE.NearestFilter; t.minFilter = THREE.NearestMipmapNearestFilter; if (srgb) t.colorSpace = THREE.SRGBColorSpace; return t;
   };
   return { map: mk(colD, true), normalMap: mk(nrmD), roughnessMap: mk(rghD) };
 }
@@ -112,7 +113,7 @@ MC.buildMaterials = function (pal) {
   }
   const flat = (hex, rough, metal = 0, extra = {}) => { const w = extra.transparent || extra.noWear ? null : metal ? MC.WEAR.metal : MC.WEAR.soft, e = Object.assign({}, extra); delete e.noWear;
     const m = new THREE.MeshStandardMaterial(Object.assign({ color: col(hex), roughness: w ? Math.min(1, rough * 2) : rough, metalness: metal }, w ? { map: w.map, roughnessMap: w.roughnessMap, normalMap: w.normalMap } : {}, e));
-    if (w) m.normalScale.set(0.55, 0.55); return m; };
+    if (w) m.normalScale.set(0.55, 0.55); if (metal) m.envMapIntensity = 3.2; return m; };   // metal is only what it reflects: it keeps more of the room than the rest does
   M.flat = flat;
   M.ceramic = flat(P.mugC, 0.18); M.white = flat(0xf2efe6, 0.25); M.black = flat(0x0c0c0e, 0.5); M.chrome = flat(0xdfe3e6, 0.12, 1);
   M.rubber = flat(0x1a1a1d, 0.85); M.wax = flat(0xe9dfc4, 0.6, 0, { emissive: col(0x3a2006), emissiveIntensity: 0.35 });

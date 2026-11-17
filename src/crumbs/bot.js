@@ -28,8 +28,8 @@ B.walkTo = function (x, z, tol = 0.3) {
     if (p.y > 1.0) { if (B.walkStraight(x, z, tol)) return true; continue; }
     const path = P.path(p.x, p.z, x, z); if (!path) return B.walkStraight(x, z, tol);
     const pts = path.pts; let i = 0;
-    while (i < pts.length && playing()) { let j = pts.length - 1; while (j > i && !clear(rig.position.x, rig.position.z, pts[j][0], pts[j][1])) j--; if (!B.walkStraight(pts[j][0], pts[j][1], 0.3, 4)) break; i = j + 1; }
-    if (B.walkStraight(x, z, tol, 3)) return true;
+    while (i < pts.length && playing()) { let j = pts.length - 1; while (j > i && !clear(rig.position.x, rig.position.z, pts[j][0], pts[j][1])) j--; if (!B.walkStraight(pts[j][0], pts[j][1], 0.3, 3 + Math.hypot(pts[j][0] - rig.position.x, pts[j][1] - rig.position.z) / 3)) break; i = j + 1; }   // time for the leg's own length: the larder is a long walk
+    if (B.walkStraight(x, z, tol, 3 + Math.hypot(x - rig.position.x, z - rig.position.z) / 3)) return true;
   }
   return Math.hypot(x - rig.position.x, z - rig.position.z) < tol + 0.5;
 };

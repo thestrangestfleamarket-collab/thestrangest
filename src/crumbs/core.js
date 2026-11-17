@@ -39,8 +39,8 @@ if (MC.params.has('q')) MC.opt.quality = +MC.params.get('q');
 
 // renderer
 const canvas = MC.canvas = MC.$('c');
-const R = MC.renderer = new THREE.WebGLRenderer({ canvas, antialias: true, powerPreference: 'high-performance' });
-R.setPixelRatio(Math.min(devicePixelRatio, MC.opt.quality > 1 ? 2 : 1.25));
+const R = MC.renderer = new THREE.WebGLRenderer({ canvas, antialias: false, powerPreference: 'high-performance' });
+R.setPixelRatio(1);   // the picture is drawn small and scaled up (room.js), so the canvas itself need not be dense
 R.outputColorSpace = THREE.SRGBColorSpace;
 R.toneMapping = THREE.ACESFilmicToneMapping;
 R.toneMappingExposure = 1.0;

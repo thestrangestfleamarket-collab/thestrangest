@@ -15,6 +15,7 @@ import { FLYBOT } from "./flybot.js";
 import { HOLMES } from "./holmes.js";
 import { CANTINA } from "./cantina.js";
 import { CRUMBS } from "./crumbs.js";
+import { DRUMS } from "./drums.js";
 import { SUSHI } from "./sushi.js";
 import { SALOON } from "./saloon.js";
 import { HIDE } from "./hide.js";
@@ -35,7 +36,7 @@ const SCAREA = /^\/scare-assets\/[a-z0-9_-]+\.glb$/;   // VESPER WARD's models: 
 const SNIPA = /^\/sniper-assets\/(sky|tex|m|snd|p)\/[A-Za-z0-9_-]+\.(glb|json|mp3|jpg|webp)$/, SNIPT = { glb: "model/gltf-binary", json: "application/json", mp3: "audio/mpeg", jpg: "image/jpeg", webp: "image/webp" };   // COLD BORE's skies, surfaces, models and sounds: to anyone
 const SPCA = /^\/space-assets\/((m|snd)\/[A-Za-z0-9_-]+\.(glb|mp3)|stars\.json)$/;   // SPACE FLEET's models, sky and sounds: to anyone
 const JAMA = /^\/jam-assets\/[a-z0-9_-]+\.(glb|json|mp3)$/, JAMT = { glb: "model/gltf-binary", json: "application/json", mp3: "audio/mpeg" };   // STADIUM JAM's avatars, hands and samples: to anyone
-const DRUMA = /^\/drums-assets\/(?:(?:tex|m)\/)?[a-z0-9_-]+\.(glb|json|mp3|jpg)$/, DRUMT = { glb: "model/gltf-binary", json: "application/json", mp3: "audio/mpeg", jpg: "image/jpeg" };   // THE GARAGE's recorded kit, models and surfaces: to anyone
+const DRUMA = /^\/drums-assets\/(?:(?:tex|m|p)\/)?[A-Za-z0-9_-]+\.(glb|json|mp3|jpg)$/, DRUMT = { glb: "model/gltf-binary", json: "application/json", mp3: "audio/mpeg", jpg: "image/jpeg" };   // THE GARAGE's recorded kit, models and surfaces: to anyone
 const SAYNO = new Map();
 const GOLFA = /^\/(golf|duel|cantina|hide|zombie|sushi|tank|saloon|turret)-assets\/(?!.*\.\.)[A-Za-z0-9_.\/-]+\.(jpg|json|txt|glb|mp3|hdr|fbx|webp|mp4)$/;   // HALCYON GREENS' pictures and models, AR DUEL's pictures, THE CANTINA's models and pictures, DEAD END's pictures, models and sounds, EYES DOWN's pictures and models, HULL DOWN's sky, surfaces, models and sounds, RAMEN's: to anyone
 const BOOK = /^\/book\/(\d{1,6})\.txt$/, FILM = /^\/film\/([A-Za-z0-9_.-]{1,80})\/([A-Za-z0-9_.-]{1,120}\.mp4)$/, IA = /^\/ia\/([A-Za-z0-9_.-]{1,80})\.jpg$/, YT = /^\/yt\/([A-Za-z0-9_-]{11})\.jpg$/, BLANK = "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYGD4DwABBAEAHnOcQAAAAABJRU5ErkJggg==";
@@ -93,7 +94,7 @@ export default {
     if ((request.method === "GET" || request.method === "HEAD") && JAMA.test(p)) {
       const r = await env.ASSETS.fetch(new Request(url.origin + p)); if (!r.ok) return new Response("not found", { status: 404 });
       const out = new Response(r.body, r); out.headers.set("content-type", JAMT[p.split(".").pop()]); out.headers.set("cache-control", "public, max-age=86400"); out.headers.set("x-robots-tag", "noindex"); return out; }
-    // THE GARAGE (src/drums/): a drum kit in a garage, its own page at /drums, to anyone with the link; its recorded kit, models and surfaces under /drums-assets/
+    // THE GARAGE (src/drums/): a drum kit in a garage, its own page at /drums, to anyone with the link; its recorded kit, models, people and surfaces under /drums-assets/; its neighbours' talk (POST /drums/talk), how you stand with them (/drums/save, /drums/load) only to a login
     if ((request.method === "GET" || request.method === "HEAD") && p === "/drums") return page(env, url, "/drums", request, "no-cache");
     if ((request.method === "GET" || request.method === "HEAD") && DRUMA.test(p)) {
       const r = await env.ASSETS.fetch(new Request(url.origin + p)); if (!r.ok) return new Response("not found", { status: 404 });
@@ -253,7 +254,7 @@ export default {
       const id = await who(env, request, dev); if (!id) return json({ why: "login" }, 401); if (!env.AI) return json({ why: "the website has no AI binding yet" }); if (tooMany("hear:" + id, 12)) return json({ why: "too much at once, wait a minute" }, 429);
       const buf = await request.arrayBuffer(); if (!buf.byteLength || buf.byteLength > 2 << 20) return json({ why: "too long, say it shorter" }, 400);
       try { const r = await env.AI.run("@cf/openai/whisper", { audio: [...new Uint8Array(buf)] }); return json({ text: String((r && r.text) || "").trim().slice(0, 400) }); } catch (e) { return json({ why: "it could not be made out" }); } }
-    if (request.method === "POST" && (p === "/post" || p === "/admin" || p === "/home" || p === "/owned" || p === "/name" || p === "/scores" || p === "/art" || p === "/orchard" || p === "/bot" || p === "/holmes" || p === "/cantina/talk" || p === "/crumbs/talk" || p === "/sushi/talk" || p === "/sushi/say" || p === "/sushi/report" || p === "/sushi/log" || p === "/zombie/mind" || p === "/zombie/save" || p === "/saloon/talk" || p === "/saloon/save")) {
+    if (request.method === "POST" && (p === "/post" || p === "/admin" || p === "/home" || p === "/owned" || p === "/name" || p === "/scores" || p === "/art" || p === "/orchard" || p === "/bot" || p === "/holmes" || p === "/cantina/talk" || p === "/crumbs/talk" || p === "/sushi/talk" || p === "/sushi/say" || p === "/sushi/report" || p === "/crumbs/report" || p === "/sushi/log" || p === "/zombie/mind" || p === "/zombie/save" || p === "/saloon/talk" || p === "/saloon/save" || p === "/drums/talk" || p === "/drums/save" || p === "/drums/load")) {
       if (request.headers.get("Origin") !== url.origin && !(dev && !request.headers.get("Origin"))) return json({ why: "not from the game's page" }, 403);
       const id = await who(env, request, dev); if (!id) return json({ why: "login" }, 401);
       let body; try { body = await request.json(); } catch (e) { body = {}; } if (!body || typeof body !== "object") body = {};
@@ -263,12 +264,12 @@ export default {
       if (p === "/sushi/log") { if (!UUID.test(id)) return json({ why: "login" }, 401); if (tooMany("slog:" + id, 20)) return json({ why: "too much at once" }, 429); if (!env.SUPABASE_SERVICE_KEY) return json({ why: "no service key" }, 501); // YATAI '86: everything said at the cart, kept for the owner to read back (Supabase sushi_talk)
         const lines = (Array.isArray(body.lines) ? body.lines : []).slice(0, 60).map(l => { const o = {}; for (const k of ["at", "gt", "seats", "who", "to", "kind", "text", "heard", "live", "voice", "thinkMs", "voiceMs", "secs", "dropped", "cut", "problem"]) { const x = l && l[k]; if (typeof x === "string") o[k] = word(x, 260); else if (typeof x === "number" || typeof x === "boolean") o[k] = x; } return o; }); if (!lines.length) return json({ ok: true });
         const r = await fetch(env.SUPABASE_URL + "/rest/v1/sushi_talk", { method: "POST", headers: { ...svc(env), "content-type": "application/json", Prefer: "return=minimal" }, body: JSON.stringify({ player: id, sid: word(body.sid, 40), lines }) }).catch(() => null); return json(r && r.ok ? { ok: true } : { why: "not kept" }, r && r.ok ? 200 : 502); }
-      if (p === "/sushi/report") { if (!UUID.test(id)) return json({ why: "login" }, 401); if (tooMany("rep:" + id, 6)) return json({ why: "too many at once, wait a minute" }, 429);
+      if (p === "/sushi/report" || p === "/crumbs/report") { const CR = p === "/crumbs/report"; if (!UUID.test(id)) return json({ why: "login" }, 401); if (tooMany("rep:" + id, 6)) return json({ why: "too many at once, wait a minute" }, 429);
         const jpg = typeof body.jpg === "string" && body.jpg.startsWith("data:image/jpeg;base64,") && body.jpg.length < 900000 ? body.jpg : "", audio = typeof body.audio === "string" && body.audio.length < 700000 && /^[A-Za-z0-9+/=]*$/.test(body.audio) ? body.audio : "";
         let said = ""; if (audio && env.AI) { try { const r = await env.AI.run("@cf/openai/whisper", { audio: [...Uint8Array.from(atob(audio), ch => ch.charCodeAt(0))] }); said = String((r && r.text) || "").trim().slice(0, 600); if (/^(\W*(thank you( very much)?|thanks for watching|you|bye)\W*)+$/i.test(said)) said = ""; } catch (e) { } }   // what the speech model makes of silence is not words
         let ctx = {}; try { const c = JSON.stringify(body.context || {}); if (c.length < 4000) ctx = JSON.parse(c); } catch (e) { }
         const rid = crypto.randomUUID(), h = { ...svc(env), "content-type": "application/json", Prefer: "return=minimal" };
-        const r1 = await fetch(env.SUPABASE_URL + "/rest/v1/bug_reports", { method: "POST", headers: h, body: JSON.stringify({ id: rid, player: id, body: "[YATAI '86] " + (said || "(no words heard)"), context: { game: "sushi", ...ctx, ...(audio ? { audio: "data:" + (word(body.mime, 40) || "audio/webm") + ";base64," + audio } : {}) }, shots: jpg ? 1 : 0 }) }).catch(() => null);
+        const r1 = await fetch(env.SUPABASE_URL + "/rest/v1/bug_reports", { method: "POST", headers: h, body: JSON.stringify({ id: rid, player: id, body: (CR ? "[MIDNIGHT CRUMBS] " : ctx.game === "drums" ? "[THE GARAGE] " : "[YATAI '86] ") + (said || (CR ? "(a picture from the game)" : ctx.game === "drums" ? "a picture from the kit" : "(no words heard)")), context: { game: "sushi", ...ctx, ...(CR ? { game: "crumbs" } : {}), ...(audio ? { audio: "data:" + (word(body.mime, 40) || "audio/webm") + ";base64," + audio } : {}) }, shots: jpg ? 1 : 0 }) }).catch(() => null);
         if (r1 && r1.ok && jpg) await fetch(env.SUPABASE_URL + "/rest/v1/bug_shots", { method: "POST", headers: h, body: JSON.stringify({ report: rid, player: id, jpg }) }).catch(() => null);
         return json({ ok: !!(r1 && r1.ok), said }); }
       // a patron's line said aloud (Workers AI, the AI binding): the page plays it from their seat
@@ -299,13 +300,26 @@ export default {
         const out = await CANTINA.MINDS[c].ask(env, { get: () => H.botGet(k + "~" + c), put: v => H.botPut(k + "~" + c, v) }, { say: body.say, state: body.state, name: await H.nameGet(id) });
         if (out.say) await H.botPut(k, { day, n: D.day === day ? D.n + 1 : 1 });
         return json(out); }
+      // a neighbour of THE GARAGE answers the drummer (worker/drums.js); what the two have said is the player's, kept beside their bot's; how they stand is the player's too
+      if (p === "/drums/talk") { if (!env.ANTHROPIC_API_KEY) return json({ why: "the website has no ANTHROPIC_API_KEY secret yet" });
+        const c = word(body.who, 24); if (!DRUMS.has(c)) return json({ why: "nobody by that name here" }, 400);
+        if (tooMany("bot:" + id, 12)) return json({ why: "too much at once, wait a minute" }, 429);
+        const H = homeOf(env), k = id + "~drums", day = new Date().toISOString().slice(0, 10), D = (await H.botGet(k)) || {}, max = (+env.BOT_DAILY || FLYBOT.DAY) * 2;
+        if (D.day === day && D.n >= max) return json({ why: "the street has talked enough for one day; come back tomorrow" });
+        const out = await DRUMS.MINDS[c].ask(env, { get: () => H.botGet(k + "~" + c), put: v => H.botPut(k + "~" + c, v) }, { say: body.say, state: body.state, name: await H.nameGet(id) });
+        if (out.say) await H.botPut(k, { day, n: D.day === day ? D.n + 1 : 1 });
+        return json(out); }
+      if (p === "/drums/save") { const H = homeOf(env); return json(await DRUMS.save({ put: v => H.botPut("drums-street:" + id, v) }, body)); }
+      if (p === "/drums/load") { const H = homeOf(env); return json(await DRUMS.load({ get: () => H.botGet("drums-street:" + id) })); }
       // a regular of MIDNIGHT CRUMBS answers the cook (worker/crumbs.js); what the two have said is the player's, kept beside their bot's; the day's count is one for the whole counter
       if (p === "/crumbs/talk") { if (!env.ANTHROPIC_API_KEY) return json({ why: "the website has no ANTHROPIC_API_KEY secret yet" });
         const c = word(body.who, 24); if (!CRUMBS.has(c)) return json({ why: "nobody by that name here" }, 400);
         if (tooMany("bot:" + id, 12)) return json({ why: "too much at once, wait a minute" }, 429);
         const H = homeOf(env), k = id + "~crumbs", day = new Date().toISOString().slice(0, 10), D = (await H.botGet(k)) || {}, max = +env.BOT_DAILY || FLYBOT.DAY;
         if (D.day === day && D.n >= max) return json({ why: "the counter has talked enough for one night; come back tomorrow" });
-        const out = await CRUMBS.MINDS[c].ask(env, { get: () => H.botGet(k + "~" + c), put: v => H.botPut(k + "~" + c, v) }, { say: body.say, state: body.state, name: await H.nameGet(id) });
+        const past = (await H.botGet(k + "~" + c)) || {}, ago = past.day ? Math.round((Date.parse(day) - Date.parse(past.day)) / 864e5) : -1, talks = past.all | 0;   // what this one remembers of the cook: when they last spoke, how often
+        const seen = ago < 0 ? "you have never spoken with this cook before" : (ago === 0 ? "you already spoke with the cook earlier tonight" : "you last spoke with the cook " + ago + (ago === 1 ? " night" : " nights") + " ago") + ", " + talks + " talks in all";
+        const out = await CRUMBS.MINDS[c].ask(env, { get: () => H.botGet(k + "~" + c), put: v => H.botPut(k + "~" + c, { ...v, all: talks + 1 }) }, { say: body.say, state: String(body.state || "").slice(0, 480) + ", " + seen, name: await H.nameGet(id) });
         if (out.say) await H.botPut(k, { day, n: D.day === day ? D.n + 1 : 1 });
         return json(out); }
       if (p === "/bot") { if (!env.ANTHROPIC_API_KEY) return json({ why: "the website has no ANTHROPIC_API_KEY secret yet" });

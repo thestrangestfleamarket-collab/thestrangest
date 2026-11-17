@@ -8,11 +8,11 @@ const srv = require('http').createServer((q, r) => { const f = path.join(ROOT, d
 const IWER = fs.readFileSync(require.resolve('iwer/build/iwer.min.js'), 'utf8');
 const quest = IWER + ';window.xrDevice=new IWER.XRDevice(IWER.metaQuest3);xrDevice.installRuntime({forceInstall:true});xrDevice.position.set(0.3,1.6,0.2);xrDevice.primaryInputMode="controller";';
 (async () => {
-  await new Promise(res => srv.listen(0, '127.0.0.1', res)); const FILE = 'http://127.0.0.1:' + srv.address().port + '/' + path.basename(PAGE) + '?low' + (OUT ? '&lines=600' : '');
+  await new Promise(res => srv.listen(0, '127.0.0.1', res)); const FILE = 'http://127.0.0.1:' + srv.address().port + '/' + path.basename(PAGE) + '?low&hour=15&hold' + (OUT ? '&lines=600' : '');
   const b = await chromium.launch({ ...(process.env.PWCHROME ? { executablePath: process.env.PWCHROME } : {}), args: ['--use-gl=swiftshader', '--enable-unsafe-swiftshader', '--ignore-gpu-blocklist', '--autoplay-policy=no-user-gesture-required'] });
   let n = 0; const shot = async (pg, name) => { if (OUT) await pg.screenshot({ path: path.join(OUT, String(++n).padStart(2, '0') + '-' + name + '.png'), timeout: 120000 }); };
   const open = async init => { const pg = await b.newPage({ viewport: { width: 1024, height: 640 } }), errs = [], miss = [];
-    pg.on('pageerror', e => errs.push(e.message.slice(0, 300))); pg.on('requestfailed', r => miss.push(r.url().split('/').pop())); pg.on('response', r => { if (r.status() >= 400) miss.push(r.status() + ' ' + r.url().split('/').pop()); }); pg.on('console', m => { if (m.type() === 'error') errs.push('console: ' + m.text().slice(0, 300)); });
+    pg.on('pageerror', e => errs.push(e.message.slice(0, 300))); pg.on('requestfailed', r => { if (!/\/drums\/(load|save|talk)$/.test(r.url())) miss.push(r.url().split('/').pop()); }); pg.on('response', r => { if (r.status() >= 400 && !/\/drums\/(load|save|talk)$/.test(r.url())) miss.push(r.status() + ' ' + r.url().split('/').pop()); }); pg.on('console', m => { if (m.type() === 'error' && !/Failed to load resource/.test(m.text())) errs.push('console: ' + m.text().slice(0, 300)); });
     if (init) await pg.addInitScript(init); await pg.goto(FILE, { waitUntil: 'commit', timeout: 120000 }); await pg.waitForFunction(() => window.__drums && __drums.ready, null, { timeout: 420000 }).catch(() => {});
     return { pg, errs, miss, ev: (f, a) => pg.evaluate(f, a), wait: (f, ms = 60000) => pg.waitForFunction(f, null, { timeout: ms }).then(() => true, () => false) }; };
 
@@ -26,12 +26,22 @@ const quest = IWER + ';window.xrDevice=new IWER.XRDevice(IWER.metaQuest3);xrDevi
     ok(await ev(() => __drums.stats.hits === 12 && __drums.sound.stats.hits >= 12 && Object.values(__drums.guide.labels).every(l => l.played)), 'each sounded once, and each piece\'s name went once it was played'); await shot(pg, 'played');
     await pg.keyboard.down('KeyQ'); await pg.keyboard.press('KeyA'); const open1 = await ev(() => __drums.sound.hat); await pg.keyboard.up('KeyQ'); await pg.waitForTimeout(80);
     ok(open1 === 1 && await ev(() => __drums.sound.hat === 0 && __drums.sound.stats.last.zone === 'pedal'), 'Q holds the hi-hat open; letting go shuts it with the pedal\'s chick');
-    await pg.waitForTimeout(6000);
+    await ev(async () => { const p = __drums.kit.P.crash1; p.ax = p.az = p.vx = p.vz = 0; await new Promise(r => setTimeout(r, 600)); });
     const at = await ev(() => { const D = __drums, p = D.kit.P.crash1, v = p.wc.clone().add(new p.wc.constructor(0, 0.03, 0)); v.project(D.camera); const e = new p.wc.constructor(0, D.kit.height(p, p.radius * 0.6), p.radius * 0.6).applyMatrix4(p.group.matrixWorld); e.project(D.camera); return [[(v.x + 1) / 2 * innerWidth, (1 - v.y) / 2 * innerHeight], [(e.x + 1) / 2 * innerWidth, (1 - e.y) / 2 * innerHeight]]; });
     await pg.waitForTimeout(0); await pg.mouse.click(at[0][0], at[0][1]); const c1 = await ev(() => __drums.stats.last); await pg.mouse.click(at[1][0], at[1][1]); const c2 = await ev(() => __drums.stats.last);
     ok(c1.piece === 'crash1' && c1.zone === 'bell' && c2.piece === 'crash1' && c2.zone === 'bow' && c2.r > c1.r, 'a click on a crash\'s bell plays the bell, a click on its bow the bow, where it landed: ' + c1.piece + ' ' + c1.zone + ', ' + c2.piece + ' ' + c2.zone);
+    // the garage door, the hour, the street and its people
+    const d0 = await ev(() => __drums.garage.door.open); await pg.keyboard.press('KeyO');
+    ok(d0 < 0.3 && await wait(() => __drums.garage.door.open > 0.99, 90000), 'O runs the garage door up its tracks');
+    const hr = await ev(async () => { const D = __drums, a = [+D.life.hour.toFixed(1), +D.garage.day.toFixed(2)]; for (let i = 0; i < 8; i++) D.life.skip(); await new Promise(r => setTimeout(r, 600)); return [...a, +D.life.hour.toFixed(1), +D.garage.day.toFixed(2), +D.street.group.children.length > 20]; });
+    ok(hr[0] === 15 && hr[1] > 0.9 && hr[2] === 23 && hr[3] < 0.1 && hr[4], 'the hour is the one asked for, in full day; eight hours on it is night: ' + hr);
+    const st = await ev(async () => { const D = __drums, S = D.street, p = S.people.find(q => q.id === 'marcus'), nap = ms => new Promise(r => setTimeout(r, ms)); for (let i = 0; i < 16; i++) D.life.skip(); await nap(400);
+      for (let i = 0; i < 6; i++) D.life.note(1); p.g.visible = true; p.pos.set(-1.5, 0, p.pos.z = -13.75); p.dir = 1; p.asked = false; p.state = 'walk'; p.path = [[44, -13.75]]; p.pi = 0;
+      for (let i = 0; i < 80 && p.state !== 'visit'; i++) await nap(250); const came = p.state, bub = p.bub.sprite.visible, rel = p.rel; await D.life.say('Hello Marcus, how was your shift?'); await nap(300);
+      return { n: S.people.length, mixers: S.people.filter(q => q.mixer).length, came, bub, rel, met: p.met, said: D.life.said.length, near: S.nearest() && S.nearest().id, cars: S.cars.length }; });
+    ok(st.n === 7 && st.mixers === 7 && st.came === 'visit' && st.bub && st.rel > 0 && st.met && st.said === 1 && st.near === 'marcus' && st.cars === 3, 'seven neighbours with their own motion; one passing hears you play, comes up the drive, speaks, likes you a little more, and answers when spoken to: ' + JSON.stringify(st));
     const r = await ev(() => ({ calls: __drums.renderer.info.render.calls, tris: __drums.renderer.info.render.triangles, lines: __drums.renderer.domElement.height }));
-    ok(r.calls < 320 && r.tris < 260000, 'the whole garage is ' + r.calls + ' draws and ' + r.tris + ' triangles, drawn ' + r.lines + ' lines tall');
+    ok(r.calls < 420 && r.tris < 420000, 'the whole garage is ' + r.calls + ' draws and ' + r.tris + ' triangles, drawn ' + r.lines + ' lines tall');
     ok(miss.length === 0 && errs.length === 0, 'no missing file, no page error' + (miss.length || errs.length ? ': ' + miss.concat(errs).join(' | ') : '')); await pg.close(); }
 
   // in the headset

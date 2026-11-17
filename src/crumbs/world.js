@@ -53,7 +53,7 @@ function flame(x, y, z, o = {}) {
   fm.position.set(x, y + 0.14 * s, z); fm.center.set(0.5, 0.12); W.group.add(fm);
   const g = glow(x, y + 0.16 * s, z, 1.1 * s, 0xff8a2a);
   const L = new THREE.PointLight(col(0xff9a48), o.I || 18, o.dist || 0, 2); L.position.set(x, y + 0.62 * s, z);
-  if (o.shadow && MC.opt.quality > 0) { L.castShadow = true; L.shadow.mapSize.set(MC.opt.quality > 1 ? 1024 : 512, MC.opt.quality > 1 ? 1024 : 512); L.shadow.bias = -0.004; L.shadow.radius = 4; L.shadow.camera.near = 0.2; L.shadow.camera.far = 40; }
+  if (o.shadow && MC.opt.quality > 0) { L.castShadow = true; L.shadow.mapSize.set(512, 512); L.shadow.bias = -0.004; L.shadow.radius = 4; L.shadow.camera.near = 0.2; L.shadow.camera.far = 40; }
   W.group.add(L);
   const f = { mesh: fm, glow: g, light: L, I: o.I || 18, s, wild: 0, ph: Math.random() * 10, y: y + 0.14 * s }; W.flames.push(f); return f;
 }
@@ -140,7 +140,7 @@ function pub(pal) {
   for (let i = 0; i < 6; i++) { const x = -15 + i * 1.5, j = lathe([[0, 0], [0.42, 0], [0.45, 0.06], [0.44, 0.9], [0.36, 1.0], [0.36, 1.15], [0, 1.15]], M.glass, x, 3.2, PZ0 + 0.8); void j; cyl(x, PZ0 + 0.8, 0.36, 3.25, 3.25 + 0.3 + (i % 3) * 0.2, [M.pea, M.crust, M.cheese][i % 3], { solid: false }); }
   for (let i = 0; i < 4; i++) cyl(-14 + i * 2.2, PZ0 + 0.8, 0.5, 6.2, 6.5 + i * 0.05, [M.cork, M.white, M.paint, M.brass][i], { solid: false, seg: 24 });
   // tables: jar lids on cork legs, bottle-cap stools, a stub of candle on each
-  for (const [tx, tz] of [[-12.5, -20.5], [-8, -15.5], [-9, -10.5]]) {
+  for (const [tx, tz] of [[-12.5, -20.5], [-8, -15.5], [-12.2, -11.6]]) {
     cyl(tx, tz, 0.32, 0, 1.6, M.cork, { seg: 16 }); cyl(tx, tz, 1.25, 1.6, 1.78, M.brass, { seg: 36, solid: true });
     for (let k = 0; k < 3; k++) { const a = k * 2.1 + tx, sx = tx + Math.cos(a) * 1.9, sz = tz + Math.sin(a) * 1.9; lathe([[0, 0], [0.5, 0], [0.55, 0.12], [0.5, 0.12], [0.45, 0.04], [0, 0.04]], M.paint, sx, 0.75, sz); cyl(sx, sz, 0.2, 0, 0.75, M.cork, { solid: false, seg: 10 }); }
     cyl(tx, tz, 0.16, 1.78, 2.05, M.wax, { solid: false, seg: 12 }); flameLite(tx, 2.08, tz);
@@ -152,9 +152,68 @@ function pub(pal) {
   mesh(new THREE.BoxGeometry(0.04, 3.8, 6), M.felt, -10, 0.03, -16, { rz: Math.PI / 2, cast: false });
   label('TONIGHT: ask the cook', -18.5, 8.3, PZ0 + 0.05, 5, '#f4efe2', '#1d2a22');
   // two hanging lanterns (bottle caps with candle stubs) and a warm haze of light round the room
-  for (const [lx, lz] of [[-25, -19], [-11, -17]]) { mesh(new THREE.CylinderGeometry(0.01, 0.01, PH - 1.6 - 7.4, 4), M.black, lx, (PH - 1.6 + 7.4) / 2, lz, { cast: false }); lathe([[0, 0], [0.45, 0], [0.5, 0.12], [0.45, 0.12], [0.4, 0.04], [0, 0.04]], M.tin, lx, 7.3, lz); cyl(lx, lz, 0.18, 7.34, 7.6, M.wax, { solid: false }); flame(lx, 7.62, lz, { I: 16, dist: 30, s: 0.9, shadow: lx < -20 }); }
+  for (const [lx, lz] of [[-25, -19], [-11, -17]]) { mesh(new THREE.CylinderGeometry(0.01, 0.01, PH - 1.6 - 7.4, 4), M.black, lx, (PH - 1.6 + 7.4) / 2, lz, { cast: false }); lathe([[0, 0], [0.45, 0], [0.5, 0.12], [0.45, 0.12], [0.4, 0.04], [0, 0.04]], M.tin, lx, 7.3, lz); cyl(lx, lz, 0.18, 7.34, 7.6, M.wax, { solid: false }); flame(lx, 7.62, lz, { I: 55, dist: 34, s: 0.9, shadow: lx < -20 }); }
   const amb = new THREE.PointLight(col(0xffb070), 0.6, 40, 1.6); amb.position.set((PX0 + PX1) / 2, PH - 3, (PZ0 + PZ1) / 2); W.group.add(amb); W.pubAmb = amb;
   W.st.pub = { x0: PX0, x1: PX1, z0: PZ0, z1: PZ1, h: PH, hole: new V3(hx, 0, PZ1 - 0.6), out: new V3(hx, 0, CZ0 + 0.8) };
+}
+// ---------- the pub's life: patrons at the tables, a band, the hearth, bottles, things hung from the joists, pictures, crates ----------
+function stamp(x, y, z, ry, w, h, seed) {   // a postage stamp as a framed picture
+  const c = document.createElement('canvas'); c.width = 64; c.height = 80; const g = c.getContext('2d'), r = MC.rng(seed), hue = Math.floor(r() * 360);
+  g.fillStyle = '#efe6cf'; g.fillRect(0, 0, 64, 80); g.fillStyle = 'hsl(' + hue + ',45%,38%)'; g.fillRect(6, 6, 52, 68); g.fillStyle = 'hsl(' + ((hue + 40) % 360) + ',50%,70%)'; g.beginPath(); g.arc(32, 34, 13, 0, 7); g.fill(); g.fillRect(18, 46, 28, 22);
+  g.fillStyle = '#efe6cf'; for (let k = 0; k < 9; k++) { g.beginPath(); g.arc(4 + k * 7, 0, 2.5, 0, 7); g.arc(4 + k * 7, 80, 2.5, 0, 7); g.fill(); } g.font = 'bold 10px serif'; g.fillText(String(1 + Math.floor(r() * 9)) + 'd', 44, 70);
+  const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; t.magFilter = THREE.NearestFilter; return mesh(new THREE.PlaneGeometry(w, h), new THREE.MeshStandardMaterial({ map: t, roughness: 0.9 }), x, y, z, { ry, cast: false });
+}
+function bottle(x, y, z, hue, s = 1) { lathe([[0, 0], [0.2 * s, 0], [0.22 * s, 0.05], [0.22 * s, 0.6 * s], [0.08 * s, 0.85 * s], [0.08 * s, 1.1 * s], [0, 1.1 * s]], M.flat(hue, 0.25), x, y, z, { seg: 10, cast: false }); }
+function pubLife() {
+  const NS = { solid: false, cast: false }, hx = W.hole.x;
+  W.patrons = [];
+  // patrons: the house's other night folk, sat on the stools and at the booth, each idling in its own time
+  const CAST = (MC.CAST || []).filter(c => !c.regular), by = w => CAST.filter(c => c.where === w);
+  const sit = (c, x, y, z, ry) => { if (!c || !MC.pf || !MC.pf.has(c.pf)) return null; const P = MC.pf.build(c.pf, { len: c.len, colors: c.colors, smooth: true, mat: { roughness: 0.95, clearcoat: 0, envMapIntensity: 0.5 } }); P.root.position.set(x, y, z); P.root.rotation.y = ry; P.mesh.castShadow = false; W.group.add(P.root); P.cast = c; P.pos = new V3(x, y + 0.4, z); W.patrons.push(P); return P; };
+  const T = [[-12.5, -20.5], [-8, -15.5], [-12.2, -11.6]], seated = by('table');
+  let ki = 0; for (const [tx, tz] of T) for (let k = 0; k < 3; k++) { const a = k * 2.1 + tx, sx = tx + Math.cos(a) * 1.9, sz = tz + Math.sin(a) * 1.9; sit(seated[ki++], sx, 0.87, sz, Math.atan2(tx - sx, tz - sz)); }
+  for (const [tx, tz] of T) for (let k = 0; k < 3; k++) { const a = k * 2.1 + 1 + tx; lathe([[0, 0], [0.16, 0], [0.19, 0.3], [0.17, 0.3], [0.14, 0.03], [0, 0.03]], M.glass, tx + Math.cos(a) * 0.75, 1.78, tz + Math.sin(a) * 0.75, { seg: 10, cast: false }); cyl(tx + Math.cos(a) * 0.75, tz + Math.sin(a) * 0.75, 0.13, 1.8, 2.0, M.flat(0xc98a2a, 0.3), { solid: false, cast: false, seg: 8 }); }
+  // the band's corner: a cotton-reel stage, a cricket and a snail on it, a string of lights over them
+  cyl(-19.4, -24.3, 1.4, 0, 0.5, M.stud, { seg: 20 }); cyl(-19.4, -24.3, 1.6, 0.5, 0.62, M.wood, { seg: 20, solid: false });   // against the brick, between the bar and the larder: clear of the toaster and where its toast lands
+  { const b = by('band'); sit(b[0], -19.9, 0.62, -24.4, 0.3); sit(b[1], -18.7, 0.62, -24.5, -0.3); }
+  mesh(new THREE.CylinderGeometry(0.5, 0.5, 0.12, 16), M.brass, -20.9, 2.6, PZ0 + 0.1, { rx: Math.PI / 2, cast: false });   // a bottle-cap gong
+  // the hearth in the side wall: a brick arch, embers, the warmest light in the room
+  const hz = -20.5; rbox(PX1 - 0.9, PX1, 0, 3.4, hz - 1.9, hz - 1.3, M.brick, { r: 0.05, uv: 0.2, solid: false }); rbox(PX1 - 0.9, PX1, 0, 3.4, hz + 1.3, hz + 1.9, M.brick, { r: 0.05, uv: 0.2, solid: false }); rbox(PX1 - 1.0, PX1, 3.2, 3.9, hz - 2.1, hz + 2.1, M.stud, { r: 0.08, solid: false });
+  mesh(new THREE.PlaneGeometry(2.6, 3.2), new THREE.MeshBasicMaterial({ color: 0x050302 }), PX1 - 0.02, 1.6, hz, { ry: -Math.PI / 2, cast: false, recv: false });
+  for (let k = 0; k < 5; k++) mesh(new THREE.SphereGeometry(0.22 + (k % 2) * 0.1, 6, 5), new THREE.MeshBasicMaterial({ color: new THREE.Color(1.6, 0.5 + (k % 3) * 0.15, 0.08), fog: false }), PX1 - 0.5, 0.2, hz - 0.8 + k * 0.4, { cast: false, recv: false });
+  flame(PX1 - 0.55, 0.3, hz - 0.3, { I: 0.0001, s: 1.3 }).light.visible = false; const fire = flame(PX1 - 0.6, 0.35, hz + 0.3, { I: 38, dist: 30, s: 1.6, shadow: true }); fire.light.color.set(0xff7a2a); W.hearth = fire;
+  for (let k = 0; k < 3; k++) mesh(new THREE.CylinderGeometry(0.11, 0.11, 1.6, 6), M.stud, PX1 - 1.6, 0.25 + k * 0.2, hz - 2.9 + (k % 2) * 0.15, { rx: Math.PI / 2, cast: false });   // matchstick logs
+  // the back bar: bottles on shelves either side of the board, a mirror (a foil scrap), taps on the kegs
+  for (const [x0, x1] of [[-33.6, -28.2], [-21.6, -17]]) for (const y of [2.9, 4.6]) { rbox(x0, x1, y - 0.14, y, PZ0, PZ0 + 0.9, M.stud, { r: 0.03, uv: 0.2, solid: false, cast: false }); for (let x = x0 + 0.4, k = 0; x < x1 - 0.2; x += 0.55, k++) bottle(x, y, PZ0 + 0.45, [0x2f5a3a, 0x6a2a1a, 0x8a6a1e, 0x24405e, 0x5a1e3a][(k + (y > 4 ? 2 : 0)) % 5], 0.8 + (k % 3) * 0.15); }
+  mesh(new THREE.PlaneGeometry(3.4, 1.6), new THREE.MeshStandardMaterial({ color: 0x9aa4a8, roughness: 0.18, metalness: 1 }), -19.3, 7.2, PZ0 + 0.03, { cast: false });
+  // hung from the joists: two strings of little bulbs, bunting, copper pots, bundles of herbs
+  const cols = [0xffd27a, 0xff8f6b, 0x8fd6ff, 0xb6ff9a];
+  for (const [z, x0, x1] of [[-17.5, PX0 + 0.5, PX1 - 0.5], [-11.5, -26, PX1 - 0.5]]) for (let i = 0; i <= 22; i++) { const u = i / 22, x = x0 + (x1 - x0) * u, y = PH - 2.2 - Math.sin(u * Math.PI) * 1.3 - Math.abs(Math.sin(u * Math.PI * 4)) * 0.25; mesh(new THREE.SphereGeometry(0.09, 5, 4), new THREE.MeshBasicMaterial({ color: col(cols[i % 4]), fog: false }), x, y, z, { cast: false, recv: false }); }
+  for (let i = 0; i < 16; i++) { const u = i / 15, x = -27 + u * 21, y = PH - 2.6 - Math.sin(u * Math.PI) * 0.9, g = new THREE.BufferGeometry(); g.setAttribute('position', new THREE.Float32BufferAttribute([-0.3, 0, 0, 0.3, 0, 0, 0, -0.6, 0], 3)); g.computeVertexNormals(); const m = mesh(g, new THREE.MeshStandardMaterial({ color: col([0xd94f4f, 0xf2c14e, 0x4f8ad9, 0x6fb043][i % 4]), roughness: 1, side: THREE.DoubleSide }), x, y, -21.8, { cast: false }); m.rotation.y = 0.1 * (i % 3 - 1); }
+  for (let k = 0; k < 5; k++) { const x = -24 + k * 1.3, y = 6.6 - (k % 2) * 0.5; mesh(new THREE.CylinderGeometry(0.012, 0.012, PH - 1.6 - y, 4), M.black, x, (PH - 1.6 + y) / 2, -12.6, { cast: false }); lathe([[0, 0], [0.3, 0], [0.42, 0.35], [0.4, 0.35], [0.28, 0.04], [0, 0.04]], M.brass, x, y - 0.35, -12.6, { seg: 12, cast: false }); }
+  for (let k = 0; k < 6; k++) { const x = -15 + k * 1.2; mesh(new THREE.ConeGeometry(0.22, 0.9, 6), M.flat([0x4a6a2a, 0x6a5a2a, 0x7a3a4a][k % 3], 1), x, PH - 2.3, -24.2, { rx: Math.PI, cast: false }); }
+  // pictures (stamps), a watch-face clock, a playing card, cramped round the walls
+  for (let k = 0; k < 7; k++) stamp(PX0 + 0.03, 3.2 + (k % 2) * 2.3, -23.5 + k * 1.15, Math.PI / 2, 1.3, 1.6, 20 + k);
+  for (let k = 0; k < 6; k++) stamp(-25 + k * 3.3 + (k > 2 ? 2.5 : 0), 4.2 + (k % 3) * 1.6, PZ1 - 0.05, Math.PI, 1.3, 1.6, 40 + k);
+  for (let k = 0; k < 4; k++) stamp(PX1 - 0.03, 5.2 + (k % 2) * 2, -15 + k * 1.6, -Math.PI / 2, 1.2, 1.5, 60 + k);
+  mesh(new THREE.CylinderGeometry(1.0, 1.0, 0.12, 24), M.white, PX0 + 0.08, 8.3, -19, { rz: Math.PI / 2, cast: false }); mesh(new THREE.TorusGeometry(1.0, 0.08, 6, 24), M.brass, PX0 + 0.12, 8.3, -19, { ry: Math.PI / 2, cast: false });
+  for (const [a, l] of [[0.6, 0.7], [2.4, 0.45]]) mesh(new THREE.BoxGeometry(0.03, l, 0.06), M.black, PX0 + 0.16, 8.3 + Math.cos(a) * l / 2, -19 + Math.sin(a) * l / 2, { rx: a, cast: false });
+  // crates (matchboxes), sacks, a ladder to a loft shelf heaped with more, corks, a broom
+  for (const [x, z, n] of [[-33, -19.5, 3], [-33, -21.6, 2], [-17.4, -9.0, 2]]) for (let k = 0; k < n; k++) rbox(x - 0.8 + (k % 2) * 0.15, x + 0.8 + (k % 2) * 0.15, k * 0.95, k * 0.95 + 0.9, z - 0.55, z + 0.55, M.card, { r: 0.04, uv: 0.5, solid: k === 0 });
+  for (const [x, z] of [[-32.9, -23.6], [-31.6, -24.6], [-15.9, -8.9]]) { const m2 = mesh(new THREE.SphereGeometry(0.8, 8, 6), M.flat(0xa89878, 1), x, 0.55, z, { cast: false }); m2.scale.set(1, 0.75, 0.9); }
+  rbox(PX0, PX0 + 2.6, 9.2, 9.4, -25.9, -12, M.stud, { r: 0.03, uv: 0.2, solid: false }); for (let k = 0; k < 7; k++) rbox(PX0 + 0.3, PX0 + 1.9, 9.4, 10.2 - (k % 2) * 0.3, -25.4 + k * 1.9, -24.2 + k * 1.9, k % 2 ? M.card : M.cork, { r: 0.05, uv: 0.4, solid: false, cast: false });
+  for (const dz of [-0.45, 0.45]) mesh(new THREE.CylinderGeometry(0.06, 0.06, 9.6, 5), M.wood, PX0 + 2.9, 4.6, -17.2 + dz, { rz: -0.12, cast: false }); for (let k = 0; k < 9; k++) mesh(new THREE.CylinderGeometry(0.05, 0.05, 0.9, 5), M.wood, PX0 + 3.4 - k * 0.125, 0.7 + k * 1.0, -17.2, { rx: Math.PI / 2, cast: false });
+  // a booth along the hearth wall: a domino for a bench, felt cushions
+  rbox(PX1 - 1.3, PX1 - 0.1, 0, 0.8, -17.6, -12.4, M.black, { r: 0.06, solid: false }); rbox(PX1 - 1.3, PX1 - 0.15, 0.8, 0.95, -17.5, -12.5, M.felt, { r: 0.05, solid: false, cast: false });
+  for (let k = 0; k < 3; k++) for (const dz of [-0.35, 0.35]) mesh(new THREE.CylinderGeometry(0.09, 0.09, 0.03, 8), M.white, PX1 - 0.09, 0.4, -16.6 + k * 1.7 + dz, { rz: Math.PI / 2, cast: false });
+  { const b = by('booth'); sit(b[0], PX1 - 0.8, 0.95, -13.4, -Math.PI / 2); sit(b[1], PX1 - 0.8, 0.95, -16.6, -Math.PI / 2 + 0.3); }
+  // three who are never still: the potboy between the tables, the flower seller, the rent man doing his rounds
+  const ROUTES = [[[-15, -19], [-10.5, -17.5], [-11, -13], [-15.5, -11], [-21, -17], [-24.5, -20.8]], [[-19, -10], [-13, -9.6], [-7, -12.6], [-10.2, -18], [-15, -22.6], [-21, -21]], [[-23, -22], [-19, -22.8], [-14.6, -17], [-19.5, -12.5], [-27, -18.5]]];
+  by('walk').forEach((c, i) => { const r = ROUTES[i % 3], P = sit(c, r[0][0], 0, r[0][1], 0); if (!P) return; P.route = r; P.leg = 0; P.wait = 2 + i * 3; P.walk = MC.pf.pick(P.clips, 'walk'); P.idle = MC.pf.pick(P.clips, 'idle'); });
+  // rugs, sawdust by the bar, a doormat at the mousehole
+  mesh(new THREE.BoxGeometry(5, 0.04, 3), M.flat(0x6a2a2a, 1), -25, 0.03, -20.5, { cast: false }); mesh(new THREE.BoxGeometry(2.2, 0.04, 1.4), M.flat(0x5a4a2a, 1), hx, 0.03, PZ1 - 1.4, { cast: false });
+  // a second low beam and posts that crowd the room
+  rbox(PX0, PX1, 8.6, 9.3, -18.6, -17.9, M.stud, { r: 0.06, uv: 0.15, solid: false }); for (const x of [-17.4, -6.4]) rbox(x, x + 0.6, 0, 8.6, -18.55, -17.95, M.stud, { r: 0.06, uv: 0.15 });
 }
 // a candle on a table: a flame and its glow, no light of its own (the lanterns light the room)
 function flameLite(x, y, z) { const f = flame(x, y, z, { I: 0.0001, s: 0.6 }); f.light.visible = false; return f; }
@@ -170,9 +229,9 @@ function lights(pal) {
   // the moon is outside: its light only gets in through the window, as a shaft that lands on the counter
   const moon = W.moon = new THREE.SpotLight(col(0xb9c9ff), 2.6, 0, 0.14, 0.35, 0); moon.position.set(2, 50.9, -36.9); moon.target.position.set(2, 11.25, -6.4); W.group.add(moon, moon.target);
   const ceil = W.ceil = new THREE.DirectionalLight(col(0xffe2b8), 0); ceil.position.set(8, 40, 22); ceil.target.position.set(0, 0, -1); ceil.visible = false; W.group.add(ceil, ceil.target);
-  if (q > 0) { moon.castShadow = true; moon.shadow.mapSize.set(2048, 2048); moon.shadow.camera.near = 25; moon.shadow.camera.far = 120; moon.shadow.bias = -0.0008; moon.shadow.normalBias = 0.03; moon.shadow.radius = 2.5; }
+  if (q > 0) { moon.castShadow = true; moon.shadow.mapSize.set(1024, 1024); moon.shadow.camera.near = 25; moon.shadow.camera.far = 120; moon.shadow.bias = -0.0008; moon.shadow.normalBias = 0.03; moon.shadow.radius = 2.5; }
   for (const L of [ceil]) if (q > 0) {
-    L.castShadow = true; L.shadow.mapSize.set(q > 1 ? 4096 : 2048, q > 1 ? 4096 : 2048); const c = L.shadow.camera; c.left = -40; c.right = 22; c.top = 30; c.bottom = -30; c.near = 2; c.far = 80; L.shadow.bias = -0.0006; L.shadow.normalBias = 0.03; L.shadow.radius = 2.5;
+    L.castShadow = true; L.shadow.mapSize.set(1024, 1024); const c = L.shadow.camera; c.left = -40; c.right = 22; c.top = 30; c.bottom = -30; c.near = 2; c.far = 80; L.shadow.bias = -0.0006; L.shadow.normalBias = 0.03; L.shadow.radius = 2.5;
   }
   W.roomFill = new THREE.HemisphereLight(col(0xfff0d8), col(0x5a4a3a), 0); W.group.add(W.roomFill);
   W.playerGlow = new THREE.PointLight(col(0xb9c4e6), 0.5, 7, 2);   // night eyes: just enough to see your own paws scene.add(W.playerGlow);
@@ -442,8 +501,8 @@ W.build = function (homeId = 0, seed = 1) {
   if (!GLOW) { GLOW = glowTex(); FLAME = flameTex(); }
   if (W.palKey !== homeId) { MC.buildMaterials(home.pal); W.palKey = homeId; }
   W.hole = new V3(home.hole == null ? -9 : home.hole, 0, -7);
-  shell(home.pal); pub(home.pal); lights(home.pal); home.build(MC.rng(seed)); nightLight(W.hole.x + 1.9);
-  W.spawn = new V3(-19, 0, -18.5);   // the night starts at home, in the pub
+  shell(home.pal); pub(home.pal); pubLife(); lights(home.pal); home.build(MC.rng(seed)); nightLight(W.hole.x + 1.9);
+  W.spawn = new V3(-19, 0, -17);   // the night starts at home, in the pub
   W.pins.forEach(pinMesh); tap(home.tap || [15.2, -5.95]);
   buildEnv(); W.captureEnv(); scene.environment = W.envNight;
   P.buildGrid(PX0, CX1, PZ0, CZ1, 0.5);
@@ -455,6 +514,12 @@ W.build = function (homeId = 0, seed = 1) {
 W.setLit = v => { W.litTarget = v; };
 W.update = function (dt, head) {
   if (W.water) W.water.update(dt);
+  if (W.patrons) { const hd = head || MC.player.head, near = hd && hd.z < -6.5; W.pt = (W.pt || 0) + dt;
+    if (near && W.pt > 1 / 20) { const d = W.pt; W.pt = 0; for (const P of W.patrons) {
+      if (P.route) { const hold = P.talkT > 0 || (hd && Math.hypot(hd.x - P.root.position.x, hd.z - P.root.position.z) < 1.6);   // a walker stops for you, and at each stop for a while
+        if (P.talkT > 0) P.talkT -= d; if (P.wait > 0 || hold) { if (!hold) P.wait -= d; P.play(P.idle, 0.3); if (hold && hd) { const a = Math.atan2(hd.x - P.root.position.x, hd.z - P.root.position.z); let q = a - P.root.rotation.y; q = Math.atan2(Math.sin(q), Math.cos(q)); P.root.rotation.y += q * Math.min(1, d * 5); } }
+        else { const t = P.route[(P.leg + 1) % P.route.length], dx = t[0] - P.root.position.x, dz = t[1] - P.root.position.z, l = Math.hypot(dx, dz); P.play(P.walk, 0.3, 1.2); if (l < 0.15) { P.leg = (P.leg + 1) % P.route.length; P.wait = 3 + Math.random() * 6; } else { const st = Math.min(l, 1.1 * d); P.root.position.x += dx / l * st; P.root.position.z += dz / l * st; let q = Math.atan2(dx, dz) - P.root.rotation.y; q = Math.atan2(Math.sin(q), Math.cos(q)); P.root.rotation.y += q * Math.min(1, d * 6); } P.pos.set(P.root.position.x, 0.5, P.root.position.z); } }
+      P.mixer.update(d); } } }   // the patrons move only while you are in the pub, at 20 frames a second
   W.t += dt; const t = W.t;
   for (const f of W.flames) {
     const n = Math.sin(t * 11 + f.ph) * 0.5 + Math.sin(t * 23.7 + f.ph * 2) * 0.3 + Math.sin(t * 5.1 + f.ph) * 0.2, k = 1 + n * (0.08 + f.wild * 0.5);

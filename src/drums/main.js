@@ -12,12 +12,13 @@ import { Sticks, TIP, speedToVel } from './sticks.js';
 import { loadAssets, kitTextures } from './assets.js';
 import { buildGarage } from './garage.js';
 import { GripHand, Body } from './hands.js';
+import { startLife } from './life.js';
 
 const Q = new URLSearchParams(location.search), LOW = Q.has('low');
 const $ = (id) => document.getElementById(id);
 const LINES = +Q.get('lines') || 360; // a screen is drawn this many lines tall and stretched soft, as an old console on a tube was
 const SAVE = 'drums1';
-const set = Object.assign({ tilt: 0, height: 0, lead: 0, bpm: 100 }, (() => { try { return JSON.parse(localStorage.getItem(SAVE)) || {}; } catch (e) { return {}; } })());
+const set = Object.assign({ tilt: 0, height: 0, lead: 0, bpm: 100, body: 0 }, (() => { try { return JSON.parse(localStorage.getItem(SAVE)) || {}; } catch (e) { return {}; } })());
 const keep = () => { try { localStorage.setItem(SAVE, JSON.stringify(set)); } catch (e) { /* private window */ } };
 
 const canvas = $('view');
@@ -87,8 +88,8 @@ function card(lines, w = 0.86) {
   m.renderOrder = 19;
   return m;
 }
-const VR_GUIDE = [['RIGHT TRIGGER', 'kick drum'], ['LEFT TRIGGER', 'open the hi-hat'], ['GRIP ON A CYMBAL', 'choke it'], ['RIGHT STICK  ↕', 'stick angle'], ['LEFT STICK  ↕', 'seat height'],
-  ['LEFT STICK  ↔', 'timing: earlier / later'], ['RIGHT STICK  ↔ / CLICK', 'metronome tempo / on-off'], ['HOLD A or X', 'sit me at the kit again'], ['B or Y', 'hide this guide']];
+const VR_GUIDE = [['RIGHT TRIGGER', 'kick drum'], ['LEFT TRIGGER', 'open the hi-hat'], ['GRIP ON A CYMBAL', 'choke it'], ['RIGHT STICK  ↕', 'stick angle'], ['RIGHT GRIP + STICK  ↕', 'body forward / back'], ['LEFT STICK  ↕', 'seat height'],
+  ['LEFT STICK  ↔', 'timing: earlier / later'], ['RIGHT STICK  ↔ / CLICK', 'metronome tempo / on-off'], ['LEFT STICK  CLICK', 'garage door up / down'], ['HOLD A', 'talk to a neighbour'], ['HOLD X', 'sit me at the kit again'], ['BOTH TRIGGERS, 3 s', 'send a picture of what you see'], ['B or Y', 'hide this guide']];
 
 // a small readout that shows only while a setting is being changed
 const readout = (() => {
@@ -111,7 +112,7 @@ const readout = (() => {
 })();
 
 // ---------- build ----------
-let kit, sticks, garage, body, hands, metro;
+let kit, sticks, garage, body, hands, metro, life;
 const handMat = new THREE.MeshStandardMaterial({ color: 0xd9a984, roughness: 0.62 });
 const head = { pos: new THREE.Vector3(), quat: new THREE.Quaternion() };
 const seat = Object.assign(new THREE.Vector3(), { feet: [new THREE.Vector3(), new THREE.Vector3()] });
@@ -123,6 +124,8 @@ async function build() {
   await loadAssets((p) => { prog[0] = p; show(); }, 2);
   const T = kitTextures(LOW);
   garage = buildGarage(scene, LOW);
+  life = startLife({ scene, garage, sound, low: LOW, Q, readout, $ });
+  D.life = life; D.street = life.street;
   kit = buildKit(T, LOW);
   scene.add(kit.group);
   sticks = new Sticks(kit, T);
@@ -201,12 +204,33 @@ function onHit(piece, vel, zone, r, lx, lz, side) {
     rumble(side, cym ? 0.2 + 0.6 * vel : zone === 'rimshot' || zone === 'rim' || zone === 'cross' ? 0.5 + 0.4 * vel : 0.15 + 0.4 * vel, cym ? (piece === 'hat' ? 0.05 + 0.08 * sound.hat : 0.14) : 0.03);
     if (hands[side]) hands[side].kick = 1;
   }
+  life.note(vel);
   if (vel > 0.5) garage.jolt((vel - 0.5) * (cym ? 0.5 : 1));
   shake.v = Math.max(shake.v, vel * (piece === 'kick' ? 1 : 0.4));
   const l = guide.labels[piece];
   if (l) l.played = true;
 }
 function kick(vel) { onHit('kick', vel, 'head', 0, 0, 0, null); rumble('right', 0.35 + 0.45 * vel, 0.06); rumble('left', 0.15 + 0.25 * vel, 0.05); }
+
+// ---------- a picture of what you see, sent to the owners' queue (both triggers held three seconds; P on a screen) ----------
+const snapper = { hold: 0, sent: false, busy: false };
+function snap() { // one more look from your eyes into a picture: the headset's own picture cannot be read back
+  const W = 960, H = 600, rt = new THREE.WebGLRenderTarget(W, H), cam = new THREE.PerspectiveCamera(88, W / H, 0.03, 70), x = renderer.xr, was = x.enabled, keepT = renderer.getRenderTarget();
+  rt.texture.colorSpace = THREE.SRGBColorSpace; cam.position.copy(head.pos); cam.quaternion.copy(head.quat); cam.updateMatrixWorld(true);
+  const buf = new Uint8Array(W * H * 4); x.enabled = false;
+  try { renderer.setRenderTarget(rt); renderer.render(scene, cam); renderer.readRenderTargetPixels(rt, 0, 0, W, H, buf); } finally { renderer.setRenderTarget(keepT); x.enabled = was; rt.dispose(); }
+  const c = document.createElement('canvas'); c.width = W; c.height = H; const g = c.getContext('2d'), im = g.createImageData(W, H);
+  for (let y = 0; y < H; y++) im.data.set(buf.subarray((H - 1 - y) * W * 4, (H - y) * W * 4), y * W * 4);
+  g.putImageData(im, 0, 0); return c.toDataURL('image/jpeg', 0.72);
+}
+async function sendPicture(now) {
+  if (snapper.busy) return; snapper.busy = true; readout.show('PICTURE TAKEN, SENDING', now);
+  const jpg = snap(), ctx = { game: 'drums', mode: D.mode, hour: +life.hour.toFixed(1), door: +garage.door.open.toFixed(2), set, hits: stats.hits, last: stats.last || null, slow: Math.round(stats.slow), lamp: lampOn, lean: !!garage.lean, latency: +sound.latency.toFixed(3), near: life.street.nearest()?.id || '', ua: navigator.userAgent.slice(0, 160) };
+  D.lastShot = jpg.length;
+  try { const r = await fetch('/sushi/report', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ jpg, context: ctx }) }), j = r.ok ? await r.json() : null;
+    readout.show(j && j.ok ? 'PICTURE SENT' : r.status === 401 ? 'SIGN IN TO SEND A PICTURE' : 'PICTURE NOT SENT', clock.elapsedTime); } catch (e) { readout.show('PICTURE NOT SENT', clock.elapsedTime); }
+  snapper.busy = false;
+}
 
 // ---------- where you sit ----------
 function placeRig() {
@@ -278,7 +302,9 @@ function vrInput(dt, now) {
       kit.setPedal(trig);
       if (trig > 0.33 && !P.down) { P.down = true; kick(Math.min(1, Math.max(0.2, Math.pow(Math.max(0, (trig - (P.trig || 0)) / Math.max(dt, 0.004) - 2) / 34, 0.7)))); }
       if (trig < 0.2) P.down = false;
-      if (Math.abs(sy) > 0.5) { set.tilt = Math.max(-0.9, Math.min(0.9, set.tilt - sy * dt * 0.5)); readout.show('STICK ANGLE ' + Math.round(set.tilt * 57.3) + '°', now); keep(); }
+      // with the grip held, the same stick slides your body forward or back under your head
+      if (sq > 0.6 && Math.abs(sy) > 0.5) { set.body = Math.max(-0.3, Math.min(0.3, set.body + sy * dt * 0.15)); readout.show('BODY ' + (set.body > 0 ? 'BACK ' : 'FORWARD ') + Math.abs(Math.round(set.body * 100)) + ' cm', now); keep(); }
+      else if (Math.abs(sy) > 0.5) { set.tilt = Math.max(-0.9, Math.min(0.9, set.tilt - sy * dt * 0.5)); readout.show('STICK ANGLE ' + Math.round(set.tilt * 57.3) + '°', now); keep(); }
       if (Math.abs(sx) > 0.6 && Math.abs(sy) < 0.4) { set.bpm = Math.max(40, Math.min(240, set.bpm + sx * dt * 30)); readout.show('TEMPO ' + Math.round(set.bpm), now); keep(); }
       if (th && !P.th) toggleMetro(now);
     } else {
@@ -289,7 +315,9 @@ function vrInput(dt, now) {
       if (Math.abs(sy) > 0.5 && Math.abs(sx) < 0.4) { set.height = Math.max(-0.4, Math.min(0.4, set.height - sy * dt * 0.2)); placeRig(); readout.show('SEAT ' + (set.height >= 0 ? '+' : '') + Math.round(set.height * 100) + ' cm', now); keep(); }
       if (Math.abs(sx) > 0.6 && Math.abs(sy) < 0.4) { set.lead = Math.max(0, Math.min(80, set.lead + sx * dt * 25)); sticks.lead = set.lead / 1000; readout.show('HITS ' + Math.round(set.lead) + ' ms EARLY', now); keep(); }
     }
-    if (a) { xr.hold += dt; if (xr.hold > 0.5 && !xr.seated) { placeRig(); xr.seated = 1; readout.show('SEATED', now); } }
+    if (side === 'left') { if (a) { xr.hold += dt; if (xr.hold > 0.5 && !xr.seated) { placeRig(); xr.seated = 1; readout.show('SEATED', now); } } else { xr.hold = 0; xr.seated = 0; } if (th && !P.th) { garage.toggleDoor(); readout.show(garage.door.want > 0.5 ? 'DOOR UP' : 'DOOR DOWN', now); } }
+    else if (a !== !!P.a) life.listen(a);
+    P.a = a;
     if (b && !P.b) { guide.on = !guide.on; }
     // a cymbal held is a cymbal stopped
     if (sq > 0.6) for (const p of kit.pieces) if (p.kind === 'cymbal') {
@@ -300,8 +328,9 @@ function vrInput(dt, now) {
     if (sq < 0.4) P.choke = false;
     P.trig = trig; P.th = th; P.b = b;
   }
-  if (!xr.slots.some((s) => s.source?.gamepad?.buttons?.[4]?.pressed)) { xr.hold = 0; xr.seated = 0; }
   for (const s of ['left', 'right']) if (!any[s]) sticks.set(s, _p, _q, false);
+  // both triggers held three seconds: a picture of what you see goes to the owners
+  if ((xr.prev.left.trig || 0) > 0.8 && (xr.prev.right.trig || 0) > 0.8) { snapper.hold += dt; if (snapper.hold > 0.4 && !snapper.sent) readout.show('PICTURE IN ' + Math.max(1, Math.ceil(3 - snapper.hold)), now); if (snapper.hold >= 3 && !snapper.sent) { snapper.sent = true; sendPicture(now); } } else { snapper.hold = 0; snapper.sent = false; }
 }
 
 // ---------- a screen: keys and the mouse ----------
@@ -328,12 +357,17 @@ function playKey(code, now) {
 }
 addEventListener('keydown', (e) => {
   if (D.mode !== 'screen') return;
+  if (e.target === $('say')) { if (e.code === 'Enter') { life.say($('say').value); $('say').value = ''; $('say').blur(); $('say').hidden = true; } else if (e.code === 'Escape') { $('say').blur(); $('say').hidden = true; } return; }
   if (e.repeat) { if (KEYMAP[e.code] || e.code === 'Space') e.preventDefault(); return; }
   scr.keys.add(e.code);
   const now = performance.now() / 1000;
   if (e.code === 'Space') { kick(e.shiftKey ? 1 : 0.7); e.preventDefault(); }
   else if (e.code === 'KeyQ') { sound.setHat(1); kit.setHat(1); }
   else if (e.code === 'KeyH') guide.on = !guide.on;
+  else if (e.code === 'KeyO') { garage.toggleDoor(); readout.show(garage.door.want > 0.5 ? 'DOOR UP' : 'DOOR DOWN', now); }
+  else if (e.code === 'KeyN') life.skip();
+  else if (e.code === 'KeyP') sendPicture(now);
+  else if (e.code === 'Enter') { const b = $('say'); b.hidden = false; b.focus(); e.preventDefault(); }
   else if (e.code === 'KeyM') toggleMetro(now);
   else if (e.code === 'BracketLeft' || e.code === 'BracketRight') { set.bpm = Math.max(40, Math.min(240, set.bpm + (e.code === 'BracketLeft' ? -4 : 4))); readout.show('TEMPO ' + set.bpm, now); keep(); }
   else if (playKey(e.code, now)) e.preventDefault();
@@ -359,9 +393,13 @@ addEventListener('pointerup', (e) => {
   for (const p of kit.pieces) {
     _a.copy(ray.ray.origin).applyMatrix4(p.inv); _b.copy(ray.ray.direction).transformDirection(p.inv);
     if (_b.y >= -1e-4) continue;
-    let t = -_a.y / _b.y;
-    for (let i = 0; i < 2; i++) { _c.copy(_a).addScaledVector(_b, t); t = -(_a.y - kit.height(p, Math.hypot(_c.x, _c.z))) / _b.y; }
-    _c.copy(_a).addScaledVector(_b, t);
+    // the first place along the click's line that is under the surface: stepped from above the piece's highest point down to its rim's plane, then closed in on
+    const t0 = -(_a.y - 0.045) / _b.y, t1 = -_a.y / _b.y, f = (tt) => { _c.copy(_a).addScaledVector(_b, tt); return _c.y - kit.height(p, Math.hypot(_c.x, _c.z)); };
+    let lo = t0, hi = t1, found = false;
+    for (let i = 1; i <= 24; i++) { const tt = t0 + (t1 - t0) * i / 24; if (f(tt) <= 0) { hi = tt; found = true; break; } lo = tt; }
+    if (!found) continue;
+    for (let i = 0; i < 8; i++) { const m = (lo + hi) / 2; if (f(m) <= 0) hi = m; else lo = m; }
+    const t = hi; f(t);
     const rho = Math.hypot(_c.x, _c.z);
     if (t > 0 && rho <= p.radius + (p.kind === 'drum' ? 0.02 : 0) && (!best || t < best.t)) best = { p, t, pt: _c.clone(), rho };
   }
@@ -453,7 +491,9 @@ renderer.setAnimationLoop(() => {
   // your body: seated, the arms ending at the hands on the sticks
   const cam = vr ? renderer.xr.getCamera() : camera;
   cam.getWorldPosition(head.pos); cam.getWorldQuaternion(head.quat);
+  // your hips sit under your own neck, wherever your chair is, so the body is upright; set.body slides it forward or back
   seat.copy(SEAT); seat.y += 0.04;
+  if (vr) { _a.set(0, 0, 0.04 + set.body).applyAxisAngle(UP, Math.atan2(-_b.set(0, 0, -1).applyQuaternion(head.quat).x, -_b.z)); seat.x = head.pos.x + _a.x; seat.z = head.pos.z + _a.z; }
   for (let k = 0; k < 2; k++) { seat.feet[k].copy(FEET[k]); seat.feet[k].y += kit.foot[k]; }
   sticks.left.obj.updateMatrixWorld(true); sticks.right.obj.updateMatrixWorld(true);
   for (const s of ['left', 'right']) { const h = hands[s]; h.kick = Math.max(0, (h.kick || 0) - dt * 7); if (h.ready) { h.curl(h.kick); h.update(); } }
@@ -461,6 +501,7 @@ renderer.setAnimationLoop(() => {
     if (!body.skinned) { handMat.color.copy(body.skin); body.skinned = true; }
     body.pose(head.pos, head.quat, sticks.left.active ? hands.left.wrist : _a.set(-0.25, 0.8, -0.1), sticks.right.active ? hands.right.wrist : _b.set(0.25, 0.8, -0.1), seat, dt);
   }
+  life.update(dt, now);
   garage.update(dt, now);
   garage.haloM.opacity = vr ? 0.12 : 0; // a pane's glow: the bloom does it on a screen
   for (const n in guide.labels) guide.labels[n].visible = guide.on && !guide.labels[n].played;

@@ -18,7 +18,8 @@ MODELS = {'steel_frame_shelves_01': (256, 1800), 'steel_frame_shelves_02': (256,
           'mounted_fluorescent_lights': (256, 600), 'hanging_industrial_lamp': (256, 1200), 'power_box_01': (256, 1000), 'utility_box_01': (256, 800), 'Television_01': (256, 1500), 'Sofa_01': (256, 2500),
           'wall_clock': (256, 800), 'metal_stool_01': (256, 800), 'desk_lamp_arm_01': (256, 1500), 'bleach_bottle': (256, 400), 'plastic_bottle_gallon': (256, 400), 'wooden_ladder': (256, 500),
           'watering_can_metal_01': (256, 900), 'american_football': (256, 400), 'old_military_crate': (256, 600), 'wooden_crate_02': (256, 600), 'tool_cart': (256, 2000), 'cassette_player': (256, 1000),
-          'potted_plant_01': (256, 2500), 'potted_plant_04': (256, 2500), 'planter_box_01': (256, 1500), 'worn_metal_rack': (256, 1200), 'industrial_wall_lamp': (256, 900), 'can_rusted': (256, 300), 'multi_cleaner_bottle': (256, 400)}
+          'potted_plant_01': (256, 2500), 'potted_plant_04': (256, 2500), 'planter_box_01': (256, 1500), 'worn_metal_rack': (256, 1200), 'industrial_wall_lamp': (256, 900), 'can_rusted': (256, 300), 'multi_cleaner_bottle': (256, 400),
+          'ArmChair_01': (256, 2500), 'CoffeeTable_01': (256, 1200), 'painted_wooden_cabinet': (256, 2500), 'dartboard': (256, 1200), 'wooden_bookshelf_worn': (256, 2500)}
 for d in ('tex', 'm'): os.makedirs(OUT + d, exist_ok=True)
 only = sys.argv[1:]
 for name, (s, z) in TEX.items():

@@ -62,13 +62,12 @@ const sunPhi=SKY.u*Math.PI*2,SUN=new T.Vector3(-Math.cos(sunPhi)*Math.cos(SKY.el
 const FOG=new T.Color(lin(SKY.hor[0]),lin(SKY.hor[1]),lin(SKY.hor[2])).multiplyScalar(1.05).lerp(new T.Color(.2,.23,.27),.3),SUNHAZE=new T.Color(lin(SKY.sunhor[0]),lin(SKY.sunhor[1]),lin(SKY.sunhor[2])).multiplyScalar(2.9);
 // the picture's style: a grade worked in every surface's own shader, so it costs the headset no extra pass (chosen on the menu, takes a reload)
 const LOOKS=[['As shot',''],
-  ['War film','float l=dot(c,vec3(.3,.59,.11));c=mix(c,vec3(l),.5);c=smoothstep(vec3(.02),vec3(.92),c);c*=vec3(.97,1.,.95);'],
-  ['Kodachrome','float l=dot(c,vec3(.3,.59,.11));c=mix(vec3(l),c,1.35);c=mix(c*vec3(.9,.97,1.12),c*vec3(1.1,1.02,.86),smoothstep(.1,.7,l));c=smoothstep(vec3(0.),vec3(.96),c);'],
-  ['Cold steel','float l=dot(c,vec3(.3,.59,.11));c=mix(c,vec3(l),.4)*vec3(.88,.98,1.1);c=pow(c,vec3(1.15));'],
-  ['Golden hour','float l=dot(c,vec3(.3,.59,.11));c=mix(c,c*vec3(1.2,1.02,.74),.75);c=mix(c,vec3(l)*vec3(1.1,.95,.75),.15);c=c*.94+.035*vec3(1.,.8,.5);'],
-  ['Newsreel','float l=dot(c,vec3(.3,.59,.11));l=smoothstep(.03,.9,l);c=vec3(l)*vec3(1.04,1.,.9);'],
-  ['Painted','float l=max(dot(c,vec3(.3,.59,.11)),1e-4);float b=(floor(pow(l,.6)*6.)+.5)/6.;b=pow(b,1.667);c=mix(vec3(l),c,1.25)*(b/l);'],
-  ['Night watch','float l=dot(c,vec3(.3,.59,.11));c=mix(c,vec3(l),.6)*vec3(.55,.75,1.05)*.8;c=pow(c,vec3(1.25));']];
+  ['Modern shooter: cool shadows, warm light','float l=dot(c,vec3(.3,.59,.11));c=mix(c*vec3(.94,1.,1.07),c*vec3(1.06,1.01,.93),smoothstep(.08,.6,l));c=mix(vec3(l),c,1.06);c=mix(c,smoothstep(vec3(0.),vec3(1.),c),.25);'],
+  ['Mil-sim: natural, a little washed','float l=dot(c,vec3(.3,.59,.11));c=mix(c,vec3(l),.14);c=c*.95+.022;'],
+  ['War epic: muted olive','float l=dot(c,vec3(.3,.59,.11));c=mix(c,vec3(l),.24)*vec3(1.02,1.02,.93);c=mix(c,smoothstep(vec3(0.),vec3(1.),c),.18);'],
+  ['Arcade armour: clean and punchy','float l=dot(c,vec3(.3,.59,.11));c=mix(vec3(l),c,1.18);c=mix(c,smoothstep(vec3(0.),vec3(1.),c),.35);'],
+  ['Cold front: grey-blue air','float l=dot(c,vec3(.3,.59,.11));c=mix(c,vec3(l),.12)*vec3(.95,1.,1.06);'],
+  ['Dust and sand: warm haze','float l=dot(c,vec3(.3,.59,.11));c=mix(c,vec3(l),.08)*vec3(1.07,1.01,.9);c=c*.96+vec3(.02,.016,.008);']];
 {const q=new URLSearchParams(location.search);if(q.has('look'))SET.look=+q.get('look')||0;if(!LOOKS[SET.look])SET.look=0;}
 (function installHaze(){
   const v3=c=>{const a=c.isVector3?[c.x,c.y,c.z]:[c.r,c.g,c.b];return`vec3(${a.map(v=>v.toFixed(5)).join(',')})`;};

@@ -3,7 +3,8 @@ import * as THREE from 'three';
 import { TYPES, CAP, QMAX } from './sim.js';
 
 const W = 1000, H = 760, KEYS = [1, 2, 3, 4, 5], COL = ['#4da8ff', '#59f080'];
-const NOTE = ['', ['fast swarm', 'beats cruisers'], ['line ship', 'beats fighters'], ['heavy beam', 'beats frigates'], ['gun platform', 'holds a spot'], ['hidden', 'blasts what nears']];
+// each kind's job, what it beats and what beats it
+const NOTE = ['', ['RAIDER', 'beats cruisers', 'dies to frigates'], ['ESCORT', 'beats fighters', 'dies to cruisers'], ['SIEGE', 'beats frigates, turrets', 'dies to fighters'], ['GUARD', 'beats fighters, frigates', 'slow; dies to cruisers'], ['TRAP', 'unseen until close', 'one blast, then gone']];
 
 // the console: one board that floats at your left hand's side, big enough to read at a glance. Point EITHER controller at a button and pull the trigger; hold a grip on it to carry it somewhere else
 class Panel {
@@ -24,7 +25,7 @@ class Panel {
   // s: { credits, income, count, queue, me, ar, canAR, state, extra, paused, fx, guide, costs }
   draw(s) {
     const lit = this.flash >= 0 && performance.now() - this.flashAt < 220 ? this.flash : -1; if (lit < 0) this.flash = -1;
-    const key = [s.mode, s.col, lit, s.paused, s.fx, s.guide, s.costs && s.costs[1].cost, s.credits | 0, s.income, s.count, s.queue.map(q => q.type + ':' + Math.round(q.done * 20)).join(), s.me, s.ar, s.state, s.extra, this.hot, this.hot2].join('|'); if (key === this.key) return; this.key = key;
+    const key = [s.picked, s.mode, s.col, lit, s.paused, s.fx, s.guide, s.costs && s.costs[1].cost, s.credits | 0, s.income, s.count, s.queue.map(q => q.type + ':' + Math.round(q.done * 20)).join(), s.me, s.ar, s.state, s.extra, this.hot, this.hot2].join('|'); if (key === this.key) return; this.key = key;
     const x = this.x, play = s.state === 'play'; x.clearRect(0, 0, W, H); x.fillStyle = 'rgba(6,10,18,0.94)'; x.beginPath(); x.roundRect(3, 3, W - 6, H - 6, 34); x.fill(); x.strokeStyle = COL[s.col | 0]; x.lineWidth = 6; x.stroke();
     x.textBaseline = 'middle'; x.textAlign = 'left'; x.fillStyle = '#ffd766'; x.font = 'bold 64px system-ui,sans-serif'; x.fillText('\u25C8 ' + (s.credits | 0), 36, 62);
     x.fillStyle = '#9fb0c8'; x.font = '32px system-ui,sans-serif'; x.fillText('+' + s.income + ' a second', 330, 66); x.textAlign = 'right'; x.fillStyle = s.count >= CAP ? '#ff6a5a' : '#cfd8e6'; x.fillText('FLEET ' + s.count + ' / ' + CAP, W - 36, 66);
@@ -35,12 +36,12 @@ class Panel {
       const first = s.queue[0] && s.queue[0].type === t ? s.queue[0].done : 0; if (first) { x.fillStyle = 'rgba(80,220,140,0.4)'; x.beginPath(); x.roundRect(x0, y0 + th - 26, tw * first, 26, [0, 0, 20, 20]); x.fill(); }
       x.textAlign = 'center'; x.fillStyle = ok ? '#fff' : '#66707f'; x.font = 'bold 32px system-ui,sans-serif'; x.fillText(T.name, x0 + tw / 2, y0 + 44);
       x.font = 'bold 70px system-ui,sans-serif'; x.fillStyle = ok ? '#ffd766' : '#7a6a3a'; x.fillText(T.cost, x0 + tw / 2, y0 + 112);
-      x.font = '24px system-ui,sans-serif'; x.fillStyle = ok ? '#9fb0c8' : '#566070'; x.fillText(NOTE[t][0], x0 + tw / 2, y0 + 168); x.fillText(NOTE[t][1], x0 + tw / 2, y0 + 196);
-      x.font = 'bold 24px system-ui,sans-serif'; x.fillStyle = n ? '#6fe0a0' : !play ? '#566070' : full ? '#ff8a6a' : s.credits < T.cost ? '#b8894a' : '#566070'; x.fillText(n ? 'building ' + n : !play ? '' : full ? 'yard full' : s.credits < T.cost ? 'need ' + (T.cost - (s.credits | 0)) : '', x0 + tw / 2, y0 + 230);
+      x.font = 'bold 21px system-ui,sans-serif'; x.fillStyle = ok ? '#9fb0c8' : '#566070'; x.fillText(NOTE[t][0], x0 + tw / 2, y0 + 158); x.font = '19px system-ui,sans-serif'; x.fillStyle = ok ? '#7fe0a0' : '#4a6a58'; x.fillText(NOTE[t][1], x0 + tw / 2, y0 + 184, tw - 10); x.fillStyle = ok ? '#ff9a80' : '#6a4a44'; x.fillText(NOTE[t][2], x0 + tw / 2, y0 + 208, tw - 10);
+      x.font = 'bold 24px system-ui,sans-serif'; x.fillStyle = n ? '#6fe0a0' : !play ? '#566070' : full ? '#ff8a6a' : s.credits < T.cost ? '#b8894a' : '#566070'; x.fillText(n ? 'building ' + n : !play ? '' : full ? 'yard full' : s.credits < T.cost ? 'need ' + (T.cost - (s.credits | 0)) : '', x0 + tw / 2, y0 + 242);
       this.btn.push({ x0, y0, x1: x0 + tw, y1: y0 + th, id: 'b' + t }); });
     // how ships go about the orders you give next (and the ones you have picked, at once)
-    x.textAlign = 'left'; x.fillStyle = '#7f8ea6'; x.font = '24px system-ui,sans-serif'; x.fillText('ORDERS GO AS', 36, 477);
-    [['ATTACK', 'chase what they meet', '#66ff99'], ['DEFEND', 'hold, never chase', '#66aaff'], ['SNEAK', 'slow, silent, unseen', '#c080ff'], ['FALL BACK', 'home to the mothership', '#ffd766']].forEach(([name, note, col], k) => { const bw = (W - 72 - 200 - 12 * 3) / 4, x0 = 236 + k * (bw + 12), y0 = 438, i = this.btn.length, on = k < 3 && s.mode === k, hot = this.hot === i || this.hot2 === i;
+    x.textAlign = 'left'; x.fillStyle = '#7f8ea6'; x.font = '24px system-ui,sans-serif'; x.fillStyle = s.picked ? '#ffe066' : '#7f8ea6'; x.fillText(s.picked ? s.picked + ' PICKED' : 'ORDERS GO AS', 36, 477);
+    [['ATTACK', 'chase what they meet', '#66ff99'], ['DEFEND', 'hold, never chase', '#66aaff'], ['SNEAK', 'slow, silent, unseen', '#c080ff'], ['FALL BACK', 'home: hulls are mended', '#ffd766']].forEach(([name, note, col], k) => { const bw = (W - 72 - 200 - 12 * 3) / 4, x0 = 236 + k * (bw + 12), y0 = 438, i = this.btn.length, on = k < 3 && s.mode === k, hot = this.hot === i || this.hot2 === i;
       x.fillStyle = lit === i ? '#3f8f5f' : hot ? '#2b4f86' : on ? '#23314a' : '#141b28'; x.beginPath(); x.roundRect(x0, y0, bw, 78, 16); x.fill(); if (on || hot) { x.strokeStyle = on ? col : '#7fc0ff'; x.lineWidth = on ? 6 : 4; x.stroke(); }
       x.textAlign = 'center'; x.fillStyle = on ? col : '#dfe6f0'; x.font = 'bold 26px system-ui,sans-serif'; x.fillText(name, x0 + bw / 2, y0 + 28); x.fillStyle = '#8a97ab'; x.font = '17px system-ui,sans-serif'; x.fillText(note, x0 + bw / 2, y0 + 57); this.btn.push({ x0, y0, x1: x0 + bw, y1: y0 + 78, id: k < 3 ? 'm' + k : 'home' }); });
     const y = 532, bh = 84, row = (k, n, label, id, on, glow) => { const bw = (W - 72 - 14 * (n - 1)) / n, x0 = 36 + k * (bw + 14), i = this.btn.length; x.fillStyle = lit === i ? '#3f8f5f' : (this.hot === i || this.hot2 === i) ? '#2b4f86' : glow ? '#285a3c' : on ? '#1b3050' : '#10151e'; x.beginPath(); x.roundRect(x0, y, bw, bh, 18); x.fill(); if (this.hot === i || this.hot2 === i) { x.strokeStyle = '#7fc0ff'; x.lineWidth = 5; x.stroke(); }

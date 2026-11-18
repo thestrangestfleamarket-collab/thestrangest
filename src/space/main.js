@@ -79,7 +79,7 @@ function step(dt, now) {
 const cmd = {
   // add: after what those ships are already doing (their mission grows); without it, in its place
   order(ids, k, p, tid, add, mode = G.mode) { if (!ids.length || G.state !== 'play' || G.over) return; const P = p ? [p.x, p.y, p.z] : [0, 0, 0]; if (G.sim) G.sim.order(G.me, ids, k, P, tid | 0, add, mode); else G.net && G.net.send({ t: 'o', ids: ids.slice(0, 40), k, p: P, tid: tid | 0, a: add ? 1 : 0, m: mode });
-    const tg = k ? G.view.units.get(tid) : null; G.view.order(ids, tg ? tg.pos : p, !!tg, add, tid | 0, gnow()); guide.mark(k ? 'attacked' : 'ordered'); sfx('order', world(tg ? tg.pos : p), 0.5, 1, 120); },
+    const tg = k ? G.view.units.get(tid) : null, at = tg ? tg.pos : p; if (at) { G.view.order(ids, at, !!tg, add, tid | 0, gnow()); sfx('order', world(at), 0.5, 1, 120); } guide.mark(k ? 'attacked' : 'ordered'); },
   // how you want ships to go about their orders from now on (0 attack, 1 defend, 2 sneak); the ships you have picked take it up at once
   stance(m) { G.mode = m; guide.mark('mode'); const ids = [...G.view.sel]; if (!ids.length || G.state !== 'play' || G.over) return; if (G.sim) G.sim.stance(G.me, ids, m); else G.net && G.net.send({ t: 'm', ids: ids.slice(0, 40), m }); },
   // pull ships out of the fight: the ones you have picked (all your warships when none are) go back to your mothership and hold there
@@ -109,15 +109,21 @@ const hands = [0, 1].map((i) => {
   const lines = new THREE.LineSegments(geo, new THREE.LineBasicMaterial({ color: 0x9fd0ff, transparent: true, opacity: 0.7, depthWrite: false, toneMapped: false })); lines.frustumCulled = false; lines.visible = false; scene.add(lines);
   const dot = new THREE.Mesh(new THREE.SphereGeometry(1, 12, 8), new THREE.MeshBasicMaterial({ color: 0x66ff99, transparent: true, opacity: 0.9, depthWrite: false, toneMapped: false })); dot.visible = false; scene.add(dot);
   const bub = new THREE.Mesh(new THREE.SphereGeometry(1, 24, 16), new THREE.MeshBasicMaterial({ color: 0x66ccff, transparent: true, opacity: 0.14, depthWrite: false, toneMapped: false })); bub.visible = false; scene.add(bub);
-  for (const m of [lines, dot, bub]) m.layers.set(HUD);
-  const h = { i, c, g, pos, lines, dot, bub, src: null, on: false, mode: null, d: 0.4, t0: 0, id: 0, ui: -1, grip: false, g0: new THREE.Vector3(), o: new THREE.Vector3(), dir: new THREE.Vector3(), cur: new THREE.Vector3(), c0: new THREE.Vector3(), start: new THREE.Vector3(), lo: new THREE.Vector3(), ld: new THREE.Vector3(), lc: new THREE.Vector3(), btn: [false, false, false], onPanel: false, carry: false, off: new THREE.Matrix4() };
+  // a few words at the pointer's end: what you are pointing at and what the trigger will do there
+  const tc = document.createElement('canvas'); tc.width = 640; tc.height = 72; const tt = new THREE.CanvasTexture(tc); tt.colorSpace = THREE.SRGBColorSpace;
+  const tip = new THREE.Mesh(new THREE.PlaneGeometry(0.2, 0.0225), new THREE.MeshBasicMaterial({ map: tt, transparent: true, depthTest: false, toneMapped: false })); tip.renderOrder = 28; tip.visible = false; scene.add(tip);
+  for (const m of [lines, dot, bub, tip]) m.layers.set(HUD);
+  const h = { i, c, g, pos, lines, dot, bub, tip, tc, tt, said: '', src: null, on: false, mode: null, d: 0.4, t0: 0, id: 0, ui: -1, grip: false, g0: new THREE.Vector3(), o: new THREE.Vector3(), dir: new THREE.Vector3(), cur: new THREE.Vector3(), c0: new THREE.Vector3(), start: new THREE.Vector3(), lo: new THREE.Vector3(), ld: new THREE.Vector3(), lc: new THREE.Vector3(), btn: [false, false, false], onPanel: false, carry: false, off: new THREE.Matrix4() };
   c.addEventListener('connected', (e) => { h.src = e.data; h.on = true; lines.visible = true;  });
-  c.addEventListener('disconnected', () => { h.src = null; h.on = false; lines.visible = dot.visible = bub.visible = false; h.mode = null; h.grip = false; regrab(); });
+  c.addEventListener('disconnected', () => { h.src = null; h.on = false; lines.visible = dot.visible = bub.visible = tip.visible = false; h.mode = null; h.grip = false; regrab(); });
   c.addEventListener('selectstart', () => press(h)); c.addEventListener('selectend', () => release(h));
   // a grip on the console carries the console; anywhere else it takes hold of the field
   c.addEventListener('squeezestart', () => { if (h.onPanel) { h.carry = true; c.updateMatrixWorld(); panel.mesh.updateMatrixWorld(); h.off.copy(c.matrixWorld).invert().multiply(panel.mesh.matrixWorld); buzz(h); return; } h.grip = true; regrab(); });
   c.addEventListener('squeezeend', () => { if (h.carry) { h.carry = false; panel.pinned = true; return; } h.grip = false; regrab(); });
   return h; });
+const KIND = ['MOTHERSHIP', 'FIGHTER', 'FRIGATE', 'CRUISER', 'TURRET', 'MINE'], GO = ['GO AND FIGHT', 'GO AND HOLD', 'SNEAK THERE'];
+function say(h, text, color) { h.tip.visible = !!text; if (!text) { h.said = ''; return; } h.tip.position.copy(h.cur); h.tip.position.y += 0.028; h.tip.quaternion.copy(camera.getWorldQuaternion(_q)); const d = Math.max(0.5, h.cur.distanceTo(_o)); h.tip.scale.setScalar(d * 1.15);
+  if (text === h.said) return; h.said = text; const x = h.tc.getContext('2d'); x.clearRect(0, 0, 640, 72); x.font = 'bold 34px system-ui,sans-serif'; const w = Math.min(620, x.measureText(text).width + 36); x.fillStyle = 'rgba(6,10,18,0.82)'; x.beginPath(); x.roundRect(320 - w / 2, 6, w, 60, 16); x.fill(); x.textAlign = 'center'; x.textBaseline = 'middle'; x.fillStyle = color || '#ffffff'; x.fillText(text, 320, 38, 610); h.tt.needsUpdate = true; }
 const buzz = (h, a = 0.4, ms = 25) => { try { h.src?.gamepad?.hapticActuators?.[0]?.pulse(a, ms); } catch {} };
 const M0 = new THREE.Matrix4();
 function regrab() { arena.updateMatrix(); M0.copy(arena.matrix); for (const h of hands) h.c.getWorldPosition(h.g0); }
@@ -171,6 +177,12 @@ function hand(h, dt) {
   else if (h.onPanel) { h.dot.visible = true; h.dot.position.copy(h.cur); h.dot.scale.setScalar(0.007); h.dot.material.color.set(h.ui >= 0 ? 0xffffff : 0x8090a8); }
   else if (h.mode === 'marq') { _v.addVectors(h.lc, h.start).multiplyScalar(0.5); const r = h.lc.distanceTo(h.start) / 2; world(_v); h.bub.visible = r * s > 0.01; h.bub.position.copy(_w); h.bub.scale.setScalar(r * s); }
   if (!h.mode && !h.onPanel) h.dot.visible = false;
+  // the words
+  if (G.state !== 'play' || G.over || h.onPanel || h.carry) say(h, '');
+  else if (h.mode === 'drag') { const foe = V.units.get(V.hover[h.i]); say(h, foe ? 'LET GO: ATTACK THE ' + KIND[foe.type] : 'LET GO: ' + GO[G.mode], foe ? '#ff7a66' : ['#7dffae', '#8cc0ff', '#d0a0ff'][G.mode]); }
+  else if (h.mode === 'marq') say(h, h.bub.visible ? 'LET GO: PICK WHAT IS INSIDE' : 'DRAG TO PICK SHIPS', '#8cd8ff');
+  else { const u = V.units.get(V.hover[h.i]); if (!u) say(h, ''); else if (u.side === G.me) say(h, u.type === MOTHER ? 'YOUR MOTHERSHIP ' + Math.round(u.hp * 100) + '%' : KIND[u.type] + ' ' + Math.round(u.hp * 100) + '%  \u2014  HOLD AND DRAG TO SEND' + (V.sel.size > 1 && V.sel.has(u.id) ? ' ALL ' + V.sel.size : ''), '#ffffff');
+    else say(h, V.sel.size ? 'TRIGGER: ATTACK THE ' + KIND[u.type] : 'ENEMY ' + KIND[u.type] + '  \u2014  PICK YOUR SHIPS FIRST', '#ff7a66'); }
   h.lines.geometry.attributes.position.needsUpdate = true;
 }
 
@@ -197,7 +209,7 @@ function frame(time) {
   camera.getWorldPosition(_o); camera.getWorldDirection(_d); _up.set(0, 1, 0).applyQuaternion(camera.getWorldQuaternion(_q)); listen({ position: _o }, _d, _up);
   shell.position.copy(_o); G.fwd.copy(_d).setY(0); if (G.fwd.lengthSq() < 1e-4) G.fwd.set(0, 0, -1); G.fwd.normalize(); guide.tick(real, _o, G.fwd); panel.mesh.visible = G.state !== 'lobby'; if (G.state !== 'lobby' && !hands.some(h => h.carry)) panel.follow(_o, G.fwd, dt, hands.some(h => h.on && h.onPanel));
   banner.tick(real); banner.mesh.position.copy(arena.position); banner.mesh.position.y += 0.62 * arena.scale.x; banner.mesh.scale.setScalar(Math.max(0.6, arena.scale.x * 1.6)); banner.mesh.lookAt(_o);
-  if (real - G.last > 150) { G.last = real; panel.draw({ credits: V.credits[G.me], income: V.income[G.me], count: mine, queue: V.queue[G.me] || [], me: G.me, col: V.ci(G.me), mode: G.mode, ar: G.ar, canAR: G.canAR, state: G.over ? 'over' : G.state, costs: table(V.fac[G.me]), paused: G.paused, fx: G.fx, guide: guide.on, extra: G.state === 'wait' ? 'PLAY THE BOT' : G.over ? 'PLAY AGAIN' : '' }); }
+  if (real - G.last > 150) { G.last = real; panel.draw({ credits: V.credits[G.me], income: V.income[G.me], count: mine, queue: V.queue[G.me] || [], me: G.me, col: V.ci(G.me), mode: G.mode, picked: V.sel.size, ar: G.ar, canAR: G.canAR, state: G.over ? 'over' : G.state, costs: table(V.fac[G.me]), paused: G.paused, fx: G.fx, guide: guide.on, extra: G.state === 'wait' ? 'PLAY THE BOT' : G.over ? 'PLAY AGAIN' : '' }); }
   // open space goes through the lens, focused on the ship nearest the middle of your sight (the field's middle when there is none); your room does not
   if (!G.ar && G.fx) { let best = 0.9, f = Math.max(0.3, _v.copy(arena.position).sub(_o).length()); for (const u of V.units.values()) { world(u.pos).sub(_o); const d = _w.length(), c = _w.dot(_d) / (d || 1); if (c > best) { best = c; f = d; } } post.render(scene, camera, f); }
   else renderer.render(scene, camera);

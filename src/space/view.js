@@ -107,7 +107,7 @@ function dotTex() { const c = document.createElement('canvas'); c.width = c.heig
 // fire: hot gas as balls of light in the field's own space (no flat picture turned to face you: each is a glowing body, seen from any side or from inside the blast), each thrown with its own speed, swelling and cooling from white through yellow and red to nothing
 class Fire {
   constructor(arena, n = 700) { this.n = n; this.i = 0; this.P = new Float32Array(n * 3); this.C = new Float32Array(n * 3); this.S = new Float32Array(n); this.V = new Float32Array(n * 3); this.A = new Float32Array(n).fill(9); this.L = new Float32Array(n).fill(1); this.Z = new Float32Array(n); this.H = new Float32Array(n);
-    this.mesh = new THREE.InstancedMesh(new THREE.IcosahedronGeometry(1, 1), soft(new THREE.MeshBasicMaterial({ blending: THREE.AdditiveBlending, transparent: true, depthWrite: false, toneMapped: false }), 5), n);
+    this.mesh = new THREE.InstancedMesh(new THREE.IcosahedronGeometry(1, 1), soft(lit(new THREE.MeshBasicMaterial({ toneMapped: false })), 5), n);
     this.mesh.instanceMatrix.setUsage(THREE.DynamicDrawUsage); this.M = this.mesh.instanceMatrix.array; this.M.fill(0); this.mesh.setColorAt(0, new THREE.Color(0, 0, 0)); this.mesh.instanceColor.setUsage(THREE.DynamicDrawUsage); this.K = this.mesh.instanceColor.array; this.K.fill(0);
     this.mesh.frustumCulled = false; arena.add(this.mesh); }
   emit(p, vx, vy, vz, size, life, heat) { const k = this.i; this.i = (k + 1) % this.n; this.P[k * 3] = p.x; this.P[k * 3 + 1] = p.y; this.P[k * 3 + 2] = p.z; this.V[k * 3] = vx; this.V[k * 3 + 1] = vy; this.V[k * 3 + 2] = vz; this.Z[k] = size; this.L[k] = life; this.A[k] = 0; this.H[k] = heat; }
@@ -119,6 +119,9 @@ class Fire {
       M[j] = M[j + 5] = M[j + 10] = r; M[j + 12] = this.P[i]; M[j + 13] = this.P[i + 1]; M[j + 14] = this.P[i + 2]; M[j + 15] = 1; }
     this.mesh.instanceMatrix.needsUpdate = true; this.mesh.instanceColor.needsUpdate = true; }
 }
+
+// light that only adds: it leaves the picture's own alpha alone, so in your room a glow that has faded leaves nothing black behind it
+function lit(mat) { mat.blending = THREE.CustomBlending; mat.blendEquation = THREE.AddEquation; mat.blendSrc = THREE.SrcAlphaFactor; mat.blendDst = THREE.OneFactor; mat.blendSrcAlpha = THREE.ZeroFactor; mat.blendDstAlpha = THREE.OneFactor; mat.transparent = true; mat.depthWrite = false; return mat; }
 
 // a pool of instances that are born, live a while and go
 class Pool {
@@ -133,7 +136,7 @@ class View {
     // ships: an InstancedMesh for each part of each kind for each side
     this.fac = [0, 1]; this.models = models; this.hulls = new Map(); this.hullOn = []; this.frags = new Map(); this.tintU = [{ value: HULL[0].clone() }, { value: HULL[1].clone() }];
     // engine glow, one soft flame a ship
-    const add = (geo, color, n, opt = {}) => { const im = new THREE.InstancedMesh(geo, new THREE.MeshBasicMaterial({ color, blending: THREE.AdditiveBlending, transparent: true, depthWrite: false, toneMapped: false, ...opt }), n); im.frustumCulled = false; im.instanceMatrix.setUsage(THREE.DynamicDrawUsage);
+    const add = (geo, color, n, opt = {}) => { const im = new THREE.InstancedMesh(geo, (() => { const m = lit(new THREE.MeshBasicMaterial({ color, toneMapped: false })); m.setValues(opt); return m; })(), n); im.frustumCulled = false; im.instanceMatrix.setUsage(THREE.DynamicDrawUsage);
       im.setColorAt(0, _c.set(0)); im.instanceColor.setUsage(THREE.DynamicDrawUsage); arena.add(im); return im; };
     const flame = new THREE.SphereGeometry(0.5, 8, 6); flame.translate(0, 0, -0.5);
     this.flames = add(flame, 0xffffff, MAXU * 2 + 2); this.flames.count = 0; soft(this.flames.material, 2.2);
@@ -153,20 +156,16 @@ class View {
     // sparks: hot points thrown out of a blast
     const SP = 400; this.spN = SP; this.spI = 0; this.spP = new Float32Array(SP * 3); this.spV = new Float32Array(SP * 3); this.spC = new Float32Array(SP * 3); this.spL = new Float32Array(SP);
     const sg = new THREE.BufferGeometry(); sg.setAttribute('position', new THREE.BufferAttribute(this.spP, 3).setUsage(THREE.DynamicDrawUsage)); sg.setAttribute('color', new THREE.BufferAttribute(this.spC, 3).setUsage(THREE.DynamicDrawUsage));
-    this.sparks = new THREE.Points(sg, new THREE.PointsMaterial({ size: 0.007, map: dotTex(), vertexColors: true, blending: THREE.AdditiveBlending, transparent: true, depthWrite: false, toneMapped: false, sizeAttenuation: true })); this.sparks.frustumCulled = false; arena.add(this.sparks);
+    this.sparks = new THREE.Points(sg, lit(new THREE.PointsMaterial({ size: 0.007, map: dotTex(), vertexColors: true, transparent: true, depthWrite: false, toneMapped: false, sizeAttenuation: true }))); this.sparks.frustumCulled = false; arena.add(this.sparks);
     // the flash of a blast on the hulls around it
     this.flash = [0, 1].map(() => { const l = new THREE.PointLight(0xffb070, 0, 0.6, 2); l.t = 1; arena.add(l); return l; }); this.flashI = 0;
     // rings round what you have picked and what you point at, and hull bars over the damaged
     const ring = new THREE.RingGeometry(0.92, 1, 40); ring.rotateX(-Math.PI / 2);
     this.rings = add(ring, 0xffffff, MAXU + 4, { side: THREE.DoubleSide, blending: THREE.NormalBlending, opacity: 0.9 }); this.rings.count = 0;
     this.bars = add(new THREE.PlaneGeometry(1, 1), 0xffffff, MAXU * 2 + 2, { side: THREE.DoubleSide, blending: THREE.NormalBlending, depthTest: false }); this.bars.count = 0; this.bars.renderOrder = 5;
-    // the missions of the ships you have picked: a line from each through every place it has been told to go
-    this.pathP = new Float32Array(120 * 6); const pg = new THREE.BufferGeometry(); pg.setAttribute('position', new THREE.BufferAttribute(this.pathP, 3).setUsage(THREE.DynamicDrawUsage));
-    this.paths = new THREE.LineSegments(pg, new THREE.LineBasicMaterial({ color: 0x55e08a, transparent: true, opacity: 0.55, depthWrite: false, toneMapped: false })); this.paths.frustumCulled = false; arena.add(this.paths);
-    // order lines: where each ship was sent, fading
-    this.lineP = new Float32Array(64 * 6); this.lineC = new Float32Array(64 * 6); this.lineT = new Float32Array(64); this.lineI = 0;
-    const lg = new THREE.BufferGeometry(); lg.setAttribute('position', new THREE.BufferAttribute(this.lineP, 3).setUsage(THREE.DynamicDrawUsage)); lg.setAttribute('color', new THREE.BufferAttribute(this.lineC, 3).setUsage(THREE.DynamicDrawUsage));
-    this.lines = new THREE.LineSegments(lg, new THREE.LineBasicMaterial({ vertexColors: true, blending: THREE.AdditiveBlending, transparent: true, depthWrite: false, toneMapped: false })); this.lines.frustumCulled = false; arena.add(this.lines);
+    // missions: a line from each of your ships through every place it has been told to go, brighter for the ones you have picked, red to a target; a leg is gone the moment it is flown, the whole line when the orders change
+    this.pathP = new Float32Array(200 * 6); this.pathC = new Float32Array(200 * 6); const pg = new THREE.BufferGeometry(); pg.setAttribute('position', new THREE.BufferAttribute(this.pathP, 3).setUsage(THREE.DynamicDrawUsage)); pg.setAttribute('color', new THREE.BufferAttribute(this.pathC, 3).setUsage(THREE.DynamicDrawUsage));
+    this.paths = new THREE.LineSegments(pg, new THREE.LineBasicMaterial({ vertexColors: true, transparent: true, opacity: 0.75, depthWrite: false, toneMapped: false })); this.paths.frustumCulled = false; this.paths.geometry.setDrawRange(0, 0); arena.add(this.paths);
     // relays: a station each, with a ring that fills in the holder's colour
     this.relays = NODES.map((p, i) => { const g = new THREE.Group(); g.position.set(p[0], p[1], p[2]);
       for (const part of models.relay) { const m = new THREE.Mesh(part.geo, part.mat); m.scale.setScalar(0.085); m.castShadow = m.receiveShadow = true; g.add(m); }
@@ -186,9 +185,9 @@ class View {
   // which colour a side flies: its navy's, or its own side's when both players chose the same navy
   ci(side) { return this.fac[0] === this.fac[1] ? side : this.fac[side]; }
   // a hull's own paint is kept only as light and dark (its panels, wear and grime) and laid over the fleet's colour
-  paint(part, side, fc, type) { const mat = part.mat.clone(), U = this.tintU[side], gain = part.gain; if (mat.emissiveMap) { mat.emissive.set(0xffffff); mat.emissiveIntensity = 1.25; } mat.metalness = Math.min(mat.metalness, 0.55);
+  paint(part, side, fc, type) { const mat = part.mat.clone(), U = this.tintU[side], gain = part.gain; if (mat.emissiveMap) { mat.emissive.set(0xffffff); mat.emissiveIntensity = 1.25; } mat.metalness = Math.min(mat.metalness, 0.6); if (mat.normalMap) mat.normalScale.multiplyScalar(1.5); mat.envMapIntensity = 2.2;
     const det = this.models.__det && type !== MINE; if (det) detail(mat, this.models.__det[fc], 5 + 46 * LEN[type], 0.09); const D = det ? mat.onBeforeCompile : null;
-    mat.onBeforeCompile = (sh, r) => { if (D) D(sh, r); sh.uniforms.uTint = U; sh.uniforms.uGain = { value: gain }; sh.fragmentShader = sh.fragmentShader.replace('#include <common>', '#include <common>\nuniform vec3 uTint; uniform float uGain;').replace('#include <map_fragment>', '#include <map_fragment>\n{ vec3 own = diffuseColor.rgb * uGain; float l = dot(own, vec3(0.299, 0.587, 0.114)); diffuseColor.rgb = mix(own, uTint * (0.12 + min(l, 0.75) * 1.7), 0.88); }'); };
+    mat.onBeforeCompile = (sh, r) => { if (D) D(sh, r); sh.uniforms.uTint = U; sh.uniforms.uGain = { value: gain }; sh.fragmentShader = sh.fragmentShader.replace('#include <common>', '#include <common>\nuniform vec3 uTint; uniform float uGain;').replace('#include <map_fragment>', '#include <map_fragment>\n{ vec3 own = diffuseColor.rgb * uGain; float l = dot(own, vec3(0.299, 0.587, 0.114)), c = clamp(0.46 + (l - 0.3) * 1.7, 0.24, 1.25); diffuseColor.rgb = mix(own * (0.55 + c * 0.6), uTint * c, 0.7); }'); };
     mat.customProgramCacheKey = () => 'fleet' + side + (det ? 'd' : ''); return mat; }
   // the hull a ship flies: one of its kind's three, by the ship's number (the same on both headsets)
   variant(fc, type, id) { const v = id % 3; return this.models[hullName(fc, type, v)] ? v : 0; }
@@ -226,7 +225,7 @@ class View {
       if (n.hp < u.hp - 0.0005) u.hit = now; u.x = n.x; u.y = n.y; u.z = n.z; u.yaw = n.yaw; u.pitch = n.pitch; u.hp = n.hp; u.k = n.k; u.m = n.m; }
     const ev = o.ev;
     for (let i = 0; i < ev.length;) { const k = ev[i];
-      if (k === 1) { const tg = this.units.get(ev[i + 2]), v = ev[i + 3], secs = (v >> 5) * STEP; this.shot(this.units.get(ev[i + 1]), tg, v & 7, !!(v & 16), secs); if (tg && v & 8 && !(v & 16)) { const f = this.fields.take(); f.uid = tg.id; f.life = 0.5; f.t = -secs; this.onEvent && this.onEvent('field', tg.pos, 0); } i += 4; }
+      if (k === 1) { const tg = this.units.get(ev[i + 2]), v = ev[i + 3], secs = (v >> 5) * STEP; this.shot(this.units.get(ev[i + 1]), tg, v & 7, !!(v & 16), secs); if (tg && v & 8 && !(v & 16)) { let f = this.fields.it.find(o => o.life > 0 && o.uid === tg.id); if (f) { if (f.t > 0.1) f.t = 0.1; } else { f = this.fields.take(); f.uid = tg.id; f.life = 0.5; f.t = -secs; } this.onEvent && this.onEvent('field', tg.pos, 0); } i += 4; }
       else if (k === 2) { const u = this.units.get(ev[i + 1]); if (u) this.blast(u, ev[i + 2]); i += 4; }
       else if (k === 3) { this.onEvent && this.onEvent('built', ev[i + 1], ev[i + 2]); i += 3; }
       else if (k === 4) { this.onEvent && this.onEvent('relay', ev[i + 2], ev[i + 1]); i += 3; }
@@ -261,8 +260,7 @@ class View {
     if (big >= 2) for (let i = 0; i < (big === 3 ? 9 : 3); i++) this.waves.push({ t: 0.25 + i * (0.2 + Math.random() * 0.25), p: new THREE.Vector3(Math.random() - 0.5, Math.random() - 0.5, Math.random() - 0.5).multiplyScalar(L * 0.7).applyQuaternion(u.quat).add(u.pos), E: E * 0.5, r: r * (0.4 + Math.random() * 0.5) });
     this.shake = Math.max(this.shake, big * 0.3); this.onEvent && this.onEvent('boom', u, size === 3 ? 4 : big);
   }
-  order(ids, p, target, add, tid, now) { this.note(ids, p, add, tid, now || 0); const c = target ? _c.set(1, 0.25, 0.2) : _c.set(0.3, 1, 0.5);
-    for (const id of ids) { const u = this.units.get(id); if (!u) continue; const k = this.lineI; this.lineI = (k + 1) % 64; this.lineP.set([u.pos.x, u.pos.y, u.pos.z, p.x, p.y, p.z], k * 6); this.lineC.set([c.r * 0.2, c.g * 0.2, c.b * 0.2, c.r, c.g, c.b], k * 6); this.lineT[k] = 1.4; } }
+  order(ids, p, target, add, tid, now) { this.note(ids, p, add, tid, now || 0); }
   // what you ordered is kept here too, so a picked ship's mission can be drawn: where it goes next, and after
   note(ids, p, add, tid, now) { for (const id of ids) { const u = this.units.get(id); if (!u || u.type === MOTHER) continue; let L = this.plan.get(id); if (!L || !add || (u.k === 0 && !L.length)) { L = []; this.plan.set(id, L); } if (L.length < 7) L.push({ p: new THREE.Vector3(p.x, p.y, p.z), tid, at: now }); } }
   // draw: every ship between its last two places, floating on its own slow sway, banking into its turns
@@ -306,7 +304,7 @@ class View {
       if (!o.hitDone && !o.miss && (o.w === 2 ? o.t > 0.05 : f > 0.85)) { o.hitDone = true; this.ball(_b, o.w === 2 ? 0.02 : o.w === 1 ? 0.011 : 0.006, 0.18, _c.set(1, 0.85, 0.6)); if (o.w) this.fire.burst(_b, o.w === 2 ? 5 : 2, 0.05, o.w === 2 ? 0.03 : 0.016, 0.4); this.spark(_b, o.w === 2 ? 10 : 3, 0.08, _c.set(1, 0.8, 0.5), 0.35); this.onEvent && this.onEvent('hit', _b, o.w); } }
     this.bolts.mesh.instanceMatrix.needsUpdate = true; this.bolts.mesh.instanceColor.needsUpdate = true; this.fire.step(dt, this.arena.scale.x);
     for (const o of this.fields.it) { if (o.life <= 0) continue; o.t += dt; if (o.t < 0) continue; const u = this.units.get(o.uid), f = o.t / o.life; if (f >= 1 || !u) { this.fields.mesh.setMatrixAt(o.k, ZERO); o.life = 0; continue; } const L = LEN[u.type], w = Math.max(TYPES[u.type].r, L * 0.3) * 1.1;
-      _m.compose(u.pos, u.quat, _s.set(w, w, Math.max(w, L * 0.6))); this.fields.mesh.setMatrixAt(o.k, _m); this.fields.mesh.setColorAt(o.k, _c.copy(GLOW[this.ci(u.side)]).multiplyScalar(1.6 * (1 - f))); }
+      _m.compose(u.pos, u.quat, _s.set(w, w, Math.max(w, L * 0.6))); this.fields.mesh.setMatrixAt(o.k, _m); this.fields.mesh.setColorAt(o.k, _c.copy(GLOW[this.ci(u.side)]).multiplyScalar(0.9 * (1 - f))); }
     this.fields.mesh.instanceMatrix.needsUpdate = true; this.fields.mesh.instanceColor.needsUpdate = true;
     for (const o of this.balls.it) { if (o.life <= 0) continue; o.t += dt; if (o.t < 0) continue; const f = o.t / o.life; if (f >= 1) { this.balls.mesh.setMatrixAt(o.k, ZERO); o.life = 0; continue; }
       _m.compose(o.p, _q.identity(), _s.setScalar(o.r * (0.25 + 0.75 * Math.sqrt(f)))); this.balls.mesh.setMatrixAt(o.k, _m); this.balls.mesh.setColorAt(o.k, _c.copy(o.c).multiplyScalar((1 - f) * (1 - f) * 1.3)); }
@@ -324,11 +322,11 @@ class View {
     this.sparks.geometry.attributes.position.needsUpdate = true; this.sparks.geometry.attributes.color.needsUpdate = true;
     for (const l of this.flash) { if (l.t >= 1) { l.intensity = 0; continue; } l.t += dt * 1.6; l.intensity = l.power * 0.03 * this.arena.scale.x ** 2 * Math.max(0, 1 - l.t) ** 2; }
     let np = 0; for (const [id, L] of this.plan) { const u = this.units.get(id); if (!u) { this.plan.delete(id); continue; }
-      while (L.length && (L[0].tid ? !this.units.has(L[0].tid) : u.pos.distanceTo(L[0].p) < 0.045)) L.shift(); if (L.length && u.k === 0 && now - L[L.length - 1].at > 1500) L.length = 0; if (!L.length || !this.sel.has(id)) continue;
-      _a.copy(u.pos); for (const o of L) { if (np >= 120) break; _b.copy(o.tid ? this.units.get(o.tid).pos : o.p); const k = np++ * 6; this.pathP[k] = _a.x; this.pathP[k + 1] = _a.y; this.pathP[k + 2] = _a.z; this.pathP[k + 3] = _b.x; this.pathP[k + 4] = _b.y; this.pathP[k + 5] = _b.z; _a.copy(_b); } }
-    this.paths.geometry.setDrawRange(0, np * 2); this.paths.geometry.attributes.position.needsUpdate = true;
-    for (let k = 0; k < 64; k++) { if (this.lineT[k] <= 0) continue; this.lineT[k] -= dt; const d = this.lineT[k] <= 0 ? 0 : 1 - dt * 1.6; for (let j = 0; j < 6; j++) this.lineC[k * 6 + j] *= d; }
-    this.lines.geometry.attributes.position.needsUpdate = true; this.lines.geometry.attributes.color.needsUpdate = true;
+      for (let i = L.length - 1; i >= 0; i--) if (L[i].tid && !this.units.has(L[i].tid)) L.splice(i, 1);   // a target that is gone is no longer part of the mission
+      while (L.length && !L[0].tid && u.pos.distanceTo(L[0].p) < 0.045) L.shift(); if (L.length && u.k === 0 && now - L[L.length - 1].at > 1500) L.length = 0; if (!L.length) { this.plan.delete(id); continue; }
+      const on = this.sel.has(id) ? 1 : 0.4; _a.copy(u.pos); for (const o of L) { if (np >= 200) break; _b.copy(o.tid ? this.units.get(o.tid).pos : o.p); const k = np++ * 6, r = o.tid ? 1 : 0.3, g = o.tid ? 0.25 : 1, bl = o.tid ? 0.2 : 0.5;
+        this.pathP[k] = _a.x; this.pathP[k + 1] = _a.y; this.pathP[k + 2] = _a.z; this.pathP[k + 3] = _b.x; this.pathP[k + 4] = _b.y; this.pathP[k + 5] = _b.z; for (let j = 0; j < 6; j += 3) { this.pathC[k + j] = r * on; this.pathC[k + j + 1] = g * on; this.pathC[k + j + 2] = bl * on; } _a.copy(_b); } }
+    this.paths.geometry.setDrawRange(0, np * 2); this.paths.geometry.attributes.position.needsUpdate = true; this.paths.geometry.attributes.color.needsUpdate = true; this.legs = np;
     // relays, rocks, dust
     this.relays.forEach((r, i) => { const d = this.nodes[i]; r.model.rotation.y = t * r.spin; const key = d.owner * 1000 + d.prog;
       if (key !== r.shown) { r.shown = key; r.ring.material.color.copy(d.owner < 0 ? _c.set(0x8892a0) : TEAM[this.ci(d.owner)]); const a = Math.abs(d.prog) / 100; r.fill.visible = a > 0.01;

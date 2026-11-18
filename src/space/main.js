@@ -89,7 +89,7 @@ const cmd = {
   build(t) { const T = table(G.view.fac[G.me])[t]; if (G.state !== 'play' || G.over || G.view.credits[G.me] < T.cost) return sfx('ui_deny', null, 0.5); if (G.sim) { if (!G.sim.build(G.me, t)) return sfx('ui_deny', null, 0.5); } else G.net && G.net.send({ t: 'b', u: t }); guide.mark('built'); sfx('ui_click', null, 0.6); },
   pause() { if (G.state !== 'play' || G.over) return; if (G.net && !G.host) G.net.send({ t: 'p' }); else setPause(!G.paused); },
   again() { if (!G.over) return; if (G.sim && (!G.net || G.host)) { const b = G.bots.length; newGame(); if (b || !G.peer) G.bots = [new Bot(G.sim, 1 - G.me, mind)]; } else G.net && G.net.send({ t: 'again' }); },
-  all() { G.view.sel.clear(); for (const u of G.view.units.values()) if (u.side === G.me && (u.type === FIGHTER || u.type === FRIGATE || u.type === CRUISER)) G.view.sel.add(u.id); if (G.view.sel.size > 1) guide.mark('multi'); sfx('select', null, 0.5); },
+  all() { const was = G.view.sel.size; G.view.sel.clear(); for (const u of G.view.units.values()) if (u.side === G.me && (u.type === FIGHTER || u.type === FRIGATE || u.type === CRUISER)) G.view.sel.add(u.id); if (was && was === G.view.sel.size) { G.view.sel.clear(); return; } if (G.view.sel.size > 1) guide.mark('multi'); sfx('select', null, 0.5); },
 };
 
 
@@ -135,20 +135,23 @@ function grabWorld() {
     _m.makeTranslation((_v.x + _w.x) / 2, (_v.y + _w.y) / 2, (_v.z + _w.z) / 2).multiply(_m2.makeRotationY(yaw)).multiply(_m2.makeScale(s, s, s)).multiply(_m2.makeTranslation(-m0x, -m0y, -m0z)).multiply(M0); }
   _m.decompose(arena.position, arena.quaternion, arena.scale); fitLight(); if (_v.copy(arena.position).applyMatrix4(_m2.copy(M0).invert()).lengthSq() > 0.0004) guide.mark('moved');
 }
+// how far along the pointer an order in open space lands: on the level your picked ships fly at, else the field's middle
+function aim(h) { const V = G.view; let d = THREE.MathUtils.clamp(_v.copy(arena.position).sub(h.o).dot(h.dir), 0.25, 3), y = 0, n = 0; for (const id of V.sel) { const u = V.units.get(id); if (u) { y += world(u.pos).y; n++; } }
+  if (n && Math.abs(h.dir.y) > 0.12) { const t = (y / n - h.o.y) / h.dir.y; if (t > 0.15 && t < 4) d = t; } return d; }
 function press(h) {
   if (h.onPanel && h.ui < 0) return;   // on the console but between its buttons: nothing, and not a bubble behind it
   if (h.ui >= 0) { const b = panel.btn[h.ui]; buzz(h, 0.8, 40); panel.press(h.ui); G.last = 0; if (!b) return; if (b.id === 'ar') { if (G.canAR) { setView(!G.ar); sfx('ui_click', null, 0.6); } else sfx('ui_deny', null, 0.5); } else if (b.id === 'all') cmd.all(); else if (b.id === 'pause') cmd.pause(); else if (b.id[0] === 'm') { cmd.stance(+b.id[1]); sfx('ui_click', null, 0.6); } else if (b.id === 'home') cmd.home(); else if (b.id === 'guide') { sfx('ui_click', null, 0.6); if (guide.on) guide.stop(); else guide.start(); } else if (b.id === 'fx') { G.fx = !G.fx; try { localStorage.setItem('spaceLens', G.fx ? '1' : '0'); } catch (e) {} post.rest(); sfx('ui_click', null, 0.6); } else if (b.id === 'x') { sfx('ui_click', null, 0.6); if (G.state === 'wait') solo(); else cmd.again(); } else cmd.build(+b.id.slice(1)); return; }
   guide.mark('go'); if (G.state !== 'play') return; const V = G.view, u = V.units.get(V.hover[h.i]);
   if (u && u.side === G.me) { if (h.tap === u.id && performance.now() - h.t0 < 450) { h.tap = 0; cmd.stop(V.sel.has(u.id) ? [...V.sel] : [u.id]); buzz(h, 0.8, 60); return; } h.tap = u.id; if (!V.sel.has(u.id)) { V.sel.clear(); V.sel.add(u.id); } h.mode = 'drag'; h.id = u.id; h.d = world(u.pos).distanceTo(h.o); h.t0 = performance.now(); h.c0.copy(h.o).addScaledVector(h.dir, h.d); buzz(h); sfx('select', world(u.pos), 0.6); }
   else if (u && V.sel.size) { cmd.order([...V.sel], 1, null, u.id, true); buzz(h, 0.7, 40); }
-  else { h.mode = 'marq'; h.d = THREE.MathUtils.clamp(_v.copy(arena.position).sub(h.o).dot(h.dir), 0.25, 3); h.start.copy(h.o).addScaledVector(h.dir, h.d); arena.worldToLocal(h.start); }
+  else { h.mode = 'marq'; h.t0 = performance.now(); h.d = aim(h); h.start.copy(h.o).addScaledVector(h.dir, h.d); arena.worldToLocal(h.start); }
 }
 function release(h) {
 
   const V = G.view, mode = h.mode; h.mode = null; h.dot.visible = h.bub.visible = false; if (!mode || G.state !== 'play') return;
   if (mode === 'drag') { if (performance.now() - h.t0 < 300 && h.cur.distanceTo(h.c0) < 0.04) return; const ids = [...V.sel], foe = V.near(h.lc, 1 - G.me, 0.03 / arena.scale.x);
     if (foe) cmd.order(ids, 1, null, foe, true); else cmd.order(ids, 0, h.lc.clone(), 0, true); buzz(h, 0.7, 40); }
-  else { const r = h.lc.distanceTo(h.start) / 2; V.sel.clear(); if (r * arena.scale.x < 0.03) return; _v.addVectors(h.lc, h.start).multiplyScalar(0.5);
+  else { const r = h.lc.distanceTo(h.start) / 2; if (r * arena.scale.x < 0.03) { if (V.sel.size) { h.lc.set(THREE.MathUtils.clamp(h.lc.x, -BX, BX), THREE.MathUtils.clamp(h.lc.y, -BY, BY), THREE.MathUtils.clamp(h.lc.z, -BZ, BZ)); cmd.order([...V.sel], 0, h.lc.clone(), 0, true); buzz(h, 0.7, 40); } return; } V.sel.clear(); _v.addVectors(h.lc, h.start).multiplyScalar(0.5);
     for (const u of V.units.values()) if (u.side === G.me && u.type !== MOTHER && u.pos.distanceTo(_v) < r + TYPES[u.type].r) V.sel.add(u.id); if (V.sel.size) { sfx('select', null, 0.6); buzz(h); if (V.sel.size > 1) guide.mark('multi'); } }
 }
 function hand(h, dt) {
@@ -167,6 +170,7 @@ function hand(h, dt) {
   arena.worldToLocal(h.lo.copy(h.o)); _q.copy(arena.quaternion).invert(); h.ld.copy(h.dir).applyQuaternion(_q);
   V.hover[h.i] = !h.mode && !h.onPanel && !h.carry && G.state === 'play' ? V.pick(h.lo, h.ld, s, 4 / s) : 0;
   if (V.hover[h.i] && !h.mode) { const u = V.units.get(V.hover[h.i]); len = world(u.pos).distanceTo(h.o); if (u.side === G.me) guide.mark('hover'); }
+  const open = !h.mode && !h.onPanel && !h.carry && !V.hover[h.i] && G.state === 'play' && !G.over && V.sel.size > 0; if (open) len = aim(h);
   h.cur.copy(h.o).addScaledVector(h.dir, h.mode ? h.d : len); arena.worldToLocal(h.lc.copy(h.cur));
   P[0] = h.o.x; P[1] = h.o.y; P[2] = h.o.z; P[3] = h.cur.x; P[4] = h.cur.y; P[5] = h.cur.z; for (let k = 6; k < 18; k++) P[k] = 0;
   if (h.mode === 'drag') { const u = V.units.get(h.id); if (!u) { h.mode = null; h.dot.visible = false; } else {
@@ -175,13 +179,14 @@ function hand(h, dt) {
       P[6] = _w.x; P[7] = _w.y; P[8] = _w.z; world(u.pos); P[9] = _w.x; P[10] = _w.y; P[11] = _w.z;
       world(h.lc); P[12] = _w.x; P[13] = _w.y; P[14] = _w.z; world(_v.set(h.lc.x, 0, h.lc.z)); P[15] = _w.x; P[16] = _w.y; P[17] = _w.z; } }
   else if (h.onPanel) { h.dot.visible = true; h.dot.position.copy(h.cur); h.dot.scale.setScalar(0.007); h.dot.material.color.set(h.ui >= 0 ? 0xffffff : 0x8090a8); }
-  else if (h.mode === 'marq') { _v.addVectors(h.lc, h.start).multiplyScalar(0.5); const r = h.lc.distanceTo(h.start) / 2; world(_v); h.bub.visible = r * s > 0.01; h.bub.position.copy(_w); h.bub.scale.setScalar(r * s); }
-  if (!h.mode && !h.onPanel) h.dot.visible = false;
+  else if (h.mode === 'marq') { _v.addVectors(h.lc, h.start).multiplyScalar(0.5); const r = h.lc.distanceTo(h.start) / 2; world(_v); h.bub.visible = r * s > 0.03; h.bub.position.copy(_w); h.bub.scale.setScalar(r * s); h.dot.visible = !h.bub.visible && V.sel.size > 0; if (h.dot.visible) { h.dot.position.copy(h.cur); h.dot.scale.setScalar(0.008); h.dot.material.color.set([0x66ff99, 0x66aaff, 0xc080ff][G.mode]); } }
+  else if (open) { h.dot.visible = true; h.dot.position.copy(h.cur); h.dot.scale.setScalar(0.006); h.dot.material.color.set([0x66ff99, 0x66aaff, 0xc080ff][G.mode]); }
+  if (!h.mode && !h.onPanel && !open) h.dot.visible = false;
   // the words
   if (G.state !== 'play' || G.over || h.onPanel || h.carry) say(h, '');
   else if (h.mode === 'drag') { const foe = V.units.get(V.hover[h.i]); say(h, foe ? 'LET GO: ATTACK THE ' + KIND[foe.type] : 'LET GO: ' + GO[G.mode], foe ? '#ff7a66' : ['#7dffae', '#8cc0ff', '#d0a0ff'][G.mode]); }
-  else if (h.mode === 'marq') say(h, h.bub.visible ? 'LET GO: PICK WHAT IS INSIDE' : 'DRAG TO PICK SHIPS', '#8cd8ff');
-  else { const u = V.units.get(V.hover[h.i]); if (!u) say(h, ''); else if (u.side === G.me) say(h, u.type === MOTHER ? 'YOUR MOTHERSHIP ' + Math.round(u.hp * 100) + '%' : KIND[u.type] + ' ' + Math.round(u.hp * 100) + '%  \u2014  HOLD AND DRAG TO SEND' + (V.sel.size > 1 && V.sel.has(u.id) ? ' ALL ' + V.sel.size : ''), '#ffffff');
+  else if (h.mode === 'marq') say(h, h.bub.visible ? 'LET GO: PICK WHAT IS INSIDE' : V.sel.size ? 'LET GO: SEND ' + V.sel.size + ' HERE' : 'DRAG TO PICK SHIPS', '#8cd8ff');
+  else { const u = V.units.get(V.hover[h.i]); if (!u) say(h, open ? 'TRIGGER: SEND ' + V.sel.size + ' HERE' : '', ['#7dffae', '#8cc0ff', '#d0a0ff'][G.mode]); else if (u.side === G.me) say(h, u.type === MOTHER ? 'YOUR MOTHERSHIP ' + Math.round(u.hp * 100) + '%' : KIND[u.type] + ' ' + Math.round(u.hp * 100) + '%  \u2014  HOLD AND DRAG TO SEND' + (V.sel.size > 1 && V.sel.has(u.id) ? ' ALL ' + V.sel.size : ''), '#ffffff');
     else say(h, V.sel.size ? 'TRIGGER: ATTACK THE ' + KIND[u.type] : 'ENEMY ' + KIND[u.type] + '  \u2014  PICK YOUR SHIPS FIRST', '#ff7a66'); }
   h.lines.geometry.attributes.position.needsUpdate = true;
 }

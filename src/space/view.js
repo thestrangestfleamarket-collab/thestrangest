@@ -1,7 +1,7 @@
 // SPACE FLEET's picture of the battle: the ships (real models, one draw per part), their float, bank and engine glow, shots, blasts, wreckage, the relays, rocks and dust, all inside the arena group; fed the host's pictures ten times a second and drawn smoothly between them
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
-import { TYPES, NODES, NODE_R, BX, BZ, MOTHER, FIGHTER, MINE } from './sim.js';
+import { TYPES, NODES, NODE_R, BX, BZ, MOTHER, FIGHTER, CRUISER, TURRET, MINE } from './sim.js';
 
 const BASE = '/space-assets/', FILES = ['mother', 'fighter', 'frigate', 'cruiser', 'turret', 'mine'], LEN = [0.5, 0.05, 0.11, 0.2, 0.07, 0.026];
 // the two fleets' colours, light blue and light green: the hulls' paint, their engines' and shots' light, their rings
@@ -185,10 +185,10 @@ class View {
   // which colour a side flies: its navy's, or its own side's when both players chose the same navy
   ci(side) { return this.fac[0] === this.fac[1] ? side : this.fac[side]; }
   // a hull's own paint is kept only as light and dark (its panels, wear and grime) and laid over the fleet's colour
-  paint(part, side, fc, type) { const mat = part.mat.clone(), U = this.tintU[side], gain = part.gain; if (mat.emissiveMap) { mat.emissive.set(0xffffff); mat.emissiveIntensity = 1.25; } mat.metalness = Math.min(mat.metalness, 0.6); if (mat.normalMap) mat.normalScale.multiplyScalar(1.5); mat.envMapIntensity = 2.2;
+  paint(part, side, fc, type) { const mat = part.mat.clone(), U = this.tintU[side], gain = part.gain; if (mat.emissiveMap) { mat.emissive.set(0xffffff); mat.emissiveIntensity = 1.25; } const big = type === CRUISER || type === TURRET; mat.metalness = Math.min(mat.metalness, big ? 0.35 : 0.6); if (mat.normalMap) mat.normalScale.multiplyScalar(1.5); mat.envMapIntensity = 2.2;
     const det = this.models.__det && type !== MINE; if (det) detail(mat, this.models.__det[fc], 5 + 46 * LEN[type], 0.09); const D = det ? mat.onBeforeCompile : null;
-    mat.onBeforeCompile = (sh, r) => { if (D) D(sh, r); sh.uniforms.uTint = U; sh.uniforms.uGain = { value: gain }; sh.fragmentShader = sh.fragmentShader.replace('#include <common>', '#include <common>\nuniform vec3 uTint; uniform float uGain;').replace('#include <map_fragment>', '#include <map_fragment>\n{ vec3 own = diffuseColor.rgb * uGain; float l = dot(own, vec3(0.299, 0.587, 0.114)), c = clamp(0.46 + (l - 0.3) * 1.7, 0.24, 1.25); diffuseColor.rgb = mix(own * (0.55 + c * 0.6), uTint * c, 0.7); }'); };
-    mat.customProgramCacheKey = () => 'fleet' + side + (det ? 'd' : ''); return mat; }
+    mat.onBeforeCompile = (sh, r) => { if (D) D(sh, r); sh.uniforms.uTint = U; sh.uniforms.uGain = { value: gain }; sh.uniforms.uLift = { value: big ? 1.5 : 1 }; sh.fragmentShader = sh.fragmentShader.replace('#include <common>', '#include <common>\nuniform vec3 uTint; uniform float uGain, uLift;').replace('#include <map_fragment>', '#include <map_fragment>\n{ vec3 own = diffuseColor.rgb * uGain; float l = dot(own, vec3(0.299, 0.587, 0.114)), c = clamp((0.46 + (l - 0.3) * 1.7) * uLift, 0.24 * uLift, 1.25); diffuseColor.rgb = mix(own * (0.55 + c * 0.6), uTint * c, 0.7); }'); };
+    mat.customProgramCacheKey = () => 'fleet' + side + (det ? 'd' : '') + (big ? 'b' : ''); return mat; }
   // the hull a ship flies: one of its kind's three, by the ship's number (the same on both headsets)
   variant(fc, type, id) { const v = id % 3; return this.models[hullName(fc, type, v)] ? v : 0; }
   parts(fc, type, v) { return this.models[hullName(fc, type, v)] || this.models[FILES[type]]; }

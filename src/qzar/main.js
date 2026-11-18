@@ -17,9 +17,10 @@ const W={
   needle: {name:'Needle', hint:'3 fast, hard hits',    ammo:3,dmg:20,speed:8.5,r:.045,cool:.7},
   scatter:{name:'Scatter',hint:'2 fans of five',       ammo:2,dmg:5, speed:4,  r:.06, cool:.6,pellets:5,spread:.11},
   drifter:{name:'Drifter',hint:'1 slow orb, eats shots',ammo:1,dmg:30,speed:2.2,r:.28, cool:.5,absorb:4},
-  buckler:{name:'Buckler',hint:'blocks for 4 seconds', shield:true,dur:4}
+  buckler:{name:'Buckler',hint:'blocks until its power is spent', shield:true,power:60},
+  thrown: {name:'Thrown',dmg:6,speed:6.5,r:.1,grav:5}
 };
-const KEYS=['pip','needle','scatter','drifter'];
+const KEYS=['pip','needle','scatter','drifter'],SHOTS=[...KEYS,'thrown'],ALL=[...KEYS,'buckler'];
 const POOL=['pip','pip','pip','needle','needle','scatter','scatter','drifter','buckler'];
 const DIFF={
   easy:  {speed:1.0,window:.7, err:.50,lead:.3,regrab:3.6,gap:1.3},
@@ -94,12 +95,12 @@ const youFig=makeBody(YOU,{skin:MAT.set('panel'),env:envTex,opacity:.5,face:-1,f
 const foeFig=makeBody(FOE,{skin:MAT.set('panel'),env:envTex,opacity:1,face:1,floor:.12,onStep:x=>sfx('step',pan(x),.22)});
 scene.add(youFig.group,foeFig.group);
 const you={hp:MAX_HP,head:new V3(0,1.5,PZ),vel:new V3(),wins:0,push:new V3()};
-const foe={hp:MAX_HP,head:new V3(0,1.5,BZ),wins:0,held:null,cool:0,grabT:1,goal:new V3(0,1.5,BZ),wanderT:0,shield:shieldMesh(FOE),shieldT:0,netShield:null,netW:-1,netHands:null,netGh:-1,vel:new V3(),rack:rack(true)};
+const foe={hp:MAX_HP,head:new V3(0,1.5,BZ),wins:0,held:null,cool:0,grabT:1,goal:new V3(0,1.5,BZ),wanderT:0,shield:shieldMesh(FOE),shieldP:0,netShield:null,netW:-1,netHands:null,netGh:-1,vel:new V3(),rack:rack(true)};
 foe.rack.position.set(-.3,-.2,.15);foe.rack.scale.setScalar(1.5);foeBody.add(foe.rack);
 foeBody.add(foe.shield);
 
 function makeHand(parent,visPos,shieldPos){
-  const h={parent,held:null,cool:0,want:false,vis:rack(),shield:shieldMesh(YOU),shieldT:0,pad:null,kick:0,base:visPos};
+  const h={parent,held:null,cool:0,want:false,vis:rack(),shield:shieldMesh(YOU),shieldP:0,pad:null,kick:0,base:visPos,was:new V3(),v:new V3()};
   h.vis.position.copy(visPos);h.shield.position.copy(shieldPos);
   parent.add(h.vis);parent.add(h.shield);return h;
 }
@@ -111,6 +112,7 @@ const vrHands=[0,1].map(i=>{
   h.sight=new THREE.Mesh(new THREE.CylinderGeometry(.0012,.0012,5,6),new THREE.MeshBasicMaterial({color:YOU,transparent:true,opacity:.35,depthWrite:false}));
   h.sight.rotation.x=Math.PI/2;h.sight.position.set(0,.006,-2.7);h.sight.visible=false;c.add(h.sight);
   c.addEventListener('selectstart',()=>{ if(state==='menu'||state==='over')tryStart(); else h.want=true; });
+  c.addEventListener('squeezestart',()=>{const sp=h.v.length();letGo(h,sp>1.2?h.v.clone().multiplyScalar(1.6).clampLength(3,10):null);});
   c.addEventListener('connected',e=>{h.pad=e.data&&e.data.gamepad||null;});
   c.addEventListener('disconnected',()=>{h.pad=null;});
   return h;
@@ -135,11 +137,12 @@ placeSlots();
 /* ---------- projectiles ---------- */
 const shots=[],mine=new Map(),remote=new Map(),deadRemote=new Set();
 let shotId=1,kills=[];
-function spawn(owner,key,pos,vel){
-  const w=W[key];
-  const mesh=makeShot(key,owner===you?YOU:FOE);
+function spawn(owner,key,pos,vel,gun){
+  const w=W[key];let mesh;
+  if(key==='thrown'){mesh=makeGun(gun);mesh.userData.setAmmo(0);mesh.scale.setScalar(1.3);mesh.userData.tick=dt=>{mesh.rotation.x+=dt*11;};}
+  else mesh=makeShot(key,owner===you?YOU:FOE);
   mesh.position.copy(pos);mesh.lookAt(tmp.copy(pos).add(vel));scene.add(mesh);
-  const s={mesh,pos:mesh.position,vel,owner,key,r:w.r,dmg:w.dmg,absorb:w.absorb||0,life:0,dead:false,id:0,far:false};
+  const s={mesh,pos:mesh.position,vel,owner,key,gun,grav:w.grav||0,r:w.r,dmg:w.dmg,absorb:w.absorb||0,life:0,dead:false,id:0,far:false};
   shots.push(s);return s;
 }
 function fire(owner,key,origin,dir){
@@ -170,6 +173,30 @@ function updateFx(dt){
     f.s.material.opacity=f.life/f.max;
   }
 }
+const falling=[];
+function dropped(pos,key){const m=makeGun(key);m.userData.setAmmo(0);m.position.copy(pos);scene.add(m);falling.push({m,vy:0});}
+function updateFalling(dt){
+  for(let i=falling.length-1;i>=0;i--){
+    const f=falling[i];f.vy-=9.8*dt;f.m.position.y+=f.vy*dt;f.m.rotation.x+=dt*5;
+    if(f.m.position.y<.14){scene.remove(f.m);falling.splice(i,1);sfx('step',pan(f.m.position.x),.5);}
+  }
+}
+function lob(from,to,err){              // the throw that lands on a point, however far
+  const w=W.thrown,d=new V3().copy(to).sub(from),t=d.length()/w.speed;
+  d.divideScalar(t);d.y+=w.grav*t/2;if(err){d.x+=(Math.random()-.5)*err;d.y+=(Math.random()-.5)*err;}
+  return d;
+}
+function letGo(h,vel){                  // open the hand: the thing drops, or flies if it was thrown
+  const key=h.shieldP>0?'buckler':h.held?h.held.key:null;if(!key||state!=='play')return;
+  const o=h.vis.getWorldPosition(new V3());h.held=null;h.shieldP=0;buzz(h,30);
+  if(vel){const s=spawn(you,'thrown',o,vel,key);s.id=shotId++;mine.set(s.id,s);sfx('whoosh',0,.5);}
+  else dropped(o,key);
+}
+function shieldHit(holder,p,at,col){     // a shield spends its power on what it stops
+  holder.shieldP-=p.dmg;
+  if(holder.shieldP<=0){holder.shieldP=0;sfx('break',pan(at.x));burst(at,col,true);}
+  else sfx('block',pan(at.x),holder===foe?.6:1);
+}
 function killRemote(p){p.dead=true;if(p.far){deadRemote.add(p.id);kills.push(p.id);}}
 function clearShots(){shots.forEach(s=>scene.remove(s.mesh));shots.length=0;mine.clear();remote.clear();deadRemote.clear();kills=[];}
 
@@ -199,8 +226,8 @@ function tryStart(){
 function startMatch(){you.wins=0;foe.wins=0;menu.hidden=true;startRound();}
 function resetRound(){
   you.hp=foe.hp=MAX_HP;clock=ROUND_TIME;clearShots();overShown=false;say('');
-  [flatHand,...vrHands].forEach(h=>{h.held=null;h.shieldT=0;h.cool=0;h.want=false;});foe.netW=-1;foe.rack.userData.show(null);
-  foe.held=null;foe.shieldT=0;foe.netShield=null;foe.netHands=null;foe.vel.set(0,0,0);you.push.set(0,0,0);tickAt=4;foe.grabT=1.2;foe.head.set(0,1.5,BZ);foe.goal.copy(foe.head);
+  [flatHand,...vrHands].forEach(h=>{h.held=null;h.shieldP=0;h.cool=0;h.want=false;});foe.netW=-1;foe.rack.userData.show(null);
+  foe.held=null;foe.shieldP=0;foe.netShield=null;foe.netHands=null;foe.vel.set(0,0,0);you.push.set(0,0,0);tickAt=4;foe.grabT=1.2;foe.head.set(0,1.5,BZ);foe.goal.copy(foe.head);
   slots.forEach((s,i)=>{s.type=null;s.timer=.4+i*.5;});
 }
 function startRound(){roundNo++;resetRound();state='count';timer=3;}
@@ -248,14 +275,14 @@ function openLink(role,code){
   }catch(e){setStatus('Could not connect: '+(e&&(e.code||e.message)||e));net.on=false;}
 }
 function tx(){
-  let sh=0;
-  for(const h of hands())if(h.shieldT>0){h.shield.getWorldPosition(tmp);sh=[r2(tmp.x),r2(tmp.y),r2(tmp.z)];}
+  let sh=0,sp=0;
+  for(const h of hands())if(h.shieldP>0){h.shield.getWorldPosition(tmp);sh=[r2(tmp.x),r2(tmp.y),r2(tmp.z)];sp=r2(h.shieldP/W.buckler.power);}
   const s=[];
   for(const p of shots)if(p.owner===you&&!p.dead&&s.length<30)
-    s.push([p.id,KEYS.indexOf(p.key),r2(p.pos.x),r2(p.pos.y),r2(p.pos.z),r2(p.vel.x),r2(p.vel.y),r2(p.vel.z)]);
-  const pk={q:Date.now(),r:net.role,rn:roundNo,h:[r2(you.head.x),r2(you.head.y),r2(you.head.z)],hp:Math.round(you.hp),sh,s,k:kills.slice(-30),w:-1};
+    s.push([p.id,SHOTS.indexOf(p.key),r2(p.pos.x),r2(p.pos.y),r2(p.pos.z),r2(p.vel.x),r2(p.vel.y),r2(p.vel.z),ALL.indexOf(p.gun)]);
+  const pk={q:Date.now(),r:net.role,rn:roundNo,h:[r2(you.head.x),r2(you.head.y),r2(you.head.z)],hp:Math.round(you.hp),sh,sp,s,k:kills.slice(-30),w:-1};
   pk.gh=-1;pk.hd=hands().map((h,i)=>{
-    const busy=h.held||h.shieldT>0;if(busy)pk.gh=i;if(h.held)pk.w=KEYS.indexOf(h.held.key);
+    const busy=h.held||h.shieldP>0;if(busy)pk.gh=i;if(h.held)pk.w=KEYS.indexOf(h.held.key);
     if(mode!=='vr'&&!busy)return 0;
     (mode==='vr'?h.parent:h.vis).getWorldPosition(tmp);return [r2(tmp.x),r2(tmp.y),r2(tmp.z)];
   });
@@ -273,15 +300,16 @@ function rx(pk){                           // everything in here is untrusted in
   if(pk.rn===roundNo)foe.hp=clamp(num(pk.hp),0,MAX_HP);
   foe.netW=typeof pk.w==='number'?pk.w:-1;foe.netGh=pk.gh===0||pk.gh===1?pk.gh:-1;
   foe.netHands=Array.isArray(pk.hd)?[0,1].map(i=>Array.isArray(pk.hd[i])?new V3(clamp(-num(pk.hd[i][0]),-2.5,2.5),clamp(num(pk.hd[i][1]),0,2.6),clamp(-num(pk.hd[i][2]),BZ-2,BZ+2)):null):null;
+  foe.netSp=clamp(num(pk.sp),0,1);
   foe.netShield=Array.isArray(pk.sh)?new V3(-num(pk.sh[0]),num(pk.sh[1]),-num(pk.sh[2])):null;
   const seen=new Set();
   (Array.isArray(pk.s)?pk.s.slice(0,40):[]).forEach(a=>{
     if(!Array.isArray(a))return;
-    const id=a[0],key=KEYS[a[1]];if(!key||typeof id!=='number')return;
+    const id=a[0],key=SHOTS[a[1]];if(!key||typeof id!=='number')return;
     seen.add(id);
     if(remote.has(id)||deadRemote.has(id)||state!=='play'||pk.rn!==roundNo)return;
     const vel=new V3(-num(a[5]),num(a[6]),-num(a[7]));if(vel.length()>10)vel.setLength(10);
-    const s=spawn(foe,key,new V3(-num(a[2]),num(a[3]),-num(a[4])),vel);
+    const s=spawn(foe,key,new V3(-num(a[2]),num(a[3]),-num(a[4])),vel,ALL[a[8]]||'pip');
     s.id=id;s.far=true;remote.set(id,s);
   });
   remote.forEach((s,id)=>{if(!seen.has(id))s.dead=true;});
@@ -321,7 +349,7 @@ function hitsBody(p,f){                   // the head, then the trunk from colla
 }
 function setHeld(h,key){
   const w=W[key];
-  if(w.shield){h.held=null;h.shieldT=w.dur;}
+  if(w.shield){h.held=null;h.shieldP=w.power;}
   else h.held={key,ammo:w.ammo};
   sfx(w.shield?'shield':'pickup');buzz(h,30);
 }
@@ -341,25 +369,28 @@ function updatePlayer(dt){
   for(const h of hands()){
     h.cool-=dt;
     const hp=mode==='vr'?h.parent.getWorldPosition(tmp2):tmp2.copy(you.head);
+    h.v.lerp(tmp.copy(hp).sub(h.was).divideScalar(Math.max(dt,.001)),.35);h.was.copy(hp);
+    if(h.toss){h.toss=false;if(mode!=='vr'&&(h.held||h.shieldP>0))letGo(h,lob(h.vis.getWorldPosition(new V3()),foe.head));}
+    if(h.drop){h.drop=false;letGo(h,null);}
     if(state==='play'){
-      if(!h.held&&h.shieldT<=0){
+      if(!h.held&&h.shieldP<=0){
         const reach=mode==='vr'?.17:.3;
         for(const s of slots){ if(s.type&&s.pos.distanceTo(hp)<reach){setHeld(h,s.type);s.type=null;s.timer=2.4+Math.random()*1.6;break;} }
       }
-      if(h.want&&h.held&&h.cool<=0){
+      if(h.want&&h.held&&h.cool<=0&&h.held.ammo<=0){sfx('empty');h.cool=.3;}
+      else if(h.want&&h.held&&h.cool<=0){
         const w=W[h.held.key],gun=h.vis.userData.guns[h.held.key];let dir;
         gun.updateWorldMatrix(true,false);const o=gun.localToWorld(gun.userData.muzzle.clone());
         if(mode==='vr'){dir=new V3(0,0,-1).applyQuaternion(h.parent.getWorldQuaternion(new THREE.Quaternion()));}
         else dir=new V3().copy(foe.head).sub(o).normalize();
         fire(you,h.held.key,o,dir);h.kick=1;buzz(h,25);
-        h.cool=w.cool;if(--h.held.ammo<=0){h.held=null;sfx('empty');}
+        h.cool=w.cool;h.held.ammo--;
       }
     }
     h.want=false;
-    if(h.shieldT>0)h.shieldT-=dt;
-    h.shield.visible=h.shieldT>0;
-    h.shield.userData.life(Math.min(1,h.shieldT/W.buckler.dur));
-    const gun=h.vis.userData.show(h.shieldT>0?'buckler':h.held?h.held.key:null);
+    h.shield.visible=h.shieldP>0;
+    h.shield.userData.life(h.shieldP/W.buckler.power);
+    const gun=h.vis.userData.show(h.shieldP>0?'buckler':h.held?h.held.key:null);
     if(gun&&h.held)gun.userData.setAmmo(h.held.ammo);
     if(gun&&gun.userData.tick)gun.userData.tick(performance.now()/1000);
     if(h.sight)h.sight.visible=!!h.held&&state==='play';
@@ -375,7 +406,7 @@ function updateRemote(dt){
   foe.head.lerp(foe.goal,Math.min(1,dt*14));foeBody.position.copy(foe.head);
   const grip=foe.netHands&&foe.netHands[foe.netGh];
   if(grip)foe.rack.position.copy(grip).sub(foe.head);else foe.rack.position.set(-.3,-.2,.15);
-  foe.shield.visible=!!foe.netShield;
+  foe.shield.visible=!!foe.netShield;foe.shield.userData.life(foe.netSp||0);
   if(foe.netShield)foe.shield.position.copy(foe.netShield).sub(foe.head);
   showFoeGun(foe.netShield?'buckler':state==='play'?KEYS[foe.netW]:null,-1);
 }
@@ -404,13 +435,13 @@ function updateBot(dt){
   foe.head.addScaledVector(foe.vel,dt);foe.rack.position.set(-.3,-.2,.15);
   foeBody.position.copy(foe.head);
 
-  if(foe.shieldT>0)foe.shieldT-=dt;
-  foe.shield.position.set(0,-.15,.5);foe.shield.visible=foe.shieldT>0;foe.shield.userData.life(Math.min(1,foe.shieldT/W.buckler.dur));
-  showFoeGun(foe.shieldT>0?'buckler':foe.held?foe.held.key:null,foe.held?foe.held.ammo:-1);
+  foe.shield.position.set(0,-.15,.5);foe.shield.visible=foe.shieldP>0;foe.shield.userData.life(foe.shieldP/W.buckler.power);
+  showFoeGun(foe.shieldP>0?'buckler':foe.held?foe.held.key:null,foe.held?foe.held.ammo:-1);
   if(!foe.held){
     if((foe.grabT-=dt)<=0){
-      const key=pick(POOL),w=W[key];
-      if(w.shield){foe.shieldT=w.dur;foe.grabT=diff.regrab+w.dur*.5;}
+      let key=pick(POOL);while(key==='buckler'&&foe.shieldP>0)key=pick(POOL);
+      const w=W[key];
+      if(w.shield){foe.shieldP=w.power;foe.grabT=diff.regrab;}
       else{foe.held={key,ammo:w.ammo};foe.cool=.5+Math.random()*.5;}
     }
   }else if((foe.cool-=dt)<=0){
@@ -421,21 +452,24 @@ function updateBot(dt){
     aim.y-=.15;aim.x+=(Math.random()-.5)*2*diff.err;aim.y+=(Math.random()-.5)*2*diff.err;
     fire(foe,foe.held.key,o,aim.sub(o).normalize());
     foe.cool=Math.max(w.cool,diff.gap*(.7+Math.random()*.6));
-    if(--foe.held.ammo<=0){foe.held=null;foe.grabT=diff.regrab*(.7+Math.random()*.6);}
+    if(--foe.held.ammo<=0){
+      const k=foe.held.key;foe.held=null;foe.grabT=diff.regrab*(.7+Math.random()*.6);
+      if(Math.random()<.6)spawn(foe,'thrown',o,lob(o,you.head,diff.err*3),k);else dropped(o,k);
+    }
   }
 }
 function updateShots(dt){
   for(const p of shots){
     if(p.dead)continue;
-    was.copy(p.pos);p.pos.addScaledVector(p.vel,dt);p.life+=dt;
+    was.copy(p.pos);if(p.grav)p.vel.y-=p.grav*dt;p.pos.addScaledVector(p.vel,dt);p.life+=dt;
     if(p.mesh.userData.tick)p.mesh.userData.tick(dt);
-    if(p.life>9||Math.abs(p.pos.z)>9){p.dead=p.gone=true;continue;}
+    if(p.life>9||Math.abs(p.pos.z)>9||p.pos.y<.05){p.dead=p.gone=true;continue;}
     if(p.owner===foe){
-      for(const h of hands()){ if(!p.dead&&h.shieldT>0&&nearPoint(was,p.pos,h.shield.getWorldPosition(tmp))<.34+p.r){killRemote(p);sfx('block',pan(p.pos.x));buzz(h,40);} }
+      for(const h of hands()){ if(!p.dead&&h.shieldP>0&&nearPoint(was,p.pos,h.shield.getWorldPosition(tmp))<.34+p.r){killRemote(p);shieldHit(h,p,tmp,YOU);buzz(h,40);} }
       if(!p.dead&&hitsBody(p,you)){killRemote(p);hurt(you,p.dmg);}
       if(!p.dead&&!p.passed&&p.pos.z>=you.head.z){p.passed=true;if(Math.hypot(p.pos.x-you.head.x,p.pos.y-you.head.y+.3)<.75)sfx('whoosh',clamp((p.pos.x-you.head.x)*3,-1,1),.8);}
     }else if(!net.on){                   // against a remote player, they decide what hits them
-      if(foe.shieldT>0&&nearPoint(was,p.pos,foe.shield.getWorldPosition(tmp))<.34+p.r){p.dead=true;sfx('block',pan(p.pos.x),.6);}
+      if(foe.shieldP>0&&nearPoint(was,p.pos,foe.shield.getWorldPosition(tmp))<.34+p.r){p.dead=true;shieldHit(foe,p,tmp,FOE);}
       else if(hitsBody(p,foe)){p.dead=true;hurt(foe,p.dmg);}
     }
   }
@@ -492,11 +526,11 @@ function drawBoard(){
 function updateHud(dt){
   hpYou.style.width=(you.hp/MAX_HP*100)+'%';hpFoe.style.width=(foe.hp/MAX_HP*100)+'%';
   clockEl.textContent=fmt(clock);scoreEl.textContent=you.wins+' – '+foe.wins;
-  const h=flatHand,key=h.shieldT>0?'buckler':h.held?h.held.key:'';
-  const label=key+(h.held?h.held.ammo:'');
+  const h=flatHand,key=h.shieldP>0?'buckler':h.held?h.held.key:'';
+  const spent=h.held&&h.held.ammo<=0,label=key+(h.held?h.held.ammo:Math.ceil(h.shieldP));
   if(label!==lastWeapon){
     lastWeapon=label;
-    weaponEl.innerHTML=key?W[key].name+(h.held?' · '+h.held.ammo+' left':'')+'<small>'+W[key].hint+'</small>'
+    weaponEl.innerHTML=key?W[key].name+(spent?' · empty':h.held?' · '+h.held.ammo+' left':' · '+Math.ceil(h.shieldP)+' power')+'<small>'+(spent?'Q throws it at your rival, E drops it':W[key].hint)+'</small>'
       :'Empty hand<small>Move onto a floating weapon to grab it</small>';
   }
   if((boardT-=dt)<=0){boardT=.15;drawBoard();}
@@ -529,10 +563,10 @@ function update(dt,now){
   else foeBody.position.copy(foe.head);
   if(state==='play'||state==='roundEnd'||state==='over')updateShots(dt);
   youFig.group.visible=mode!=='vr';
-  if(mode!=='vr')youFig.update(dt,you.head,[flatHand.held||flatHand.shieldT>0?flatHand.vis.getWorldPosition(gripA):null,null]);
+  if(mode!=='vr')youFig.update(dt,you.head,[flatHand.held||flatHand.shieldP>0?flatHand.vis.getWorldPosition(gripA):null,null]);
   const shown=foe.rack.children.some(m=>m.visible);
   foeFig.update(dt,foe.head,net.on&&foe.netHands?foe.netHands:[shown?foe.rack.getWorldPosition(gripB):null,null]);
-  updateSlots(dt,now);updateFx(dt);updateHud(dt);
+  updateSlots(dt,now);updateFx(dt);updateFalling(dt);updateHud(dt);
   if(net.on&&net.link&&(net.sendT-=dt)<=0){net.sendT=1/15;tx();}
 }
 let last=performance.now();
@@ -557,7 +591,9 @@ function point(e){
   target.y=clamp(.6+(1-ny)*1.5,.75,1.9);
 }
 canvas.addEventListener('pointermove',point);
-canvas.addEventListener('pointerdown',e=>{wake();point(e);if(e.pointerType==='mouse')flatHand.want=true;});
+canvas.addEventListener('pointerdown',e=>{wake();point(e);if(e.pointerType==='mouse'){if(e.button===2)flatHand.toss=true;else flatHand.want=true;}});
+canvas.addEventListener('contextmenu',e=>e.preventDefault());
+$('toss').addEventListener('pointerdown',e=>{e.preventDefault();wake();flatHand.toss=true;});
 $('fire').addEventListener('pointerdown',e=>{e.preventDefault();wake();flatHand.want=true;});
 window.addEventListener('keyup',e=>{keys[e.code]=false;});
 window.addEventListener('blur',()=>{for(const k in keys)keys[k]=false;});
@@ -565,6 +601,8 @@ window.addEventListener('keydown',e=>{
   if(e.target.tagName==='INPUT')return;
   keys[e.code]=true;if(e.code.startsWith('Arrow'))e.preventDefault();
   if(e.code==='Space'){e.preventDefault();if(state==='play')flatHand.want=true;}
+  if(e.code==='KeyQ')flatHand.toss=true;
+  if(e.code==='KeyE')flatHand.drop=true;
 });
 startBtn.addEventListener('click',tryStart);
 function press(sel,b){document.querySelectorAll(sel).forEach(x=>x.setAttribute('aria-pressed',String(x===b)));}
@@ -613,4 +651,4 @@ mrBtn.addEventListener('click',()=>enterXR('immersive-ar'));
   vrBtn.hidden=!vr;mrBtn.hidden=!mr;
   if(!vr&&!mr)note.textContent='VR and passthrough buttons appear when this page is opened directly in a headset browser over HTTPS.';
 })();
-window.__qzar={scene,camera,makeGun,makeShield,makeShot,you,foe,shots,net,get state(){return state;},get round(){return roundNo;},hurt};
+window.__qzar={flatHand,setHeld,spawn,V3,scene,camera,makeGun,makeShield,makeShot,you,foe,shots,net,get state(){return state;},get round(){return roundNo;},hurt};

@@ -122,7 +122,12 @@ function makeShield(col) {
   const face = put(g, new THREE.CircleGeometry(.32, 40), new THREE.MeshBasicMaterial({ map: hexTex, color: col, ...add }));
   const fill = put(g, new THREE.CircleGeometry(.32, 40), new THREE.MeshBasicMaterial({ color: col, opacity: .12, ...add }));
   const rim = put(g, tor(.32, .008, 48), new THREE.MeshBasicMaterial({ color: col, transparent: true }));
-  g.userData.life = f => { face.material.opacity = .35 + .65 * f; fill.material.opacity = .05 + .1 * f; rim.material.opacity = f < .25 ? .4 + .6 * Math.abs(Math.sin(f * 60)) : 1; };
+  const gauge = put(g, new THREE.RingGeometry(.34, .375, 48), new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: .9, side: THREE.DoubleSide, depthWrite: false })); let step = -1;
+  g.userData.life = f => {                           // the bright arc round the rim is the power left
+    f = Math.max(0, Math.min(1, f)); const n = Math.ceil(f * 30);
+    if (n !== step) { step = n; gauge.geometry.dispose(); gauge.geometry = new THREE.RingGeometry(.34, .375, 48, 1, Math.PI / 2, Math.max(.001, n / 30 * Math.PI * 2)); gauge.material.color.setHex(f > .5 ? 0xffffff : f > .25 ? 0xffd166 : 0xff5a4d); }
+    face.material.opacity = .3 + .7 * f; fill.material.opacity = .04 + .1 * f; rim.material.opacity = .35;
+  };
   return g;
 }
 

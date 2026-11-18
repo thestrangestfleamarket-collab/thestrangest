@@ -35,7 +35,9 @@ body{background:var(--bg);color:var(--ink);font-family:var(--font-body);overflow
 #weapon{font-family:var(--font-display);font-size:15px}
 #weapon small{display:block;font-family:var(--font-body);font-size:12px;color:var(--muted)}
 #fire{pointer-events:auto;display:none;font-family:var(--font-display);font-weight:700;font-size:18px;color:var(--bg);background:var(--warn);border:0;border-radius:50%;width:84px;height:84px}
-@media (pointer:coarse){#fire{display:block}}
+#pads{display:flex;gap:10px;align-items:flex-end}
+#toss{pointer-events:auto;display:none;font-family:var(--font-display);font-weight:700;font-size:12px;color:var(--ink);background:var(--panel);border:1px solid var(--ink);border-radius:50%;width:60px;height:60px}
+@media (pointer:coarse){#fire,#toss{display:block}}
 #flash{position:absolute;inset:0;pointer-events:none;background:radial-gradient(ellipse at center,transparent 45%,var(--foe) 130%);opacity:0;transition:opacity .25s}
 #banner{position:absolute;left:0;right:0;top:34%;text-align:center;font-family:var(--font-display);font-weight:700;font-size:clamp(28px,7vw,64px);pointer-events:none;text-shadow:0 2px 0 var(--bg)}
 #menu{position:absolute;inset:0;display:flex;padding-block:16px;background:color-mix(in srgb,var(--bg) 72%,transparent);overflow:auto}
@@ -69,7 +71,7 @@ button:focus-visible,input:focus-visible{outline:2px solid var(--warn);outline-o
   <div id="banner"></div>
   <div id="foot" class="gutter">
     <div id="weapon">Empty hand<small>Move onto a floating weapon to grab it</small></div>
-    <button id="fire" type="button">FIRE</button>
+    <div id="pads"><button id="toss" type="button">THROW</button><button id="fire" type="button">FIRE</button></div>
   </div>
   <div id="menu" class="gutter">
     <div class="card">
@@ -78,7 +80,8 @@ button:focus-visible,input:focus-visible{outline:2px solid var(--warn);outline-o
       <ul>
         <li><b>Mouse or finger:</b> move to dodge and to touch floating weapons. Click, Space or FIRE shoots.</li>
         <li><b>Headset:</b> dodge for real, reach out to grab weapons, pull the trigger to shoot.</li>
-        <li>Every weapon has limited shots. The Buckler blocks, the Drifter eats incoming fire.</li>
+        <li>Every weapon has limited shots. The Buckler blocks until its power is spent, the Drifter eats incoming fire.</li>
+        <li>Q or right-click throws what you hold at your rival, E drops it. In a headset the grip lets go: swing and it flies.</li>
       </ul>
       <div class="row" id="opp" role="group" aria-label="Rival">
         <button class="seg" type="button" data-o="bot" id="oBot" aria-pressed="true">Versus bot</button>

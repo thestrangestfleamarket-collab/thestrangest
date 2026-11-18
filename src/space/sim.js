@@ -15,7 +15,7 @@ const MUL = [[1, 0.75, 0.6], [1.15, 1, 0.55], [1, 1.1, 1.2], [1, 1, 1]];
 // a shot is not a hit: how likely each weapon is to land on each size (before the target's own speed and the range are counted), and how fast each one's shot flies
 const ACC = [[0.7, 0.8, 0.9], [0.55, 0.75, 0.9], [0.12, 0.7, 0.92], [1, 1, 1]], SHOT = [0.9, 0.55, 3];
 const NODES = [[0, 0, 0], [-0.62, 0.14, 0.42], [0.62, -0.14, 0.42], [0.62, 0.14, -0.42], [-0.62, -0.14, -0.42]];
-const SNEAK_SEE = 0.16, NODE_R = 0.16, BASE_INC = 12, NODE_INC = 4, START = 300, MINE_SEE = 0.12, DOCK = 0.34, BLAST = 0.09;
+const SNEAK_SEE = 0.16, NODE_R = 0.16, BASE_INC = 12, NODE_INC = 4, START = 300, MINE_SEE = 0.12, HELP = 0.4, DOCK = 0.34, BLAST = 0.09;
 const HOME = [[0, 0, 1.12], [0, 0, -1.12]];
 const MASS = [1e9, 1, 8, 40, 12, 0.5], BOOM = [2, 6, 20];   // how heavy each kind is, and how hard each size goes up
 const clamp = (v, lo, hi) => (v < lo ? lo : v > hi ? hi : v);
@@ -36,7 +36,7 @@ class Sim {
       this.spawn(FRIGATE, s, [0, -0.05, HOME[s][2] * 0.5]); }
   }
   spawn(type, side, p) {
-    const u = { id: this.next++, type, side, x: p[0], y: p[1], z: p[2], vx: 0, vy: 0, vz: 0, yaw: side ? 0 : Math.PI, pitch: 0, hp: this.T[side][type].hp, sh: this.T[side][type].sh, calm: 0, cool: 0,
+    const u = { id: this.next++, type, side, x: p[0], y: p[1], z: p[2], vx: 0, vy: 0, vz: 0, yaw: side ? 0 : Math.PI, pitch: 0, hp: this.T[side][type].hp, sh: this.T[side][type].sh, calm: 0, cool: 0, by: 0, byT: -999,
       k: 0, gx: p[0], gy: p[1], gz: p[2], ax: p[0], ay: p[1], az: p[2], tid: 0, q: [], m: 0, loud: 0 };   // m: how it goes about its orders (0 attack, 1 defend, 2 sneak); loud: steps since it last gave itself away   // q: the rest of its mission, done one after another   // k: 0 guard at a, 1 move to g, 2 attack tid
     this.units.push(u); this.byId.set(u.id, u); return u;
   }
@@ -86,12 +86,17 @@ class Sim {
       // on guard a ship takes on what comes near and goes back to its post; told to move it only shoots what it passes
       let foe = tgt; const mine = u.type === MINE, quiet = u.m === 2 && u.loud <= 0, hunt = u.m === 0 && !mine; if (u.loud > 0) u.loud--;
       if (!foe && !quiet) foe = this.pick(u, mine ? 0.15 : u.m === 1 || (u.k === 1 && !hunt) ? T.range : Math.max(T.range * 1.5, 0.3));
+      // a ship's own sense: shot at from beyond its reach it goes for whoever did it; standing by, it goes to a friend under fire close by (to its mothership from farther)
+      let back = false; if (!foe && !mine && T.speed) { let a = this.tick - u.byT < 40 ? this.byId.get(u.by) : null; if (a && a.hp <= 0) a = null;
+        if (!a && u.k === 0 && u.m !== 2) { let bd = 9; for (const f of US) { if (f.side !== u.side || f === u || f.hp <= 0 || this.tick - f.byT > 30) continue; const e = this.byId.get(f.by); if (!e || e.hp <= 0) continue; const d = Math.hypot(f.x - u.x, f.y - u.y, f.z - u.z); if (d < (f.type === MOTHER ? HELP * 1.6 : HELP) && d < bd) { bd = d; a = e; } } }
+        if (a) { foe = a; back = true; } }
       if (u.k === 0) { if (foe && Math.hypot(u.x - u.ax, u.y - u.ay, u.z - u.az) > (mine ? 0.2 : u.m === 1 ? 0.12 : 0.5)) foe = null;
         if ((!foe || u.m === 1) && Math.hypot(u.x - u.ax, u.y - u.ay, u.z - u.az) > 0.03) { tx = u.ax; ty = u.ay; tz = u.az; go = true; } }   // a defender knocked off its post goes back to it, still shooting
       if (foe && (u.k === 2 || mine || (u.m !== 1 && (u.k === 0 || hunt)))) { const d = Math.hypot(foe.x - u.x, foe.y - u.y, foe.z - u.z), reach = T.range + this.T[foe.side][foe.type].r;
         if (mine) { tx = foe.x; ty = foe.y; tz = foe.z; go = true; }
         else if (u.type === FIGHTER) { const a = this.tick * 0.22 + u.id * 1.7, rr = reach * 0.75; tx = foe.x + Math.cos(a) * rr; ty = foe.y + Math.sin(a * 0.7) * rr * 0.4; tz = foe.z + Math.sin(a) * rr; go = true; }
         else if (d > reach * 0.85) { tx = foe.x; ty = foe.y; tz = foe.z; go = true; } else go = false; }
+      else if (foe && back && u.m === 1 && u.k === 0 && T.speed) { const dx = foe.x - u.ax, dy = foe.y - u.ay, dz = foe.z - u.az, d = Math.hypot(dx, dy, dz) || 1, k = Math.min(0.1, Math.max(0, d - T.range * 0.85)) / d; tx = u.ax + dx * k; ty = u.ay + dy * k; tz = u.az + dz * k; go = true; }   // a defender answers from as far out as its post allows
       // fly: a ship turns its nose at its own rate and thrusts along it, so it swings round in an arc, carries its way and brakes to arrive; the last few lengths are on manoeuvring jets
       let wx = 0, wy = 0, wz = 0, fx = 0, fy = 0, fz = 0;
       if (go && T.speed) { const dx = tx - u.x, dy = ty - u.y, dz = tz - u.z, d = Math.hypot(dx, dy, dz) || 1e-6; fx = dx / d; fy = dy / d; fz = dz / d;
@@ -106,7 +111,7 @@ class Sim {
       else if (shot && sd <= T.range && u.cool <= 0) { u.cool = T.cd; const TT = this.T[shot.side][shot.type], kd = Math.hypot(shot.x - u.x, shot.y - u.y, shot.z - u.z) || 1, dx = (shot.x - u.x) / kd, dy = (shot.y - u.y) / kd, dz = (shot.z - u.z) / kd;
         // the shot flies, and may miss: small fast ships are hard to hit, long shots harder; a ship shot at jinks
         const dodge = Math.min(0.45, Math.hypot(shot.vx, shot.vy, shot.vz) / 0.5) * (TT.cls === 0 ? 1 : TT.cls === 1 ? 0.5 : 0.15), hit = this.rnd() < ACC[T.w][TT.cls] * (1 - dodge) * (1 - 0.25 * Math.max(0, sd) / T.range) * (u.m === 1 && Math.hypot(u.vx, u.vy, u.vz) < T.speed * 0.3 ? 1.15 : 1), t = Math.max(1, Math.min(15, Math.round(kd / SHOT[T.w] / DT)));
-        u.loud = 30; this.shots.push({ t, tid: shot.id, dmg: T.dmg * MUL[T.w][TT.cls], hit, dx, dy, dz, k: T.dmg * 0.0006 / MASS[shot.type] }); this.ev.push(1, u.id, shot.id, T.w | (shot.sh > 0 ? 8 : 0) | (hit ? 0 : 16) | (t << 5));
+        u.loud = 30; shot.by = u.id; shot.byT = this.tick; this.shots.push({ t, tid: shot.id, dmg: T.dmg * MUL[T.w][TT.cls], hit, dx, dy, dz, k: T.dmg * 0.0006 / MASS[shot.type] }); this.ev.push(1, u.id, shot.id, T.w | (shot.sh > 0 ? 8 : 0) | (hit ? 0 : 16) | (t << 5));
         if (TT.cls < 2 && TT.speed) { const j = (TT.cls ? 0.02 : 0.08) * (this.rnd() < 0.5 ? -1 : 1), up = this.rnd() - 0.5; shot.vx += -dz * j; shot.vz += dx * j; shot.vy += up * Math.abs(j); } }
       // the nose swings to where it is going, or to what it shoots when it holds still
       if (!(go && Math.hypot(tx - u.x, ty - u.y, tz - u.z) > 0.03) && shot) { fx = shot.x - u.x; fy = shot.y - u.y; fz = shot.z - u.z; }

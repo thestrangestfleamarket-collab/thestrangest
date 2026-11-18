@@ -48,7 +48,7 @@ class Panel {
       x.textAlign = 'center'; x.fillStyle = on ? '#fff' : '#66707f'; x.font = 'bold 28px system-ui,sans-serif'; x.fillText(label, x0 + bw / 2, y + bh / 2 + 2); this.btn.push({ x0, y0: y, x1: x0 + bw, y1: y + bh, id }); };
     row(0, 5, s.paused ? 'RESUME' : 'PAUSE', 'pause', play, s.paused); row(1, 5, s.extra || 'PICK ALL', s.extra ? 'x' : 'all', true, !!s.extra); row(2, 5, s.ar ? 'SEE SPACE' : 'SEE ROOM', 'ar', s.canAR); row(3, 5, s.guide ? 'SKIP GUIDE' : 'GUIDE', 'guide', true, s.guide); row(4, 5, s.fx ? 'LENS ON' : 'LENS OFF', 'fx', !s.ar, s.fx && !s.ar);
     x.textAlign = 'center'; x.fillStyle = '#7f8ea6'; x.font = '21px system-ui,sans-serif';
-    x.fillText('TRIGGER a ship and drag: send it.  Drop it on an enemy: attack.  Tap twice: stop.', W / 2, 660); x.fillText('RIGHT stick: zoom, turn.  LEFT stick: fly.  Click a stick: pause.  GRIP: drag the field or this board.', W / 2, 702, W - 60);
+    x.fillText('TRIGGER a ship and drag: send it.  Picked ships: trigger anywhere sends them.  Tap twice: stop.', W / 2, 660); x.fillText('RIGHT stick: zoom, turn.  LEFT stick: fly.  Click a stick: pause.  GRIP: drag the field or this board.', W / 2, 702, W - 60);
     this.tex.needsUpdate = true;
   }
   // which button a spot on the board (uv 0..1) is on
@@ -65,9 +65,9 @@ class Banner {
 }
 // the guide: a board that hangs beside the field and walks you through one thing at a time, moving on when you have done it
 const STEPS = [
-  ['YOUR FLEET', ['Your ships are the ones nearest you. They fly and fight', 'on their own; you only give the orders.', '', 'Point a controller at one of your ships.'], 'hover'],
+  ['YOUR FLEET', ['Your ships are the ones nearest you. They fly and fight', 'on their own: they shoot back and help a friend nearby.', '', 'Point a controller at one of your ships.'], 'hover'],
   ['SEND A SHIP', ['Hold the TRIGGER (index finger) on your ship, drag', 'the green dot to where it should go, and let go.', 'Order it again and it does that next: a mission.', 'Tap a ship twice to cancel its mission.'], 'ordered'],
-  ['PICK MANY', ['Hold the TRIGGER on empty space and drag: a bubble', 'grows between where you began and where you point.', 'Let go with two or more ships inside it.', '(B or Y picks every warship at once.)'], 'multi'],
+  ['PICK MANY', ['Hold the TRIGGER on empty space and drag: a bubble', 'grows between where you began and where you point.', 'Let go with two or more ships inside it. Then pull the', 'trigger anywhere: they all go there. (B or Y picks all.)'], 'multi'],
   ['ATTACK', ['Drag a picked ship ONTO an enemy (the dot turns red)', 'and let go: everything you picked goes for it.', 'Or just pull the trigger on an enemy.'], 'attacked'],
   ['ORDERS', ['On the CONSOLE at your left, choose how ships go:', 'ATTACK chases what it meets. DEFEND holds its place.', 'SNEAK goes slow and unseen until it fires.', 'FALL BACK brings them home. Press one now.'], 'mode'],
   ['BUILD', ['The CONSOLE floats at your left. Point either', 'controller at a ship on it and pull the trigger.', 'Fighters beat cruisers, frigates beat fighters,', 'cruisers beat frigates.'], 'built'],

@@ -9,4 +9,5 @@ export const ground = (x, z) => ((z < KERB - 0.06 && z > FKERB + 0.06) || (x > W
 export const WALK = { minX: WSX1 + 0.5, maxX: 40, minZ: KERB + 0.2, maxZ: NZ - 0.4 };   // where a visitor may walk: the cart's pavement
 // where the corner's people stop: what the plans call it, where, its name
 export const SPOTS = [{ type: 'bench', x: 6.5, z: NZ - 1.1, name: 'the park bench' }, { type: 'corner', x: WSX1 + 1.6, z: KERB + 1.6, name: 'the corner' }, { type: 'rail', x: -4.2, z: NZ - 0.9, name: 'the park railings' },
-  { type: 'museum', x: -9, z: FZ + 2.6, name: 'the art museum' }, { type: 'bank', x: 6, z: FZ + 2.6, name: 'the bank' }, { type: 'lamp', x: 9, z: KERB + 1.9, name: 'the lamp post' }, { type: 'apts', x: WSX0 - 1.6, z: 6, name: 'the apartment house on West St' }];
+  { type: 'museum', x: -9, z: FZ + 2.6, name: 'the art museum' }, { type: 'bank', x: 6, z: FZ + 2.6, name: 'the bank' }, { type: 'lamp', x: 9, z: KERB + 1.9, name: 'the lamp post' }, { type: 'apts', x: WSX0 - 1.6, z: 6, name: 'the apartment house on West St' }, { type: 'busk', x: -1.2, z: FKERB - 2.6, name: 'the octopus\'s pitch across Market St' }];
+export const CAT = { x: -39.8, z: -27.6 };   // where THE BIG CAT stands: by the westmost telephone pole on Market St's far pavement, as in the market

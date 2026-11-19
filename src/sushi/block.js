@@ -3,9 +3,10 @@ import * as THREE from 'three';
 import { G } from './ctx.js';
 import { makePerson } from './avatars.js';
 import { buildReact } from './react.js';
+import { hasFolk } from './folk.js';
 import { KERB, FKERB, NZ, WSX0, WSX1, XWALK, WXZ, ground } from './plan.js';
 
-// plan: 'inside s' (in the house or shop they stand at), 'stand s', 'go place' (a spot on the corner, work, west, east, north), 'gone s' (off the corner), 'with id' / 'alone' (someone walks along)
+// plan: 'inside s' (in the house or shop they stand at), 'stand s', 'play s' (the busker, playing where he stands), 'go place' (a spot on the corner, work, west, east, north), 'gone s' (off the corner), 'with id' / 'alone' (someone walks along)
 export const COP = 'ray';   // the one who keeps the peace on the corner (react.js, the police beat)
 // where they stop (plan.js SPOTS): bench the park bench by the cart, corner the kerb at the crossing, rail the park's railings, lamp the lamp post, museum the art museum's steps and bank the bank's door across Market St, apts the apartment house's door on West St; work off the corner: east along Market St (the subway stairs, the bodega, THE BAR, THE ARCADE, the movie theatre), west to the Hudson, north up West St
 export const CAST = [
@@ -29,7 +30,14 @@ export const CAST = [
     knows: { danny: 'your bass player, who looks at you too long', olena: 'the old lady, who scolds you and then gives you soup', mei: 'who lets you owe for the wash', cora: 'the nurse, who stitched your eyebrow after a show' }, plan: ['gone 50', 'go rail', 'stand 14', 'go bench', 'stand 12', 'go west', 'gone 40', 'go corner', 'stand 12', 'go work'] },
   { id: 'nico', style: 'neighborhood_child', name: 'Nico', age: 10, work: 'east', job: 'Héctor\'s son, ten years old, who runs errands for the whole street', quirk: 'Asks everyone questions, wants to be a b-boy or a Met, cannot decide.', tonight: 'running errands and following Kenny about',
     knows: { hector: 'your father', kenny: 'the b-boy, your hero', olena: 'the old lady, whose bags you carry for a cookie', mei: 'the laundromat lady, who gives you quarters' }, plan: ['gone 15', 'go corner', 'stand 12', 'go bench', 'stand 8', 'go apts', 'inside 20', 'go rail', 'stand 10', 'go work'] },
-];
+  // THE MARKET's own people, as they are there (folk.js): they come to this corner too
+  { id: 'octopus', style: 'm:octobusk', market: true, slots: [5], name: 'Octopus', age: 40, work: 'busk', job: 'the octopus in the cowboy hat who busks with his guitar: by day on the subway platform under Market St, at night across the street from the ramen cart, before the art museum', quirk: 'Courtly and unhurried, plays any piece in the book without a stumble, says little and that in a few words of Spanish.', tonight: 'playing his guitar across Market St for whoever passes',
+    knows: { sal: 'the cabbie, who asks for the same waltz every night', kenny: 'the b-boy, who dances to whatever you play', badger: 'who keeps THE BAR and stands you your one beer' }, plan: ['play 140', 'play 120', 'stand 12', 'play 150', 'go corner', 'stand 10', 'go work', 'play 130'] },
+  { id: 'mushroom', style: 'm:mushroom', market: true, slots: [4], name: 'Mushroom Seller', age: 60, work: 'east', job: 'sells mushrooms from a tray and from a booth at the park wall along Market St; he picks them himself before dawn and will not say where', quirk: 'Soft-spoken, smells of earth, speaks of mushrooms as of old friends; his face is a bare skull under his hat and nobody remarks on it.', tonight: 'walking the park wall with his tray',
+    knows: { olena: 'the old lady, who buys your chanterelles and says her mother\'s were better', hector: 'who keeps the bodega and sends people to your booth', badger: 'who keeps THE BAR and takes your morels for his kitchen' }, plan: ['gone 70', 'go rail', 'stand 16', 'go bench', 'stand 10', 'go work', 'gone 90'] },
+  { id: 'badger', style: 'm:w_badger', market: true, slots: [6], name: 'Badger', age: 50, work: 'east', job: 'keeps THE BAR on Market St and pours its drinks; when he has put the last one out he walks up to the corner for the last bowl of the night', quirk: 'Gruff, dry, dead on his feet, counts the night\'s takings in his head while he eats.', tonight: 'pouring at THE BAR until last call, then the walk up to the cart',
+    knows: { octopus: 'the busker, whom you stand one beer a night', danny: 'the arcade kid, whose band is too loud for your cellar and plays there anyway', jo: 'who sings with that band and never pays for a drink', ray: 'the cop, who looks in at closing' }, plan: ['gone 240', 'go lamp', 'stand 8', 'go work', 'gone 200'] },
+].filter((d) => !d.market || hasFolk(d.style.slice(2)));
 const _v = new THREE.Vector3();
 export function buildBlock(root, shops, o = {}) {
   const NEAR = o.near ?? -4.4, FAR = o.far ?? -5.4, SPLIT = o.split ?? -5, END = o.end ?? 60, WEST = o.west ?? -60, NORTH = 46, FARZ = FKERB - 2.2;
@@ -99,7 +107,7 @@ export function buildBlock(root, shops, o = {}) {
       else if (h.chat) { h.chat.t -= dt; p.pose = 'stand'; const o = h.chat.o; face(h, o.p.root.position.x, o.p.root.position.z, dt); if (h.chat.lead && (h.chat.say -= dt) <= 0) { h.chat.say = 2.4 + Math.random() * 1.6; const s = (h.chat.turn = !h.chat.turn) ? h : o, l = s === h ? o : h; s.p.talkT = h.chat.say - 0.3; if (Math.random() < 0.5) l.p.gesture?.(Math.random() < 0.7 ? 'nod' : 'laugh'); } if (h.chat.t <= 0) h.chat = null; }
       else if (h.step === 'go') { if (walk(h, h.path[0], dt, h.run || 1.15 + (h.n % 3) * 0.12)) { h.path.shift(); if (!h.path.length) { if (h.end === 'cop') h.step = 'cop'; else next(h); } } }
       else if (h.step === 'cop') { const k = h.cop; p.pose = 'stand'; camAt(); face(h, cam.x, cam.z, dt); if (!k.said) { k.said = true; G.talk?.event(h.spk, 'police', k.them); } if ((k.t -= dt) <= 0) { h.cop = null; h.run = 0; next(h); } }
-      else { if (!h.hidden) { p.pose = 'stand'; if (h.at) face(h, pos.x, pos.z + (pos.z < (KERB + FKERB) / 2 ? 3 : pos.z > 0 ? -3 : pos.z < KERB + 2.5 ? 3 : -3), dt); } if ((h.t -= dt) <= 0) next(h); }
+      else { if (!h.hidden) { p.pose = h.step === 'play' && p.market && (G.rainK || 0) < 0.7 ? 'play' : 'stand'; if (h.at) face(h, pos.x, pos.z + (pos.z < (KERB + FKERB) / 2 ? 3 : pos.z > 0 ? -3 : pos.z < KERB + 2.5 ? 3 : -3), dt); } if ((h.t -= dt) <= 0) next(h); }
       const far = pos.x > END - 0.5 || pos.x < WEST + 0.5 || pos.z > NORTH - 0.5; pos.y = ground(pos.x, pos.z); p.root.visible = !h.hidden && !far;
       if (p.root.visible) { p.look = h.greet || h.step === 'cop' ? cam.clone().setY(cam.y - 0.05) : Math.abs(pos.x) < 5 && pos.z > -6 && pos.z < 1 && p.pose === 'walk' ? (mad(h) ? null : EYE) : h.chat ? _v.copy(h.chat.o.p.root.position).setY(1.55).clone() : null; p.update(dt, t); }
     }

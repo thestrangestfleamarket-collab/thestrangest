@@ -25,6 +25,7 @@ export const ARCS = [
   [['The landlord wants our whole floor out by spring. He says he is selling.', 'may lose their room in the spring.'], ['We went to a lawyer, the whole floor together. He says we can fight it.', 'went to a lawyer with the whole floor.'], ['The landlord backed down. We stay. I had a speech ready and everything.', 'gets to stay.']],
 ];
 const ARC_COP = [['Somebody has been popping car radios on this block. I am watching.', 'is watching for a car-radio thief.'], ['I know who it is. A hungry kid, that is all.', 'found the thief: a hungry kid.'], ['I got the kid a job stacking at the bodega. No more radios.', 'found the kid work.']];
+const ARC_MARKET = [['The market is changing. New faces every week, and they all want something.', 'finds the market changing.'], ['I thought of moving on. Then I thought: where is there a corner like this one?', 'thought of moving on, and did not.'], ['I am staying. Somebody has to be here when the others come back.', 'is staying at the market.']];
 const ARC_KID = [['I am doing my times tables! I know up to the nines already.', 'is learning the times tables.'], ['I added up your whole board today. In my head.', 'added up the menu board.'], ['I got a hundred on the math test. I left it at home, but I did.', 'got a hundred on the math test.']];
 // their usual hours, as shares of the run: morning, midday, afternoon, dusk, the evening, late, the small hours
 export const SLOTS = [[0.02, 0.11], [0.13, 0.22], [0.24, 0.3], [0.31, 0.39], [0.42, 0.58], [0.6, 0.71], [0.73, 0.87]];
@@ -35,9 +36,9 @@ export function buildRegulars() {
   const R = { today: {}, asked: {}, dishAsked: {} }, K = G.clock; G.regs = R;
   const drinks = Object.keys(DRINKS).sort((a, b) => DRINKS[b] - DRINKS[a]), strong = drinks[0], soft = drinks[drinks.length - 1];
   const kid = (def) => def.age < 14;
-  R.plan = (n) => { const def = CAST[n], a = n % 7, b = (n * 3 + 4) % 7, s = kid(def) ? [a % 4, b % 4] : [a, b]; return s[0] === s[1] ? [s[0]] : s; };
+  R.plan = (n) => { const def = CAST[n]; if (def.slots) return def.slots; const a = n % 7, b = (n * 3 + 4) % 7, s = kid(def) ? [a % 4, b % 4] : [a, b]; return s[0] === s[1] ? [s[0]] : s; };
   R.usual = (n) => { const def = CAST[n], d = [strong, null, soft][n % 3]; return { key: DAYDISH[n % DAYDISH.length], drink: d === strong && def.age < 18 ? soft : d, firm: n % 4 === 1 }; };
-  R.arc = (n) => (CAST[n].id === COP ? ARC_COP : kid(CAST[n]) ? ARC_KID : ARCS[n % ARCS.length]);
+  R.arc = (n) => (CAST[n].id === COP ? ARC_COP : kid(CAST[n]) ? ARC_KID : CAST[n].market ? ARC_MARKET : ARCS[n % ARCS.length]);
   R.at = (n, s) => SLOTS[s][0] + hash(n, s, G.prog.P.day) * (SLOTS[s][1] - SLOTS[s][0]) * 0.7;
   // who is due at the counter now: their hour has come, they have not been in this slot today, and not twice already
   R.due = () => { const B = G.block; if (!B) return null; const f = K.frac;

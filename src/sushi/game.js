@@ -229,7 +229,7 @@ export function buildGame(scene) {
       const inTill = till.total() - till.float, os = inTill - game.money - game.tips, a = C.avail(), left = [['noodles', a.noodles], ...Object.entries(a.tops).map(([k, n]) => [TOPPINGS[k].label.toLowerCase(), n]), ['soda', a.drinks.soda], ['iced tea', a.drinks.tea]].filter((x) => x[1] > 0).map((x) => `${x[1]} ${x[0]}`).join(', ');
       [['Bowls served', game.served], ['Walked out', game.lost], ['Sales rung up', mon(game.money)], ['Tips', mon(game.tips)], ['In the till', mon(inTill)], ['Till over / short', (os > 0 ? '+' : os < 0 ? '-' : '') + mon(Math.abs(os))], ['Rating', '★'.repeat(Math.round(game.rating())) + ` ${game.rating().toFixed(1)}`]].forEach(([k, v], i) => { g.fillText(k, 60, 168 + i * 50); g.textAlign = 'right'; g.fillText(String(v), w - 60, 168 + i * 50); g.textAlign = 'left'; });
       g.font = `bold 24px ${T.JP}`; g.fillStyle = '#5a4a3a'; g.fillText(`Left over: ${left || 'nothing'}`, 60, 510, w - 120);
-      g.fillStyle = '#12406a'; g.textAlign = 'center'; g.font = `bold 36px ${T.JP}`; g.fillText('The street lamps go out.', w / 2, h - 84, w - 40); g.fillText('Morning comes to First Avenue.', w / 2, h - 40, w - 40);
+      g.fillStyle = '#12406a'; g.textAlign = 'center'; g.font = `bold 36px ${T.JP}`; g.fillText('The street lamps go out.', w / 2, h - 84, w - 40); g.fillText('Morning comes to Market St.', w / 2, h - 40, w - 40);
     });
     const s = new THREE.Mesh(new THREE.PlaneGeometry(0.6, 0.5), new THREE.MeshBasicMaterial({ map: t, toneMapped: false, color: 0xdddddd })); s.position.set(0, 1.38, -0.5); s.rotation.x = -0.15; s.userData.nopick = true;
     scene.add(s); game.summary = s; G.audio.play('done');

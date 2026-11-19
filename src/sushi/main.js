@@ -1,4 +1,4 @@
-// RAMEN, a ramen cart on a downtown New York pavement in 1985 at /ramen (a headset game), one day and one night: the renderer in THE MARKET's look below full resolution, the resolution governed by the frame time (its sky, air, weather and shadows: sky.js, air.js, weather.js), the loop, the way in
+// RAMEN, a ramen cart at THE MARKET's Market St and West St corner in 1985 at /ramen (a headset game), one day and one night: the renderer in THE MARKET's look below full resolution, the resolution governed by the frame time (its sky, air, weather and shadows: sky.js, air.js, weather.js), the loop, the way in
 import * as THREE from 'three';
 import { G, clamp, mergeStatic } from './ctx.js';
 import { buildAlley, FOG } from './alley.js';

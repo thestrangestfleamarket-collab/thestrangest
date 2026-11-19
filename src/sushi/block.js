@@ -56,7 +56,7 @@ export function buildBlock(root, shops, o = {}) {
     if (a !== b) { if (a === 'far') { along(XWALK, FARZ); out.push(at = P(XWALK, KERB + 0.6)); } else if (a === 'west') { out.push(P(WSX0 - 1.2, at.z), P(WSX0 - 1.2, WXZ), at = P(WSX1 + 0.6, WXZ)); }
       if (b === 'far') { along(XWALK); out.push(P(XWALK, KERB + 0.4), at = P(XWALK, FARZ)); out.push(at = P(to.x, FARZ)); } else if (b === 'west') { along(WSX1 + 0.6, WXZ); out.push(at = P(WSX0 - 1.2, WXZ)); if (to.z > NZ) out.push(at = P(WSX0 - 1.2, to.z)); } }
     if (b === 'home') { if (to.z > NZ + 1) { along(WSX1 + 1.3, Math.min(lz, -3)); } else along(to.x); }
-    if (at.distanceTo(to) > 0.3) out.push(to.clone()); return out; };
+    if (at.distanceTo(to) > 0.3 || !out.length) out.push(to.clone()); return out; };
   const people = CAST.map((def, n) => {
     const p = makePerson(700 + n * 13, def.style), h = { def, p, n, i: (n * 3) % def.plan.length, t: 0, path: null, hidden: true, taken: false, lead: null, crew: [], chat: null, cool: 0, at: null };
     p.root.traverse((o) => { o.userData.nopick = true; }); root.add(p.root); p.cast = def; h.spk = { p, h, passer: true, here: () => !h.taken && !h.hidden && p.root.visible }; h.at = place(def.work, h); p.root.position.copy(h.at); p.root.visible = false; h.t = 5 + n * 9; h.step = 'inside'; return h;

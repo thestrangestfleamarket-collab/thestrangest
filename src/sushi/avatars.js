@@ -1,4 +1,4 @@
-// the people: Polyfork's, as downtown New Yorkers of 1985 (pf.js, cast.js, data/sushi/cast.json): walking, standing, sitting at the counter, eating
+// the people: Polyfork's, as New Yorkers of 1985 round Market St and the park, and THE MARKET's own people (folk.js) (pf.js, cast.js, data/sushi/cast.json): walking, standing, sitting at the counter, eating
 import * as THREE from 'three';
 import { makePerson as makeFallback } from './people.js';
 import { mat } from './ctx.js';

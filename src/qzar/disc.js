@@ -1,8 +1,8 @@
-// SLOWFIRE DUEL's disc arena: the closed room, a disc's bounce off its walls, the jetpack's flight, the banked throw and where a ray leaves the room; no game state
+// SLOWFIRE DUEL's disc arena: the closed room, a disc's bounce off its walls, the side boost, the banked throw and where a ray leaves the room; no game state
 import * as THREE from 'three';
 
 const ROOM = { x: 5, y: 7, z: 8 };
-const JET = { energy: 10, rise: 3, fall: 6, side: 4, refill: 2.5, head: 1.6 };
+const JET = { energy: 10, speed: 5.5, walk: 1.6, refill: 2.5, head: 1.6 };
 const HOLSTERS = [[-.17, -.14, .2], [.17, -.14, .2], [-.24, -.74, .02], [.24, -.74, .02]];   // behind each shoulder, at each hip, from the head
 const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
 
@@ -14,15 +14,11 @@ function wallHit(p, r = .12) {            // turn a disc back off whatever walls
   }
   return n;
 }
-function fly(m, thrust, lean, dt, ground) { // m: {x, y, vx, vy, e}; thrust 0, 1 or 2; lean -1..1; ground: how much of the lean moves you on your feet
-  const on = thrust > 0 && m.e > 0;
-  if (on) m.e = Math.max(0, m.e - dt * thrust); else if (m.y <= 0) m.e = Math.min(JET.energy, m.e + JET.refill * dt);
-  m.vy += ((on ? JET.rise * thrust : -JET.fall) - m.vy) * Math.min(1, dt * (on ? 3 : 1.5));
-  m.y += m.vy * dt;
-  if (m.y <= 0) { m.y = 0; if (m.vy < 0) m.vy = 0; }
-  const top = ROOM.y - JET.head - .4; if (m.y > top) { m.y = top; if (m.vy > 0) m.vy = 0; }
-  m.vx += (lean * JET.side * (m.y > 0 ? 1 : ground) - m.vx) * Math.min(1, dt * 5);
-  m.x = clamp(m.x + m.vx * dt, -ROOM.x + .6, ROOM.x - .6);
+function boost(m, dir, dt, walk) {        // m: {x, vx, e}; dir -1, 0 or 1: a burst to that side while there is energy; walk: how fast you go without it
+  const on = dir !== 0 && m.e > 0;
+  if (on) m.e = Math.max(0, m.e - dt); else if (dir === 0) m.e = Math.min(JET.energy, m.e + JET.refill * dt);
+  m.vx += (dir * (on ? JET.speed : JET.walk * walk) - m.vx) * Math.min(1, dt * 6);
+  m.x = clamp(m.x + m.vx * dt, -ROOM.x + .6, ROOM.x - .6); m.y = 0; m.vy = 0;
   return on;
 }
 function bank(from, to, speed, wall) {    // the throw that reaches a point straight, or off one wall: x+, x-, y+ (ceiling), y- (floor)
@@ -52,4 +48,4 @@ function makeRoom() {
   g.add(walls, lines); g.userData.walls = walls; return g;
 }
 
-export { ROOM, JET, HOLSTERS, wallHit, fly, bank, leave, makeRoom };
+export { ROOM, JET, HOLSTERS, wallHit, boost, bank, leave, makeRoom };

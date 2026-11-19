@@ -6,7 +6,7 @@ import { WCOL, makeGun, makeShield, makeShot, makeBeam, glowTex, setEnv } from '
 import { makeBody } from './body.js';
 import { initAudio, sfx } from './audio.js';
 import { Materials } from '../shoot/textures.js';
-import { ROOM, JET, HOLSTERS, wallHit, fly, bank, leave, makeRoom } from './disc.js';
+import { ROOM, JET, HOLSTERS, wallHit, boost, bank, leave, makeRoom } from './disc.js';
 const $=id=>document.getElementById(id);
 const app=$('app'),canvas=$('view'),note=$('note'),statusEl=$('status');
 const V3=THREE.Vector3;
@@ -128,13 +128,14 @@ foe.rack.position.set(-.3,-.2,.15);foe.rack.scale.setScalar(1.5);foeBody.add(foe
 foeBody.add(foe.shield);
 
 function makeHand(parent,visPos,shieldPos){
-  const h={parent,held:null,cool:0,want:false,vis:rack(),shield:shieldMesh(YOU),shieldP:0,pad:null,kick:0,base:visPos,was:new V3(),v:new V3(),shieldKey:'buckler',down:false,charging:false,chargeT:0,beamT:0,beamDir:new V3(0,0,-1),beam:makeBeam(YOU),jet:false,disc:false,near:-1,discMesh:makeShot('disc',YOU)};
+  const h={parent,held:null,cool:0,want:false,vis:rack(),shield:shieldMesh(YOU),shieldP:0,pad:null,kick:0,base:visPos,was:new V3(),v:new V3(),shieldKey:'buckler',down:false,charging:false,chargeT:0,beamT:0,beamDir:new V3(0,0,-1),beam:makeBeam(YOU),jet:false,disc:false,wear:0,worn:-1,side:'right',near:-1,discMesh:makeShot('disc',YOU)};
   scene.add(h.beam);h.discMesh.visible=false;parent.add(h.discMesh);
   h.vis.position.copy(visPos);h.shield.position.copy(shieldPos);
   parent.add(h.vis);parent.add(h.shield);return h;
 }
 const flatHand=makeHand(youBody,new V3(.3,-.2,-.15),new V3(0,-.15,-.5));flatHand.vis.scale.setScalar(1.5);flatHand.discMesh.position.set(.32,-.25,-.25);
 const vrHands=[0,1].map(i=>{
+  const hand=i?'right':'left';
   const c=renderer.xr.getController(i);rig.add(c);
   c.add(new THREE.Mesh(new THREE.SphereGeometry(.035,12,8),new THREE.MeshBasicMaterial({color:YOU})));
   const h=makeHand(c,new V3(0,-.01,0),new V3(0,0,-.14));
@@ -146,7 +147,8 @@ const vrHands=[0,1].map(i=>{
   c.addEventListener('squeezeend',()=>{h.jet=false;});
   h.gauge=new THREE.Mesh(new THREE.BoxGeometry(.1,.008,.008),new THREE.MeshBasicMaterial({color:YOU}));h.gauge.position.set(0,.05,.04);h.gauge.visible=false;c.add(h.gauge);
   h.discMesh.position.set(0,0,-.06);
-  c.addEventListener('connected',e=>{h.pad=e.data&&e.data.gamepad||null;});
+  h.side=hand;
+  c.addEventListener('connected',e=>{h.pad=e.data&&e.data.gamepad||null;const k=e.data&&e.data.handedness;if(k==='left'||k==='right')h.side=k;});
   c.addEventListener('disconnected',()=>{h.pad=null;});
   return h;
 });
@@ -295,7 +297,7 @@ function tryStart(){
 function startMatch(){you.wins=0;foe.wins=0;menu.hidden=true;startRound();}
 function resetRound(){
   you.hp=foe.hp=MAX_HP;clock=ROUND_TIME;clearShots();overShown=false;say('');
-  [flatHand,...vrHands].forEach(h=>{h.held=null;h.shieldP=0;h.cool=0;h.want=false;h.charging=false;h.beamT=0;h.disc=false;});
+  [flatHand,...vrHands].forEach(h=>{h.held=null;h.shieldP=0;h.cool=0;h.want=false;h.charging=false;h.beamT=0;h.disc=false;h.wear=0;});
   for(const m of [jet,foeJet]){m.x=m.y=m.vx=m.vy=0;m.e=JET.energy;}rig.position.set(0,0,PZ);holst.forEach(o=>{o.t=0;});foe.discs.fill(0);foe.cool=1.5;foe.lean=0;foe.wantAlt=0;foe.netDisc=false;foe.netBurn=0;foe.netW=-1;foe.rack.userData.show(null);
   foe.held=null;foe.shieldP=0;foe.netShield=null;foe.netHands=null;foe.vel.set(0,0,0);you.push.set(0,0,0);tickAt=4;timers.length=0;you.chillT=foe.chillT=0;you.lk=0;foe.lkSeen=0;foe.beamT=0;foe.netBeam=null;foe.beam.visible=false;foe.grabT=1.2;foe.head.set(0,1.5,BZ);foe.goal.copy(foe.head);
   slots.forEach((s,i)=>{s.type=null;s.timer=.4+i*.5;});
@@ -468,32 +470,39 @@ function setGame(g){                      // duel: the open lane and its pickups
   document.querySelectorAll('#game .seg').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.g===game)));
   $('howDuel').hidden=disc;$('howDisc').hidden=!disc;lastWeapon='?';
 }
-function throwDisc(owner,from,vel){
-  const s=spawn(owner,'disc',from.clone(),vel);if(owner===you){s.id=shotId++;mine.set(s.id,s);}
+function throwDisc(owner,from,vel,used=0){ // used: the bounces a disc has already spent, blocking in the hand
+  const s=spawn(owner,'disc',from.clone(),vel);s.hits=used;if(owner===you){s.id=shotId++;mine.set(s.id,s);}
   sfx('whoosh',pan(from.x),owner===you?.9:.5);fired.disc=(fired.disc||0)+1;return s;
 }
 function reachDisc(at,r){                 // the rival's nearest disc within reach of a point
   let best=null,bd=r;for(const p of shots)if(!p.dead&&p.owner===foe&&p.walls){const d=p.pos.distanceTo(at);if(d<bd){bd=d;best=p;}}
   return best;
 }
-function deflect(p,vel,h){                // their disc, knocked away, is yours
-  killRemote(p);p.gone=true;throwDisc(you,p.pos,vel);sfx('block',pan(p.pos.x));burst(p.pos,YOU,false);if(h)buzz(h,70);
+function deflect(p,vel,h){                // their disc, knocked away, is yours; the disc that did it has spent a bounce
+  killRemote(p);p.gone=true;throwDisc(you,p.pos,vel);sfx('block',pan(p.pos.x));burst(p.pos,YOU,false);
+  if(!h)return;
+  buzz(h,70);
+  if(++h.wear>=3){h.disc=false;h.wear=0;h.cool=.4;sfx('break');burst(h.discMesh.getWorldPosition(new V3()),YOU,true);buzz(h,160);}   // the third block is its last
+}
+const WEAR=[0xffffff,0xffd166,0xff5a4d];
+function wearLook(h){                     // a disc in the hand shows the bounces it has left: white, amber, red
+  if(h.worn===h.wear)return;h.worn=h.wear;
+  h.discMesh.traverse(o=>{if(o.isMesh&&!o.material.transparent)o.material.color.setHex(WEAR[Math.min(2,h.wear)]);});
 }
 function grab(h,at,catchR,missR){         // an empty hand closing on a disc in flight: caught if the timing is right, a hit on you if not
   const got=reachDisc(at,catchR);
-  if(got){killRemote(got);got.gone=true;h.disc=true;h.cool=0;sfx('pickup');buzz(h,90);return;}
+  if(got){killRemote(got);got.gone=true;h.disc=true;h.wear=Math.min(2,got.hits);h.cool=0;sfx('pickup');buzz(h,90);return;}
   const miss=reachDisc(at,missR);if(miss){killRemote(miss);strike(you,miss);}
 }
 let jetHum=0;
 function updateDiscPlayer(dt){
   you.beam=null;const vr=mode==='vr',play=state==='play';
-  const thrust=!play?0:vr?vrHands.filter(h=>h.jet).length:keys.Space?(keys.ShiftLeft||keys.ShiftRight?2:1):0;
-  let lean=vr?camera.position.x:(keys.KeyD||keys.ArrowRight?1:0)-(keys.KeyA||keys.ArrowLeft?1:0);
-  if(vr)lean=Math.abs(lean)<.07?0:clamp((lean-Math.sign(lean)*.07)/.22,-1,1);
-  const on=fly(jet,thrust,play?lean:0,dt,vr?0:1);
-  if(on&&(jetHum-=dt)<=0){jetHum=.22;sfx('step',0,.35*thrust);vrHands.forEach(h=>{if(h.jet)buzz(h,40);});}
-  if(vr){rig.position.set(jet.x,jet.y,PZ);you.head.copy(camera.position).add(rig.position);}
-  else{you.head.set(jet.x,JET.head+jet.y,PZ);rig.position.set(jet.x*.85,jet.y*.85,PZ);}
+  const side=k=>vrHands.some(h=>h.jet&&h.side===k)?1:0;      // each grip pushes you to its own side
+  const dir=!play?0:vr?side('right')-side('left'):(keys.KeyD||keys.ArrowRight?1:0)-(keys.KeyA||keys.ArrowLeft?1:0);
+  const on=boost(jet,dir,dt,vr?0:1),thrust=1;
+  if(on&&(jetHum-=dt)<=0){jetHum=.22;sfx('step',0,.35);vrHands.forEach(h=>{if(h.jet)buzz(h,40);});}
+  if(vr){rig.position.set(jet.x,0,PZ);you.head.copy(camera.position).add(rig.position);}
+  else{you.head.set(jet.x,JET.head,PZ);rig.position.set(jet.x*.85,0,PZ);}
   youBody.position.copy(you.head);youBody.visible=!vr;
   tmp.copy(you.head).sub(prevHead).divideScalar(Math.max(dt,.001));you.vel.lerp(tmp,.2);prevHead.copy(you.head);
   holst.forEach((o,i)=>{o.t-=dt;o.at.set(you.head.x+HOLSTERS[i][0],you.head.y+HOLSTERS[i][1],you.head.z+HOLSTERS[i][2]);o.m.position.copy(o.at);o.m.visible=o.t<=0;if(o.m.userData.tick)o.m.userData.tick(dt*.2);});
@@ -507,41 +516,44 @@ function updateDiscPlayer(dt){
       if(vr){
         let near=-1;if(!h.disc)holst.forEach((o,i)=>{if(o.t<=0&&o.at.distanceTo(at)<.24)near=i;});
         if(near>=0&&near!==h.near)buzz(h,20);h.near=near;
-        if(h.want&&near>=0){h.disc=true;holst[near].t=3;sfx('pickup');buzz(h,40);}
-        else if(h.want&&!h.disc)grab(h,at,.3,.75);
+        if(h.want&&near>=0){h.disc=true;h.wear=0;holst[near].t=3;sfx('pickup');buzz(h,40);}
+        else if(h.want&&!h.disc)grab(h,at,.42,.8);
         else if(h.disc&&!h.down){                // let go: a swing throws it, a still hand drops it
           h.disc=false;const sp=h.v.length();
-          if(sp>1.5)throwDisc(you,at,h.v.clone().multiplyScalar(1.5).clampLength(5,14));else sfx('pop');
+          if(sp>1.5)throwDisc(you,at,h.v.clone().multiplyScalar(1.5).clampLength(5,14),h.wear);else sfx('pop');
         }
       }else{
-        if(!h.disc&&h.cool<=0){const i=holst.findIndex(o=>o.t<=0);if(i>=0){h.disc=true;holst[i].t=3;sfx('pickup',0,.5);}}
+        if(!h.disc&&h.cool<=0){const i=holst.findIndex(o=>o.t<=0);if(i>=0){h.disc=true;h.wear=0;holst[i].t=3;sfx('pickup',0,.5);}}
         if(h.parry){                          // on a screen one press does it: knock it back with the disc you hold, or catch it bare-handed
-          const chest=tmp.copy(you.head);chest.y-=.3;const p=reachDisc(chest,1.3);
+          const chest=tmp.copy(you.head);chest.y-=.3;const p=reachDisc(chest,1.7);
           if(p&&h.disc)deflect(p,bank(p.pos,foe.head,Math.max(W.disc.speed,p.vel.length()),0),h);
-          else if(!h.disc)grab(h,chest.clone(),1.3,2.6);
-          else{const miss=reachDisc(chest,2.6);if(miss){killRemote(miss);strike(you,miss);}}
+          else if(!h.disc)grab(h,chest.clone(),1.7,2.8);
+          else{const miss=reachDisc(chest,2.8);if(miss){killRemote(miss);strike(you,miss);}}
         }
-        if(h.want&&h.disc){h.disc=false;h.cool=.3;throwDisc(you,at,tmp.copy(aimAt).sub(at).setLength(W.disc.speed).clone());}
+        if(h.want&&h.disc){h.disc=false;h.cool=.3;throwDisc(you,at,tmp.copy(aimAt).sub(at).setLength(W.disc.speed).clone(),h.wear);}
       }
     }else h.disc=false;
-    h.want=false;h.parry=false;h.discMesh.visible=h.disc;if(h.disc&&h.discMesh.userData.tick)h.discMesh.userData.tick(dt*.3);
+    h.want=false;h.parry=false;h.discMesh.visible=h.disc;wearLook(h);if(h.disc&&h.discMesh.userData.tick)h.discMesh.userData.tick(dt*.3);
     if(h.gauge){h.gauge.visible=play;h.gauge.scale.x=Math.max(.02,jet.e/JET.energy);h.gauge.material.color.setHex(jet.e>3?YOU:0xff5a4d);}
   }
   return on?thrust:0;
 }
 function updateDiscBot(dt){
-  let dodge=0,rise=false;                 // step aside from a disc on its way, by its present line
+  let dodge=0;                 // step aside from a disc on its way, by its present line
   for(const p of shots){
     if(p.owner!==you||p.vel.z>=0)continue;
     const t=(p.pos.z-BZ)/-p.vel.z;if(t<0||t>diff.window)continue;
     const px=p.pos.x+p.vel.x*t,py=p.pos.y+p.vel.y*t;
-    if(Math.abs(px-foe.head.x)<.7&&py>foe.head.y-1.2&&py<foe.head.y+.5){dodge=px>foe.head.x?-1:1;rise=py<foe.head.y-.4;}
+    if(Math.abs(px-foe.head.x)<.7&&py>foe.head.y-1.2&&py<foe.head.y+.5)dodge=px>foe.head.x?-1:1;
   }
-  if((foe.wanderT-=dt)<=0){foe.wanderT=1.5+Math.random()*2.5;foe.lean=(Math.random()*2-1)*.7;foe.wantAlt=Math.random()<.5?0:.5+Math.random()*3;}
+  if((foe.wanderT-=dt)<=0){foe.wanderT=1.5+Math.random()*2.5;foe.lean=Math.random()<.4?0:Math.random()<.5?-1:1;}
   if(Math.abs(foeJet.x)>ROOM.x-1.4&&Math.sign(foeJet.x)===Math.sign(foe.lean))foe.lean*=-1;
-  const thrust=rise?2:foeJet.y<foe.wantAlt-.2?1:0;
-  const on=fly(foeJet,thrust,clamp(dodge||foe.lean,-1,1)*Math.min(1,diff.speed/1.6),dt,1);
-  foe.head.set(foeJet.x,JET.head+foeJet.y,BZ);foeBody.position.copy(foe.head);
+  const thrust=1,on=dodge?boost(foeJet,dodge,dt,1):false;      // it boosts out of a disc's way, and paces between throws
+  if(!dodge){
+    foeJet.e=Math.min(JET.energy,foeJet.e+JET.refill*dt);foeJet.vx+=(foe.lean*JET.walk*Math.min(1,diff.speed/1.5)-foeJet.vx)*Math.min(1,dt*6);
+    foeJet.x=clamp(foeJet.x+foeJet.vx*dt,-ROOM.x+.6,ROOM.x-.6);
+  }
+  foe.head.set(foeJet.x,JET.head,BZ);foeBody.position.copy(foe.head);
   for(let i=0;i<4;i++)foe.discs[i]-=dt;
   const ready=foe.discs.findIndex(t=>t<=0);foe.discMesh.visible=ready>=0;
   if((foe.cool-=dt)<=0&&ready>=0){
@@ -776,8 +788,8 @@ function updateHud(dt){
   hpYou.style.width=(you.hp/MAX_HP*100)+'%';hpFoe.style.width=(foe.hp/MAX_HP*100)+'%';
   clockEl.textContent=fmt(clock);scoreEl.textContent=you.wins+' – '+foe.wins;
   if(game==='disc'){
-    const n=holst.filter(o=>o.t<=0).length+(flatHand.disc?1:0),label='d'+n+Math.round(jet.e*4);
-    if(label!==lastWeapon){lastWeapon=label;weaponEl.innerHTML='Discs '+n+' · Jet '+Math.round(jet.e/JET.energy*100)+'%<small>Click throws at the mark · F or right-click knocks a disc back or catches it · Space lifts, Shift faster · A and D slide</small>';}
+    const n=holst.filter(o=>o.t<=0).length+(flatHand.disc?1:0),label='d'+n+Math.round(jet.e*4)+(flatHand.disc?flatHand.wear:'-');
+    if(label!==lastWeapon){lastWeapon=label;weaponEl.innerHTML='Discs '+n+' · Boost '+Math.round(jet.e/JET.energy*100)+'%'+(flatHand.disc?' · '+(2-flatHand.wear)+' bounce'+(flatHand.wear===1?'':'s')+' left':'')+'<small>Click throws at the mark · F or right-click knocks a disc back or catches it · A and D boost you sideways</small>';}
     if((boardT-=dt)<=0){boardT=.15;drawBoard();}
     return;
   }

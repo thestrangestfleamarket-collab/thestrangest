@@ -37,23 +37,25 @@ export function buildBlock(root, shops, o = {}) {
     if (kind === 'west' || kind === 'east') return new THREE.Vector3(kind === 'west' && !o.dead ? -END : END, 0, (who.n + (kind === 'west' ? 1 : 0)) % 2 ? NEAR : FAR); // a dead end has one way out
     let best = null; for (const s of shops) if (s.type === kind && (!best || Math.abs(s.p.x) < Math.abs(best.p.x))) best = s;
     if (!best && shops.length) best = shops[(kind.length * 7 + who.n) % shops.length];
-    return best ? best.p.clone() : new THREE.Vector3(who.n % 2 ? END : -END, 0, NEAR);
+    return best ? spot(best.p.clone(), who) : new THREE.Vector3(who.n % 2 ? END : -END, 0, NEAR);
   };
   const lane = (z) => (z < SPLIT ? FAR : NEAR);
-  const route = (from, to) => { const a = lane(from.z), b = lane(to.z), out = []; if (Math.abs(from.z - a) > 0.3) out.push(new THREE.Vector3(from.x, 0, a)); if (a !== b) { const xc = from.x + (to.x - from.x) * 0.5; out.push(new THREE.Vector3(xc, 0, a), new THREE.Vector3(xc, 0, b)); } out.push(new THREE.Vector3(to.x, 0, b)); if (Math.abs(to.z - b) > 0.3) out.push(to.clone()); return out; };
+  // each keeps a line of their own within a lane, and a spot of their own at a door, so two bound the same way are never one body
+  const mine = (h) => ((h.n * 0.37) % 1 - 0.5) * 0.32, spot = (v, h) => { v.x += (h.n % 5) * 0.5; return v; };
+  const route = (from, to, h) => { const o = h ? mine(h) : 0, a = lane(from.z) + o, b = lane(to.z) + o, out = []; if (Math.abs(from.z - a) > 0.3) out.push(new THREE.Vector3(from.x, 0, a)); if (a !== b) { const xc = from.x + (to.x - from.x) * 0.5; out.push(new THREE.Vector3(xc, 0, a), new THREE.Vector3(xc, 0, b)); } out.push(new THREE.Vector3(to.x, 0, b)); if (Math.abs(to.z - b) > 0.3) out.push(to.clone()); return out; };
   const people = CAST.map((def, n) => {
     const p = makePerson(700 + n * 13, def.style), h = { def, p, n, i: (n * 3) % def.plan.length, t: 0, path: null, hidden: true, taken: false, lead: null, crew: [], chat: null, cool: 0, at: null };
     p.root.traverse((o) => { o.userData.nopick = true; }); root.add(p.root); p.cast = def; h.spk = { p, h, passer: true, here: () => !h.taken && !h.hidden && p.root.visible }; h.at = place(def.work, h); p.root.position.copy(h.at); p.root.visible = false; h.t = 5 + n * 9; h.step = 'inside'; return h;
   });
   const by = Object.fromEntries(people.map((h) => [h.def.id, h]));
-  const abed = (h) => { const hr = G.clock ? G.clock.hour : 12, a = h.def.age; return (a < 14 && hr > 21.5 && hr < 29.2) || (a >= 65 && hr > 24.5 && hr < 28.5); };   // children and the old are indoors in the small hours
+  const abed = (h) => { const hr = G.clock ? G.clock.hour : 12, a = h.def.age; return (a < 14 && hr > 21.5) || (a >= 65 && hr > 24.5 && hr < 28.5); };   // children are indoors from half past nine till the morning, the old in the small hours
   const next = (h) => { // begin the next thing on their list
     if (abed(h)) { h.step = 'inside'; h.hidden = true; h.t = 40; h.run = 0; return; }
     for (let guard = 0; guard < 8; guard++) {
       const [verb, arg] = h.def.plan[h.i = (h.i + 1) % h.def.plan.length].split(' ');
       if (verb === 'with') { const o = by[arg]; if (o && !o.taken && !o.lead && !o.crew.length) { o.lead = h; h.crew.push(o); o.hidden = h.hidden; o.p.root.position.copy(h.p.root.position); o.chat = null; } continue; }
       if (verb === 'alone') { for (const o of h.crew) { o.lead = null; o.t = 0; o.step = 'stand'; } h.crew.length = 0; continue; }
-      h.run = 0; if (verb === 'go') { const to = place(arg === 'work' ? h.def.work : arg, h); if (h.hidden) { h.hidden = false; } h.path = route(h.p.root.position, to); h.at = to; h.step = 'go'; h.end = arg; return; }
+      h.run = 0; if (verb === 'go') { const to = place(arg === 'work' ? h.def.work : arg, h); if (h.hidden) { h.hidden = false; } h.path = route(h.p.root.position, to, h); h.at = to; h.step = 'go'; h.end = arg; return; }
       h.step = verb; h.t = +arg * (0.8 + Math.random() * 0.5); if (verb === 'inside' || verb === 'gone') h.hidden = true; else h.hidden = false; return;
     }
   };
@@ -74,7 +76,7 @@ export function buildBlock(root, shops, o = {}) {
   block.addressed = (eye, dir) => { let best = null, bk = 0.9; for (const h of people) { if (!free(h)) continue; _v.copy(h.p.root.position).setY(1.5).sub(eye); const d = _v.length(); if (d > 9) continue; const k = _v.normalize().dot(dir) + (d < 3 ? 0.05 : 0); if (k > bk) { bk = k; best = h; } } return best ? { h: best, k: bk } : null; };
   // hurt or frightened: they hurry off the way out
   block.scare = (h) => { if (h.taken || h.hidden) return; if (h.lead) { const L = h.lead; L.crew.splice(L.crew.indexOf(h), 1); h.lead = null; } for (const o of h.crew) { o.lead = null; o.t = 0; o.step = 'stand'; } h.crew.length = 0; if (h.chat) { h.chat.o.chat = null; h.chat = null; } h.greet = null; h.cop = null;
-    const pos = h.p.root.position; h.path = route(pos, place(o.dead || pos.x > 0 ? 'east' : 'west', h)); h.step = 'go'; h.end = 'east'; h.run = 2.6; };
+    const pos = h.p.root.position; h.path = route(pos, place(o.dead || pos.x > 0 ? 'east' : 'west', h), h); h.step = 'go'; h.end = 'east'; h.run = 2.6; };
   // someone was attacked at the cart: the officer on the beat hurries over and has a word with the cook
   block.cop = COP;
   block.police = (at, them) => { const h = by[COP]; if (!h || h.taken || h.cop) return false; const pos = h.p.root.position; if (h.lead) { const L = h.lead; L.crew.splice(L.crew.indexOf(h), 1); h.lead = null; } for (const o of h.crew) { o.lead = null; o.t = 0; o.step = 'stand'; } h.crew.length = 0; if (h.chat) { h.chat.o.chat = null; h.chat = null; } h.greet = null;
@@ -94,6 +96,11 @@ export function buildBlock(root, shops, o = {}) {
       const far = Math.abs(pos.x) > END - 0.5; p.root.visible = !h.hidden && !far;
       if (p.root.visible) { p.look = h.greet || h.step === 'cop' ? cam.clone().setY(cam.y - 0.05) : Math.abs(pos.x) < 5 && pos.z > -4.5 && p.pose === 'walk' ? (mad(h) ? null : EYE) : h.chat ? _v.copy(h.chat.o.p.root.position).setY(1.55).clone() : null; p.update(dt, t); }
     }
+    // nobody walks through anybody: two closer than an arm's length step apart, sideways when they meet head on; the cart's own customers hold their ground
+    { const out = people.filter((h) => !h.taken && !h.hidden && h.p.root.visible && !h.p.reeling?.()), others = (G.game ? G.game.customers : []).filter((c) => c.p && c.p.root.visible).map((c) => c.p.root.position), GAP = 0.62, LO = FAR - 0.22, HI = NEAR + 0.3;
+      const part = (a, b, i, fixed) => { const dx = a.x - b.x, dz = a.z - b.z, d = Math.hypot(dx, dz); if (d >= GAP) return; const ov = Math.min(GAP - d, 1.4 * dt) * (fixed ? 1 : 0.5), nx = d > 1e-3 ? dx / d : 0, nz = d > 1e-3 ? dz / d : i % 2 ? 1 : -1, side = Math.abs(nz) < 0.5 ? (i % 2 ? 1 : -1) * 0.9 : 0;
+        a.x += nx * ov * 0.35; if (a.z > LO - 0.4 && a.z < HI + 0.4) a.z = Math.min(HI, Math.max(LO, a.z + (nz + side) * ov)); else a.z += nz * ov; if (!fixed) { b.x -= nx * ov * 0.35; if (b.z > LO - 0.4 && b.z < HI + 0.4) b.z = Math.min(HI, Math.max(LO, b.z - (nz + side) * ov)); else b.z -= nz * ov; } };
+      for (let i = 0; i < out.length; i++) { const a = out[i].p.root.position; for (let j = i + 1; j < out.length; j++) part(a, out[j].p.root.position, i + j, false); for (const c of others) part(a, c, i, true); } }
     if ((scan -= dt) <= 0) { scan = 0.5; camAt();
       // a regular passing close greets the cook first, now and then
       if (t > hiAll) for (const h of people) { if (!free(h) || h.greet || h.chat || mad(h) || h.step !== 'go' || t < (h.hiT || 0) || flat(h) > 4.5) continue; h.hiT = t + 60; if (Math.random() < 0.2) { h.hiT = t + 300; hiAll = t + 60; greet(h, { kind: 'hello', w: 0.2, say: 0.4, t: 2.6, come: Math.random() < 0.2 }); break; } }

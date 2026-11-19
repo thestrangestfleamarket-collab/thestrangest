@@ -12,6 +12,7 @@ MODELS = {'metal_trash_can': 256, 'cardboard_box_01': 256, 'trashbag': 256, 'pla
 SLIM = {'metal_trash_can': 500, 'cardboard_box_01': 200, 'trashbag': 300, 'plastic_crate_02': 900, 'utility_box_01': 300, 'exterior_aircon_unit': 700, 'television_01': 1400, 'television_02': 1600, 'boombox': 2500}
 MODELS['CashRegister_01'] = 512; SLIM['cashregister_01'] = 4000   # the till on the back counter (its drawer is drawn open in the model)
 TEX.update({'wood_counter': ('wood_table_worn', 512), 'cloth': ('terry_cloth', 256)})   # the worn counter tops; the rag
+TEX.update({'asphalt_road': ('asphalt_pit_lane', 512), 'asphalt_old': ('aerial_asphalt_01', 512)})   # the street's coarse asphalt; an older, cracked layer for its patches
 MODELS.update({'propane_tank': 256}); SLIM.update({'propane_tank': 900})   # the stove's gas bottles
 MODELS.update({'hanging_industrial_lamp': 256, 'wooden_cutting_board': 256, 'food_ginger_01': 128}); SLIM.update({'hanging_industrial_lamp': 600, 'wooden_cutting_board': 500, 'food_ginger_01': 300})   # the work lights' enamel shades, the board, a knob of ginger by it
 

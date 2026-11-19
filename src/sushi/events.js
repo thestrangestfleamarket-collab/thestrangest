@@ -5,7 +5,7 @@ import { RECIPES, DAYDISH, DRINKS } from './cart.js';
 
 // every word of this file a player hears or reads, and what the talking mind is told
 export const TEXT = {
-  drunk: { name: 'ONE TOO MANY', hint: (soft, strong) => `They have had enough: give them ${soft}, not ${strong}`, line: (strong) => `A bowl! And ${strong}. The strong stuff. Keep it coming.`, who: 'You have had far too much to drink tonight and are loud and cheerful about it.', well: 'Sobered up, fed and grateful', badly: 'A scene at the counter' },
+  drunk: { name: 'ONE TOO MANY', hint: (soft, strong) => `They have had enough: give them ${soft}, not ${strong}`, line: (strong) => `A bowl! And ${strong}. The strong stuff. Keep it coming.`, dry: (soft) => `Loud and unsteady: a hot bowl and ${soft}, before they make a scene`, dryLine: (soft) => `A bowl! And ${soft}! Quick, quick, I am starving.`, who: 'You have had far too much to drink tonight and are loud and cheerful about it.', well: 'Sobered up, fed and grateful', badly: 'A scene at the counter' },
   lost: { name: 'A LOST TRAVELLER', hint: 'Tell them the way (speak, T to type, or wave them on) and serve the bowl', line: 'I have lost my way. Where can a stranger sleep tonight? And the cheapest bowl you have.', who: 'You are a traveller, lost and tired, who does not know this street. You asked the cook the way to somewhere to sleep.', well: 'Fed and shown the way', badly: 'Went off still lost' },
   crowd: { name: 'A CROWD COMING THROUGH', hint: (n) => `A crowd is coming: feed ${n} of them before they move on`, soon: 'A CROWD IS COMING DOWN THE STREET', line: 'Quick as you can, please. We are moving on.', who: 'You are passing through with a crowd and cannot stay long.', well: 'The crowd fed: word gets round', badly: 'The crowd moved on hungry' },
   cop: { name: 'THE ROUNDS', hint: (s) => `The rounds: clear every dirty bowl and wipe the counter (${s} s)`, line: 'Evening rounds. Let me see that you keep a clean stall.', prompt: 'You are on your evening rounds and have stopped at the ramen stall to see that it is kept clean. Tell the cook so, in a sentence.', well: 'A clean stall: a nod and on they go', badly: (fine) => `A dirty counter: fined ${fine}` },
@@ -26,15 +26,15 @@ export const NIGHT = { first: 2, most: 4, from: 0.06, span: 0.8, cop: 35, crowd:
 
 export function buildEvents() {
   const E = { list: [], cur: [], log: [], rep: 0 }, K = G.clock, U = RECIPES[DAYDISH[0]].price; G.events = E;
-  const drinks = Object.keys(DRINKS).sort((a, b) => DRINKS[b] - DRINKS[a]), strong = drinks[0], soft = drinks[drinks.length - 1];
+  const drinks = Object.keys(DRINKS).sort((a, b) => DRINKS[b] - DRINKS[a]), strong = drinks[0], soft = drinks[drinks.length - 1], boozy = DRINKS[strong] > DRINKS[soft];   // (a stall that sells nothing strong: the one who has had too many just has to be fed fast)
   const dish = (k) => { const r = RECIPES[k]; return r.name[0] + r.name.slice(1).toLowerCase(); }, fmt = (n) => G.money.fmt(n);
   const say = (c, T, line) => G.talk?.event(c, 'told', { as: 'ev', prompt: T.who + ' Say so to the cook in a sentence.', lines: [line] });
   const seat = (ev, o) => { const c = G.game.special({ ...o, ev }); if (c) { ev.c = c; c.tag = TEXT[ev.id].name; } return c; };
   // what each asks: start(ev) (false: not now), then whichever of tick, drink, served, done, left, said, waved it needs, each answering 'well', 'badly' or nothing yet
   const RUN = {
-    drunk: { start: (ev) => !!seat(ev, { want: { key: G.game.cfg().menu[0], drink: strong }, pat: 1.3, line: (c) => say(c, TEXT.drunk, TEXT.drunk.line(strong)) }),
-      hint: () => TEXT.drunk.hint(soft, strong),
-      drink: (ev, c, k) => { if (k === strong && soft !== strong) { for (const o of G.game.customers) if (o !== c && o.state === 'waiting') o.patience *= 0.75; G.game.walk(c); return 'badly'; } c.order.drink = k; c.gotDrink = true; },
+    drunk: { start: (ev) => !!seat(ev, { want: { key: G.game.cfg().menu[0], drink: boozy ? strong : soft }, pat: boozy ? 1.3 : 0.7, line: (c) => say(c, TEXT.drunk, boozy ? TEXT.drunk.line(strong) : TEXT.drunk.dryLine(soft)) }),
+      hint: () => (boozy ? TEXT.drunk.hint(soft, strong) : TEXT.drunk.dry(soft)),
+      drink: (ev, c, k) => { if (k === strong && boozy) { for (const o of G.game.customers) if (o !== c && o.state === 'waiting') o.patience *= 0.75; G.game.walk(c); return 'badly'; } c.order.drink = k; c.gotDrink = true; },
       done: () => 'well', left: () => 'badly' },
     lost: { start: (ev) => { const m = G.game.cfg().menu, k = m.slice().sort((a, b) => RECIPES[a].price - RECIPES[b].price)[0]; return !!seat(ev, { want: { key: k, drink: null }, line: (c) => say(c, TEXT.lost, TEXT.lost.line) }); },
       hint: () => TEXT.lost.hint, said: (ev) => { ev.told = true; }, waved: (ev) => { ev.told = true; },

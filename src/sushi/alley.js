@@ -61,7 +61,7 @@ export function buildAlley(scene, o = {}) {
   city.jd = (h) => E.jdOf(BASE + realH(h) * 3600e3);
   // the sodium lamps' own light on the pavement (three, as many as the frame can afford); the rest of the night's light is drawn, not cast
   const lampLights = street.lampAt.slice(0, 3).map(([x, y, z]) => { const p = new THREE.PointLight(0xffa04a, 0, 22, 1.5); p.position.set(x, y - 0.3, z); scene.add(p); return p; });
-  const fogC = new THREE.Color(), tmp = new THREE.Color(), tmp2 = new THREE.Color(), _mp = new THREE.Vector3(), MOONC = new THREE.Color(0x9ab0e8), NIGHTF = new THREE.Color(0x5a648c), DAYF = new THREE.Color(0xbcd0ec), EARTH = new THREE.Color(0x5a5a5e), CITYGLOW = new THREE.Color(0x4a3428);
+  const fogC = new THREE.Color(), tmp = new THREE.Color(), tmp2 = new THREE.Color(), _mp = new THREE.Vector3(), MOONC = new THREE.Color(0x9ab0e8), NIGHTF = new THREE.Color(0x6a6480), DAYF = new THREE.Color(0xbcd0ec), EARTH = new THREE.Color(0x5a5a5e), CITYGLOW = new THREE.Color(0x4a3428);
   let lit = 0, skyT = 0, wet = 0, lastH = -1; const api = {};
   const sm = (a, b, x) => { const t = clamp((x - a) / (b - a), 0, 1); return t * t * (3 - 2 * t); };
   const paint = () => { const K = G.clock, h = K ? K.hour : 11, w = G.weather ? G.weather.now : weatherAt(K ? K.frac : 0), jd = city.jd(h);

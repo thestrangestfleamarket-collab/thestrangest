@@ -16,7 +16,7 @@ CAST = {
   'punk': ['Adults/Female_Adult_07', 'f007', 'f', dict(dye=[['top', 0x17171b, 0.85, True], ['legs', 0x1c1c22, 0.8]], hair=0x16121a)],
   'suit': ['Professions/Business_Male_01', 'm005', 'm', dict(dye=[['top', 0x2c3040, 0.35], ['legs', 0x2c3040, 0.35]])],
   'nurse': ['Professions/Medical_Female_01', 'f152', 'f', {}],
-  'babushka': ['Adults/Female_Adult_06', 'f202', 'f', dict(scarf=0x7a2638, dye=[['top', 0x4a4038, 0.6], ['legs', 0x4a4038, 0.6]])],
+  'babushka': ['Adults/Female_Adult_06', 'f202', 'f', dict(dye=[['top', 0x4a4038, 0.6], ['legs', 0x4a4038, 0.6]])],
   'bboy': ['Adults/Male_Adult_10', 'm024', 'm', {}],
   'denim': ['Adults/Male_Adult_12', 'm007', 'm', {}],
   'leather': ['Adults/Female_Adult_04', 'f004', 'f', dict(dye=[['legs', 0x4a5a78, 0.7]])],
@@ -164,8 +164,10 @@ def body(key, spec, fing):
     A = load(fetch('Avatars/' + path + '/Export/' + name + '.fbx')); o = [x for x in bpy.data.objects if x.type == 'MESH'][0]
     mats = [m.name.split('_')[-1].split('.')[0] for m in o.data.materials]; T = {}
     for k in dict.fromkeys(['body'] + mats):
-        try: T[k] = fetch('Avatars/' + path + '/Textures/' + pre + '_' + k + '_color.tga')
-        except Exception: print('  no picture for', k, flush=True)
+        for suf in ('_color.tga', '_color_a.tga'):   # (a picture with its own see-through parts: a cap's net, hair)
+            try: T[k] = fetch('Avatars/' + path + '/Textures/' + pre + '_' + k + suf); break
+            except Exception: pass
+        if k not in T: print('  no picture for', k, flush=True)
     O = {}; QR = {}
     for b in BONES:
         bb = next(x for x in A.data.bones if rbname(x.name) == b[1]); O[b[0]] = vb(A.matrix_world @ bb.head_local); QR[b[0]] = qb(A.matrix_world.to_3x3().normalized() @ bb.matrix_local.to_3x3())
@@ -203,7 +205,7 @@ def body(key, spec, fing):
     for i, k in enumerate(rest): h = 512 // len(rest); rect[k] = (512, 512 + i * h, 512, h)
     for k in T:
         if k == 'body': continue
-        im = tex(T[k], 1024, k == 'opacity')
+        im = tex(T[k], 1024, k == 'opacity' or T[k].endswith('_a.tga'))
         if k in ('head', 'opacity') and d.get('scarf'):
             rgb = recolour_scarf(im.convert('RGB'), d['scarf'])
             if im.mode == 'RGBA': rgb = rgb.convert('RGBA'); rgb.putalpha(im.getchannel('A'))

@@ -249,7 +249,7 @@ export function buildGame(scene) {
     const eye = G.camera.getWorldPosition(_eye);
     for (const c of [...game.customers]) {
       const p = c.p; c.attn = Math.max(0, (c.attn || 0) - dt); p.look = c.attn > 0 || (c.voice && c.voice.busy) ? eye : c.state === 'waiting' || c.state === 'sitting' ? (Math.sin(t * 0.45 + c.seat * 2.1) > -0.5 ? eye : null) : null; p.update(dt, t);
-      if (c.state === 'waiting' || c.state === 'eating') { c.chatT = (c.chatT ?? rand(14, 30)) - dt; if (c.chatT <= 0 && !(c.voice && c.voice.busy)) { c.chatT = K.phase === 'night' ? rand(25, 45) : rand(35, 70); G.talk?.event(c, 'chat'); } }
+      if (c.state === 'waiting' || c.state === 'eating') { c.chatT = (c.chatT ?? rand(28, 60)) - dt; if (c.chatT <= 0 && !(c.voice && c.voice.busy)) { c.chatT = K.phase === 'night' ? rand(50, 90) : rand(70, 140); G.talk?.event(c, 'chat'); } }
       if (c.state === 'walk' || c.state === 'leaving') {
         if (p.reeling?.()) continue; p.pose = 'walk'; const wp = c.path[0]; _d.copy(wp).sub(p.root.position); const d = _d.length();
         if (d < 0.06) { c.path.shift(); if (!c.path.length) { if (c.state === 'walk') { c.state = 'sitting'; c.t = 0; p.pose = 'sit'; p.root.position.set(SEATS[c.seat], 0, -1.2); } else { if (c.nb) G.block.give(c.nb); else if (c.guest) { p.pose = 'stand'; G.live?.stood(c.guest); } else p.root.removeFromParent(); game.customers.splice(game.customers.indexOf(c), 1); } } }

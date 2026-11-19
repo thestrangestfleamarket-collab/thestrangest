@@ -7,26 +7,28 @@ export const RB = {
   cook: ['f', 'hera', 0.98, 35, 55, 'the cook'],
   cop: ['m', 'helios', 0.97, 30, 45, 'a patrolman of the Ninth Precinct who walks this beat'],
   cabbie: ['m', 'zeus', 0.95, 50, 62, 'a yellow cab driver between fares'],
-  punk: ['f', 'asteria', 1.0, 19, 26, 'a punk in a leather jacket who plays in a band'],
-  suit: ['m', 'perseus', 0.98, 28, 40, 'a man in a suit up from the financial district'],
+  punk: ['f', 'asteria', 1.0, 19, 26, 'a singer in a punk band'],
+  suit: ['m', 'perseus', 0.98, 28, 40, 'a man in a suit up from an office on Wall Street'],
   nurse: ['f', 'hera', 1.0, 28, 45, 'a nurse from the hospital on First Avenue'],
   babushka: ['f', 'luna', 0.95, 64, 78, 'an old Ukrainian woman who has lived on this block for forty years'],
-  bboy: ['m', 'orpheus', 1.02, 17, 23, 'a young man in a track suit who breakdances in the park'],
-  denim: ['m', 'arcas', 0.97, 24, 38, 'a man in a denim jacket who lives up the block'],
-  leather: ['f', 'asteria', 1.01, 24, 36, 'a painter with a studio in an old tenement'],
-  coned: ['m', 'angus', 0.96, 30, 52, 'a Con Edison man working on the steam main'],
+  bboy: ['m', 'orpheus', 1.02, 17, 23, 'a young man in a track suit who breakdances by the subway'],
+  denim: ['m', 'arcas', 0.97, 35, 48, 'the man who keeps the bodega'],
+  leather: ['f', 'asteria', 1.01, 24, 36, 'a painter with a studio in an old tenement on Avenue B'],
+  coned: ['m', 'angus', 0.96, 40, 58, 'a Con Edison man working on the steam main across the street'],
   kid: ['m', 'orpheus', 1.18, 9, 12, 'a kid from the block sent out for a bowl'],
-  grocer: ['m', 'zeus', 0.96, 48, 60, 'the man who keeps the bodega across the sidewalk'],
+  grocer: ['m', 'zeus', 0.96, 48, 60, 'the counterman from the coffee shop on the corner, still in his tie'],
   clerk: ['m', 'orion', 0.98, 22, 34, 'a clerk at the record shop'],
-  laundress: ['f', 'hera', 0.99, 30, 50, 'a woman who runs the laundromat'],
-  secretary: ['f', 'asteria', 1.02, 23, 40, 'an office worker on her way home from midtown'],
+  laundress: ['f', 'hera', 0.99, 35, 50, 'the woman who runs the laundromat'],
+  secretary: ['f', 'asteria', 1.02, 28, 45, 'a legal secretary on her way home from an office near City Hall'],
   dancer: ['f', 'asteria', 1.03, 20, 30, 'a dancer who waits tables on Second Avenue'],
-  messenger: ['m', 'angus', 0.98, 20, 35, 'a bicycle messenger'],
-  student: ['m', 'orion', 1.0, 18, 25, 'a student at the art school on Cooper Square'],
+  messenger: ['m', 'angus', 0.98, 26, 40, 'a longshoreman off the Brooklyn piers'],
+  student: ['m', 'orion', 1.0, 19, 27, 'a student at the art school on Cooper Square'],
 };
-export const CUSTOMERS = Object.keys(RB).filter((k) => k !== 'cook' && k !== 'kid');
+// the regulars' own bodies are theirs alone (block.js CAST): whoever else sits down or passes is one of the others
+const CASTED = ['cop', 'cabbie', 'punk', 'nurse', 'babushka', 'bboy', 'denim', 'kid', 'clerk', 'laundress'];
+export const CUSTOMERS = Object.keys(RB).filter((k) => k !== 'cook' && !CASTED.includes(k));
 // THE MARKET's visitors come as one of these, in their own colours and at their own size (tenant.js)
-export const VISITORS = ['secretary', 'laundress', 'denim', 'clerk', 'student', 'leather'];
+export const VISITORS = ['secretary', 'leather', 'student', 'messenger', 'suit', 'dancer'];
 
 const b64 = (s) => Uint8Array.from(atob(s), (c) => c.charCodeAt(0));
 let D = null, NB = 0, PI = [], HEAD, TORSO, BASE = ''; const CL = { m: {}, f: {} }, BODY = {};

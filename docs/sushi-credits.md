@@ -1,40 +1,49 @@
 # RAMEN credits
 
-- People and their motion (`data/sushi/rb/`, from `python3 tools/sushi-people.py`): the Microsoft Rocketbox Avatar Library, https://github.com/microsoft/Microsoft-Rocketbox, MIT (`docs/licences/rocketbox-mit.txt`). Bodies: Male_Adult_03, 05, 07, 08, 09, 10, 20, Business_Male_04, 07, Male_Child_01, Female_Adult_03, 05, 06, 11, Medical_Female_01; their faces, skin and hair as photographed, their modern clothes taken off and period ones (robes, sleeves, leggings, sandals, hats, swords) made and painted by the tool. Motion: its idle, walk, sitting at a table, talking, nodding, head shake, laugh, shrug, thinking, looking about and wave takes, men's and women's. (Until 17 Nov 2026 they were Polyfork's, `archive/ramen-polyfork/`.)
+- People and their motion (`data/sushi/rb/`, from `python3 tools/sushi-people.py`): the Microsoft Rocketbox Avatar Library, https://github.com/microsoft/Microsoft-Rocketbox, MIT (`docs/licences/rocketbox-mit.txt`). Bodies, in their own clothes (some dyed by the tool): Chef_Female_01, Police_Male_01, Male_Adult_04, 10, 12, 14, 20, Male_Child_02, Business_Male_01, 07, Construction_Male_02, Delivery_Male_01, Female_Adult_04, 05, 06, 07, Female_Party_02, Business_Female_03, Medical_Female_01; their eyelids and jaw kept so they blink and speak. Motion: its idle, walk, sitting at a table, talking, nodding, head shake, laugh, shrug, thoughtful, look around and wave takes.
 - The goldfish is Polyfork's koi (`data/sushi/koi.json`), gilded in the page.
-- Everything else (the stall, the machiya, the shrine gate, the well, the lanterns, the braziers, the coins, the food) is made in the page's own code, but for what is listed below.
-- The village's and the stall's surfaces and the things standing about: Poly Haven, CC0 (`tools/sushi-assets.py`; colour pictures only, 512 or 256 px JPEG; the models thinned with `tools/hide-slim.cjs`):
+- The street's cars are THE MARKET's kit (`data/cars.json`, the racing-cars kit, CC0): its 1960s to 1980s models, repainted in the page.
+- The boombox's stations are real ones streamed live, each by its own public stream: WBGO 88.3 (Newark), WWOZ 90.7 (New Orleans), WQXR 105.9 (New York), and SomaFM's Seven Inch Soul and Underground 80s (somafm.com, listener-supported). Its cassette (when no station will play) is made in the page.
+- The cart's television and the repair shop's window sets play THE LATE MOVIE (`data/sushi/films.json`): Night of the Living Dead (1968, public domain; the Internet Archive's `night_of_the_living_dead_dvd`), a small copy of our own (`tools/sushi-film.sh`).
+- The street's and the cart's surfaces and the things left on the pavement: Poly Haven, CC0 (`tools/sushi-assets.py`; colour pictures only, made 512 or 256 px JPEG; the models thinned with `tools/hide-slim.cjs`, their pictures 256 px):
 
 | What | File | Author, source | Licence |
 |---|---|---|---|
-| Dirt | `data/sushi/tex/dirt.jpg` | Charlotte Baglioni, https://polyhaven.com/a/dirt | CC0 |
-| Brown Mud Dry | `data/sushi/tex/mud.jpg` | Rob Tuytel, https://polyhaven.com/a/brown_mud_dry | CC0 |
-| Sparse Grass | `data/sushi/tex/grass.jpg` | Amal Kumar, https://polyhaven.com/a/sparse_grass | CC0 |
-| Muddy Tracks | `data/sushi/tex/field.jpg` | Amal Kumar, https://polyhaven.com/a/muddy_tracks | CC0 |
-| Stone Pathway | `data/sushi/tex/stone_path.jpg` | Amal Kumar, https://polyhaven.com/a/stone_pathway | CC0 |
-| Japanese Stone Wall | `data/sushi/tex/stone_wall.jpg` | Rico Cilliers, Charlotte Baglioni, Dario Barresi, https://polyhaven.com/a/japanese_stone_wall | CC0 |
-| Japanese Cedar Planks | `data/sushi/tex/cedar.jpg` | Charlotte Baglioni, Rico Cilliers, https://polyhaven.com/a/japanese_cedar_planks | CC0 |
-| White Plaster Rough 01 | `data/sushi/tex/plaster_white.jpg` | Rob Tuytel, https://polyhaven.com/a/white_plaster_rough_01 | CC0 |
-| Clay Plaster | `data/sushi/tex/plaster_clay.jpg` | Amal Kumar, https://polyhaven.com/a/clay_plaster | CC0 |
-| Grey Roof Tiles | `data/sushi/tex/roof_tiles.jpg` | Rob Tuytel, https://polyhaven.com/a/grey_roof_tiles | CC0 |
-| Thatch Roof Angled | `data/sushi/tex/thatch.jpg` | Rob Tuytel, Dimitrios Savva, https://polyhaven.com/a/thatch_roof_angled | CC0 |
-| Bamboo Wall | `data/sushi/tex/bamboo.jpg` | Amal Kumar, https://polyhaven.com/a/bamboo_wall | CC0 |
-| Tatami Mat | `data/sushi/tex/tatami.jpg` | Charlotte Baglioni, https://polyhaven.com/a/tatami_mat | CC0 |
-| Japanese Cedar Bark | `data/sushi/tex/bark.jpg` | Charlotte Baglioni, https://polyhaven.com/a/japanese_cedar_bark | CC0 |
+| Brick Wall 001 | `data/sushi/tex/brick_red.jpg` | Rob Tuytel, Dimitrios Savva, https://polyhaven.com/a/brick_wall_001 | CC0 |
+| Large Red Bricks | `data/sushi/tex/brick_orange.jpg` | Rob Tuytel, https://polyhaven.com/a/large_red_bricks | CC0 |
+| Brown Brick 02 | `data/sushi/tex/brick_brown.jpg` | Rob Tuytel, https://polyhaven.com/a/brown_brick_02 | CC0 |
+| Brick Wall 10 | `data/sushi/tex/brick_dark.jpg` | Dimitrios Savva, https://polyhaven.com/a/brick_wall_10 | CC0 |
+| Painted Worn Brick | `data/sushi/tex/brick_painted.jpg` | Dimitrios Savva, https://polyhaven.com/a/painted_worn_brick | CC0 |
+| Concrete Wall 008 | `data/sushi/tex/concrete.jpg` | Dario Barresi, Charlotte Baglioni, https://polyhaven.com/a/concrete_wall_008 | CC0 |
+| Dirty Concrete | `data/sushi/tex/concrete_dirty.jpg` | Rob Tuytel, https://polyhaven.com/a/dirty_concrete | CC0 |
+| Asphalt 02 | `data/sushi/tex/asphalt.jpg` | Rob Tuytel, https://polyhaven.com/a/asphalt_02 | CC0 |
+| Concrete Pavement | `data/sushi/tex/paving.jpg` | Charlotte Baglioni, https://polyhaven.com/a/concrete_pavement | CC0 |
+| Painted Metal Shutter | `data/sushi/tex/shutter.jpg` | Dario Barresi, Rico Cilliers, Charlotte Baglioni, https://polyhaven.com/a/painted_metal_shutter | CC0 |
+| Rusted Shutter | `data/sushi/tex/shutter_rust.jpg` | Dimitrios Savva, https://polyhaven.com/a/rusted_shutter | CC0 |
+| Corrugated Iron | `data/sushi/tex/corrugated.jpg` | Jenelle van Heerden, Dimitrios Savva, https://polyhaven.com/a/corrugated_iron | CC0 |
+| Long White Tiles | `data/sushi/tex/tile_white.jpg` | Jenelle van Heerden, Sergej Majboroda, https://polyhaven.com/a/long_white_tiles | CC0 |
+| Japanese Cedar Bark (the street trees) | `data/sushi/tex/bark.jpg` | Charlotte Baglioni, https://polyhaven.com/a/japanese_cedar_bark | CC0 |
 | Weathered Brown Planks | `data/sushi/tex/wood.jpg` | Dimitrios Savva, Rico Cilliers, https://polyhaven.com/a/weathered_brown_planks | CC0 |
 | Dark Wooden Planks | `data/sushi/tex/wood_dark.jpg` | Amal Kumar, https://polyhaven.com/a/dark_wooden_planks | CC0 |
 | Hinoki Planks | `data/sushi/tex/wood_light.jpg` | Charlotte Baglioni, https://polyhaven.com/a/hinoki_planks | CC0 |
-| Wood Table Worn | `data/sushi/tex/wood_counter.jpg` | Dimitrios Savva, Rico Cilliers, https://polyhaven.com/a/wood_table_worn | CC0 |
+| Wood Table Worn (the worn counter tops) | `data/sushi/tex/wood_counter.jpg` | Dimitrios Savva, Rico Cilliers, https://polyhaven.com/a/wood_table_worn | CC0 |
 | Terry Cloth | `data/sushi/tex/cloth.jpg` | colormass, Rico Cilliers, https://polyhaven.com/a/terry_cloth | CC0 |
-| Wooden Bucket 01 | `data/sushi/m/wooden_bucket_01.glb` | James Ray Cock, https://polyhaven.com/a/wooden_bucket_01 | CC0 |
-| Wicker Basket 01 | `data/sushi/m/wicker_basket_01.glb` | Kuutti Siitonen, https://polyhaven.com/a/wicker_basket_01 | CC0 |
-| Wooden Crate 01 | `data/sushi/m/wooden_crate_01.glb` | James Ray Cock, https://polyhaven.com/a/wooden_crate_01 | CC0 |
-| Wooden Broom | `data/sushi/m/wooden_broom.glb` | Balen, https://polyhaven.com/a/wooden_broom | CC0 |
-| Shrub 02 | `data/sushi/m/shrub_02.glb` | Rico Cilliers, https://polyhaven.com/a/shrub_02 | CC0 |
-| Tree Stump 01 | `data/sushi/m/tree_stump_01.glb` | Rob Tuytel, https://polyhaven.com/a/tree_stump_01 | CC0 |
+| Metal Trash Can | `data/sushi/m/metal_trash_can.glb` | GurJas Studios, https://polyhaven.com/a/metal_trash_can | CC0 |
+| Cardboard Box 01 | `data/sushi/m/cardboard_box_01.glb` | Rahul Chaudhary, https://polyhaven.com/a/cardboard_box_01 | CC0 |
+| Trashbag | `data/sushi/m/trashbag.glb` | Benny Weimer, https://polyhaven.com/a/trashbag | CC0 |
+| Plastic Crate 02 | `data/sushi/m/plastic_crate_02.glb` | Fabi_G, https://polyhaven.com/a/plastic_crate_02 | CC0 |
+| Utility Box 01 | `data/sushi/m/utility_box_01.glb` | James Ray Cock, https://polyhaven.com/a/utility_box_01 | CC0 |
+| Exterior Aircon Unit | `data/sushi/m/exterior_aircon_unit.glb` | Monsta3D, https://polyhaven.com/a/exterior_aircon_unit | CC0 |
+| Television 01 (the cart's set, the shop window's) | `data/sushi/m/television_01.glb` | Gabriel Radić, https://polyhaven.com/a/Television_01 | CC0 |
+| Television 02 (the shop window's) | `data/sushi/m/television_02.glb` | Benny Weimer, https://polyhaven.com/a/television_02 | CC0 |
+| Boombox | `data/sushi/m/boombox.glb` | Thomas Paul Mouilleron, https://polyhaven.com/a/boombox | CC0 |
+| Cash Register 01 (the till on the back counter) | `data/sushi/m/cashregister_01.glb` | Joe Seabuhr, https://polyhaven.com/a/CashRegister_01 | CC0 |
+| Hanging Industrial Lamp (the work lights' shades) | `data/sushi/m/hanging_industrial_lamp.glb` | Poly Haven, https://polyhaven.com/a/hanging_industrial_lamp | CC0 |
 | Wooden Cutting Board | `data/sushi/m/wooden_cutting_board.glb` | Kuutti Siitonen, https://polyhaven.com/a/wooden_cutting_board | CC0 |
-| Food Ginger 01 | `data/sushi/m/food_ginger_01.glb` | Oliver Harries, https://polyhaven.com/a/food_ginger_01 | CC0 |
+| Ginger (by the board) | `data/sushi/m/food_ginger_01.glb` | Oliver Harries, https://polyhaven.com/a/food_ginger_01 | CC0 |
+| Propane Tank (the stove's gas bottles) | `data/sushi/m/propane_tank.glb` | Poly Haven, https://polyhaven.com/a/propane_tank | CC0 |
 
-- RAMEN's night arms (archived with the outbreak, 17 Nov 2026: `archive/ramen-outbreak/`): Poly Haven, CC0: the katana (`antique_katana_01`), the woodcutter's axe (`wooden_axe`), the barrel (`wine_barrel_01`).
+- The till's money (`data/sushi/money/`): United States government pictures, public domain. The $5, $10 and $20 (their 1985 designs) and the $1's back: the Bureau of Engraving and Printing's, https://www.uscurrency.gov (`tools/sushi-assets.py money`; its specimen pictures, faintly overprinted SPECIMEN). The $1's front and the quarter, dime and penny: Bureau of Engraving and Printing and United States Mint pictures from Wikimedia Commons.
 - The recorded sounds (`data/sushi/snd/`): OpenGameArt, CC0, listed in `docs/sushi-sounds.md`.
-- Everything else (the cart's and the street's shapes, the food, the signs, the other sounds) is made in the page's own code.
+- Everything else (the cart, the tenements and their shopfronts, signs, murals and graffiti, the subway stair, the street's furniture, the skyline, the food, the other sounds) is made in the page's own code.
+- Archived: the 1860s village (`archive/ramen-village/`), the outbreak (`archive/ramen-outbreak/`), the Polyfork cast (`archive/ramen-polyfork/`), YATAI '86's unused street things (`archive/ramen-yatai/`).

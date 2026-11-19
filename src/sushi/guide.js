@@ -3,14 +3,14 @@ import * as THREE from 'three';
 import { G, V3 } from './ctx.js';
 import * as T from './tex.js';
 import { TOPPINGS, TARE, BROTH } from './items.js';
-import { SEATS, RECIPES } from './cart.js';
+import { SEATS, RECIPES, TUB } from './cart.js';
 
 export const TEXT = { first: 'FIRST DAY', lessons: ['LIGHT UP', 'OPEN', 'ONE BOWL', 'PAYMENT AND CHANGE'], done: ['That is the job.', 'The green button brings the guide back'], walk: (n) => `Seat ${n} is about to walk`, cold: 'A burner is off', left: 'On your left', collect: 'Collect the money on the ledge', box: 'Into the register', sold: 'Sold out', close: 'Flip the switch to close' };
 
 export function buildGuide(scene, C) {
   const g = { on: !G.prog.P.tut, touched: false }, nop = (o) => { o.userData.nopick = true; return o; };
   const tex = T.panelTex(640, 460, () => { });
-  const card = nop(new THREE.Mesh(new THREE.PlaneGeometry(0.46, 0.331), new THREE.MeshBasicMaterial({ map: tex, color: 0xd0d0d0 }))); card.position.set(-0.9, 1.86, -0.42); card.rotation.y = 0.55; scene.add(card);
+  const card = nop(new THREE.Mesh(new THREE.PlaneGeometry(0.46, 0.331), new THREE.MeshBasicMaterial({ map: tex, color: 0xd0d0d0 }))); card.position.set(-1.08, 1.84, -0.12); card.rotation.y = 1.05; scene.add(card); G.boards?.add('guide', card, 0.46, 0.331);   // on the cook's left past the post, clear of the tickets and the stools (owner, 19 Nov 2026); gripped and moved like any board
   const am = new THREE.MeshBasicMaterial({ color: new THREE.Color(0.3, 1.6, 0.5), toneMapped: false, transparent: true, opacity: 0.9 });
   const arrow = nop(new THREE.Mesh(new THREE.ConeGeometry(0.028, 0.075, 4), am)); arrow.rotation.x = Math.PI; arrow.renderOrder = 60; scene.add(arrow);
   const ring = nop(new THREE.Mesh(new THREE.RingGeometry(0.05, 0.062, 20).rotateX(-Math.PI / 2), am)); ring.renderOrder = 60; scene.add(ring);
@@ -19,7 +19,7 @@ export function buildGuide(scene, C) {
   const btn = { getPos: () => bpos, r: 0.045, press: () => { g.touched = true; g.set(!g.on); }, name: 'GUIDE MODE' }; bm.userData.button = btn; G.buttons.push(btn);
   g.set = (on) => { g.on = on; bm.material.color.set(on ? 0x30c060 : 0x5a2020); G.audio.play('click'); last = null; };
   const held = (f) => { for (const h of G.hands) if (h.held && f(h.held)) return h.held; return null; };
-  const stack = new V3(0.93, 1.16, -0.36), matP = new V3(-0.3, 1.02, -0.26), tub = new V3(0.935, 1.12, 0.91), box = new V3(-0.93, 1.05, -0.36);
+  const stack = new V3(0.93, 1.16, -0.36), matP = new V3(-0.3, 1.02, -0.26), tub = new V3(TUB.x, 1.2, TUB.z), box = new V3(-0.93, 1.05, -0.36);
 
   function step() {
     const game = G.game; if (G.ended) return null;
@@ -36,7 +36,7 @@ export function buildGuide(scene, C) {
       const tip = G.till && G.till.loose()[0]; if (tip) return ['Collect the money on the ledge', 'Into the register', tip.obj.position.clone().setY(1.08)];
       if (game.soldOut && game.state === 'open') return ['Sold out for tonight', 'Flip the OPEN switch to close', G.buttons.find((b) => b.name.startsWith('OPEN')).getPos().clone().add(new V3(0, 0.08, 0))];
       const di = game.seats.findIndex((s) => s.dirty);
-      if (di >= 0) { const b = game.seats[di].dirty; return b.held ? ['Drop it in the bus tub', 'Right wing, at the back', tub] : ['Clear the dirty bowl', `Seat ${di + 1}`, b.obj.position.clone().setY(1.14)]; }
+      if (di >= 0) { const b = game.seats[di].dirty; return b.held ? (C.tub.full() ? ['The bus tub is full', 'Press WASH UP beside it', C.tub.button.getPos().clone().setY(1.0)] : ['Drop it in the bus tub', 'Right wing, at the back', tub]) : ['Clear the dirty bowl', `Seat ${di + 1}`, b.obj.position.clone().setY(1.14)]; }
       return [game.state === 'closing' ? 'Last orders are out' : 'Wait for a customer', game.customers.length ? 'Someone is on their way' : 'A quiet minute', null];
     }
     const o = c.order, r = o.recipe, head = `Seat ${c.seat + 1} · ${r.name}`; let bowl = null, bs = -1;

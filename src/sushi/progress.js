@@ -47,9 +47,9 @@ export function buildProgress(params) {
   // the cart as it stands today: the upgrades into G.mods, the menus for the day and the night
   prog.apply = () => { const P = prog.P; Object.assign(G.mods, BASE); for (const u of UPGRADES) if (P.ups.includes(u.id)) Object.assign(G.mods, u.mod);
     day.menu = DAYDISH.filter((k) => P.recipes.includes(k)); day.mods = !!P.extras; day.drinks = P.day >= 2;
-    const nd = Object.keys(RECIPES).filter((k) => RECIPES[k].night); night.menu = [...new Set([...nd, day.menu[0], day.menu[day.menu.length - 1]])];
+    const nd = Object.keys(RECIPES).filter((k) => RECIPES[k].night); night.menu = [...new Set([...nd, day.menu[0], ...day.menu.slice(1).slice(-2)])]; night.mods = day.mods;   // the one menu (night only, owner 19 Nov 2026): the night's own bowl, the first dish and the two newest
     G.cart?.fit?.(); for (const f of prog.hooks) f(); };
-  prog.stage = (isNight) => (isNight ? night : day);
+  prog.stage = () => night;
   prog.on = (f) => { prog.hooks.push(f); };
   prog.has = (id) => prog.P.ups.includes(id);
   prog.price = (id) => { const u = UPGRADES.find((x) => x.id === id); return u ? u.cost * U : 0; };

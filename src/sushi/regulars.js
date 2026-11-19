@@ -35,7 +35,7 @@ export function buildRegulars() {
   const R = { today: {}, asked: {}, dishAsked: {} }, K = G.clock; G.regs = R;
   const drinks = Object.keys(DRINKS).sort((a, b) => DRINKS[b] - DRINKS[a]), strong = drinks[0], soft = drinks[drinks.length - 1];
   const kid = (def) => def.age < 14;
-  R.plan = (n) => { const def = CAST[n], a = n % 7, b = (n * 3 + 4) % 7, s = kid(def) ? [a % 4, b % 4] : [a, b]; return s[0] === s[1] ? [s[0]] : s; };
+  R.plan = (n) => { const def = CAST[n], a = n % 7, b = (n * 3 + 4) % 7, s = kid(def) ? [a % 2, b % 2] : [a, b]; return s[0] === s[1] ? [s[0]] : s; };
   R.usual = (n) => { const def = CAST[n], d = [strong, null, soft][n % 3]; return { key: DAYDISH[n % DAYDISH.length], drink: d === strong && def.age < 18 ? soft : d, firm: n % 4 === 1 }; };
   R.arc = (n) => (CAST[n].id === COP ? ARC_COP : kid(CAST[n]) ? ARC_KID : ARCS[n % ARCS.length]);
   R.at = (n, s) => SLOTS[s][0] + hash(n, s, G.prog.P.day) * (SLOTS[s][1] - SLOTS[s][0]) * 0.7;

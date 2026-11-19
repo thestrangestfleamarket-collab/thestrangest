@@ -31,15 +31,15 @@ export function buildGame(scene) {
     spawnT: 4, ticketNo: 1, ledT: 0, summary: null, paused: false, extra: 0, refused: 0,
   };
   const K = G.clock;
-  game.cfg = () => G.prog.stage(K.phase === 'night' || K.phase === 'dawn');
-  const dayPlan = () => { const d = G.prog.stage(false), n = G.prog.stage(true), e = G.rush.expect(true), mix = {}; for (const k of d.menu) mix[k] = (mix[k] || 0) + e.day / d.menu.length; for (const k of n.menu) mix[k] = (mix[k] || 0) + e.night / n.menu.length;
-    return { mix, mods: d.mods, drinks: true, guests: e.all, soda: (d.drinks ? e.day * D_SODA : 0) + e.night * N_SODA, tea: (d.drinks ? e.day * D_TEA : 0) + e.night * N_TEA }; };   // what the whole run, its day and its night, is stocked for
+  game.cfg = () => G.prog.stage();
+  const dayPlan = () => { const n = G.prog.stage(), e = G.rush.expect(true), mix = {}; for (const k of n.menu) mix[k] = (mix[k] || 0) + e.all / n.menu.length;
+    return { mix, mods: n.mods, drinks: true, guests: e.all, soda: e.all * N_SODA, tea: e.all * N_TEA }; };   // what the whole night is stocked for
   G.game = game;
   const till = buildTill(scene, C);
   game.restock = () => { C.restock(stockPlan(dayPlan())); till.reset(); };
   game.restock();
   // the morning again (a run begun over): the takings, the stock and the counter as they were before the first bowl
-  game.newDay = () => { for (const c of [...game.customers]) { if (c.ticket) c.ticket.removeFromParent(); if (c.nb) G.block?.give(c.nb); else if (!c.guest) c.p.root.removeFromParent(); } game.customers.length = 0; game.seats.forEach((s) => { s.c = null; s.dirty = null; });
+  game.newDay = () => { C.tub?.empty(); for (const c of [...game.customers]) { if (c.ticket) c.ticket.removeFromParent(); if (c.nb) G.block?.give(c.nb); else if (!c.guest) c.p.root.removeFromParent(); } game.customers.length = 0; game.seats.forEach((s) => { s.c = null; s.dirty = null; });
     for (const it of [...G.items]) if (it.kind === 'cash' || ((it.kind === 'bowl' || it.kind === 'drink') && (it.dirty || it.served))) it.remove();   // (yesterday's bowls and coins are not left on the counter)
     game.money = game.tips = game.served = game.lost = game.lateServed = game.extra = game.refused = 0; game.skill = 0; game.spawnT = 4; game.scores = []; game.ticketNo = 1; if (game.summary) { game.summary.removeFromParent(); game.summary = null; } game.state = 'prep'; C.setOpen(false); game.restock(); };
   K.on('reset', game.newDay);
@@ -255,7 +255,7 @@ export function buildGame(scene) {
     const eye = G.camera.getWorldPosition(_eye);
     for (const c of [...game.customers]) {
       const p = c.p; c.attn = Math.max(0, (c.attn || 0) - dt); p.look = c.attn > 0 || (c.voice && c.voice.busy) ? eye : c.state === 'waiting' || c.state === 'sitting' ? (Math.sin(t * 0.45 + c.seat * 2.1) > -0.5 ? eye : null) : null; p.update(dt, t);
-      if (c.state === 'waiting' || c.state === 'eating') { c.chatT = (c.chatT ?? rand(28, 60)) - dt; if (c.chatT <= 0 && !(c.voice && c.voice.busy)) { c.chatT = K.phase === 'night' ? rand(50, 90) : rand(70, 140); G.talk?.event(c, 'chat'); } }
+      if (c.state === 'waiting' || c.state === 'eating') { c.chatT = (c.chatT ?? rand(28, 60)) - dt; if (c.chatT <= 0 && !(c.voice && c.voice.busy)) { c.chatT = rand(50, 100); G.talk?.event(c, 'chat'); } }
       if (c.state === 'walk' || c.state === 'leaving') {
         if (p.reeling?.()) continue; p.pose = 'walk'; const wp = c.path[0]; _d.copy(wp).sub(p.root.position); const d = _d.length();
         if (d < 0.06) { c.path.shift(); if (!c.path.length) { if (c.state === 'walk') { c.state = 'sitting'; c.t = 0; p.pose = 'sit'; p.root.position.set(SEATS[c.seat], 0, -1.2); } else { if (c.nb) G.block.give(c.nb); else if (c.guest) { p.pose = 'stand'; G.live?.stood(c.guest); } else p.root.removeFromParent(); game.customers.splice(game.customers.indexOf(c), 1); } } }
@@ -281,7 +281,7 @@ export function buildGame(scene) {
           if (bw.dead || c.gone > 16) { if (bw.eaten > 0.6) { game.served++; if (K.phase === 'night') game.lateServed++; game.scores.push(Math.max(0, c.result.score - 30)); if (c.result.pay) till.pay(c, c.result.pay, 0); else leave(c, false); } else leave(c, true); }
           continue; }
         if (c.took) { c.took = false; c.gone = 0; c.p.pose = 'eat'; }
-        c.t += dt; const dur = (c.dur ??= K.phase === 'night' ? 26 : 16); c.bowl.eaten = clamp(c.t / dur, 0, 1); c.bowl.refresh();
+        c.t += dt; const dur = (c.dur ??= K.hour > 23 ? 24 : 17); c.bowl.eaten = clamp(c.t / dur, 0, 1); c.bowl.refresh();
         if (Math.random() < dt * 0.5) G.audio.play('slurp');
         if (c.t >= dur) {
           const r = c.result; let pay = r.pay, tip = r.tip;
@@ -296,7 +296,7 @@ export function buildGame(scene) {
     // LED register + hints
     let potsOff = 0; for (const q of C.pots) if (!q.on) potsOff++;
     game.hintT = (game.hintT || 0) - dt; if (game.hintT <= 0) { game.hintT = 0.5; const P = G.prog.P, f = G.money.fmt;
-      G.hint = G.reportMsg ? G.reportMsg : K.over ? 'DAWN' : G.talk && /login|blocked|cannot|no microphone/.test(G.talk.mic || '') && !potsOff && Math.floor(G.t / 4) % 2 ? 'VOICE: ' + G.talk.mic.toUpperCase() : game.state === 'prep' ? (potsOff ? `TURN ON ${potsOff} BURNER KNOB${potsOff > 1 ? 'S' : ''} (LEFT)` : 'FLIP THE OPEN SWITCH (RIGHT POST)') : game.state === 'closed' ? (K.phase === 'dawn' ? 'DAWN' : 'THE DAY IS DONE') : game.state === 'closing' ? 'LAST ORDERS' : game.soldOut ? 'SOLD OUT: FLIP THE SWITCH TO CLOSE' : potsOff && C.pots.some((q) => !q.on && (!q.type || game.cfg().menu.some((k) => RECIPES[k].broth === q.type))) ? 'A BURNER IS OFF!' : G.events?.name() || G.rush.name() || `${TEXT.day} ${P.day}  ${f(G.prog.taken())} ${TEXT.of} ${f(G.prog.target())}  ${TEXT.fee} ${f(G.prog.fee() + P.debt)}`; }
+      G.hint = G.reportMsg ? G.reportMsg : K.over ? 'DAWN' : G.talk && /login|blocked|cannot|no microphone/.test(G.talk.mic || '') && !potsOff && Math.floor(G.t / 4) % 2 ? 'VOICE: ' + G.talk.mic.toUpperCase() : game.state === 'prep' ? (potsOff ? `TURN ON ${potsOff} BURNER KNOB${potsOff > 1 ? 'S' : ''} (LEFT)` : 'FLIP THE OPEN SWITCH (RIGHT POST)') : game.state === 'closed' ? (K.phase === 'dawn' ? 'DAWN' : 'THE NIGHT IS DONE') : game.state === 'closing' ? 'LAST ORDERS' : game.soldOut ? 'SOLD OUT: FLIP THE SWITCH TO CLOSE' : potsOff && C.pots.some((q) => !q.on && (!q.type || game.cfg().menu.some((k) => RECIPES[k].broth === q.type))) ? 'A BURNER IS OFF!' : G.events?.name() || G.rush.name() || `${TEXT.day} ${P.day}  ${f(G.prog.taken())} ${TEXT.of} ${f(G.prog.target())}  ${TEXT.fee} ${f(G.prog.fee() + P.debt)}`; }
     game.ledT -= dt;
     if (game.ledT <= 0) {
       game.ledT = 0.5;

@@ -1,20 +1,18 @@
-// the day's pressure (owner, 19 Nov 2026): how fast customers come and how many sit at once through the run (a quiet morning, the midday rush, the dusk crowd, the night and its late rush), how long each will wait before walking, and what a slow bowl costs its score
+// the night's pressure (owner, 19 Nov 2026): how fast customers come and how many sit at once through the run (a quiet opening, the evening crowd, the small hours and their late rush), how long each will wait before walking, and what a slow bowl costs its score
 import { G, clamp, rand } from './ctx.js';
 import { PHASES, RUN } from './clock.js';
 
-export const TEXT = { lunch: 'THE MIDDAY RUSH', dusk: 'THE DUSK CROWD', late: 'THE LATE RUSH', hurry: 'IN A HURRY', soon: (n) => `${n} IS COMING: GET NOODLES ON`, slow: 'Kept waiting' };
+export const TEXT = { eve: 'THE EVENING CROWD', late: 'THE LATE RUSH', hurry: 'IN A HURRY', soon: (n) => `${n} IS COMING: GET NOODLES ON`, slow: 'Kept waiting' };
 // [phase, from, to (shares of that phase), its name, seconds between arrivals, how many may be at the counter at once (9: every stool), the share of them in a hurry]
 export const WINDOWS = [
-  ['day', 0, 0.42, '', 24, 2, 0],
-  ['day', 0.42, 0.78, 'lunch', 8, 9, 0.3],
-  ['day', 0.78, 1, '', 24, 2, 0],
-  ['dusk', 0, 1, 'dusk', 7, 9, 0.35],
-  ['night', 0, 0.42, '', 38, 2, 0],
-  ['night', 0.42, 0.6, 'late', 9, 9, 0.2],
-  ['night', 0.6, 1, '', 44, 2, 0],
+  ['night', 0, 0.1, '', 24, 2, 0],
+  ['night', 0.1, 0.3, 'eve', 8, 9, 0.3],
+  ['night', 0.3, 0.55, '', 30, 2, 0],
+  ['night', 0.55, 0.7, 'late', 9, 9, 0.2],
+  ['night', 0.7, 1, '', 40, 2, 0],
   ['dawn', 0, 1, '', 99, 0, 0],
 ];
-// seconds a customer waits for a bowl before walking: base and up to spread more, less perDay each day down to least, times ramp on the first days; queue more for each one already waiting when they order; a hurried one hurry of it; EASY easy times it, the night night times it, a visitor from THE MARKET guest times it
+// seconds a customer waits for a bowl before walking: base and up to spread more, less perDay each day down to least, times ramp on the first days; queue more for each one already waiting when they order; a hurried one hurry of it; EASY easy times it, the small hours (after eleven) night times it, a visitor from THE MARKET guest times it
 export const PATIENCE = { base: 62, spread: 14, least: 56, perDay: 1.5, ramp: [1.5, 1.05], queue: 12, hurry: 0.58, easy: 1.7, night: 1.2, guest: 2 };
 // a prompt bowl: served within base seconds of the order (ramp times it on the first day; queue more for each one already waiting; the same hurry, easy and guest as patience, at night alike) it loses nothing; after that rate points a second, up to most (a bowl that late is half refunded: game.js), up to gentle on the first day and on EASY
 export const PROMPT = { base: 21, ramp: [1.15], queue: 12, rate: 1, most: 52, gentle: 40 };
@@ -29,7 +27,7 @@ export function buildRush() {
   R.max = () => (!P().tut && P().day === 1 ? 1 : Math.min(G.mods.seats, R.now()[5]));   // (the first day's first lesson is one customer at a time)
   R.gap = () => R.now()[4] / demand() * rand(0.7, 1.3);
   R.hurry = () => P().day > 1 && !P().easy && Math.random() < R.now()[6];
-  R.patience = (c, others) => { const p = P(), night = K.phase === 'night' || K.phase === 'dawn';
+  R.patience = (c, others) => { const p = P(), night = K.hour > 23;
     const k = (p.easy ? PATIENCE.easy : 1) * (c.hurry ? PATIENCE.hurry : 1) * (c.guest ? PATIENCE.guest : 1); others = Math.min(2, others);
     c.prompt = PROMPT.base * (PROMPT.ramp[p.day - 1] || 1) * k + PROMPT.queue * others;
     return (Math.max(PATIENCE.least, PATIENCE.base - PATIENCE.perDay * (p.day - 1)) + rand(0, PATIENCE.spread)) * (PATIENCE.ramp[p.day - 1] || 1) * k * (night ? PATIENCE.night : 1) * G.mods.calm * (c.pat || 1) + PATIENCE.queue * others; };

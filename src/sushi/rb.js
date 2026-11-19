@@ -29,6 +29,7 @@ const CASTED = ['cop', 'cabbie', 'punk', 'nurse', 'babushka', 'bboy', 'denim', '
 export const CUSTOMERS = Object.keys(RB).filter((k) => k !== 'cook' && !CASTED.includes(k));
 // THE MARKET's visitors come as one of these, in their own colours and at their own size (tenant.js)
 export const VISITORS = ['secretary', 'leather', 'student', 'messenger', 'suit', 'dancer'];
+export const PEOPLE = [];   // everyone made, for what follows them about (their shadows: shade.js)
 
 const b64 = (s) => Uint8Array.from(atob(s), (c) => c.charCodeAt(0));
 let D = null, NB = 0, PI = [], HEAD, TORSO, BASE = ''; const CL = { m: {}, f: {} }, BODY = {};
@@ -125,7 +126,8 @@ export function rbPerson(key, sticks, o = {}) {
       m.scale.set(r * (0.8 + Math.random() * 0.5), r * (0.7 + Math.random() * 0.4), r * 0.22); m.position.copy(on); m.quaternion.setFromUnitVectors(_t.set(0, 0, 1), n); m.userData.nopick = true; m.updateMatrix(); bn.attach(m);
       stains.push({ m, life: 150 }); if (stains.length > 8) { const o = stains.shift(); o.m.removeFromParent(); o.m.material.dispose(); } return m; },
     stains,
-    gesture(name) { const c = clips[GEST[name] || name]; if (!c) return; if (name === 'wave' && (this.pose !== 'stand' || st.down)) { this.waveT = 1.6; return; } if (this.pose !== 'walk') { st.over = { c, t: 0, w: 0, end: Math.min(c.dur, name === 'laugh' ? 3.2 : c.dur), wave: name === 'wave' }; if (name === 'wave') this.waveT = st.over.end; } },
+    gesture(name) { if (name === 'wave') { if (this.pose !== 'walk' || st.down) this.waveT = 2.2; return; }   // (a wave is the arm raised out to the side, clear of the face, and it ends: the recorded one brought the hand across it)
+      const c = clips[GEST[name] || name]; if (!c) return; if (this.pose !== 'walk') { st.over = { c, t: 0, w: 0, end: Math.min(c.dur, name === 'laugh' ? 3.2 : c.dur), wave: name === 'wave' }; if (name === 'wave') this.waveT = st.over.end; } },
     update(dt) {
       // far or out of view: drawn lighter or not at all, the pose worked less often (time still passes for it)
       st.acc = (st.acc || 0) + dt; if (G.camera && !this.hands) { root.getWorldPosition(_w); G.camera.getWorldPosition(_cam); const d = _w.distanceTo(_cam), vr = G.renderer && G.renderer.xr.isPresenting;
@@ -150,6 +152,7 @@ export function rbPerson(key, sticks, o = {}) {
       // where to look: yaw and pitch in the body's own space, as far as a neck goes
       this.lookW += ((this.look ? 1 : 0) - this.lookW) * Math.min(1, dt * 3.5); if (this.look) this.lookAt.lerp(this.look, Math.min(1, dt * 6));
       let ty = 0, tp = 0; if (this.lookW > 0.02 && !st.down) { body.updateWorldMatrix(true, false); inv.copy(body.matrixWorld).invert(); tgt.copy(this.lookAt).applyMatrix4(inv).sub(va.copy(O[HEAD]).setY(O[HEAD].y + 0.1)); ty = Math.atan2(tgt.x, tgt.z) * this.lookW; tp = Math.atan2(tgt.y, Math.hypot(tgt.x, tgt.z)) * this.lookW; }
+      st.bt = (st.bt ?? Math.random() * 30) + dt; if (seated && !st.down) { const iw = 1 - this.lookW; ty += iw * (0.3 * Math.sin(st.bt * 0.21 + P.seed) + 0.13 * Math.sin(st.bt * 0.63)); tp += iw * (-0.1 + 0.05 * Math.sin(st.bt * 0.37)); }   // seated with nothing to look at, the eyes wander: the street, the pots, the bowl
       const hy = Math.max(-1.1, Math.min(1.1, ty)), hpi = Math.max(-0.45, Math.min(0.5, tp)), k = Math.min(1, dt * 3.2); st.yaw += (hy * 0.75 - st.yaw) * k; st.pitch += (hpi * 0.7 - st.pitch) * k;
       turn(UPSET, qa.setFromEuler(e1.set(0, st.yaw * 0.22, 0))); R[HEAD].premultiply(qa.setFromEuler(e1.set(-st.pitch, st.yaw * 0.78, 0, 'YXZ')));
       // a duck folds forward; a blow past what the feet hold floors them and they get up again
@@ -157,13 +160,21 @@ export function rbPerson(key, sticks, o = {}) {
       const Dk = st.duck; let de = 0; if (Dk) { Dk.t += dt; de = Dk.t < 0.16 ? sm(Dk.t / 0.16) : Dk.t < 0.8 ? 1 : 1 - sm((Dk.t - 0.8) / 0.5); if (Dk.t > 1.3) st.duck = null; else lean(0, 1, de * 0.7, de * 0.35); }
       const F = st.down; let fa = 0, fl = 0; if (F) { F.t += dt; const t = F.t; if (t < 0.55) fa = 1.45 * (t / 0.55) ** 2; else if (t < 2.7) fa = 1.45 - 0.07 * Math.max(0, Math.sin((t - 0.55) * 8)) * Math.max(0, 1 - (t - 0.55) * 2.5); else if (t < 4.3) fa = 1.45 * (1 - sm((t - 2.7) / 1.6)); else st.down = null; fl = Math.sin(Math.PI * Math.min(1, t / 0.9)); }
       if (st.down) { body.quaternion.setFromAxisAngle(ax.set(F.d.z, 0, -F.d.x), fa); body.position.y = Math.sin(fa) * 0.11; } else if (body.position.y || body.quaternion.w < 1) { body.quaternion.identity(); body.position.y = 0; }
+      const eatC = this.pose === 'eat' ? Math.pow((Math.sin((this.eatT + dt) * 2.4) + 1) / 2, 1.3) : 0;
+      if (seated && !st.down) lean(0, 1, 0.15 + 0.012 * Math.sin(st.bt * 1.5) + 0.1 * eatC);   // forward over the counter, breathing; down to the bowl with each mouthful
+      else if (!st.down && this.pose === 'stand') lean(0, 1, 0.006 * Math.sin(st.bt * 1.4));
       J[0].copy(hp).multiplyScalar(ks); fk();
       // seated at the counter: hands on it, the right one to the mouth with the chopsticks while eating; a wave is the right hand up by the head
       sticks.visible = false; const lift = seated ? SEAT - sitHip * body.scale.x : 0; inner.position.y += (lift - inner.position.y) * Math.min(1, dt * 6);
       const lt = (x, y, z) => _t.set(x, y - inner.position.y, z).divideScalar(body.scale.x);
-      if (seated && this.talkT <= 0 && !st.over) { reach('L', lt(0.17, 0.99, 0.4));
-        if (this.pose === 'eat') { this.eatT += dt; const c = Math.pow((Math.sin(this.eatT * 2.4) + 1) / 2, 1.3), mouth = va.copy(J[HEAD]).add(vb.set(-0.04, 0.05, 0.19)); reach('R', lt(-0.06, 1.0, 0.42).lerp(mouth, c)); }
-        else if (this.waveT <= 0) reach('R', lt(-0.17, 0.99, 0.4)); }
+      // (the forearms rest on the counter's edge with the elbows bent, or one hand in the lap, or the arms folded on it, changing now and then; with a bowl in front the left hand is beside it and the right over it with the chopsticks, never through it)
+      if (seated && !st.over) { const S0 = st.sit || (st.sit = { v: (Math.random() * 3) | 0, t: 5 + Math.random() * 9, L: new THREE.Vector3(0.13, 1.035, 0.33), R: new THREE.Vector3(-0.13, 1.035, 0.33), wl: 1, wr: 1 }), eat = this.pose === 'eat', talk = this.talkT > 0, k = Math.min(1, dt * 3);
+        if ((S0.t -= dt) <= 0) { S0.t = 9 + Math.random() * 9; S0.v = (S0.v + 1 + ((Math.random() * 2) | 0)) % 3; }
+        S0.L.lerp(eat ? va.set(0.21, 1.045, 0.37) : S0.v === 2 ? va.set(0.02, 1.04, 0.31) : va.set(0.13, 1.035, 0.33), k); S0.R.lerp(S0.v === 2 ? va.set(-0.06, 1.052, 0.33) : va.set(-0.13, 1.035, 0.33), k);
+        S0.wl += ((talk ? 0 : 1) - S0.wl) * k; S0.wr += ((eat ? 1 : talk || S0.v === 1 || this.waveT > 0 ? 0 : 1) - S0.wr) * k;
+        reachW('L', lt(S0.L.x, S0.L.y, S0.L.z), S0.wl);
+        if (eat) { this.eatT += dt; const c = Math.pow((Math.sin(this.eatT * 2.4) + 1) / 2, 1.3), mouth = va.copy(J[HEAD]).add(vb.set(-0.1, -0.17, 0.2)); reachW('R', lt(-0.1, 1.14, 0.36).lerp(mouth, c), S0.wr); }   // (the hand comes up under the chin, never across the face: the chopsticks carry the noodles the rest of the way)
+        else reachW('R', lt(S0.R.x, S0.R.y, S0.R.z), S0.wr); }
       // a hand to where it hurts; hands up over the head in a duck; arms thrown out in a fall
       if (H && !st.down && H.t > 0.18 && H.t < 2.9) { const w = sm((H.t - 0.18) / 0.35) * (1 - sm((H.t - 2.2) / 0.7)), bi = H.head ? HEAD : TORSO; spot.copy(J[bi]).addScaledVector(H.d, -0.15).add(_w.set(H.side === 'L' ? 0.05 : -0.05, H.head ? 0.04 : 0.2, 0)); reachW(H.side, spot, w); }
       if (de > 0) for (const s of ['L', 'R']) reachW(s, spot.copy(J[HEAD]).add(_w.set(s === 'L' ? 0.09 : -0.09, 0.1, 0.1)), de);
@@ -174,7 +185,8 @@ export function rbPerson(key, sticks, o = {}) {
         sv[0].setFromUnitVectors(DIR(u, f), spot.set(-0.78, 0.5, 0.3).normalize()); sv[1].setFromUnitVectors(DIR(f, h), spot.set(-0.1 + s * 0.12, 1, 0.16).normalize()); sv[1].premultiply(qh.setFromAxisAngle(spot, 0.5)); sv[2].copy(sv[1]).premultiply(qh.setFromAxisAngle(ax.set(0, 0, 1), s * 0.42));
         R[u].slerp(sv[0], w); R[f].slerp(sv[1], w); R[h].slerp(sv[2], w); }
       if (this.hands) for (const s of ['L', 'R']) if (this.hands[s]) { body.updateWorldMatrix(true, false); reach(s, body.worldToLocal(_t.copy(this.hands[s]))); }   // hands held where someone's real ones are (the cook: cook.js)
-      for (const s of ['L', 'R']) { const [u, f, h] = ARM[s]; J[f].copy(O[f]).sub(O[u]).applyQuaternion(R[u]).add(J[u]); J[h].copy(O[h]).sub(O[f]).applyQuaternion(R[f]).add(J[f]); }
+      const arms = () => { for (const s of ['L', 'R']) { const [u, f, h] = ARM[s]; J[f].copy(O[f]).sub(O[u]).applyQuaternion(R[u]).add(J[u]); J[h].copy(O[h]).sub(O[f]).applyQuaternion(R[f]).add(J[f]); } }; arms();
+      if (seated && !st.down) { let moved = false; for (const s of ['L', 'R']) { if (this.hands && this.hands[s]) continue; const h = J[ARM[s][2]], k = body.scale.x, y = h.y * k + inner.position.y; if (h.z * k > 0.27 && y < 1.03) { reach(s, lt(h.x * k, 1.035, h.z * k)); moved = true; } } if (moved) arms(); }   // (a hand that a gesture carried down through the counter is set on it)
       if (st.phys > 0) { st.phys -= dt; const h = Math.min(dt, 1 / 30);   // the limbs knocked about, springing back to where the motion has them
         for (let k = NB - 1; k > 0; k--) { const c = CH[k]; if (!c) continue; c.w.addScaledVector(c.a, -c.K * h).multiplyScalar(Math.max(0, 1 - c.C * h)); c.a.addScaledVector(c.w, h); const l = c.a.length(); if (l > c.max) { c.a.multiplyScalar(c.max / l); c.w.multiplyScalar(0.5); }
           if (l > 1e-4) { qh.setFromAxisAngle(ax.copy(c.a).normalize(), Math.min(l, c.max)); for (const i of c.set) R[i].premultiply(qh); } if (st.phys <= 0) { c.a.set(0, 0, 0); c.w.set(0, 0, 0); } }
@@ -188,5 +200,5 @@ export function rbPerson(key, sticks, o = {}) {
       if (this.pose === 'eat' && seated && !st.over) { root.updateMatrixWorld(true); const c = Math.pow((Math.sin(this.eatT * 2.4) + 1) / 2, 1.3), Hh = bones[ARM.R[2]].getWorldPosition(_w), Mh = bones[HEAD].getWorldPosition(new THREE.Vector3()); Mh.y += 0.06; const T = new THREE.Vector3(0.05, 1.0, 0.5).applyMatrix4(root.matrixWorld).lerp(Mh, c);
         sticks.visible = true; root.worldToLocal(sticks.position.copy(Hh).addScaledVector(va.copy(T).sub(Hh).normalize(), 0.05)); sticks.lookAt(T); } },
   };
-  P.blink = () => { face.blink = 0.17; }; P.face = face; P.update(0); return P;
+  P.blink = () => { face.blink = 0.17; }; P.face = face; P.seed = Math.random() * 9; PEOPLE.push(P); P.update(0); return P;
 }

@@ -35,7 +35,7 @@ export function buildGrit(scene, city, cart) {
     glb('plastic_crate_02', 0xb8a8a0).then((m) => { const b = new THREE.Box3().setFromObject(m), sz = b.getSize(new THREE.Vector3()), k = 0.42 / Math.max(sz.x, sz.z), h = sz.y * k; [[H, 0.08], [H + h, -0.12]].forEach(([y, ry]) => { const o = m.clone(); o.scale.setScalar(k); o.position.set(cx, y - b.min.y * k, cz); o.rotation.y = ry; root.add(o); });
       const prof = [[0, 0], [0.028, 0], [0.03, 0.006], [0.03, 0.12], [0.026, 0.15], [0.013, 0.19], [0.012, 0.23], [0.015, 0.232], [0.015, 0.24], [0, 0.24]].map(([x, y]) => new THREE.Vector2(x, y)), brown = [], greenG = [];
       for (let i = 0; i < 9; i++) { if (i === 4 || i === 7) continue; const g = new THREE.LatheGeometry(prof, 9).translate(cx - 0.12 + (i % 3) * 0.12 + (R() - 0.5) * 0.01, H + h + 0.03, cz - 0.09 + Math.floor(i / 3) * 0.09); (i % 4 === 1 ? greenG : brown).push(g); }
-      const bt = (gs, c) => { const o = new THREE.Mesh(mergeGeometries(gs), mat({ color: c, transparent: true, opacity: 0.88, envMap: T.env(), reflectivity: 0.25 })); o.userData.nopick = true; o.castShadow = false; root.add(o); }; bt(brown, 0x3a1c08); bt(greenG, 0x1c4a26); }).catch(() => { }); }
+      const bt = (gs, c) => { const o = new THREE.Mesh(mergeGeometries(gs), mat({ color: c, transparent: true, opacity: 0.88, envMap: T.env(), reflectivity: 0.25, combine: THREE.MixOperation })); o.userData.nopick = true; o.castShadow = false; root.add(o); }; bt(brown, 0x3a1c08); bt(greenG, 0x1c4a26); }).catch(() => { }); }
 
   // ledge: ashtray with butts, sauce drips, bottle caps, a folded newspaper
   cyl(0.055, 0.045, 0.02, mat({ color: 0xb8bcc0, metalness: 0.9, roughness: 0.4 }), -1.05, 1.012, -0.8, root, 14);

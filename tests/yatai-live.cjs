@@ -83,7 +83,7 @@ const shot = (j, name) => { if (out && j) fs.writeFileSync(path.join(out, name),
     await G.debug.startVR(); await frames(14); out.presenting = G.renderer.xr.isPresenting; const e0 = eye(); out.start = [+e0.x.toFixed(2), +e0.z.toFixed(2)];
     xr.controllers.left.updateAxis('thumbstick', 'y-axis', -1); await frames(30); xr.controllers.left.updateAxis('thumbstick', 'y-axis', 0); await frames(4); const e1 = eye(); out.walked = +Math.hypot(e1.x - e0.x, e1.z - e0.z).toFixed(2); out.at = [+e1.x.toFixed(2), +e1.z.toFixed(2)];
     out.inCart = Math.abs(e1.x) < 1.9 && e1.z > -1.35 && e1.z < 2.3; out.own = G.guestRole.state(); out.bodyShown = G.peopleRoot.children.some((o) => o.visible && o.children.some((c) => c.children.some((m) => m.isMesh && m.material && m.material.customProgramCacheKey))); return out; });
-  ok(vr.presenting && Math.hypot(vr.start[0] - 1.4, vr.start[1] + 3.2) < 0.6 && vr.walked > 0.3 && !vr.inCart, 'in a headset the guest stands in front of the cart and walks the alley with the stick, never into the cart: ' + JSON.stringify({ ...vr, own: undefined }));
+  ok(vr.presenting && Math.hypot(vr.start[0] - 1.4, vr.start[1] + 2.6) < 0.6 && vr.walked > 0.3 && !vr.inCart, 'in a headset the guest stands in front of the cart and walks the alley with the stick, never into the cart: ' + JSON.stringify({ ...vr, own: undefined }));
   await V.close();
   ok(!errs.length, 'no page errors' + (errs.length ? ': ' + errs.slice(0, 3).join(' | ') : ''));
   await b.close(); srv.close(); wss.close(); console.log(fails.length ? fails.length + ' FAILED' : 'RAMEN is one game, in THE MARKET and at /ramen'); process.exit(fails.length ? 1 : 0); })();

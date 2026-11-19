@@ -1,6 +1,6 @@
 # RAMEN credits
 
-- People and their motion (`data/sushi/rb/`, from `python3 tools/sushi-people.py`): the Microsoft Rocketbox Avatar Library, https://github.com/microsoft/Microsoft-Rocketbox, MIT (`docs/licences/rocketbox-mit.txt`). Bodies, in their own clothes (some dyed by the tool): Chef_Female_01, Police_Male_01, Male_Adult_04, 10, 12, 14, 20, Male_Child_02, Business_Male_01, 07, Construction_Male_02, Delivery_Male_01, Female_Adult_04, 05, 06, 07, Female_Party_02, Business_Female_03, Medical_Female_01; their eyelids and jaw kept so they blink and speak. Motion: its idle, walk, sitting at a table, talking, nodding, head shake, laugh, shrug, thoughtful, look around and wave takes.
+- People and their motion (`data/sushi/cast.json`, from `node tools/sushi-cast.cjs`): Polyfork, https://polyfork.dev, its licence (use in games, no reselling the files). Who is who is in `src/sushi/cast.js`; the nurse is its diner waitress with her dress dyed white in the page.
 - The goldfish is Polyfork's koi (`data/sushi/koi.json`), gilded in the page.
 - The street's cars, trees and pay phone (`data/sushi/m/`, from `node tools/sushi-models.cjs`: turned, sized, thinned, a car's pictures drawn into one, its paint left white for the page to colour; the originals kept in `data/full/sushi/src/`, not in git): Sketchfab, CC BY 4.0 (https://creativecommons.org/licenses/by/4.0/), taken from Objaverse's copy; each is at `https://sketchfab.com/3d-models/<id>`.
 

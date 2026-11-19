@@ -7,7 +7,7 @@ export const PHASES = [['day', 0, 0.3], ['dusk', 0.3, 0.4], ['night', 0.4, 0.9],
 export const ORDER = PHASES.map((p) => p[0]);
 const DAY0 = Date.UTC(1985, 9, 4), DOW = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'], MON = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
 // the calendar: day one of a run is Friday 4 October 1985, and each day after is the next date
-export const dateOf = (day) => { const d = new Date(DAY0 + (Math.max(1, day | 0) - 1) * 864e5); return { n: Math.max(1, day | 0), dow: DOW[d.getUTCDay()], d: d.getUTCDate(), month: MON[d.getUTCMonth()], text: `${DOW[d.getUTCDay()]} ${d.getUTCDate()} ${MON[d.getUTCMonth()]} ${d.getUTCFullYear()}` }; };
+export const dateOf = (day) => { const d = new Date(DAY0 + (Math.max(1, day | 0) - 1) * 864e5); return { n: Math.max(1, day | 0), dow: DOW[d.getUTCDay()], d: d.getUTCDate(), month: MON[d.getUTCMonth()], text: `${DOW[d.getUTCDay()]} ${d.getUTCDate()} ${MON[d.getUTCMonth()]} ${d.getUTCFullYear()}`, short: `${DOW[d.getUTCDay()].slice(0, 3)} ${d.getUTCDate()} ${MON[d.getUTCMonth()].slice(0, 3)} ${d.getUTCFullYear()}` }; };
 const HOURS = { day: [10, 17.5], dusk: [17.5, 19.5], night: [19.5, 29], dawn: [29, 30.5] };   // the street's hour over each (29 is five in the morning)
 
 export function buildClock(params) {

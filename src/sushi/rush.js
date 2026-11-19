@@ -15,9 +15,9 @@ export const WINDOWS = [
   ['dawn', 0, 1, '', 99, 0, 0],
 ];
 // seconds a customer waits for a bowl before walking: base and up to spread more, less perDay each day down to least, times ramp on the first days; queue more for each one already waiting when they order; a hurried one hurry of it; EASY easy times it, the night night times it, a visitor from THE MARKET guest times it
-export const PATIENCE = { base: 62, spread: 14, least: 56, perDay: 1.5, ramp: [1.5, 1.05], queue: 12, hurry: 0.62, easy: 1.7, night: 1.2, guest: 2 };
+export const PATIENCE = { base: 62, spread: 14, least: 56, perDay: 1.5, ramp: [1.5, 1.05], queue: 12, hurry: 0.58, easy: 1.7, night: 1.2, guest: 2 };
 // a prompt bowl: served within base seconds of the order (ramp times it on the first day; queue more for each one already waiting; the same hurry, easy and guest as patience, at night alike) it loses nothing; after that rate points a second, up to most (a bowl that late is half refunded: game.js), up to gentle on the first day and on EASY
-export const PROMPT = { base: 20, ramp: [1.25], queue: 12, rate: 1, most: 52, gentle: 40 };
+export const PROMPT = { base: 21, ramp: [1.15], queue: 12, rate: 1, most: 52, gentle: 40 };
 export const PACE = 90;   // seconds a stool turns over at a fair pace (the walk in, the order, the bowl, the meal, the change): what the day is stocked for
 
 export function buildRush() {

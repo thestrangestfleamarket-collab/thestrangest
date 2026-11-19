@@ -53,7 +53,7 @@ const drawFrom = (key, set) => { for (let n = 0; ; n++) { let d = DECK[key]; if 
 const daypart = () => (G.clock && G.clock.daypart ? G.clock.daypart() : 'afternoon');
 const DRINKNAME = { soda: 'a soda', tea: 'an iced tea' }, cap = (s) => s[0].toUpperCase() + s.slice(1);
 // nobody says what was lately said at this cart (the last RECENT lines, whoever spoke them), and nobody says the same thing twice themself, while their kind has another line left
-const RECENT = [], HEARD = new Set(), remember = (s) => { RECENT.push(s); HEARD.add(s); if (RECENT.length > 400) { const o = RECENT.shift(); if (!RECENT.includes(o)) HEARD.delete(o); } };
+const RECENT = [], HEARD = new Set(), remember = (s) => { RECENT.push(s); HEARD.add(s); if (RECENT.length > 700) { const o = RECENT.shift(); if (!RECENT.includes(o)) HEARD.delete(o); } };
 export const canned = (kind, c) => { if (/^chat/.test(kind) && c && c.voice && c.voice.age < 14) kind = 'chatkid'; const set = CANNED[kind] || CANNED.reply, dp = daypart(), o = c && c.order, dish = o ? o.recipe.name.toLowerCase() + ' ramen' : 'ramen', dr = DRINKNAME[o && o.drink] || 'a soda', v = c && c.voice, mine = v && v.name ? (v.said ||= new Set()) : null;
   const make = () => drawFrom(kind, set).replace('{hello}', () => drawFrom('hello:' + dp, HELLO[dp])).replace('{bye}', () => drawFrom('bye:' + dp, BYE[dp])).replace('{Order}', cap(dish)).replace('{order}', dish).replace('{A drink}', cap(dr)).replace('{a drink}', dr).replace('{Night}', () => (G.clock && G.clock.date ? G.clock.date(12).dow : 'Friday') + ' night').replace(/\s+/g, ' ').trim();
   let s = make(); for (let i = 0; i < 12 && (HEARD.has(s) || (mine && mine.has(s))); i++) s = make();

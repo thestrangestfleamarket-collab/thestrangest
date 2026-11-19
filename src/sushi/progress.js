@@ -32,7 +32,8 @@ export const START = 2, NEED = [null, null, { rep: 58, asks: 3 }, { rep: 66, ask
 export const EXTRAS = { rep: 64, day: 5 };   // special requests (firm noodles, extra toppings, one left out)
 const U = RECIPES[DAYDISH[0]].price;   // every amount is counted in bowls of the first dish, so the prices can change under it
 export const DAYS = {
-  target: (d, easy) => Math.round(U * Math.min(28 + 6 * (d - 1), 64) * (easy ? 0.6 : 1)),   // the day's takings to aim for
+  bowls: [25, 40, 47, 52, 56, 60, 64],   // the takings to aim for, day by day, in bowls: a gentle first day, then near what a fair cook takes
+  target: (d, easy) => Math.round(U * DAYS.bowls[Math.min(d, DAYS.bowls.length) - 1] * (easy ? 0.6 : 1)),   // the day's takings to aim for
   fee: (d, easy) => Math.round(U * Math.min(6 + 4 * (d - 1), 36) * (easy ? 0.5 : 1)),         // due at dawn
   rep: (rating, met, short, refused, events) => Math.round((rating - 3.5) * 5) + (met ? 1 : -1) - (short ? 6 : 0) - Math.min(3, refused) + Math.max(-3, Math.min(3, events)),   // how a day moves the reputation (between -12 and +6; never below -3 on EASY, -2 on day one)
   strikes: 3,   // fees unpaid in a row before the pitch is lost (never on EASY, never on day one)

@@ -1,4 +1,4 @@
-// RAMEN: a place off the map (GO TO it from the map), and only its door: going in leaves THE MARKET for RAMEN's own block of downtown New York in 1985 as a guest (/holo?g=ramen&as=guest, src/sushi/guest.js), where the cart, its cook, the customers and everyone passing are the same on every page; you are there as your own figure (sent with you: its mesh, and its standing, walking and sitting posed here by your rig), and come back here at the alley's mouth, what you paid at the cart taken from your money
+// RAMEN: a place off the map (GO TO it from the map), and only its door: going in leaves THE MARKET for RAMEN's own village street as a guest (/holo?g=ramen&as=guest, src/sushi/guest.js), where the cart, its cook, the customers and everyone passing are the same on every page; you are there as your own figure (sent with you: its mesh, and its standing, walking and sitting posed here by your rig), and come back here at the alley's mouth, what you paid at the cart taken from your money
 import {SHARED} from './003-shx.js';
 import {INV, ONLINE, pos, WHERE} from './003b-systems.js';
 import {SAY} from './003d-say.js';

@@ -74,7 +74,7 @@ export function buildStory(scene) {
   G.story = S;
   // who can tell it: the regular named, else whoever of the street is about and well; brought to the counter's near side to say it
   S.tell = (b, i) => { const [f, id, prompt, line, note] = b; if (S.said[i]) return; S.said[i] = true; S.notes.push(note); S.dirty = true;
-    const B = G.block; if (!B) return; const ok = (h) => h && !h.taken && !h.cop && !(B.mad && B.mad[h.def.id]);
+    const B = G.block; if (!B) return; const ok = (h) => h && !h.taken && !h.cop && !(B.mad && B.mad[h.def.id]) && !(h.def.age < 14 && G.clock.hour > 21.5);   // (a child is not out at night)
     const h = (id && ok(B.by[id]) ? B.by[id] : null) || B.people.find((x) => ok(x) && x.p.root.visible) || B.people.find(ok); if (!h) return;
     const pos = h.p.root.position; if (h.hidden || Math.abs(pos.x) > 20) { pos.set(f > 0.9 ? 6 : -6, 0, -2.6); h.hidden = false; h.p.root.visible = true; }
     h.lead = null; h.chat = null; B.greet(h, { kind: 'story', t: 6, w: 0.2, say: 0.6, what: { prompt, line } }); };

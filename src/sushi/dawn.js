@@ -4,8 +4,9 @@ import { G, V3 } from './ctx.js';
 import * as T from './tex.js';
 import { RECIPES } from './cart.js';
 import { TEXT as ST } from './shop.js';
+import { dateOf } from './clock.js';
 
-export const TEXT = { title: 'DAWN', intro: 'The street lamps go out and the block wakes.', day: 'Day', served: 'Bowls served', lost: 'Walked out', taken: 'Taken in', of: 'of', fee: 'Permit fee due at dawn', paid: 'paid', unpaid: 'UNPAID', rating: 'Rating', rep: 'Reputation', late: 'Late bowls, by lantern light', savings: 'Savings', dish: 'New on the menu', extras: 'special requests', next: 'NEXT DAY', over: 'START OVER', sure: 'SURE? START OVER', keep: 'Log in to keep your progress.', kept: 'Progress saved.', out: 'Three fees unpaid: the vending permit is pulled.', met: 'target met' };
+export const TEXT = { title: 'DAWN', intro: 'The street lamps go out and the block wakes.', day: 'Day', served: 'Bowls served', lost: 'Walked out', taken: 'Taken in', of: 'of', fee: 'Permit fee due at dawn', paid: 'paid', unpaid: 'UNPAID', rating: 'Rating', rep: 'Reputation', late: 'Late bowls, under the street lamps', savings: 'Savings', dish: 'New on the menu', extras: 'special requests', next: 'NEXT DAY', over: 'START OVER', sure: 'SURE? START OVER', keep: 'Log in to keep your progress.', kept: 'Progress saved.', out: 'Three fees unpaid: the vending permit is pulled.', met: 'target met' };
 
 export function buildDawn(scene) {
   const D = { card: null, board: null, btns: [] };
@@ -14,7 +15,7 @@ export function buildDawn(scene) {
   const hide = () => { panel.style.display = 'none'; panel.style.background = 'rgba(4,3,3,0)'; panel.innerHTML = ''; if (D.board) { D.board.removeFromParent(); D.board = null; } for (const b of D.btns) { const i = G.buttons.indexOf(b); if (i >= 0) G.buttons.splice(i, 1); } D.btns.length = 0; D.card = null; };
   const next = () => { hide(); G.prog.next(); }, over = () => { hide(); G.prog.over(); };
   D.rows = (R) => { const rate = R.rating;
-    return [[TEXT.day, R.day], [TEXT.served, R.served], [TEXT.lost, R.lost], [TEXT.taken, `${fmt(R.taken)} ${TEXT.of} ${fmt(R.target)}${R.met ? ' ✓' : ''}`], [TEXT.fee, R.short ? `${fmt(R.fee + R.owed)}: ${fmt(R.short)} ${TEXT.unpaid}` : `${fmt(R.fee + R.owed)} ${TEXT.paid}`],
+    return [[TEXT.day, `${R.day}: ${dateOf(R.day).text}`], [TEXT.served, R.served], [TEXT.lost, R.lost], [TEXT.taken, `${fmt(R.taken)} ${TEXT.of} ${fmt(R.target)}${R.met ? ' ✓' : ''}`], [TEXT.fee, R.short ? `${fmt(R.fee + R.owed)}: ${fmt(R.short)} ${TEXT.unpaid}` : `${fmt(R.fee + R.owed)} ${TEXT.paid}`],
       [TEXT.rating, R.served + R.lost ? '★'.repeat(Math.round(rate)) + ' ' + rate.toFixed(1) : 'none'], [TEXT.rep, `${R.rep} (${R.rep >= R.repWas ? '+' : ''}${R.rep - R.repWas})`], [TEXT.late, R.late],
       ...(R.dish || R.extras ? [[TEXT.dish, R.dish ? RECIPES[R.dish].name : TEXT.extras]] : []), ...(G.events ? G.events.log.map((e) => [e.name, e.text]) : [])]; };
   D.show = () => { if (D.card || G.guest) return; G.ended = true; G.guideText = ''; G.hoverText = ''; if (G.game && G.game.summary) G.game.summary.visible = false;   // (the morning is to be seen: the day's board is put away)

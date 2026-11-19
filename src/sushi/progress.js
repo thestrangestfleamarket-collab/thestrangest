@@ -1,4 +1,4 @@
-// RAMEN across days (owner, 19 Nov 2026): the day number, the savings, the cart's reputation, the dishes unlocked, the upgrades owned and what each regular remembers; each day's takings target and the fee due at dawn; kept for a login by the website (POST /sushi/save, /sushi/load, worker/ramen.js), for anyone else as long as the page is open
+// RAMEN across days (owner, 19 Nov 2026): the day number (day one is Friday 4 October 1985: clock.js), the savings, the cart's reputation, the dishes unlocked, the upgrades owned, what each regular remembers and last night's events; each day's takings target and the fee due at dawn; kept for a login by the website (POST /sushi/save, /sushi/load, worker/ramen.js), for anyone else as long as the page is open
 import { G, clamp } from './ctx.js';
 import { RECIPES, DAYDISH } from './cart.js';
 import { mon } from './till.js';
@@ -27,17 +27,17 @@ export const UPGRADES = [
   { id: 'stool', cost: 40, mod: { seats: 3 } },
 ];
 const BASE = { baskets: 1, seats: 2, chop: 1, pot: 1, draw: 1, calm: 1, heat: 1, cool: 1 };
-// a dish after the first comes onto the menu when the cart's reputation reaches rep, or regulars have asked for it asks times (one new thing a day)
-export const NEED = [null, { rep: 54, asks: 2 }, { rep: 60, asks: 3 }, { rep: 68, asks: 4 }];
+// the cart begins with START dishes; each one after comes onto the menu when the cart's reputation reaches rep, or regulars have asked for it asks times (one new thing a day)
+export const START = 2, NEED = [null, null, { rep: 58, asks: 3 }, { rep: 66, asks: 5 }];
 export const EXTRAS = { rep: 64, day: 5 };   // special requests (firm noodles, extra toppings, one left out)
 const U = RECIPES[DAYDISH[0]].price;   // every amount is counted in bowls of the first dish, so the prices can change under it
 export const DAYS = {
-  target: (d, easy) => Math.round(U * Math.min(25 + 10 * (d - 1), 75) * (easy ? 0.6 : 1)),   // the day's takings to aim for
+  target: (d, easy) => Math.round(U * Math.min(28 + 6 * (d - 1), 64) * (easy ? 0.6 : 1)),   // the day's takings to aim for
   fee: (d, easy) => Math.round(U * Math.min(6 + 4 * (d - 1), 36) * (easy ? 0.5 : 1)),         // due at dawn
-  rep: (rating, met, short, refused, events) => Math.round((rating - 3.8) * 5) + (met ? 1 : -1) - (short ? 6 : 0) - Math.min(3, refused) + Math.max(-3, Math.min(3, events)),   // how a day moves the reputation (between -12 and +6; never below -3 on EASY, -2 on day one)
+  rep: (rating, met, short, refused, events) => Math.round((rating - 3.5) * 5) + (met ? 1 : -1) - (short ? 6 : 0) - Math.min(3, refused) + Math.max(-3, Math.min(3, events)),   // how a day moves the reputation (between -12 and +6; never below -3 on EASY, -2 on day one)
   strikes: 3,   // fees unpaid in a row before the pitch is lost (never on EASY, never on day one)
 };
-const fresh = () => ({ v: 1, day: 1, money: 0, rep: 50, debt: 0, strikes: 0, easy: false, tut: false, ups: [], recipes: [DAYDISH[0]], extras: false, asks: {}, regs: {}, best: 0 });
+const fresh = () => ({ v: 1, day: 1, money: 0, rep: 50, debt: 0, strikes: 0, easy: false, tut: false, ups: [], recipes: DAYDISH.slice(0, START), extras: false, asks: {}, regs: {}, ev: [], best: 0 });
 
 export function buildProgress(params) {
   const prog = { P: fresh(), saved: false, loaded: false, result: null, hooks: [] };
@@ -63,7 +63,7 @@ export function buildProgress(params) {
     let d = g.scores.length ? DAYS.rep(rating, met, short > 0, g.refused, G.events ? G.events.rep : 0) : -2; d = clamp(d, P.easy ? -3 : -12, 6); if (P.day === 1) d = Math.max(d, -2);
     const was = P.rep; P.rep = clamp(P.rep + d, 0, 100); P.money = have - paid; P.debt = short; P.strikes = short > 0 && P.day > 1 ? P.strikes + 1 : 0; P.best = Math.max(P.best, taken);
     const R = { day: P.day, taken, target, met, fee, owed: due - fee, paid, short, rating, served: g.served, lost: g.lost, late: g.lateServed, repWas: was, rep: P.rep, money: P.money, dish: null, extras: false, out: !P.easy && P.strikes >= DAYS.strikes };
-    for (let i = 1; i < DAYDISH.length && !R.dish; i++) { const k = DAYDISH[i], n = NEED[i] || NEED[NEED.length - 1]; if (!P.recipes.includes(k) && (P.rep >= n.rep || (P.asks[k] | 0) >= n.asks)) { P.recipes.push(k); R.dish = k; } }
+    for (let i = START; i < DAYDISH.length && !R.dish; i++) { const k = DAYDISH[i], n = NEED[i] || NEED[NEED.length - 1]; if (!P.recipes.includes(k) && (P.rep >= n.rep || (P.asks[k] | 0) >= n.asks)) { P.recipes.push(k); R.dish = k; } }
     if (!R.dish && !P.extras && (P.rep >= EXTRAS.rep || P.day >= EXTRAS.day)) R.extras = P.extras = true;
     P.day++; if (R.out) prog.P = fresh(); prog.result = R; prog.saving = prog.save(); return R; };
   // the next morning (or the first again): the page as it was before the first bowl, the cart as it now stands
@@ -71,7 +71,7 @@ export function buildProgress(params) {
   prog.over = () => { const easy = prog.P.easy; prog.P = fresh(); prog.P.easy = easy; prog.save(); prog.next(); };
   // what the website keeps (worker/ramen.js cuts it to size); a page nobody is logged in on keeps it only while it is open
   const tidy = (v) => { const P = fresh(); if (!v || typeof v !== 'object' || !(v.day >= 1)) return null; for (const k of ['day', 'money', 'rep', 'debt', 'strikes', 'best']) if (Number.isFinite(+v[k])) P[k] = +v[k]; P.easy = !!v.easy; P.tut = !!v.tut; P.extras = !!v.extras;
-    if (Array.isArray(v.ups)) P.ups = v.ups.filter((id) => UPGRADES.some((u) => u.id === id)); if (Array.isArray(v.recipes)) P.recipes = DAYDISH.filter((k, i) => !i || v.recipes.includes(k));
+    if (Array.isArray(v.ups)) P.ups = v.ups.filter((id) => UPGRADES.some((u) => u.id === id)); if (Array.isArray(v.recipes)) P.recipes = DAYDISH.filter((k, i) => i < START || v.recipes.includes(k)); if (Array.isArray(v.ev)) P.ev = v.ev.map(String).slice(0, 8);
     if (v.asks && typeof v.asks === 'object') for (const k of DAYDISH) if (v.asks[k] > 0) P.asks[k] = v.asks[k] | 0;
     if (v.regs && typeof v.regs === 'object') for (const id in v.regs) { const r = v.regs[id]; if (r && typeof r === 'object') P.regs[id] = { a: clamp(+r.a || 0, -5, 10), k: String(r.k || ''), d: String(r.d || ''), ok: r.ok ? 1 : 0, n: r.n | 0, b: r.b | 0, bd: r.bd | 0 }; } return P; };
   const post = (path, body) => NET.tok().then(() => fetch(path, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) })).then((r) => (r.ok ? r.json() : null)).catch(() => null);

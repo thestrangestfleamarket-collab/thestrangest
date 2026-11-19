@@ -6,8 +6,8 @@ import { RECIPES, DAYDISH, DRINKS } from './cart.js';
 // every word of this file a player hears or reads, and what the talking mind is told
 export const TEXT = {
   usual: 'THE USUAL',
-  order: { prompt: 'You just sat down at the cart where you are a regular. Say hello and ask for your usual, in a few plain words.', lines: ['Hey. The usual.', 'My usual, when you get a second.', 'The usual for me, chief.'] },
-  ask: { prompt: (dish) => `You enjoyed that. Ask the cook, warmly and in one sentence, whether they might put ${dish} on the menu one day: it is your favourite.`, lines: (dish) => [`Do you ever think of making ${dish}? I would come twice as often.`] },
+  order: { prompt: 'You just sat down at the cart where you are a regular. Say hello and ask for your usual, in a few plain words.', lines: ['{hello} The usual, please.', '{hello} My usual, when you get a second.', '{hello} The usual for me, chief.', '{hello} Same as always.', '{hello} You know what I like.', '{hello} Same again, chef.', '{hello} I\'ll have my usual.', '{hello} The regular order, please.', '{hello} Usual for me.', '{hello} You know my order by now.', '{hello} The usual, if you have it.', '{hello} Make it the usual.'] },
+  ask: { prompt: (dish) => `You enjoyed that. Ask the cook, warmly and in one sentence, whether they might put ${dish} on the menu one day: it is your favourite.`, lines: (dish) => [`Do you ever think of making ${dish}? I would come twice as often.`, `You know what you should make? ${dish[0].toUpperCase() + dish.slice(1)}. I would be here every day.`, `If you ever put ${dish} on the board, save me the first bowl.`, `My favourite is ${dish}. Any chance you will make it one day?`, `Nobody on this block makes ${dish}. You could be the one.`, `I keep hoping to see ${dish} up on that board.`, `One of these days, make ${dish}. I will bring people.`, `You ever make ${dish}? I have been wanting one for weeks.`, `Put ${dish} on the menu and I will tell the whole block.`, `This was good. But ${dish}, that is what I dream about.`] },
   tale: (line) => `While you eat, tell the cook this about your own life, in your own words, in a sentence or two: "${line}"`,
   facts: { n: (n) => `You are a regular at this cart: you have eaten here ${n} time${n === 1 ? '' : 's'} before.`, last: (dish, ok) => `Last time you had the ${dish} and it was ${ok ? 'just right' : 'not right'}.`, fond: 'You have grown fond of this cook.', sore: 'This cart has let you down lately.', usual: 'This is your usual order; you can just call it "the usual".', settle: (dish) => `What you really wanted is ${dish}, which is not on the menu; you settled for this.` },
   asked: (name, dish) => `${name} asked for ${dish}.`,
@@ -27,11 +27,11 @@ const ARC_COP = [['Somebody has been popping car radios on this block. I am watc
 const ARC_KID = [['I am doing my times tables! I know up to the nines already.', 'is learning the times tables.'], ['I added up your whole board today. In my head.', 'added up the menu board.'], ['I got a hundred on the math test. I left it at home, but I did.', 'got a hundred on the math test.']];
 // their usual hours, as shares of the run: morning, midday, afternoon, dusk, the evening, late, the small hours
 export const SLOTS = [[0.02, 0.11], [0.13, 0.22], [0.24, 0.3], [0.31, 0.39], [0.42, 0.58], [0.6, 0.71], [0.73, 0.87]];
-export const LIKE = { great: 85, good: 70, bad: 50, up: 1, half: 0.5, down: -1, walked: -2, wronged: 3, tip: 0.06, friend: 4, friendP: 0.35, beat: 1.5, ask: 1 };   // how a bowl's score moves their affection (-5..10), what affection does
+export const LIKE = { great: 85, good: 70, bad: 50, up: 1, half: 0.5, down: -1, walked: -2, wronged: 3, tip: 0.06, friend: 4, friendP: 0.35, beat: 1.5, ask: 1, asks: 2 };   // how a bowl's score moves their affection (-5..10), what affection does; a dish not yet on the menu is asked for at most asks times a day
 const hash = (a, b, c) => { const x = Math.sin(a * 12.9898 + b * 78.233 + c * 37.719) * 43758.5453; return x - Math.floor(x); };
 
 export function buildRegulars() {
-  const R = { today: {}, asked: {} }, K = G.clock; G.regs = R;
+  const R = { today: {}, asked: {}, dishAsked: {} }, K = G.clock; G.regs = R;
   const drinks = Object.keys(DRINKS).sort((a, b) => DRINKS[b] - DRINKS[a]), strong = drinks[0], soft = drinks[drinks.length - 1];
   const kid = (def) => def.age < 14;
   R.plan = (n) => { const def = CAST[n], a = n % 7, b = (n * 3 + 4) % 7, s = kid(def) ? [a % 4, b % 4] : [a, b]; return s[0] === s[1] ? [s[0]] : s; };
@@ -52,7 +52,7 @@ export function buildRegulars() {
   const dish = (k) => { const r = RECIPES[k]; return r ? r.name[0] + r.name.slice(1).toLowerCase() : k; };
   // the meal is done: they remember it, and like the cart more or less for it
   R.served = (c, r) => { if (!c.nb) return; const m = rec(c), s = r.score; m.n++; m.k = c.order.key; m.d = c.order.drink || ''; m.ok = s >= 80 ? 1 : 0; m.a = clamp(m.a + (s >= LIKE.great ? LIKE.up : s >= LIKE.good ? LIKE.half : s < LIKE.bad ? LIKE.down : 0), -5, 10);
-    const want = R.usual(c.nb.n).key, id = c.nb.def.id; if (!G.prog.P.recipes.includes(want) && s >= LIKE.good && m.a >= LIKE.ask && !R.asked[id]) { R.asked[id] = 1; G.prog.P.asks[want] = (G.prog.P.asks[want] | 0) + 1; G.story?.notes.push(TEXT.asked(c.nb.def.name, dish(want))); G.talk?.event(c, 'told', { as: 'ask', prompt: TEXT.ask.prompt(dish(want)), lines: TEXT.ask.lines(dish(want)) }); } };
+    const want = R.usual(c.nb.n).key, id = c.nb.def.id; if (!G.prog.P.recipes.includes(want) && s >= LIKE.good && m.a >= LIKE.ask && !R.asked[id] && (R.dishAsked[want] | 0) < LIKE.asks) { R.asked[id] = 1; R.dishAsked[want] = (R.dishAsked[want] | 0) + 1; G.prog.P.asks[want] = (G.prog.P.asks[want] | 0) + 1; G.story?.notes.push(TEXT.asked(c.nb.def.name, dish(want))); G.talk?.event(c, 'told', { as: 'ask', prompt: TEXT.ask.prompt(dish(want)), lines: TEXT.ask.lines(dish(want).toLowerCase() + ' ramen') }); } };
   R.walked = (c) => { if (c.nb) { const m = rec(c); m.a = clamp(m.a + LIKE.walked, -5, 10); } };
   // what the talking mind is told about them and this cart
   R.facts = (c) => { if (!c.nb || c.passer) return ''; const m = rec(c), F = TEXT.facts, u = R.usual(c.nb.n); return [m.n ? F.n(m.n) : '', m.k ? F.last(dish(m.k), m.ok) : '', m.a >= LIKE.friend ? F.fond : m.a <= -2 ? F.sore : '', c.order ? (c.usual ? F.usual : F.settle(dish(u.key))) : ''].filter(Boolean).join(' '); };
@@ -63,6 +63,6 @@ export function buildRegulars() {
     for (const c of g.customers) { if (!c.nb || c.state !== 'eating' || c.taled || c.t < 5) continue; c.taled = true; const m = rec(c), arc = R.arc(c.nb.n), b = arc[m.b]; if (!b || m.a < LIKE.up + m.b * LIKE.beat || m.bd >= G.prog.P.day) continue;
       m.b++; m.bd = G.prog.P.day; G.story?.notes.push(`${c.nb.def.name} ${b[1]}`); if (G.story) G.story.dirty = true; R.told = { id: c.nb.def.id, beat: m.b }; G.talk?.event(c, 'told', { as: 'tale', prompt: TEXT.tale(b[0]), lines: [b[0]] }); } };
   // a new day: yesterday's grudges are over on the street, but whoever the cook wronged thinks less of the cart
-  K.on('reset', () => { R.today = {}; R.asked = {}; const B = G.block; if (!B) return; for (const id in B.mad) { const m = G.prog.reg(id); m.a = clamp(m.a - LIKE.wronged, -5, 10); delete B.mad[id]; } for (const id in B.told) delete B.told[id]; });
+  K.on('reset', () => { R.today = {}; R.asked = {}; R.dishAsked = {}; const B = G.block; if (!B) return; for (const id in B.mad) { const m = G.prog.reg(id); m.a = clamp(m.a - LIKE.wronged, -5, 10); delete B.mad[id]; } for (const id in B.told) delete B.told[id]; });
   return R;
 }

@@ -1,6 +1,6 @@
 # RAMEN credits
 
-- People and their motion (`data/sushi/rb/`, from `python3 tools/sushi-people.py`): the Microsoft Rocketbox Avatar Library, https://github.com/microsoft/Microsoft-Rocketbox, MIT (`docs/licences/rocketbox-mit.txt`). Bodies, in their own clothes (some dyed by the tool): Chef_Female_01, Police_Male_01, Male_Adult_04, 10, 12, 14, 20, Male_Child_02, Business_Male_01, 07, Construction_Male_02, Delivery_Male_01, Female_Adult_04, 05, 06, 07, Female_Party_02, Business_Female_03, Medical_Female_01; their eyelids and jaw kept so they blink and speak. Motion: its idle, walk, sitting at a table, talking, nodding, head shake, laugh, shrug, thoughtful, look around and wave takes.
+- People and their motion (`data/sushi/cast.json`, from `node tools/sushi-cast.cjs`): Polyfork, https://polyfork.dev, its licence (use in games, no reselling the files). Who is who is in `src/sushi/cast.js`; the nurse is its diner waitress with her dress dyed white in the page.
 - The goldfish is Polyfork's koi (`data/sushi/koi.json`), gilded in the page.
 - The street's cars are THE MARKET's kit (`data/cars.json`, the racing-cars kit, CC0): its 1960s to 1980s models, repainted in the page.
 - The boombox's stations are real ones streamed live, each by its own public stream: WBGO 88.3 (Newark), WWOZ 90.7 (New Orleans), WQXR 105.9 (New York), and SomaFM's Seven Inch Soul and Underground 80s (somafm.com, listener-supported). Its cassette (when no station will play) is made in the page.

@@ -2,6 +2,7 @@
 import * as THREE from 'three';
 import { G, clamp, mergeStatic } from './ctx.js';
 import { buildAlley, FOG } from './alley.js';
+import { loadCorner } from './corner.js';
 import { buildCart, DRINKS } from './cart.js';
 import { buildFx } from './fx.js';
 import { buildGame } from './game.js';
@@ -72,7 +73,7 @@ const photos = T.loadPhotos();
 { const l = vrBtn.textContent; await loadAvatars((f) => { vrBtn.textContent = `Loading… ${Math.round(f * 100)}%`; }); vrBtn.textContent = l; }
 try { await PH.init(); } catch (e) { console.warn('physics engine unavailable, simple falling instead', e); }
 
-await photos;
+await photos; await loadCorner();   // the corner's points and pictures (corner.js)
 buildFx(scene);
 const city = buildAlley(scene, { rich: G.rich });
 const weather = buildWeather(scene, { lean });

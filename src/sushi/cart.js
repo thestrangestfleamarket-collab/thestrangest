@@ -140,7 +140,7 @@ export function buildCart(scene, city) {
   });
   // the sign and the lanterns: lit while the cart is open, brighter as the street darkens (steadily: nothing flickers)
   C.glow = () => { const e = G.set && G.set.easy ? 0.6 : 1, on = C.open, k = C.lampK || 0; C.signM.color.setScalar(on ? (0.95 + 0.75 * k) * e : 0.25); C.signHalo.material.opacity = on ? 0.45 * e * k : 0; lanternM.emissiveIntensity = on ? (0.6 + 1.8 * k) * e : 0.25;
-    C.lanternHalos.forEach((h) => (h.material.opacity = on ? 0.55 * e * k : 0.05 * k)); C.lanternLights.forEach((l) => (l.intensity = on ? 3.6 * k : 0)); };
+    C.lanternHalos.forEach((h) => (h.material.opacity = on ? 0.55 * e * k : 0.05 * k)); C.lanternLights.forEach((l) => (l.intensity = on ? 2.0 * k : 0)); };
   // the lamps' level, from the street (alley.js): 0 by day, 1 when lit
   C.lamps = (k) => { C.lampK = k; const e = G.set && G.set.easy ? 0.6 : 1, on = 0.45 + 0.55 * k; bulbM.color.setRGB(3.2, 2.5, 1.5).multiplyScalar((0.5 + 0.5 * k) * (0.5 + 0.5 * e)); for (const w of C.workLights) { if (w.l) w.l.intensity = (w.night ? k : on) * w.k; else w.h.material.opacity = (0.1 + 0.9 * k) * w.op * e; } C.glow(); };
 

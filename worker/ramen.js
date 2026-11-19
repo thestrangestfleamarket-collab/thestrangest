@@ -1,4 +1,4 @@
-// RAMEN ACROSS DAYS (src/sushi/progress.js): a login's run, kept in Home: the day reached, the savings, the stall's reputation, the dishes and upgrades it has, and what each regular remembers. The page writes it (POST /sushi/save) and reads it back (POST /sushi/load); it is cut to size here, never trusted for anything but that player's own game
+// RAMEN ACROSS DAYS (src/sushi/progress.js): a login's run, kept in Home: the day reached, the savings, the cart's reputation, the dishes and upgrades it has, and what each regular remembers. The page writes it (POST /sushi/save) and reads it back (POST /sushi/load); it is cut to size here, never trusted for anything but that player's own game
 const word = (s, n = 16) => String(s ?? "").replace(/[^a-z0-9_-]/gi, "").slice(0, n);
 const num = (v, lo, hi, d = lo) => Number.isFinite(+v) ? Math.min(hi, Math.max(lo, Math.round(+v * 100) / 100)) : d;
 const list = (a, n) => (Array.isArray(a) ? a : []).map(x => word(x)).filter(Boolean).slice(0, n);

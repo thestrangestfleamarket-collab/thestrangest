@@ -22,13 +22,16 @@ export function buildMenu(scene, cart, guide, talk, shadowLights, report) {
     ['OPEN / CLOSE CART', () => G.game.state.toUpperCase(), () => G.game.toggleOpen()],
     ['REPORT A BUG (X / A)', () => (report.busy ? 'RECORDING' : 'PICTURE + VOICE'), () => { m.toggle(false); setTimeout(() => report.press(), 400); }],
     ['LEAVE VR', () => '', () => G.renderer.xr.getSession()?.end()],
-    ...(G.guest ? [['LEAVE THE VILLAGE', () => 'TO THE MARKET', () => G.guestRole?.leave()]] : []),
+    ['RADIO', () => (G.audio.radioOn ? 'ON' : 'OFF'), () => G.audio.setRadio(!G.audio.radioOn)],
+    ['STATION', () => G.audio.label().toUpperCase(), () => { if (!G.audio.radioOn) G.audio.setRadio(true); else G.audio.tune(); }],
+    ['TELEVISION', () => (G.tv?.on ? 'CH ' + G.tv.ch.ch + ' ' + G.tv.ch.name : 'OFF'), () => (G.tv.on ? G.tv.next() : G.tv.power(true))],
+    ...(G.guest ? [['LEAVE THE BLOCK', () => 'TO THE MARKET', () => G.guestRole?.leave()]] : []),
   ];
   const rh = H / (rows.length + 1.4), far = new V3(0, -99, 0), tmp = new V3();
   rows.forEach((r, i) => { const local = new V3(W * 0.22, H / 2 - rh * (i + 1.75), 0.004); const b = { getPos: () => (m.open ? board.localToWorld(tmp.copy(local)).clone() : far), r: 0.028, name: r[0], press: () => { r[2](); G.audio.play('click'); draw(); } }; G.buttons.push(b); });
   function draw() {
     tex.redraw((g, w, h) => { g.fillStyle = '#14161c'; g.fillRect(0, 0, w, h); g.strokeStyle = '#ffb040'; g.lineWidth = 8; g.strokeRect(4, 4, w - 8, h - 8);
-      g.fillStyle = '#ffb040'; g.font = `bold 38px ${T.MONO}`; g.textAlign = 'left'; g.fillText("YATAI '86 — SETTINGS", 24, 50);
+      g.fillStyle = '#ffb040'; g.font = `bold 38px ${T.MONO}`; g.textAlign = 'left'; g.fillText('RAMEN — SETTINGS', 24, 50);
       const rp = h / (rows.length + 1.4);
       rows.forEach((r, i) => { const y = rp * (i + 1.75); g.fillStyle = '#e8e4d8'; g.font = `bold 30px ${T.JP}`; g.textAlign = 'left'; g.fillText(r[0], 26, y + 10);
         g.fillStyle = '#2a3a30'; g.fillRect(w * 0.56, y - rp * 0.36, w * 0.4, rp * 0.72); g.strokeStyle = '#40e080'; g.lineWidth = 3; g.strokeRect(w * 0.56, y - rp * 0.36, w * 0.4, rp * 0.72);

@@ -1,4 +1,4 @@
-// RAMEN across days (owner, 19 Nov 2026): the day number, the savings, the stall's reputation, the dishes unlocked, the upgrades owned and what each regular remembers; each day's takings target and the fee due at dawn; kept for a login by the website (POST /sushi/save, /sushi/load, worker/ramen.js), for anyone else as long as the page is open
+// RAMEN across days (owner, 19 Nov 2026): the day number, the savings, the cart's reputation, the dishes unlocked, the upgrades owned and what each regular remembers; each day's takings target and the fee due at dawn; kept for a login by the website (POST /sushi/save, /sushi/load, worker/ramen.js), for anyone else as long as the page is open
 import { G, clamp } from './ctx.js';
 import { RECIPES, DAYDISH } from './cart.js';
 import { mon } from './till.js';
@@ -27,7 +27,7 @@ export const UPGRADES = [
   { id: 'stool', cost: 40, mod: { seats: 3 } },
 ];
 const BASE = { baskets: 1, seats: 2, chop: 1, pot: 1, draw: 1, calm: 1, heat: 1, cool: 1 };
-// a dish after the first comes onto the menu when the stall's reputation reaches rep, or regulars have asked for it asks times (one new thing a day)
+// a dish after the first comes onto the menu when the cart's reputation reaches rep, or regulars have asked for it asks times (one new thing a day)
 export const NEED = [null, { rep: 54, asks: 2 }, { rep: 60, asks: 3 }, { rep: 68, asks: 4 }];
 export const EXTRAS = { rep: 64, day: 5 };   // special requests (firm noodles, extra toppings, one left out)
 const U = RECIPES[DAYDISH[0]].price;   // every amount is counted in bowls of the first dish, so the prices can change under it
@@ -43,7 +43,7 @@ export function buildProgress(params) {
   const prog = { P: fresh(), saved: false, loaded: false, result: null, hooks: [] };
   G.prog = prog; G.money = { fmt: mon };   // (every new system writes an amount through G.money.fmt)
   const day = { menu: [], mods: false, drinks: false, night: false }, night = { menu: [], mods: false, drinks: true, night: true };
-  // the stall as it stands today: the upgrades into G.mods, the menus for the day and the night
+  // the cart as it stands today: the upgrades into G.mods, the menus for the day and the night
   prog.apply = () => { const P = prog.P; Object.assign(G.mods, BASE); for (const u of UPGRADES) if (P.ups.includes(u.id)) Object.assign(G.mods, u.mod);
     day.menu = DAYDISH.filter((k) => P.recipes.includes(k)); day.mods = !!P.extras; day.drinks = P.day >= 2;
     const nd = Object.keys(RECIPES).filter((k) => RECIPES[k].night); night.menu = [...new Set([...nd, day.menu[0], day.menu[day.menu.length - 1]])];
@@ -66,7 +66,7 @@ export function buildProgress(params) {
     for (let i = 1; i < DAYDISH.length && !R.dish; i++) { const k = DAYDISH[i], n = NEED[i] || NEED[NEED.length - 1]; if (!P.recipes.includes(k) && (P.rep >= n.rep || (P.asks[k] | 0) >= n.asks)) { P.recipes.push(k); R.dish = k; } }
     if (!R.dish && !P.extras && (P.rep >= EXTRAS.rep || P.day >= EXTRAS.day)) R.extras = P.extras = true;
     P.day++; if (R.out) prog.P = fresh(); prog.result = R; prog.saving = prog.save(); return R; };
-  // the next morning (or the first again): the page as it was before the first bowl, the stall as it now stands
+  // the next morning (or the first again): the page as it was before the first bowl, the cart as it now stands
   prog.next = () => { prog.result = null; G.ended = false; prog.apply(); G.clock.reset(); };
   prog.over = () => { const easy = prog.P.easy; prog.P = fresh(); prog.P.easy = easy; prog.save(); prog.next(); };
   // what the website keeps (worker/ramen.js cuts it to size); a page nobody is logged in on keeps it only while it is open
@@ -77,7 +77,7 @@ export function buildProgress(params) {
   const post = (path, body) => NET.tok().then(() => fetch(path, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) })).then((r) => (r.ok ? r.json() : null)).catch(() => null);
   const off = G.guest || params.has('prog') || !/^https?:$/.test(location.protocol); prog.loaded = off;
   prog.save = () => (off ? Promise.resolve(false) : post('/sushi/save', prog.P).then((j) => (prog.saved = !!(j && j.ok))));
-  prog.load = () => (off ? Promise.resolve(false) : post('/sushi/load', {}).then((j) => { prog.loaded = true; if (!j) return false; prog.saved = true; const P = tidy(j.run); if (P && !prog.result) { prog.P = P; if (G.clock.running) prog.apply(); else prog.next(); } return !!P; }));   // (a run that comes back after the stall has opened still counts: the day goes on as that run's)
+  prog.load = () => (off ? Promise.resolve(false) : post('/sushi/load', {}).then((j) => { prog.loaded = true; if (!j) return false; prog.saved = true; const P = tidy(j.run); if (P && !prog.result) { prog.P = P; if (G.clock.running) prog.apply(); else prog.next(); } return !!P; }));   // (a run that comes back after the cart has opened still counts: the day goes on as that run's)
   prog.take = (v) => { const P = tidy(v); if (P) { prog.P = P; prog.next(); } return !!P; };   // (a check sets a run by hand)
   if (params.get('prog') === 'all') Object.assign(prog.P, { day: 5, tut: true, rep: 70, recipes: [...DAYDISH], extras: true });
   prog.apply();

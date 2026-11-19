@@ -1,4 +1,4 @@
-// A GUEST IN THE ALLEY: a tenant of THE MARKET come down THE DARK ALLEY as themselves (146bg sends them here, /holo?g=sushi&as=guest; on its own /sushi?guest=1): on a screen they walk it in third or first person, in a headset as they stand; their own figure (its standing, walking and sitting baked in THE MARKET) is sent to everyone else in the alley, and they are drawn as one of the village's bodies in its colours and at its height (tenant.js); a stool to sit on and be served at, the bowl paid from their own money; the street's end, or LEAVE, back to THE MARKET at the alley's mouth
+// A GUEST IN THE ALLEY: a tenant of THE MARKET come down THE DARK ALLEY as themselves (146bg sends them here, /holo?g=sushi&as=guest; on its own /sushi?guest=1): on a screen they walk it in third or first person, in a headset as they stand; their own figure (its standing, walking and sitting baked in THE MARKET) is sent to everyone else in the alley, and they are drawn as one of the street's bodies in the colours they wear and at their height (tenant.js); a stool to sit on and be served at, the bowl paid from their own money; the street's end, or LEAVE, back to THE MARKET at the alley's mouth
 import * as THREE from 'three';
 import { G, BOUNDS, clamp } from './ctx.js';
 import { SEATS, RECIPES } from './cart.js';
@@ -9,7 +9,7 @@ import * as T from './tex.js';
 
 const SEATZ = -1.16, STOOLZ = -1.62, START = [1.4, -3.2], MOUTH = 25.2, WALK = 1.45;   // where a guest sits and stands to sit; where they come in; the street's end
 // what a guest walks round: the cart, the dumpsters and pallets, in the cart's own metres [x0, z0, x1, z1]
-const SOLID = [[-1.95, -1.4, 1.95, 2.35], [-12.5, -5.2, -10.5, -4.1], [16, 1.9, 20.3, 3.0], [7, 2.1, 8.2, 3.0]];
+const SOLID = [[-1.95, -1.4, 1.95, 2.35], [19.0, -5.2, 23.8, -3.8], [-19.6, -5.2, -18.8, -4.3], [-16.2, 1.8, -14.2, 3.4]];   // the cart, the subway stair's well, the pay phone, a stoop
 
 export function buildGuest(live) {
   const card = (() => { try { return JSON.parse(sessionStorage.getItem('holo') || 'null') || {}; } catch (e) { return {}; } })(), Y = card.yatai || {};
@@ -23,7 +23,7 @@ export function buildGuest(live) {
   // their own figure, posed from what THE MARKET baked (standing, a walk of eight steps, sitting), else a stand-in
   const fig = Y.fig && Y.fig.D ? (() => { try { return JSON.parse(Y.fig.D); } catch (e) { return null; } })() : null, clips = Y.clips || null;
   let av = null; try { if (fig) { av = tenantFigure(fig, 1, Y.fig.k); av.key = Y.fig.k; } } catch (e) { console.warn('the guest figure', e); av = null; }
-  const stand = av ? null : makePerson(7, 'townswoman'); if (stand) stand.root.traverse((o) => { o.userData.nopick = true; });
+  const stand = av ? null : makePerson(7, 'denim'); if (stand) stand.root.traverse((o) => { o.userData.nopick = true; });
   const body = av ? av.root : stand.root; (G.peopleRoot || G.scene).add(body); body.position.copy(me.at);
   const poseK = Y.fig && Y.fig.k ? String(Y.fig.k).slice(0, String(Y.fig.k).lastIndexOf(':')) : '';
   const frame = (L, f) => { const n = L.length, a = Math.floor(f) % n, b = (a + 1) % n, x = f - Math.floor(f), A = L[a], B = L[b], o = new Array(A.length); for (let i = 0; i < A.length; i++) o[i] = A[i] + (B[i] - A[i]) * x; return o; };
@@ -42,7 +42,7 @@ export function buildGuest(live) {
     if (me.ask && now - me.askT > 2000) { me.askT = now; live.send({ t: 'yt', d: me.ask }); } };   // (asked again till the cook answers: a word can be lost on a busy line)
 
   // a line on the screen (and before the eyes in a headset) for what happens at the cart; nobody's speech is written
-  const toast = document.createElement('div'); toast.style.cssText = 'position:fixed;left:50%;bottom:9%;transform:translateX(-50%);max-width:80vw;font:600 15px ui-monospace,monospace;color:#ffd9a0;background:rgba(10,8,12,.82);padding:8px 14px;border-radius:6px;pointer-events:none;z-index:6;display:none;text-align:center'; document.body.appendChild(toast);
+  const toast = document.createElement('div'); toast.style.cssText = 'position:fixed;left:50%;bottom:9%;transform:translateX(-50%);max-width:80vw;font:600 15px var(--ui);color:#ffd9a0;background:rgba(10,8,12,.82);padding:8px 14px;border-radius:6px;pointer-events:none;z-index:6;display:none;text-align:center'; document.body.appendChild(toast);
   const note = new THREE.Mesh(new THREE.PlaneGeometry(0.5, 0.09), new THREE.MeshBasicMaterial({ transparent: true, depthTest: false })); note.renderOrder = 9; note.visible = false; note.userData.nopick = true; note.position.set(0, -0.22, -0.8); G.camera.add(note);
   let toastT = 0; const say = (t) => { me.lastSaid = t; toast.textContent = t; toast.style.display = G.mode === 'desktop' ? 'block' : 'none'; toastT = 5; if (note.material.map) note.material.map.dispose(); note.material.map = T.labelTex([t.slice(0, 60), t.slice(60, 120)].filter(Boolean), { w: 1024, h: 180, fs: 44, bg: 'rgba(10,8,12,0.85)', fg: '#ffd9a0' }); note.material.needsUpdate = true; note.visible = G.mode === 'vr'; };
 

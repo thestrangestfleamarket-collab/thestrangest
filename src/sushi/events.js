@@ -1,19 +1,19 @@
-// the night's events (owner, 19 Nov 2026): two to four a night, chosen by the day and the stall's reputation, each needing something of the cook and ending well or badly (reputation, money, a regular's regard). One schema (EVENTS: who may come, what going well or badly is worth) and one runner; what each asks of the cook is in RUN
+// the night's events (owner, 19 Nov 2026): two to four a night, chosen by the day and the cart's reputation, each needing something of the cook and ending well or badly (reputation, money, a regular's regard). One schema (EVENTS: who may come, what going well or badly is worth) and one runner; what each asks of the cook is in RUN
 import { G, pick, rand } from './ctx.js';
 import { COP } from './block.js';
 import { RECIPES, DAYDISH, DRINKS } from './cart.js';
 
 // every word of this file a player hears or reads, and what the talking mind is told
 export const TEXT = {
-  drunk: { name: 'ONE TOO MANY', hint: (soft, strong) => `They have had enough: give them ${soft}, not ${strong}`, line: (strong) => `A bowl! And ${strong}. The strong stuff. Keep it coming.`, dry: (soft) => `Loud and unsteady: a hot bowl and ${soft}, before they make a scene`, dryLine: (soft) => `A bowl! And ${soft}! Quick, quick, I am starving.`, who: 'You have had far too much to drink tonight and are loud and cheerful about it.', well: 'Sobered up, fed and grateful', badly: 'A scene at the counter' },
-  lost: { name: 'A LOST TRAVELLER', hint: 'Tell them the way (speak, T to type, or wave them on) and serve the bowl', line: 'I have lost my way. Where can a stranger sleep tonight? And the cheapest bowl you have.', who: 'You are a traveller, lost and tired, who does not know this street. You asked the cook the way to somewhere to sleep.', well: 'Fed and shown the way', badly: 'Went off still lost' },
-  crowd: { name: 'A CROWD COMING THROUGH', hint: (n) => `A crowd is coming: feed ${n} of them before they move on`, soon: 'A CROWD IS COMING DOWN THE STREET', line: 'Quick as you can, please. We are moving on.', who: 'You are passing through with a crowd and cannot stay long.', well: 'The crowd fed: word gets round', badly: 'The crowd moved on hungry' },
-  cop: { name: 'THE ROUNDS', hint: (s) => `The rounds: clear every dirty bowl and wipe the counter (${s} s)`, line: 'Evening rounds. Let me see that you keep a clean stall.', prompt: 'You are on your evening rounds and have stopped at the ramen stall to see that it is kept clean. Tell the cook so, in a sentence.', well: 'A clean stall: a nod and on they go', badly: (fine) => `A dirty counter: fined ${fine}` },
+  drunk: { name: 'ONE TOO MANY', hint: (soft, strong) => `They have had enough: give them ${soft}, not ${strong}`, line: (strong) => `A bowl! And a ${strong}. Keep them coming.`, dry: (soft) => `Loud and unsteady: a hot bowl and a ${soft}, before they make a scene`, dryLine: (soft) => `A bowl! And a ${soft}! Come on, come on, I am starving here.`, who: 'You have had far too much to drink tonight and are loud and cheerful about it.', well: 'Sobered up, fed and grateful', badly: 'A scene at the counter' },
+  lost: { name: 'LOST IN THE CITY', hint: 'Tell them the way (speak, T to type, or wave them on) and serve the bowl', line: 'I got off at the wrong stop. Which way is the F train uptown? And the cheapest bowl you have.', who: 'You are from out of town, lost and tired, and do not know this neighborhood. You asked the cook the way back to the F train uptown.', well: 'Fed and shown the way', badly: 'Went off still lost' },
+  crowd: { name: 'A CROWD COMING THROUGH', hint: (n) => `A crowd is coming: feed ${n} of them before they move on`, soon: 'A CROWD IS COMING DOWN THE STREET', line: 'Quick as you can, pal. The show just let out and we have a train to catch.', who: 'You are with a crowd that just came out of a show down the block and cannot stay long.', well: 'The crowd fed: word gets round', badly: 'The crowd moved on hungry' },
+  cop: { name: 'THE ROUNDS', hint: (s) => `The rounds: clear every dirty bowl and wipe the counter (${s} s)`, line: 'Evening, chief. Health code. Let me see you keep a clean cart.', prompt: 'You are the patrolman on this beat, on your evening rounds, and have stopped at the ramen cart to see that it is kept clean. Tell the cook so, in a sentence.', well: 'A clean cart: a nod and on they go', badly: (fine) => `A dirty counter: fined ${fine}` },
   special: { name: 'OFF THE MENU', hint: (dish) => `Not on tonight's board: ${dish}, made right, pays double`, line: (dish) => `It is not on your board tonight, I know. Would you make me ${dish}? I will pay double.`, who: 'You asked the cook for a dish that is not on tonight\'s menu, and offered to pay double for it.', well: 'Made right: paid double', badly: 'Not what they asked for' },
   short: { name: 'SHORT OF MONEY', hint: (n) => `They can only pay ${n}: serve them anyway, or let them go`, line: (n) => `I have only ${n} on me. Could I still get a bowl?`, who: 'You are hungry and short of money: you told the cook exactly how little you have.', well: 'Fed for what they had: people saw', badly: 'Turned away hungry: people saw' },
   tag: 'TONIGHT',
 };
-// who may come (from which day, at what reputation) and what it is worth: rep to the stall's reputation, tip a bonus and fine a loss in bowls of the first dish
+// who may come (from which day, at what reputation) and what it is worth: rep to the cart's reputation, tip a bonus and fine a loss in bowls of the first dish
 export const EVENTS = [
   { id: 'drunk', day: 1, rep: 0, well: { rep: 1, tip: 0.5 }, badly: { rep: -1 } },
   { id: 'lost', day: 1, rep: 0, well: { rep: 1, tip: 0.5 }, badly: { rep: 0 } },
@@ -26,7 +26,7 @@ export const NIGHT = { first: 2, most: 4, from: 0.06, span: 0.8, cop: 35, crowd:
 
 export function buildEvents() {
   const E = { list: [], cur: [], log: [], rep: 0 }, K = G.clock, U = RECIPES[DAYDISH[0]].price; G.events = E;
-  const drinks = Object.keys(DRINKS).sort((a, b) => DRINKS[b] - DRINKS[a]), strong = drinks[0], soft = drinks[drinks.length - 1], boozy = DRINKS[strong] > DRINKS[soft];   // (a stall that sells nothing strong: the one who has had too many just has to be fed fast)
+  const drinks = Object.keys(DRINKS).sort((a, b) => DRINKS[b] - DRINKS[a]), strong = drinks[0], soft = drinks[drinks.length - 1], boozy = DRINKS[strong] > DRINKS[soft];   // (a cart that sells nothing strong: the one who has had too many just has to be fed fast)
   const dish = (k) => { const r = RECIPES[k]; return r.name[0] + r.name.slice(1).toLowerCase(); }, fmt = (n) => G.money.fmt(n);
   const say = (c, T, line) => G.talk?.event(c, 'told', { as: 'ev', prompt: T.who + ' Say so to the cook in a sentence.', lines: [line] });
   const seat = (ev, o) => { const c = G.game.special({ ...o, ev }); if (c) { ev.c = c; c.tag = TEXT[ev.id].name; } return c; };

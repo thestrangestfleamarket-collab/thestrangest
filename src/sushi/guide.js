@@ -1,11 +1,11 @@
-// GUIDE MODE: day one is a short first service it leads (light up, open, one bowl, payment and change), then it turns itself off; off, it says only what applies now (a customer about to walk, a cold brazier, money on the ledge, a rush coming, tonight's event) and nothing otherwise; while it is on, a card says the next thing to do for the customer who has waited longest and an arrow hangs over the thing to touch, in the right order, the whole night; under it, always, what is left of tonight's stock
+// GUIDE MODE: day one is a short first service it leads (light up, open, one bowl, payment and change), then it turns itself off; off, it says only what applies now (a customer about to walk, a cold burner, money on the ledge, a rush coming, tonight's event) and nothing otherwise; while it is on, a card says the next thing to do for the customer who has waited longest and an arrow hangs over the thing to touch, in the right order, the whole night; under it, always, what is left of tonight's stock
 import * as THREE from 'three';
 import { G, V3 } from './ctx.js';
 import * as T from './tex.js';
 import { TOPPINGS, TARE, BROTH } from './items.js';
 import { SEATS, RECIPES } from './cart.js';
 
-export const TEXT = { first: 'FIRST DAY', lessons: ['LIGHT UP', 'OPEN', 'ONE BOWL', 'PAYMENT AND CHANGE'], done: ['That is the job.', 'The green button brings the guide back'], walk: (n) => `Seat ${n} is about to walk`, cold: 'A brazier has gone out', left: 'On your left', collect: 'Collect the money on the ledge', box: 'Into the box', sold: 'Sold out', close: 'Take in the sign to close' };
+export const TEXT = { first: 'FIRST DAY', lessons: ['LIGHT UP', 'OPEN', 'ONE BOWL', 'PAYMENT AND CHANGE'], done: ['That is the job.', 'The green button brings the guide back'], walk: (n) => `Seat ${n} is about to walk`, cold: 'A burner is off', left: 'On your left', collect: 'Collect the money on the ledge', box: 'Into the register', sold: 'Sold out', close: 'Flip the switch to close' };
 
 export function buildGuide(scene, C) {
   const g = { on: !G.prog.P.tut, touched: false }, nop = (o) => { o.userData.nopick = true; return o; };
@@ -23,18 +23,18 @@ export function buildGuide(scene, C) {
 
   function step() {
     const game = G.game; if (G.ended) return null;
-    const need = game.state === 'prep' ? null : game.state === 'open' ? new Set(game.cfg().menu.map((k) => RECIPES[k].broth)) : new Set(), off = C.pots.filter((p) => !p.on && (!need || (p.type ? need.has(p.type) : need.size)));   // a cold brazier matters before opening and for what tonight's menu needs, not once the stall is closing
+    const need = game.state === 'prep' ? null : game.state === 'open' ? new Set(game.cfg().menu.map((k) => RECIPES[k].broth)) : new Set(), off = C.pots.filter((p) => !p.on && (!need || (p.type ? need.has(p.type) : need.size)));   // a cold burner matters before opening and for what tonight's menu needs, not once the cart is closing
     const shut = off.filter((p) => !p.vent()), moved = off.find((p) => p.vent() && !p.item.held);
-    if (shut.length) return ['Open a brazier vent', `${shut.length} to wake — the braziers, on your left`, new V3(-0.67, 0.78, shut[0].z)];
-    if (moved) return ['Set the pot back on its brazier', 'Upright, on the left', new V3(moved.x, 1.0, moved.z)];
+    if (shut.length) return ['Turn a burner knob', `${shut.length} to light — the stove, on your left`, new V3(-0.67, 0.78, shut[0].z)];
+    if (moved) return ['Set the pot back on its burner', 'Upright, on the left', new V3(moved.x, 1.0, moved.z)];
     if (game.state === 'closed' && !game.serving()) return null;
-    if (game.state === 'prep' || game.state === 'closed') return ['Hang the noren: open', 'The peg on the right post, under the slate', G.buttons.find((b) => b.name.startsWith('OPEN')).getPos().clone().add(new V3(0, 0.08, 0))];
+    if (game.state === 'prep' || game.state === 'closed') return ['Flip the OPEN switch', 'Right post, under the clock', G.buttons.find((b) => b.name.startsWith('OPEN')).getPos().clone().add(new V3(0, 0.08, 0))];
     const money = G.till && G.till.step(held); if (money) return money;
     const c = game.customers.filter((x) => x.state === 'waiting').sort((a, b) => a.patience / a.maxPatience - b.patience / b.maxPatience)[0];
     if (c) { const out = game.outFor(c); if (out) return [`Tell seat ${c.seat + 1}: we're out of ${out.dish ? c.order.recipe.name.toLowerCase() : [...out.tops.map((t) => TOPPINGS[t].label.toLowerCase()), out.drink].filter(Boolean).join(' and ')}`, 'Say it to them (T to type)', new V3(SEATS[c.seat], 1.62, -1.15)]; }
     if (!c) {
       const tip = G.till && G.till.loose()[0]; if (tip) return ['Collect the money on the ledge', 'Into the register', tip.obj.position.clone().setY(1.08)];
-      if (game.soldOut && game.state === 'open') return ['Sold out for tonight', 'Take in the noren to close', G.buttons.find((b) => b.name.startsWith('OPEN')).getPos().clone().add(new V3(0, 0.08, 0))];
+      if (game.soldOut && game.state === 'open') return ['Sold out for tonight', 'Flip the OPEN switch to close', G.buttons.find((b) => b.name.startsWith('OPEN')).getPos().clone().add(new V3(0, 0.08, 0))];
       const di = game.seats.findIndex((s) => s.dirty);
       if (di >= 0) { const b = game.seats[di].dirty; return b.held ? ['Drop it in the bus tub', 'Right wing, at the back', tub] : ['Clear the dirty bowl', `Seat ${di + 1}`, b.obj.position.clone().setY(1.14)]; }
       return [game.state === 'closing' ? 'Last orders are out' : 'Wait for a customer', game.customers.length ? 'Someone is on their way' : 'A quiet minute', null];
@@ -59,7 +59,7 @@ export function buildGuide(scene, C) {
       const B = C.board; if (B.item && B.item.raw === t) return C.knife.held ? [`Chop the ${L}`, 'Bring the blade down on it', new V3(B.x - 0.05, 1.14, B.z)] : ['Pick up the knife', 'Right of the board', C.knife.obj.position.clone().setY(1.02)];
       return held((x) => x.raw === t) ? ['Set it on the cutting board', '', new V3(B.x, 1.08, B.z)] : [`Out of ${L}: take one to slice`, 'Trays on the right wing', new V3(0.925, 1.08, -0.02 + ri * 0.165)];
     }
-    if (o.drink && !c.gotDrink) return held((x) => x.drink === o.drink) ? [`Set the ${o.drink} by seat ${c.seat + 1}`, '', C.seatSpots[c.seat].clone().setY(1.2)] : [`Take a ${o.drink} from the water tub`, 'Right wing, at the back', new V3(0.935, 1.28, 0.68 + (o.drink === 'sake' ? -0.055 : 0.055))];
+    if (o.drink && !c.gotDrink) return held((x) => x.drink === o.drink) ? [`Set the ${o.drink === 'tea' ? 'iced tea' : o.drink} by seat ${c.seat + 1}`, '', C.seatSpots[c.seat].clone().setY(1.2)] : [`Take ${o.drink === 'tea' ? 'an iced tea' : 'a soda'} from the cooler`, 'Right wing, at the back', new V3(0.935, 1.28, 0.68 + (o.drink === 'soda' ? -0.055 : 0.055))];
     return bowl.held ? [`Serve seat ${c.seat + 1}`, 'Set it on their placemat', C.seatSpots[c.seat].clone().setY(1.2)] : ['Pick up the bowl and serve it', `Seat ${c.seat + 1}`, bp];
   }
 
@@ -81,7 +81,7 @@ export function buildGuide(scene, C) {
   const stockRows = () => { const a = C.avail(), m = G.game.cfg(), tares = [...new Set(m.menu.map((k) => RECIPES[k].tare))], broths = [...new Set(m.menu.map((k) => RECIPES[k].broth))];
     return [[['NOODLES', a.noodles], ...broths.map((b) => [BROTH[b].label, a.broth[b]]), ...tares.map((k) => [TARE[k].label + ' TARE', a.tare[k]])],
       Object.keys(TOPPINGS).filter((t) => m.menu.some((k) => RECIPES[k].tops[t])).map((t) => [TOPPINGS[t].label, a.tops[t]]),
-      m.drinks ? [['SAKE', a.drinks.sake], ['TEA', a.drinks.tea]] : []].filter((r) => r.length); };
+      m.drinks ? [['SODA', a.drinks.soda], ['ICED TEA', a.drinks.tea]] : []].filter((r) => r.length); };
   g.update = (dt, t) => {
     acc += dt; if (acc > 0.2) { acc = 0; try { les = g.lesson(); cur = G.ended ? null : g.on ? step() : nudge(); } catch (e) { cur = null; } try { stock = stockRows(); } catch (e) { stock = []; } }
     const key = (cur ? cur[0] + '|' + cur[1] : '') + les + JSON.stringify(stock);

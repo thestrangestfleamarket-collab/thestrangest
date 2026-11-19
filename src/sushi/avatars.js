@@ -1,4 +1,4 @@
-// the people: Rocketbox's bodies dressed for the village (rb.js, data/sushi/rb/): walking, standing, sitting at the counter, eating
+// the people: Rocketbox's bodies as downtown New Yorkers of 1985 (rb.js, data/sushi/rb/): walking, standing, sitting at the counter, eating
 import * as THREE from 'three';
 import { makePerson as makeFallback } from './people.js';
 import { mat } from './ctx.js';

@@ -1,8 +1,8 @@
-// the shop between days (owner, 19 Nov 2026): what the stall can buy from its savings before the next morning, each thing changing how the stall works (progress.js's UPGRADES); a list with BUY on a screen (dawn.js's card), rows to poke on the headset's board
+// the shop between days (owner, 19 Nov 2026): what the cart can buy from its savings before the next morning, each thing changing how the cart works (progress.js's UPGRADES); a list with BUY on a screen (dawn.js's card), rows to poke on the headset's board
 import { G } from './ctx.js';
 import { UPGRADES, TEXT as PT } from './progress.js';
 
-export const TEXT = { title: 'FOR THE STALL', buy: 'BUY', owned: 'OWNED', savings: 'Savings', poor: 'NOT YET' };
+export const TEXT = { title: 'FOR THE CART', buy: 'BUY', owned: 'OWNED', savings: 'Savings', poor: 'NOT YET' };
 
 export function buildShop() {
   const S = {}; G.shop = S;

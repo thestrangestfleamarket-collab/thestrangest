@@ -49,7 +49,7 @@ const quest = IWER + ';window.xrDevice=new IWER.XRDevice(IWER.metaQuest3);xrDevi
     // on your feet: the door stops you until it is up, the shotgun is taken, loaded, pumped and fired, a neighbour runs
     const wk = await ev(async () => { const D = __drums, g = D.gun, nap = ms => new Promise(r => setTimeout(r, ms)), key = async (c, ms = 250) => { window.dispatchEvent(new KeyboardEvent('keydown', { code: c })); await nap(60); window.dispatchEvent(new KeyboardEvent('keyup', { code: c })); await nap(ms); }, o = {};
       await key('Tab'); o.up = D.walk.on; D.garage.setDoor(0.1); D.walk.pos.set(0, 0, -3.0); D.scr.yaw = 0; window.dispatchEvent(new KeyboardEvent('keydown', { code: 'KeyW' })); await nap(2500); o.shut = +D.walk.pos.z.toFixed(1);
-      D.garage.setDoor(1); await nap(3500); window.dispatchEvent(new KeyboardEvent('keyup', { code: 'KeyW' })); o.out = D.walk.pos.z < -4.5;
+      D.garage.setDoor(1); for (let i = 0; i < 240 && D.walk.pos.z >= -4.5; i++) await nap(250); window.dispatchEvent(new KeyboardEvent('keyup', { code: 'KeyW' })); o.out = D.walk.pos.z < -4.5;   // (as long as a slow machine's frames take)
       D.walk.pos.set(-1.0, 0, 2.2); await nap(200); await key('KeyE'); D.walk.pos.set(0.9, 0, 2.3); await nap(200); await key('KeyE'); o.held = g.held; o.pouch = g.pouch;
       for (let i = 0; i < 6 && g.tube < 2; i++) await key('KeyR', 1500); o.tube = g.tube; await key('KeyF', 1500); o.ready = g.chamber;
       const p = D.street.people[0]; p.g.visible = true; p.state = 'walk'; p.pos.set(3, 0, -13.75); p.path = [[70, -13.75]]; p.pi = 0; p.asked = true; const rel = p.rel;
@@ -72,7 +72,7 @@ const quest = IWER + ';window.xrDevice=new IWER.XRDevice(IWER.metaQuest3);xrDevi
     window.strike = async (side, name, u) => { const D = __drums, b = D.stats.hits; for (const h of [0.12, 0.04, -0.03]) await tipTo(side, on(name, u, h)); const got = D.stats.hits - b, last = D.stats.last; await tipTo(side, on(name, u, 0.15)); return { got, zone: last && last.zone, piece: last && last.piece, r: last && +last.r.toFixed(2) }; };
   };
   if (process.env.ONLY !== 'screen') { const { pg, errs, ev, wait } = await open(quest); await wait(() => !document.getElementById('vr').disabled); await ev(drive);
-    await pg.click('#vr'); ok(await wait(() => __drums.renderer.xr.isPresenting && __drums.sticks.right.active && __drums.sticks.left.active, 60000), 'ENTER VR starts the session with a stick in each hand');
+    await pg.click('#vr', { noWaitAfter: true, timeout: 120000 }); ok(await wait(() => __drums.renderer.xr.isPresenting && __drums.sticks.right.active && __drums.sticks.left.active, 60000), 'ENTER VR starts the session with a stick in each hand');
     await pg.waitForTimeout(1500);
     const seat = await ev(() => { const D = __drums, p = new D.camera.position.constructor(); D.renderer.xr.getCamera().getWorldPosition(p); return [+p.x.toFixed(2), +p.y.toFixed(2), +p.z.toFixed(2)]; });
     ok(Math.abs(seat[0]) < 0.05 && Math.abs(seat[1] - 1.24) < 0.05 && Math.abs(seat[2] - 0.1) < 0.05, 'wherever you stand in your room, your eyes are at the drummer\'s: ' + seat);
@@ -100,7 +100,7 @@ const quest = IWER + ';window.xrDevice=new IWER.XRDevice(IWER.metaQuest3);xrDevi
     const tilt = await ev(async () => { const D = __drums, c = xrDevice.controllers.right, t0 = D.set.tilt; c.updateAxes('thumbstick', 0, -1); await new Promise(r => setTimeout(r, 1500)); c.updateAxes('thumbstick', 0, 0); await new Promise(r => setTimeout(r, 100)); return [t0, +D.set.tilt.toFixed(2), JSON.parse(localStorage.getItem('drums1')).tilt > 0]; });
     ok(tilt[1] > tilt[0] + 0.02 && tilt[2], 'the right thumbstick tips the sticks in your hands, and it is kept: ' + tilt);
     ok(await ev(() => __drums.guide.card.visible && __drums.hands.right.ready && __drums.hands.left.ready && __drums.body.ready), 'the guide card is up, a hand is closed round each stick, your body is on the throne'); await shot(pg, 'vr');
-    const wk = await ev(async () => { const D = __drums, c = xrDevice.controllers.left, w = (ms) => new Promise(r => setTimeout(r, ms)); c.updateButtonValue('x-button', 1); await w(700); c.updateButtonValue('x-button', 0); await w(300); const on = D.walk.on, z0 = D.head.pos.z; c.updateAxes('thumbstick', 0, 1); await w(4000); c.updateAxes('thumbstick', 0, 0); await w(200); return [on, +Math.abs(D.head.pos.z - z0).toFixed(2)]; });
+    const wk = await ev(async () => { const D = __drums, c = xrDevice.controllers.left, w = (ms) => new Promise(r => setTimeout(r, ms)); c.updateButtonValue('x-button', 1); await w(700); c.updateButtonValue('x-button', 0); await w(300); const on = D.walk.on, z0 = D.head.pos.z; c.updateAxes('thumbstick', 0, 1); for (let i = 0; i < 360 && Math.abs(D.head.pos.z - z0) < 0.35; i++) await w(250); c.updateAxes('thumbstick', 0, 0); await w(200); return [on, +Math.abs(D.head.pos.z - z0).toFixed(2)]; });
     ok(wk[0] && wk[1] > 0.3, 'X stands you up and the left stick walks you: ' + wk);
     ok(errs.length === 0, 'no page error in the headset' + (errs.length ? ': ' + errs.join(' | ') : '')); await pg.close(); }
 

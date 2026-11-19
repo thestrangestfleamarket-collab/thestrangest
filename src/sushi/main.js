@@ -1,4 +1,4 @@
-// RAMEN, a village ramen stall in the 1860s at /ramen (a headset game), one day and one night: the renderer in THE MARKET's look below full resolution, the resolution governed by the frame time (its sky, air, weather and shadows: sky.js, air.js, weather.js), the loop, the way in
+// RAMEN, a ramen cart on a downtown New York pavement in 1985 at /ramen (a headset game), one day and one night: the renderer in THE MARKET's look below full resolution, the resolution governed by the frame time (its sky, air, weather and shadows: sky.js, air.js, weather.js), the loop, the way in
 import * as THREE from 'three';
 import { G, clamp, mergeStatic } from './ctx.js';
 import { buildAlley, FOG } from './alley.js';
@@ -21,6 +21,7 @@ import { buildGuide } from './guide.js';
 import { buildMenu } from './menu.js';
 import { buildReport } from './report.js';
 import { buildTank } from './tank.js';
+import { buildTV } from './tv.js';
 import { buildLive } from './live.js';
 import { buildCook } from './cook.js';
 import { buildShare } from './share.js';
@@ -41,7 +42,7 @@ const params = new URLSearchParams(location.search);
 G.guest = params.has('guest');   // a tenant of THE MARKET walking the alley as themselves (guest.js), not the cook
 const canvas = document.getElementById('c');
 installAir();   // (before any material is drawn)
-// a headset (or ?low) takes the lean path: coarser shadows, no brazier shadow, fewer raindrops; a screen the richer one (owner, 17 Nov 2026: THE MARKET's look, full resolution, holding the headset's frame rate)
+// a headset (or ?low) takes the lean path: coarser shadows, fewer raindrops; a screen the richer one (owner, 17 Nov 2026: THE MARKET's look, full resolution, holding the headset's frame rate)
 const lean = params.has('low') || !!(await (navigator.xr?.isSessionSupported?.('immersive-vr') || Promise.resolve(false)).catch(() => false)); G.rich = !lean;
 const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, powerPreference: 'high-performance' });
 // drawn below the screen's resolution and scaled up smoothly by the browser (owner, 17 Nov 2026: "lower quality of render"); G.rscale moves with the frame time (govern)
@@ -87,8 +88,8 @@ const grit = buildGrit(scene, city, cart);
 const guide = buildGuide(scene, cart);
 T.metreUV(cart.group);
 G.baked = mergeStatic(cart.group) + mergeStatic(city.group);
-for (const g of [cart.group, city.group]) g.traverse((o) => { if (o.isMesh && !o.userData.dyn && !o.userData.item && o.castShadow) { if (!o.geometry.boundingSphere) o.geometry.computeBoundingSphere(); if (o.geometry.boundingSphere.radius * Math.max(o.scale.x, o.scale.y, o.scale.z) > 0.12) o.layers.enable(2); } });   // the still village and stall cast the sun's shadows (not their small things)
-const tank = buildTank(scene), live = buildLive(), cook = buildCook(), story = buildStory(scene);
+for (const g of [cart.group, city.group]) g.traverse((o) => { if (o.isMesh && !o.userData.dyn && !o.userData.item && o.castShadow) { if (!o.geometry.boundingSphere) o.geometry.computeBoundingSphere(); if (o.geometry.boundingSphere.radius * Math.max(o.scale.x, o.scale.y, o.scale.z) > 0.12) o.layers.enable(2); } });   // the still street and cart cast the sun's shadows (not their small things)
+const tank = buildTank(scene), tv = buildTV(scene, city.shops), live = buildLive(), cook = buildCook(), story = buildStory(scene);
 if (G.guest) G.buttons.length = 0;   // (the cart's knobs, switch and boards are the cook's)
 const share = buildShare(live), guest = G.guest ? buildGuest(live) : null;
 const dawn = buildDawn(scene);   // the run's end at dawn: its card
@@ -97,7 +98,7 @@ function render() { renderer.render(scene, camera); }   // straight to the scree
 addEventListener('resize', () => { if (renderer.xr.isPresenting) return; camera.aspect = innerWidth / innerHeight; camera.updateProjectionMatrix(); renderer.setPixelRatio(ratio()); renderer.setSize(innerWidth, innerHeight); });
 
 // ---------- the way in ----------
-function begin() { G.audio.init(); if (G.guest) { if (guide.on) guide.set(false); } else talk.listen(true); }
+function begin() { G.audio.init(); if (!G.audio.radioOn) G.audio.setRadio(true); if (G.guest) { if (guide.on) guide.set(false); } else talk.listen(true); }
 function startDesktop() { begin(); G.mode = 'desktop'; menu.style.display = 'none'; hud.style.display = 'block'; rig.position.set(0, 0, 0.3); if (guest) guest.start(); }
 deskBtn.onclick = startDesktop;
 async function startVR() {
@@ -126,7 +127,7 @@ function tick(dt) {
   game.update(dt, G.t); rush.update(); regs.update(dt); events.update(dt);
   city.update(dt, G.t);
   life.update(dt, G.t);
-  talk.update(dt); tank.update(dt); story.update(dt); live.update(dt); share.update(dt); if (!guest) cook.update(dt);
+  talk.update(dt); tv.update(dt); tank.update(dt); story.update(dt); live.update(dt); share.update(dt); if (!guest) cook.update(dt);
   grit.update(dt, G.t);
   guide.update(dt, G.t); gameMenu.update(dt); report.update(dt);
   G.fx.update(dt);
@@ -136,10 +137,10 @@ let last = performance.now(), frames = 0, statT = 0;
 // if frames still run long, shadows go (the costliest thing left)
 let emaMs = 14, slowT = 0; G.quality = params.has('low') ? 1 : 0;
 const shadowLights = []; scene.traverse((o) => { if (o.isLight && o.castShadow) shadowLights.push(o); });
-const spotSh = shadowLights.filter((l) => l.isSpotLight); spotSh.forEach((l) => { l.shadow.autoUpdate = false; l.shadow.needsUpdate = true; });   // the stall's lamp's shadows: only while it burns, laid every other frame
+const spotSh = shadowLights.filter((l) => l.isSpotLight); spotSh.forEach((l) => { l.shadow.autoUpdate = false; l.shadow.needsUpdate = true; });   // the cart's lamp's shadows: only while it burns, laid every other frame
 const CART = new THREE.Vector3(0, 1, 0), _ce = new THREE.Vector3();
 function lean2() { for (const l of spotSh) if (l.castShadow && l.intensity > 0.05 && !(frames & 1)) l.shadow.needsUpdate = true;
-  G.itemRoot.visible = camera.getWorldPosition(_ce).distanceTo(CART) < 20; }   // the stall's small loose things are not drawn from far up the street (lost in the haze there)
+  G.itemRoot.visible = camera.getWorldPosition(_ce).distanceTo(CART) < 20; }   // the cart's small loose things are not drawn from far up the street (lost in the haze there)
 function applyQuality() { shadowLights.forEach((l) => (l.castShadow = G.quality < 1)); if (G.set) G.set.shadows = G.quality < 1; }
 // the resolution follows the frame time: down a step when frames run long for a moment, up a step after a while with room to spare (steps, never a pulse)
 let rsT = 0; G.vrScale = 1;
@@ -153,9 +154,22 @@ function govern(dt) { emaMs += (dt * 1000 - emaMs) * 0.05; G.emaMs = emaMs; gove
 if (G.quality) applyQuality();
 const report = buildReport(scene, camera, renderer, talk);
 const gameMenu = buildMenu(scene, cart, guide, talk, shadowLights, report);
-// on a screen: whether the cart is linked to THE MARKET, and who is in its alley (the settings board says the same in the headset)
-{ const tag = document.createElement('div'); tag.style.cssText = 'position:fixed;top:10px;right:12px;font:600 13px ui-monospace,monospace;color:#ffd9a0;background:rgba(10,10,14,.7);padding:6px 10px;border-radius:6px;pointer-events:none;z-index:5'; document.body.appendChild(tag);
-  setInterval(() => { const s = live.status(); tag.textContent = 'THE MARKET: ' + s; tag.style.display = G.mode === 'desktop' ? 'block' : 'none'; }, 1000); }
+// on a screen: whether the cart is linked to THE MARKET, and who is in its alley (the settings board says the same in the headset): shown for a few seconds when it changes, then put away (a guest's stays)
+{ const tag = document.createElement('div'); tag.style.cssText = 'position:fixed;top:10px;right:12px;font:600 13px var(--ui);color:#ffd9a0;background:rgba(10,10,14,.7);padding:6px 10px;border-radius:6px;pointer-events:none;z-index:5;transition:opacity 1.2s'; document.body.appendChild(tag); let was = '', until = 0;
+  setInterval(() => { const s = live.status(), now = performance.now(); if (s !== was) { was = s; until = now + (/CONNECTING|…/.test(s) ? 7000 : 5000); } tag.textContent = 'THE MARKET: ' + s; tag.style.display = G.mode === 'desktop' ? 'block' : 'none'; tag.style.opacity = G.guest || now < until ? 1 : 0; }, 1000); }
+// the strip of keys fades after the first minute; H shows it again for a while
+{ const keys = $('keys'); keys.style.transition = 'opacity 2s'; let show = 60; setInterval(() => { if (G.mode !== 'desktop') return; show -= 1; keys.style.opacity = show > 0 ? 1 : 0; }, 1000); addEventListener('keydown', (e) => { if (e.code === 'KeyH' && e.target.tagName !== 'INPUT') show = show > 0 ? 0 : 30; }); G.keysShown = () => show > 0; }
+// what is written small in the world (a ticket, the menu board, a label), read sharp: on a screen, looked at from close, it is shown again beside the crosshair at the page's own resolution, whatever the picture's is
+{ const rd = document.createElement('canvas'); rd.id = 'read'; rd.style.cssText = 'position:fixed;right:14px;top:50%;transform:translateY(-50%);max-width:36vw;max-height:60vh;border-radius:6px;box-shadow:0 4px 24px rgba(0,0,0,.6);pointer-events:none;z-index:4;display:none;opacity:.97'; document.body.appendChild(rd);
+  const ray = new THREE.Raycaster(), mid = new THREE.Vector2(0, 0); ray.far = 3.2; let shown = null, at = 0, cand = null, labels = null; const _n = new THREE.Vector3(), _e = new THREE.Vector3();
+  const written = (o) => { const map = o && o.visible && o.material && !Array.isArray(o.material) && o.material.map, img = map && map.image; return !!(img && img.getContext && img.width >= 200 && o.geometry.type === 'PlaneGeometry' && !o.userData.noread); };
+  setInterval(() => { if (G.mode !== 'desktop' || G.ended || (G.set && G.set.reader === false)) { if (shown) { shown = null; rd.style.display = 'none'; } return; }
+    if (!labels && G.t > 3) { labels = []; cart.group.traverse((o) => { if (o.isMesh && written(o)) labels.push(o); }); }
+    ray.setFromCamera(mid, camera); const tickets = game.customers.map((c) => c.ticket).filter(Boolean), hit = ray.intersectObjects([cart.group, ...tickets], true).find((h) => h.object.visible && !h.object.isSprite); let ok = hit && written(hit.object) ? hit.object : null;
+    if (!ok && labels) { camera.getWorldPosition(_e); let best = 0.13; for (const o of [...labels, ...tickets]) { if (!written(o)) continue; o.getWorldPosition(_n); if (_n.distanceTo(_e) > 2.3) continue; _n.project(camera); if (_n.z > 1) continue; const d = Math.hypot(_n.x, _n.y * 0.6); if (d < best) { best = d; ok = o; } } }   // (a small label beside the crosshair counts as looked at)
+    if (ok) { const w = ok.geometry.parameters.width / 2, a = _n.set(-w, 0, 0).applyMatrix4(ok.matrixWorld).project(camera).x, b = _e.set(w, 0, 0).applyMatrix4(ok.matrixWorld).project(camera).x, seen = Math.abs(b - a) * innerWidth / 2, im = ok.material.map.image; if (Math.min(im.width, 720, innerWidth * 0.36) < seen * 1.15) ok = null; }   // (what is already drawn larger than its copy would be is left alone: the menu board from close)
+    if (ok !== cand) { cand = ok; at = performance.now(); } const want = cand && performance.now() - at > 350 ? cand : null;
+    if (want) { const im = want.material.map.image, k = Math.min(1, 720 / im.width); if (shown !== want || rd.width !== Math.round(im.width * k)) { rd.width = Math.round(im.width * k); rd.height = Math.round(im.height * k); } rd.getContext('2d').drawImage(im, 0, 0, rd.width, rd.height); rd.style.display = 'block'; shown = want; } else if (shown) { shown = null; rd.style.display = 'none'; } }, 180); }
 // easy on the eyes (the settings board, on unless turned off): more fill light, the bright points and their halos lower, thin rain, a dim television, less edge blur in the headset
 G.eyes = (on) => { city.setEasy(on); G.cart.lamps?.(G.cart.lampK || 0); if (renderer.xr.isPresenting) renderer.xr.setFoveation?.(on ? 0.25 : 0.5); };   // easy on the eyes (the settings board, on unless turned off): more fill light, the lanterns and their halos lower, less edge blur in the headset
 G.eyes(G.set.easy);
@@ -170,8 +184,8 @@ function frame(now) {
 }
 renderer.setAnimationLoop(frame);
 
-G.debug = { weather, dawn, Items, DRINKS, PH, person: makePerson, RB, tenant: tenantFigure, city, guide, menu: gameMenu, report, tick, frame, render, input, startDesktop, startVR, THREE, share, guest, tank };
-if (G.guest) { menu.querySelector('h2').textContent = 'RAMEN, as yourself: walk the village street up to the ramen stall, take a stool, order a bowl and pay for it. The cook, the customers and everyone passing are the same people every page in the village sees.'; $('help').innerHTML = '<div><b>Browser</b> WASD walk · mouse look · V first / third person · E sit at a stool or get up · click the menu to order · M settings</div><div><b>VR</b> left stick walk · right stick turn · trigger by a stool to sit · step away to get up · poke the menu to order</div><div><b>Back</b> walk out at the end of the street, or LEAVE, to THE MARKET</div>'; $('keys').textContent = 'WASD walk · V view · E sit / get up · click: order · M settings · Esc: free mouse'; deskBtn.textContent = 'Walk the village in this browser'; }
+G.debug = { weather, dawn, tv, Items, DRINKS, PH, person: makePerson, RB, tenant: tenantFigure, city, guide, menu: gameMenu, report, tick, frame, render, input, startDesktop, startVR, THREE, share, guest, tank };
+if (G.guest) { menu.querySelector('h2').textContent = 'RAMEN, as yourself: walk the block up to the ramen cart, take a stool, order a bowl and pay for it. The cook, the customers and everyone passing are the same people every page on the block sees.'; $('help').innerHTML = '<div><b>Browser</b> WASD walk · mouse look · V first / third person · E sit at a stool or get up · click the menu to order · M settings</div><div><b>VR</b> left stick walk · right stick turn · trigger by a stool to sit · step away to get up · poke the menu to order</div><div><b>Back</b> walk out at the end of the street, or LEAVE, to THE MARKET</div>'; $('keys').textContent = 'WASD walk · V view · E sit / get up · click: order · M settings · Esc: free mouse'; deskBtn.textContent = 'Walk the block in this browser'; }
 window.G = G;
 { const box = $('say'); // on a screen: M the settings board, G the guide, T to type what you say if you would rather not speak it
   addEventListener('keydown', (e) => { if (G.mode !== 'desktop' || e.repeat) return; if (e.target === box) { if (e.code === 'Enter') { const t = box.value.trim(); box.value = ''; box.style.display = 'none'; box.blur(); if (t) talk.cookSays(t); } else if (e.code === 'Escape') { box.value = ''; box.style.display = 'none'; box.blur(); } return; }

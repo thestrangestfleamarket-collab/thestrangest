@@ -1,28 +1,34 @@
-// the people: Microsoft Rocketbox's photographed bodies (MIT) dressed for the village and their recorded motion (data/sushi/rb/, from tools/sushi-people.py), with what the cart asks of them: walking, standing, sitting on a stool, hands that talk, a nod, a head shake, a laugh, a wave, a blow taken as it really lands (the struck limb and what it hangs from knocked about their joints and sprung back, a step back or a fall past what the feet can hold, a hand to where it hurts, a duck), marks on their clothes, chopsticks to the mouth, a head that turns to what it looks at; near, the whole body, farther off a lighter one
+// the people: Microsoft Rocketbox's photographed bodies (MIT) in their own clothes as downtown New Yorkers of 1985, and their recorded motion (data/sushi/rb/, from tools/sushi-people.py), with what the cart asks of them: walking, standing, sitting on a stool, hands that talk, a nod, a head shake, a laugh, a wave, eyes that blink, a jaw that moves when they speak, a blow taken as it really lands (the struck limb and what it hangs from knocked about their joints and sprung back, a step back or a fall past what the feet can hold, a hand to where it hurts, a duck), marks on their clothes, chopsticks to the mouth, a head that turns to what it looks at; near, the whole body, farther off a lighter one
 import * as THREE from 'three';
 import { G, mat } from './ctx.js';
 
 // who can be at the cart: [sex, voice, pitch, youngest, oldest, what they do] (the voice names are worker/door.js's /sushi/say)
 export const RB = {
-  cook: ['m', 'zeus', 0.96, 45, 60, 'the cook'],
-  fishmonger: ['m', 'zeus', 0.95, 48, 58, 'a fishmonger who carries the morning catch up from the coast in two baskets on a pole'],
-  tofu_wife: ['f', 'hera', 0.98, 40, 50, 'a townswoman who keeps a shop on the street'],
-  potter: ['m', 'arcas', 0.96, 55, 65, 'a potter with a kiln behind his house'],
-  farmer: ['m', 'angus', 0.96, 30, 50, 'a rice farmer in from the paddies east of the village'],
-  monk: ['m', 'orion', 0.94, 45, 65, 'a monk from the temple up behind the shrine'],
-  geisha: ['f', 'asteria', 1.03, 20, 28, 'a geisha of the teahouse on the street'],
-  ronin: ['m', 'perseus', 0.97, 28, 40, 'a ronin, a masterless samurai, two swords at his belt'],
-  constable: ['m', 'helios', 0.98, 35, 45, 'the constable of the street, a sword at his belt'],
-  boy: ['m', 'orpheus', 1.18, 8, 11, 'a village boy sent out for a bowl'],
-  old_woman: ['f', 'luna', 0.95, 62, 75, 'an old woman who has lived on this street all her life'],
-  peddler: ['m', 'angus', 0.97, 35, 55, 'a peddler of needles, combs and medicines on the road between villages'],
-  woodcutter: ['m', 'arcas', 0.96, 30, 55, 'a woodcutter down from the hills with a load of firewood'],
-  townswoman: ['f', 'hera', 0.99, 25, 45, 'a townswoman out on an errand'],
-  maid: ['f', 'asteria', 1.02, 18, 30, 'a maid from the inn at the end of the street'],
+  cook: ['f', 'hera', 0.98, 35, 55, 'the cook'],
+  cop: ['m', 'helios', 0.97, 30, 45, 'a patrolman of the Ninth Precinct who walks this beat'],
+  cabbie: ['m', 'zeus', 0.95, 50, 62, 'a yellow cab driver between fares'],
+  punk: ['f', 'asteria', 1.0, 19, 26, 'a singer in a punk band'],
+  suit: ['m', 'perseus', 0.98, 28, 40, 'a man in a suit up from an office on Wall Street'],
+  nurse: ['f', 'hera', 1.0, 28, 45, 'a nurse from the hospital on First Avenue'],
+  babushka: ['f', 'luna', 0.95, 64, 78, 'an old Ukrainian woman who has lived on this block for forty years'],
+  bboy: ['m', 'orpheus', 1.02, 17, 23, 'a young man in a track suit who breakdances by the subway'],
+  denim: ['m', 'arcas', 0.97, 35, 48, 'the man who keeps the bodega'],
+  leather: ['f', 'asteria', 1.01, 24, 36, 'a painter with a studio in an old tenement on Avenue B'],
+  coned: ['m', 'angus', 0.96, 40, 58, 'a Con Edison man working on the steam main across the street'],
+  kid: ['m', 'orpheus', 1.18, 9, 12, 'a kid from the block sent out for a bowl'],
+  grocer: ['m', 'zeus', 0.96, 48, 60, 'the counterman from the coffee shop on the corner, still in his tie'],
+  clerk: ['m', 'orion', 0.98, 22, 34, 'a clerk at the record shop'],
+  laundress: ['f', 'hera', 0.99, 35, 50, 'the woman who runs the laundromat'],
+  secretary: ['f', 'asteria', 1.02, 28, 45, 'a legal secretary on her way home from an office near City Hall'],
+  dancer: ['f', 'asteria', 1.03, 20, 30, 'a dancer who waits tables on Second Avenue'],
+  messenger: ['m', 'angus', 0.98, 26, 40, 'a longshoreman off the Brooklyn piers'],
+  student: ['m', 'orion', 1.0, 19, 27, 'a student at the art school on Cooper Square'],
 };
-export const CUSTOMERS = Object.keys(RB).filter((k) => k !== 'cook' && k !== 'boy');
+// the regulars' own bodies are theirs alone (block.js CAST): whoever else sits down or passes is one of the others
+const CASTED = ['cop', 'cabbie', 'punk', 'nurse', 'babushka', 'bboy', 'denim', 'kid', 'clerk', 'laundress'];
+export const CUSTOMERS = Object.keys(RB).filter((k) => k !== 'cook' && !CASTED.includes(k));
 // THE MARKET's visitors come as one of these, in their own colours and at their own size (tenant.js)
-export const VISITORS = ['townswoman', 'maid', 'peddler', 'woodcutter', 'farmer', 'tofu_wife'];
+export const VISITORS = ['secretary', 'leather', 'student', 'messenger', 'suit', 'dancer'];
 
 const b64 = (s) => Uint8Array.from(atob(s), (c) => c.charCodeAt(0));
 let D = null, NB = 0, PI = [], HEAD, TORSO, BASE = ''; const CL = { m: {}, f: {} }, BODY = {};
@@ -35,7 +41,7 @@ export async function loadPeople(base) {
   const tl = new THREE.TextureLoader();
   await Promise.all(Object.keys(D.bodies).map(async (k) => { const b = D.bodies[k], buf = await (await fetch(base + k + '.bin')).arrayBuffer();
     const t = await tl.loadAsync(base + k + '.webp'); t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = 2;
-    BODY[k] = { b, t, geo: b.lod.map((L, i) => geom(buf, L, i ? L.at : 0)), mat: null, O: b.O.map((v) => new THREE.Vector3(...v)), QI: b.Q.map((q) => new THREE.Quaternion(q[1], q[2], q[3], q[0]).invert()) }; }));
+    BODY[k] = { b, t, geo: b.lod.map((L, i) => geom(buf, L, i ? L.at : 0)), mat: null, O: b.O.map((v) => new THREE.Vector3(...v)), X: (b.X || []).map((v) => new THREE.Vector3(...v)), QI: b.Q.map((q) => new THREE.Quaternion(q[1], q[2], q[3], q[0]).invert()) }; }));
   return Object.keys(BODY);
 }
 const geom = (buf, L, at) => { const n = L.nv, P = new Uint16Array(buf, at, n * 3); let o = at + n * 6; const N = new Int8Array(buf, o, n * 4); o += n * 4; const U = new Uint16Array(buf, o, n * 2); o += n * 4; const SI = new Uint8Array(buf, o, n * 4); o += n * 4; const SW = new Uint8Array(buf, o, n * 4); o += n * 4; const I = new Uint16Array(buf, o, L.ni);
@@ -43,7 +49,9 @@ const geom = (buf, L, at) => { const n = L.nv, P = new Uint16Array(buf, at, n * 
   const g = new THREE.BufferGeometry(); g.setAttribute('position', new THREE.BufferAttribute(pos, 3)); g.setAttribute('normal', new THREE.InterleavedBufferAttribute(new THREE.InterleavedBuffer(N, 4), 3, 0, true)); g.setAttribute('uv', new THREE.BufferAttribute(new Float32Array(U.length).map((_, i) => U[i] / 65535), 2));
   g.setAttribute('skinIndex', new THREE.BufferAttribute(Uint16Array.from(SI), 4)); g.setAttribute('skinWeight', new THREE.BufferAttribute(SW, 4, true)); g.setIndex(new THREE.BufferAttribute(I, 1)); g.computeBoundingSphere(); return g; };
 const materialOf = (k, map) => { const B = BODY[k]; if (!map && B.mat) return B.mat; const m = mat({ map: map || B.t, alphaTest: 0.5, side: THREE.DoubleSide }); m.alphaToCoverage = true; if (!map) B.mat = m; return m; };
-export const bodyInfo = (k) => (BODY[k] ? { sex: BODY[k].b.sex, height: BODY[k].b.height, tex: BODY[k].t } : null);
+// what a body wears and where in its picture (run lengths from the bake: 0 neither, 1 above the waist, 2 below, 3 shoes), opened when first asked for
+const wearOf = (B) => { if (B.wear !== undefined) return B.wear; const w = B.b.wear; if (!w) return (B.wear = null); const r = b64(w.r), m = new Uint8Array(w.n * w.n); let o = 0; for (let i = 0; i < r.length; i += 2) { m.fill(r[i], o, o + r[i + 1]); o += r[i + 1]; } return (B.wear = { n: w.n, m }); };
+export const bodyInfo = (k) => (BODY[k] ? { sex: BODY[k].b.sex, height: BODY[k].b.height, tex: BODY[k].t, wear: wearOf(BODY[k]) } : null);
 
 const qa = new THREE.Quaternion(), qb = new THREE.Quaternion(), va = new THREE.Vector3(), vb = new THREE.Vector3(), e1 = new THREE.Euler(), _w = new THREE.Vector3(), _t = new THREE.Vector3(), _cam = new THREE.Vector3();
 // a frame of a take: each bone's turn from its parent (the hips' from the body), and where the hips are
@@ -67,8 +75,9 @@ export function rbPerson(key, sticks, o = {}) {
   if (!BODY[key]) key = Object.keys(BODY)[0];   // (a name this build has no body for: whoever is first)
   const B = BODY[key], b = B.b, sex = b.sex, clips = CL[sex], ks = b.hipY / clips.hip0, O = B.O, QI = B.QI;
   const root = new THREE.Group(), inner = new THREE.Group(), body = new THREE.Group(); root.add(inner); inner.add(body); if (o.scale) body.scale.setScalar(o.scale);
-  const bones = D.bones.map((n) => Object.assign(new THREE.Bone(), { name: n })), skel = new THREE.Skeleton(bones, O.map((v) => new THREE.Matrix4().makeTranslation(-v.x, -v.y, -v.z))), M = materialOf(key, o.map);
-  bones.forEach((bn, i) => { bn.position.copy(O[i]); body.add(bn); });
+  const OA = [...O, ...B.X], bones = [...D.bones, ...(D.extra || []).slice(0, B.X.length)].map((n) => Object.assign(new THREE.Bone(), { name: n })), skel = new THREE.Skeleton(bones, OA.map((v) => new THREE.Matrix4().makeTranslation(-v.x, -v.y, -v.z))), M = materialOf(key, o.map);   // (after the takes' bones: the eyelids and the jaw, moved here)
+  const LID = B.X.length > 0 ? NB : -1, JAWB = B.X.length > 1 ? NB + 1 : -1, face = { blinkT: 1 + Math.random() * 4, blink: 0, jaw: 0, ph: Math.random() * 9 };
+  bones.forEach((bn, i) => { bn.position.copy(OA[i]); body.add(bn); });
   const lods = B.geo.map((g) => { const m = new THREE.SkinnedMesh(g, M); m.bind(skel, new THREE.Matrix4()); m.boundingSphere = new THREE.Sphere(new THREE.Vector3(0, 0.9, 0), 1.4); body.add(m); return m; }); lods[1].visible = false; const mesh = lods[0];
   const ix = (n) => IX[n], ARM = { L: [ix('upperArmL'), ix('forearmL'), ix('handL')], R: [ix('upperArmR'), ix('forearmR'), ix('handR')] }, UP = UPPER.map(ix);
   const DIR = (a, c) => O[c].clone().sub(O[a]).normalize(), LEN = (a, c) => O[c].distanceTo(O[a]);
@@ -171,8 +180,13 @@ export function rbPerson(key, sticks, o = {}) {
           if (l > 1e-4) { qh.setFromAxisAngle(ax.copy(c.a).normalize(), Math.min(l, c.max)); for (const i of c.set) R[i].premultiply(qh); } if (st.phys <= 0) { c.a.set(0, 0, 0); c.w.set(0, 0, 0); } }
         fk(); }
       for (let i = 0; i < NB; i++) { bones[i].position.copy(J[i]); bones[i].quaternion.copy(R[i]); }
+      // the face: a blink every few seconds (both lids down and up in a sixth of a second), the jaw going while they speak or chew
+      if (LID >= 0) { const hb = bones[HEAD]; if (!st.far) { if ((face.blinkT -= dt) <= 0) { face.blinkT = 2.2 + Math.random() * 4.5; face.blink = 0.17; } face.blink = Math.max(0, face.blink - dt); face.ph += dt;
+          const sp = this.talkT > 0 ? (0.5 + 0.5 * Math.sin(face.ph * 13.1)) * (0.45 + 0.55 * Math.sin(face.ph * 4.3 + 1)) ** 2 * 0.16 : this.pose === 'eat' ? 0.05 * (0.5 + 0.5 * Math.sin(this.eatT * 7)) : 0; face.jaw += (sp - face.jaw) * Math.min(1, dt * 18); } else { face.blink = 0; face.jaw = 0; }
+        const k = face.blink > 0 ? Math.sin(Math.PI * (1 - face.blink / 0.17)) : 0, lb = bones[LID]; lb.position.copy(va.copy(B.X[0]).sub(O[HEAD]).add(vb.set(0, -b.blink * k, 0.0025 * k)).applyQuaternion(R[HEAD]).add(J[HEAD])); lb.quaternion.copy(R[HEAD]); lb.scale.copy(hb.scale);
+        if (JAWB >= 0) { const jb = bones[JAWB]; jb.position.copy(va.copy(B.X[1]).sub(O[HEAD]).applyQuaternion(R[HEAD]).add(J[HEAD])); jb.quaternion.copy(R[HEAD]).multiply(qh.setFromAxisAngle(ax.set(1, 0, 0), face.jaw)); jb.scale.copy(hb.scale); } }
       if (this.pose === 'eat' && seated && !st.over) { root.updateMatrixWorld(true); const c = Math.pow((Math.sin(this.eatT * 2.4) + 1) / 2, 1.3), Hh = bones[ARM.R[2]].getWorldPosition(_w), Mh = bones[HEAD].getWorldPosition(new THREE.Vector3()); Mh.y += 0.06; const T = new THREE.Vector3(0.05, 1.0, 0.5).applyMatrix4(root.matrixWorld).lerp(Mh, c);
         sticks.visible = true; root.worldToLocal(sticks.position.copy(Hh).addScaledVector(va.copy(T).sub(Hh).normalize(), 0.05)); sticks.lookAt(T); } },
   };
-  P.update(0); return P;
+  P.blink = () => { face.blink = 0.17; }; P.face = face; P.update(0); return P;
 }

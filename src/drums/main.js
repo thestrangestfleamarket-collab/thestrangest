@@ -287,7 +287,7 @@ function step(x, z, dx, dz) { if (blocked(x, z)) return [dx, dz]; if (blocked(x 
 function stand(now) {
   if (walk.on) return;
   walk.on = true; sound.setHat(0); kit.setHat(0); kit.setPedal(0);
-  if (renderer.xr.isPresenting) { const c = renderer.xr.getCamera(), y = _a.copy(c.getWorldPosition(_a)).y - rig.position.y; rig.position.y = y < 1.35 ? 1.62 - y : 0; rig.position.x += SEAT.x - _a.x; rig.position.z += SEAT.z + 0.45 - _a.z; }
+  if (renderer.xr.isPresenting) { const c = camera, y = _a.copy(c.getWorldPosition(_a)).y - rig.position.y; rig.position.y = y < 1.35 ? 1.62 - y : 0; rig.position.x += SEAT.x - _a.x; rig.position.z += SEAT.z + 0.45 - _a.z; }
   else { walk.pos.set(SEAT.x, 0, SEAT.z + 0.45); scr.pitch = 0; }
   readout.show('ON YOUR FEET', now);
 }
@@ -587,7 +587,7 @@ renderer.setAnimationLoop(() => {
   if (!teach.on) metroTick();
   teach.update();
   // your body: seated, the arms ending at the hands on the sticks
-  const cam = vr ? renderer.xr.getCamera() : camera;
+  const cam = camera;   // (in the headset too: the page's own camera is the one that stands in the rig, so the head goes where the rig is walked)
   cam.getWorldPosition(head.pos); cam.getWorldQuaternion(head.quat);
   // your hips sit under your own neck, wherever your chair is, so the body is upright; set.body slides it forward or back
   seat.copy(SEAT); seat.y += 0.04;

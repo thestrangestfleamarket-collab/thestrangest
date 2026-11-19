@@ -1,15 +1,19 @@
-# fetches RAMEN's photographed surfaces and the village's props (all CC0, Poly Haven) and its recorded sounds (CC0, OpenGameArt): python3 tools/sushi-assets.py [name ...]  ->  data/sushi/tex/*.jpg (colour only), data/sushi/m/*.glb, data/sushi/snd/*.mp3 (only when asked: 'snd', needs ffmpeg); credits in docs/sushi-credits.md and docs/sushi-sounds.md; then node tools/hide-slim.cjs data/sushi/m (the line at the end prints it)
+# fetches RAMEN's photographed surfaces and street props (all CC0, Poly Haven) and its recorded sounds (CC0, OpenGameArt): python3 tools/sushi-assets.py [name ...]  ->  data/sushi/tex/*.jpg (colour only), data/sushi/m/*.glb, data/sushi/snd/*.mp3 (only when asked: 'snd', needs ffmpeg); credits in docs/sushi-credits.md and docs/sushi-sounds.md; then node tools/hide-slim.cjs data/sushi/m (the line at the end prints it)
 import io, json, os, re, shutil, struct, subprocess, sys, urllib.request, zipfile
 from PIL import Image
 
 API, OUT = 'https://api.polyhaven.com/files/', 'data/sushi/'
-# our name: (Poly Haven's, pixels): the village's street, houses, roofs, walls, fields and the stall's wood
-TEX = {'dirt': ('dirt', 512), 'mud': ('brown_mud_dry', 512), 'grass': ('sparse_grass', 512), 'field': ('muddy_tracks', 256), 'stone_path': ('stone_pathway', 512), 'stone_wall': ('japanese_stone_wall', 512),
-       'cedar': ('japanese_cedar_planks', 512), 'plaster_white': ('white_plaster_rough_01', 512), 'plaster_clay': ('clay_plaster', 512), 'roof_tiles': ('grey_roof_tiles', 512), 'thatch': ('thatch_roof_angled', 512),
-       'bamboo': ('bamboo_wall', 512), 'tatami': ('tatami_mat', 256), 'bark': ('japanese_cedar_bark', 256),
-       'wood': ('weathered_brown_planks', 512), 'wood_dark': ('dark_wooden_planks', 512), 'wood_light': ('hinoki_planks', 512), 'wood_counter': ('wood_table_worn', 512), 'cloth': ('terry_cloth', 256)}
-MODELS = {'wooden_bucket_01': 256, 'wicker_basket_01': 256, 'wooden_crate_01': 256, 'wooden_broom': 128, 'shrub_02': 256, 'tree_stump_01': 256, 'wooden_cutting_board': 256, 'food_ginger_01': 128}
-SLIM = {'wooden_bucket_01': 400, 'wicker_basket_01': 600, 'wooden_crate_01': 300, 'wooden_broom': 300, 'shrub_02': 1200, 'tree_stump_01': 400, 'wooden_cutting_board': 500, 'food_ginger_01': 300}
+# our name: (Poly Haven's, pixels)
+TEX = {'brick_red': ('brick_wall_001', 512), 'brick_orange': ('large_red_bricks', 512), 'brick_brown': ('brown_brick_02', 512), 'brick_dark': ('brick_wall_10', 512), 'brick_painted': ('painted_worn_brick', 512),
+       'concrete': ('concrete_wall_008', 512), 'concrete_dirty': ('dirty_concrete', 512),
+       'asphalt': ('asphalt_02', 512), 'paving': ('concrete_pavement', 512), 'shutter': ('painted_metal_shutter', 512), 'shutter_rust': ('rusted_shutter', 256), 'corrugated': ('corrugated_iron', 512),
+       'wood': ('weathered_brown_planks', 512), 'wood_dark': ('dark_wooden_planks', 512), 'wood_light': ('hinoki_planks', 512), 'tile_white': ('long_white_tiles', 512), 'bark': ('japanese_cedar_bark', 256)}
+MODELS = {'metal_trash_can': 256, 'cardboard_box_01': 256, 'trashbag': 256, 'plastic_crate_02': 256, 'utility_box_01': 256, 'exterior_aircon_unit': 256, 'Television_01': 512, 'television_02': 512, 'boombox': 512}
+SLIM = {'metal_trash_can': 500, 'cardboard_box_01': 200, 'trashbag': 300, 'plastic_crate_02': 900, 'utility_box_01': 300, 'exterior_aircon_unit': 700, 'television_01': 1400, 'television_02': 1600, 'boombox': 2500}
+MODELS['CashRegister_01'] = 512; SLIM['cashregister_01'] = 4000   # the till on the back counter (its drawer is drawn open in the model)
+TEX.update({'wood_counter': ('wood_table_worn', 512), 'cloth': ('terry_cloth', 256)})   # the worn counter tops; the rag
+MODELS.update({'propane_tank': 256}); SLIM.update({'propane_tank': 900})   # the stove's gas bottles
+MODELS.update({'hanging_industrial_lamp': 256, 'wooden_cutting_board': 256, 'food_ginger_01': 128}); SLIM.update({'hanging_industrial_lamp': 600, 'wooden_cutting_board': 500, 'food_ginger_01': 300})   # the work lights' enamel shades, the board, a knob of ginger by it
 
 def get(url):
     return urllib.request.urlopen(urllib.request.Request(url, headers={'User-Agent': 'Mozilla/5.0 asset-fetch'}), timeout=180).read()
@@ -61,6 +65,10 @@ for name, (s, z) in TEX.items():
 for s, z in MODELS.items():
     if only and s not in only and 'm' not in only: continue
     model(s, z)
+if not only or 'money' in only:   # the till's money: the 1985 designs of the $5, $10, $20 and the $1's back, US government pictures (public domain) from uscurrency.gov; the $1's front and the coins are kept as they are in data/sushi/money
+    os.makedirs(OUT + 'money', exist_ok=True); U = 'https://www.uscurrency.gov/sites/default/files/denominations/'
+    for name, f in {'b1b': '1_1963-present-back', 'b5': '5_1993-2000-front_0', 'b5b': '5_1993-2000-back_0', 'b10': '10_1990-2000-front_0', 'b10b': '10_1990-2000-back_0', 'b20': '20_1990-1998-front_0', 'b20b': '20_1990-1998-back-ver2_0'}.items():
+        Image.open(io.BytesIO(get(U + f + '.jpg'))).convert('RGB').resize((320, 136), Image.LANCZOS).save(OUT + 'money/' + name + '.jpg', quality=88); print(name, f, flush=True)
 # the sounds: our name -> (OpenGameArt's file, the member of its zip or '', start s, length s, 'loop' or 'hit'); the downloads are kept in data/full/sushi/snd/ (not in git)
 OGA = 'https://opengameart.org/sites/default/files/'
 SND = {

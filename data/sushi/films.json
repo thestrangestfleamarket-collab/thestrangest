@@ -1,0 +1,23 @@
+{
+ "note": "the cart TV's late movie: for now only Night of the Living Dead (1968, public domain; the Internet Archive's night_of_the_living_dead_dvd), our own 160x120 copy in two parts (tools/sushi-film.sh)",
+ "channels": [
+  {
+   "ch": 14,
+   "name": "CREATURE FEATURE",
+   "shows": [
+    {
+     "id": "notld",
+     "src": "/sushi-assets/film/notld-1.mp4",
+     "len": 2865.9,
+     "title": "NIGHT OF THE LIVING DEAD (1968)"
+    },
+    {
+     "id": "notld",
+     "src": "/sushi-assets/film/notld-2.mp4",
+     "len": 2865.9,
+     "title": "NIGHT OF THE LIVING DEAD (1968)"
+    }
+   ]
+  }
+ ]
+}

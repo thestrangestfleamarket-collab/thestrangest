@@ -5,8 +5,7 @@ export const RUN = 38 * 60;   // seconds of play, the whole run
 // the light over the run: the day, dusk, the night's service, dawn
 export const PHASES = [['day', 0, 0.3], ['dusk', 0.3, 0.4], ['night', 0.4, 0.9], ['dawn', 0.9, 1]];
 export const ORDER = PHASES.map((p) => p[0]);
-const HOURS = { day: [10, 17.5], dusk: [17.5, 19.5], night: [19.5, 29], dawn: [29, 30.5] };   // the village's hour over each (29 is five in the morning)
-const ETO = ['RAT 子', 'OX 丑', 'TIGER 寅', 'HARE 卯', 'DRAGON 辰', 'SNAKE 巳', 'HORSE 午', 'SHEEP 未', 'MONKEY 申', 'ROOSTER 酉', 'DOG 戌', 'BOAR 亥'];   // the old twelve hours, each two long, the Rat's from eleven at night
+const HOURS = { day: [10, 17.5], dusk: [17.5, 19.5], night: [19.5, 29], dawn: [29, 30.5] };   // the street's hour over each (29 is five in the morning)
 
 export function buildClock(params) {
   const f = params && params.get('fast'), hooks = {};
@@ -19,9 +18,10 @@ export function buildClock(params) {
     c.light = h < 16.5 ? 1 : h < 19.5 ? clamp(1 - (h - 16.5) / 3, 0, 1) ** 1.4 : h < 29 ? 0 : clamp((h - 29) / 1.5, 0, 1) * 0.75; };
   const set = (frac, quiet) => { c.frac = clamp(frac, 0, 1); c.t = c.frac * RUN; const w = where(), was = c.phase; c.phase = w.ph; c.pfrac = w.pf; sky();
     if (quiet) return; if (c.phase !== was) emit(c.phase, c.phase); };
-  c.eto = (h = c.hour) => ETO[Math.floor((((h + 1) % 24) + 24) % 24 / 2)];
+  c.time = (h = c.hour) => { const m = Math.floor((((h % 24) + 24) % 24) * 60), hh = Math.floor(m / 60); return `${((hh + 11) % 12) + 1}:${String(m % 60).padStart(2, '0')}${hh >= 12 ? 'PM' : 'AM'}`; };   // the hour as a clock shows it
+  c.daypart = (h = c.hour) => { const x = ((h % 24) + 24) % 24; return x < 5 ? 'night' : x < 12 ? 'morning' : x < 17 ? 'afternoon' : x < 22 ? 'evening' : 'night'; };   // what to call the hour (a greeting follows it: talk.js)
   c.at = (phase) => PHASES.find((p) => p[0] === phase)?.[1];   // where a phase begins, as a share of the run
-  c.start = () => { if (c.running || c.over) return; c.running = true; emit('day', 'day'); };   // the stall opens: the day begins to pass
+  c.start = () => { if (c.running || c.over) return; c.running = true; emit('day', 'day'); };   // the cart opens: the day begins to pass
   c.go = (name) => { const at = c.at(name); if (at == null) return; c.running = true; c.over = false; set(at + 1e-6); };   // to a phase's beginning (a test, or a debug key)
   c.skip = () => { const i = ORDER.indexOf(c.phase); if (i < ORDER.length - 1) c.go(ORDER[i + 1]); else c.finish(); };
   c.finish = () => { if (c.over) return; set(1); c.over = true; c.running = false; emit('end'); };

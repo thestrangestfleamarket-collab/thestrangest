@@ -89,8 +89,7 @@ function shared() {
     eggGeo: new THREE.SphereGeometry(0.024, 16, 10, 0, Math.PI * 2, Math.PI / 2, Math.PI / 2).scale(1, 0.75, 1.3), yolkGeo: new THREE.SphereGeometry(0.0125, 14, 5, 0, Math.PI * 2, 0, Math.PI / 2).scale(1, 0.28, 1.25),
     glassBrown: mat({ color: 0x4a2408, roughness: 0.08, transparent: true, opacity: 0.86, metalness: 0 }),
     glassDark: mat({ color: 0x1a0c06, roughness: 0.06, transparent: true, opacity: 0.86 }),
-    tokkuriGeo: new THREE.LatheGeometry([[0, 0], [0.028, 0], [0.04, 0.03], [0.045, 0.08], [0.038, 0.13], [0.018, 0.17], [0.013, 0.195], [0.017, 0.205], [0, 0.205]].map(([x, y]) => new THREE.Vector2(x, y)), 16),
-    teapotGeo: new THREE.LatheGeometry([[0, 0], [0.04, 0], [0.055, 0.03], [0.058, 0.07], [0.045, 0.11], [0.02, 0.125], [0, 0.13]].map(([x, y]) => new THREE.Vector2(x, y)), 16),
+    canGeo: new THREE.LatheGeometry([[0, 0], [0.027, 0], [0.033, 0.008], [0.033, 0.112], [0.027, 0.122], [0, 0.122]].map(([x, y]) => new THREE.Vector2(x, y)), 18),
     bottleGeo: new THREE.LatheGeometry([[0, 0], [0.03, 0], [0.031, 0.13], [0.026, 0.16], [0.013, 0.2], [0.012, 0.235], [0.014, 0.24], [0, 0.24]].map(([x, y]) => new THREE.Vector2(x, y)), 18),
   };
   return S;
@@ -284,16 +283,17 @@ export class Raw extends Item {
   hint() { return this.board ? 'on the board — chop it with the knife' : `${this.name} → put on the cutting board`; }
 }
 
-export class Drink extends Item { // a tokkuri of warm sake, or a clay pot of tea: glazed earthenware, a cloth tied at the neck
+export class Drink extends Item { // a twelve-ounce can from the cooler: cola, or iced tea
   constructor(type) {
-    const s = shared(), g = new THREE.Group(), sake = type === 'sake';
-    const body = sake ? s.tokkuriGeo : s.teapotGeo, glaze = T.canvasTex(128, 128, (c, w, h) => { c.fillStyle = sake ? '#e8e2d2' : '#6a4a2e'; c.fillRect(0, 0, w, h); c.fillStyle = sake ? '#2a3a6a' : '#3a2414'; c.font = `bold 46px ${T.JP}`; c.textAlign = 'center'; c.fillText(sake ? '酒' : '茶', w / 4, h * 0.62); c.fillText(sake ? '酒' : '茶', (w * 3) / 4, h * 0.62); c.fillRect(0, h * 0.12, w, 4); });
-    M(body, T.surface(mat({ map: glaze }), { grime: 0.2, bomb: 0 }), g);
-    M(new THREE.CylinderGeometry(0.016, 0.016, 0.012, 10), mat({ color: sake ? 0x8a2a1c : 0x2a1a10 }), g, 0, sake ? 0.205 : 0.13, 0);
-    super('drink', g, { radius: 0.06, cy: sake ? 0.1 : 0.07, lift: 0.05, name: sake ? 'sake' : 'tea' });
-    this.drink = type; this.mat = 'ceramic';
+    const s = shared(), g = new THREE.Group(), tea = type === 'tea';
+    const label = T.canvasTex(256, 128, (c, w, h) => { c.fillStyle = tea ? '#e8c23a' : '#c8201c'; c.fillRect(0, 0, w, h); c.fillStyle = tea ? '#5a3414' : '#f4f0e8'; c.textAlign = 'center'; c.font = `900 ${tea ? 34 : 44}px Impact, 'Arial Black', sans-serif`;
+      for (const x of [w / 4, (w * 3) / 4]) { if (!tea) { c.beginPath(); c.moveTo(x - 60, 92); c.quadraticCurveTo(x, 70, x + 60, 96); c.lineTo(x + 60, 102); c.quadraticCurveTo(x, 78, x - 60, 99); c.fill(); } c.fillText(tea ? 'ICED TEA' : 'COLA', x, tea ? 62 : 64, 116); if (tea) { c.font = 'bold 15px sans-serif'; c.fillText('WITH LEMON', x, 84); c.font = `900 34px Impact, 'Arial Black', sans-serif`; } }
+      c.fillStyle = '#b8bcc0'; c.fillRect(0, 0, w, 12); c.fillRect(0, h - 14, w, 14); c.fillStyle = '#8a8e92'; c.fillRect(0, 10, w, 2); c.fillRect(0, h - 15, w, 2); });
+    M(s.canGeo, mat({ map: label }), g);
+    super('drink', g, { radius: 0.05, cy: 0.06, lift: 0.05, name: tea ? 'iced tea' : 'soda' });
+    this.drink = type; this.mat = 'metal';
   }
-  onImpact(sp) { if (sp > 3.4) { G.fx.splat(this.obj.position, this.drink === 'sake' ? 0xd8d0b0 : 0x6a4a18, 0.18); shatter(this, this.drink === 'sake' ? 0xe8e2d2 : 0x6a4a2e, 8); return true; } return false; }
+  onImpact(sp) { if (sp > 3.4) { G.fx.splat(this.obj.position, this.drink === 'tea' ? 0x8a5a18 : 0x2a1408, 0.18); this.remove(); return true; } return false; }   // a can thrown hard bursts
   hint() { return `${this.name} → set at the customer who ordered it`; }
 }
 
@@ -304,7 +304,7 @@ class Debris extends Item {
   onGround() { } onLand() { }
 }
 function shatter(it, color, n) {
-  const p = it.obj.position, v = it.vel, m = matOf(it); G.audio.play(m === 'glass' ? 'shatter' : m === 'metal' ? 'clank' : 'crash', p); G.game?.onMess?.(it.kind === 'bowl' ? 'drop a bowl, which smashed' : it.kind === 'drink' ? 'smash a flask' : 'throw an egg, which burst');
+  const p = it.obj.position, v = it.vel, m = matOf(it); G.audio.play(m === 'glass' ? 'shatter' : m === 'metal' ? 'clank' : 'crash', p); G.game?.onMess?.(it.kind === 'bowl' ? 'drop a bowl, which smashed' : it.kind === 'drink' ? 'burst a can of soda' : 'throw an egg, which burst');
   for (let i = 0; i < n; i++) { const d = new Debris(color, m); d.obj.position.set(p.x + rand(-0.05, 0.05), p.y + 0.03 + rand(0, 0.05), p.z + rand(-0.05, 0.05)); d.obj.rotation.set(rand(6), rand(6), rand(6)); d.drop(_v2.set(v.x * 0.4 + rand(-1.6, 1.6), Math.abs(v.y) * 0.3 + rand(0.5, 2.2), v.z * 0.4 + rand(-1.6, 1.6)).clone()); }
   it.remove();
 }

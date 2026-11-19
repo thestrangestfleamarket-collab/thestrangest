@@ -50,7 +50,7 @@ export class GameAudio {
     for (let i = 0; i < len; i++) d[i] = Math.random() * 2 - 1;
     this.noise = b;
     // the wind (made here); the rest of the bed is recorded and set going as it arrives
-    this.windGain = this.loopNoise(220, 0.5, 0.0, 'lowpass');   // (no city hum in an 1860s village, and a low breeze, not a hiss that reads as rain)
+    this.windGain = this.loopNoise(220, 0.5, 0.0, 'lowpass');   // (a low breeze, not a hiss that reads as rain)
     this.trainGain = this.loopNoise(95, 0.7, 0.0, 'lowpass');
     this.bed = c.createGain(); this.bed.gain.value = 0.2; const bl = c.createBiquadFilter(); bl.type = 'lowpass'; bl.frequency.value = 7000; this.bed.connect(bl); bl.connect(this.master);
     // the boombox: its little speaker, from where it stands
@@ -120,7 +120,7 @@ export class GameAudio {
     f.key = key; f.idle = 0; f.e.at.copy(pos); f.e.level(Math.min(0.5, 0.12 + rate * 6));
   }
 
-  // the rain, only while it falls (weather.js, G.rainK): over the village (louder out from under the roof), on the stall's roof and running off its edges; no traffic in the village
+  // the rain, only while it falls (weather.js, G.rainK): over the street (louder out from under the roof), on the cart's roof and running off its edges
   beds() {
     if (this.bedOn || !this.buf.rain || !(G.rainK > 0.005)) return; this.bedOn = true; const c = this.ctx;
     this.rainG = c.createGain(); this.rainG.gain.value = 0; this.rainG.connect(this.bed);
@@ -128,8 +128,9 @@ export class GameAudio {
     this.edges = [[-0.9, 2.62, -1.86], [0.9, 2.62, -1.86], [-0.9, 2.62, 2.14], [0.9, 2.62, 2.14]].map(([x, y, z], i) => this.loop(i % 2 ? 'drip' : 'eaves', 'eaves', new THREE.Vector3(x, i % 2 ? 0.1 : y, z), { rate: 0.94 + i * 0.04 }));
     this.roof = this.loop('eaves', 'roof', new THREE.Vector3(0, 3.1, 0.15), { rate: 1.12, wet: 0.3 });
   }
-  // as loud as what falls: nothing on a dry day, a soft hiss in the drizzle
+  // as loud as what falls: nothing on a dry day, a soft hiss in the drizzle; and the avenue's traffic at the block's end, busier by day than in the small hours
   rainLevel(now) {
+    if (!this.street && this.buf.traffic) this.street = this.loop('traffic', 'street', new THREE.Vector3(35, 1.5, -1), { wet: 1.6 }); if (this.street) { const h = G.clock ? G.clock.hour : 12; this.street.level(h > 25 && h < 29.5 ? 0.4 : h > 22 ? 0.6 : 0.9); }
     const k = Math.min(1, (G.rainK || 0) / 0.32); if (k > 0) this.beds(); if (!this.bedOn) return;
     this.rainG.gain.setTargetAtTime(k * 1.3, now, 0.8); this.edges.forEach((e) => e.level(0.45 * k)); this.roof.level(0.2 * k);
   }
@@ -197,11 +198,10 @@ export class GameAudio {
   }
 
   // the boombox: a real station streamed through its little speaker; if none will play (no network), the cassette in it
-  setRadio() { this.radioOn = false; }
+  setRadio(on) { this.radioOn = on; if (this.ready && on) this.burst(3000, 0.25, { vol: 0.2, dest: this.radioGain }); this.stream(); }
   get stations() { return REAL.length; }
   live() { return this.tape ? null : REAL[this.station % REAL.length]; }
-  label() { return 'OFF'; }
-  oldLabel() { return !this.radioOn ? 'OFF' : this.tape ? 'TAPE' : (REAL[this.station].fm ? 'FM ' + REAL[this.station].fm + ' ' : '') + REAL[this.station].name; }
+  label() { return !this.radioOn ? 'OFF' : this.tape ? 'TAPE' : (REAL[this.station].fm ? 'FM ' + REAL[this.station].fm + ' ' : '') + REAL[this.station].name; }
   stream() {
     clearTimeout(this.wait); const L = this.radioOn ? this.live() : null;
     if (this.ready) { this.radioGain.gain.value = this.radioOn && !L ? 1.6 : 0; this.nextT = this.ctx.currentTime + 0.05; this.step = 0; }
@@ -212,7 +212,7 @@ export class GameAudio {
     el.onerror = fail; this.wait = setTimeout(() => { if (el.readyState < 2 && !(el.currentTime > 0)) fail(); }, 25000);
     if (el.src !== L.url) el.src = L.url; el.play().catch((e) => { if (e.name !== 'NotAllowedError' && e.name !== 'AbortError') fail(); });
   }
-  tune() { }
+  tune() { this.station = (this.station + 1) % REAL.length; this.tape = false; this.bad.delete(REAL[this.station].url); this.step = 0; if (this.ready && this.radioOn) this.burst(2000, 0.3, { vol: 0.25, to: 5000, dest: this.master }); this.stream(); }
 
 
   update(boil, env) {
@@ -263,7 +263,13 @@ export class GameAudio {
 }
 
 // the dial: real stations streaming live (https, open to any page): New York's own on their FM numbers, then SomaFM's (listener-supported)
-export const REAL = [];   // (no radio in the 1860s: the boombox and its stations are gone)
+export const REAL = [
+  { name: 'WBGO Jazz', fm: '88.3', url: 'https://ais-sa8.cdnstream1.com/3629_128.mp3' },
+  { name: 'WWOZ New Orleans', fm: '90.7', url: 'https://wwoz-sc.streamguys1.com/wwoz-hi.mp3' },
+  { name: 'WQXR Classical', fm: '105.9', url: 'https://stream.wqxr.org/wqxr-web' },
+  { name: 'SomaFM Seven Inch Soul', url: 'https://ice1.somafm.com/7soul-128-mp3' },
+  { name: 'SomaFM Underground 80s', url: 'https://ice1.somafm.com/u80s-128-mp3' },
+];
 // the cassette: original loops in the spirit of the era (city-pop, synthwave, slow jam), played when no station will
 const STATIONS = [
   { bpm: 108, pad: 'triangle', lead: 'square', stab: 10, kick: [0, 6, 8], snare: [4, 12], bass: [0, null, 0, null, 12, null, 0, 7, 0, null, 0, null, 10, null, 12, null],

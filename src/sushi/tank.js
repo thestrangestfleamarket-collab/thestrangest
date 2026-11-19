@@ -24,7 +24,7 @@ export function buildTank(scene) {
   const bowlM = T.surface(mat({ map: glaze, side: THREE.DoubleSide }), { grime: 0.15, bomb: 0 });
   mesh(new THREE.LatheGeometry([[0, 0], [R * 0.6, 0], [R * 0.85, H * 0.3], [R, H * 0.8], [R + 0.02, H], [R - 0.01, H + 0.012], [R - 0.025, H], [R * 0.82, H * 0.3], [R * 0.58, 0.02], [0, 0.02]].map(([a, b]) => new THREE.Vector2(a, b)), 32), bowlM, X, TOP, Z, root);
   // the bed: river stones, weed
-  const peb = T.surface(mat({ map: T.photo('stone_wall'), color: 0x9a948a }), { grime: 0.2 }); for (let i = 0; i < 14; i++) { const a = i * 2.39, d = 0.04 + (i % 5) * 0.045, s = mesh(new THREE.IcosahedronGeometry(0.018 + (i % 3) * 0.008, 0), peb, X + Math.cos(a) * d, TOP + 0.03, Z + Math.sin(a) * d, root); s.scale.y = 0.6; s.castShadow = false; }
+  const peb = T.surface(mat({ map: T.photo('concrete'), color: 0x9a948a }), { grime: 0.2 }); for (let i = 0; i < 14; i++) { const a = i * 2.39, d = 0.04 + (i % 5) * 0.045, s = mesh(new THREE.IcosahedronGeometry(0.018 + (i % 3) * 0.008, 0), peb, X + Math.cos(a) * d, TOP + 0.03, Z + Math.sin(a) * d, root); s.scale.y = 0.6; s.castShadow = false; }
   const weed = mat({ color: 0x3c6a2c, side: THREE.DoubleSide }), blades = [];
   for (let i = 0; i < 9; i++) { const h = 0.1 + (i % 4) * 0.03, g = new THREE.PlaneGeometry(0.014, h, 1, 4); g.translate(0, h / 2, 0); const a = i * 0.7 + 2, b = mesh(g, weed, X + Math.cos(a) * 0.17, TOP + 0.025, Z + Math.sin(a) * 0.17, root); b.rotation.y = i * 0.9; b.castShadow = false; blades.push(b); }
   // the water: a tinted body, its live surface (ripple.js) and the light that surface focuses on the bed

@@ -46,7 +46,7 @@ import {SYS, TILE} from './006-map-pre.js';
     if(VIT.sta<.3)L.push('You\'re out of breath. Stop for a moment and your stamina fills again.');
     if(h!=null&&(h>=20||h<6))L.push('It\'s night. Some shops are shut till morning.');
     if(SHARED.LVL==='down')L.push('We\'re underground. The stairs take you back up to the street.');
-    const C=GUIDE.G&&GUIDE.G.chapters; if(C&&C.length){ const c=C[Math.floor(Math.random()*C.length)]; L.push(c.title+': '+unbr(c.steps[0]||c.what)); }
+    const C=GUIDE.G&&GUIDE.G.chapters; if(C&&C.length){ const c=C[Math.floor(Math.random()*C.length)]; L.push(c.title+': '+unbr((c.steps&&c.steps[0])||c.what||'')); }
     L.push('Ask me WHERE IS and I\'ll fly you there.','If something hits you, I zap it back. I need a few seconds between zaps.');
     return L[Math.floor(Math.random()*L.length)]; };
   const chapter=()=>{ const c=GUIDE.G&&GUIDE.G.chapters[gi]; return c?c.title+'. '+c.what+' '+c.steps.map((s,i)=>(i+1)+'. '+unbr(s)).join(' '):'My guide book is still loading. Ask me again in a moment.'; };

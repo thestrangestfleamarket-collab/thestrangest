@@ -1,11 +1,11 @@
-// the run's end at dawn (the clock's 'end'): the card of the day and the night (the takings against the target, the fee, the reputation), the shop for the stall (shop.js), NEXT DAY and START OVER; on a screen a card beside the morning, in the headset a board before you to read and poke
+// the run's end at dawn (the clock's 'end'): the card of the day and the night (the takings against the target, the fee, the reputation), the shop for the cart (shop.js), NEXT DAY and START OVER; on a screen a card beside the morning, in the headset a board before you to read and poke
 import * as THREE from 'three';
 import { G, V3 } from './ctx.js';
 import * as T from './tex.js';
 import { RECIPES } from './cart.js';
 import { TEXT as ST } from './shop.js';
 
-export const TEXT = { title: 'DAWN', intro: 'The lanterns burn down and the village wakes.', day: 'Day', served: 'Bowls served', lost: 'Walked out', taken: 'Taken in', of: 'of', fee: 'Fee due at dawn', paid: 'paid', unpaid: 'UNPAID', rating: 'Rating', rep: 'Reputation', late: 'Late bowls, by lantern light', savings: 'Savings', dish: 'New on the menu', extras: 'special requests', next: 'NEXT DAY', over: 'START OVER', sure: 'SURE? START OVER', keep: 'Log in to keep your progress.', kept: 'Progress saved.', out: 'Three fees unpaid: the pitch is lost.', met: 'target met' };
+export const TEXT = { title: 'DAWN', intro: 'The street lamps go out and the block wakes.', day: 'Day', served: 'Bowls served', lost: 'Walked out', taken: 'Taken in', of: 'of', fee: 'Permit fee due at dawn', paid: 'paid', unpaid: 'UNPAID', rating: 'Rating', rep: 'Reputation', late: 'Late bowls, by lantern light', savings: 'Savings', dish: 'New on the menu', extras: 'special requests', next: 'NEXT DAY', over: 'START OVER', sure: 'SURE? START OVER', keep: 'Log in to keep your progress.', kept: 'Progress saved.', out: 'Three fees unpaid: the vending permit is pulled.', met: 'target met' };
 
 export function buildDawn(scene) {
   const D = { card: null, board: null, btns: [] };

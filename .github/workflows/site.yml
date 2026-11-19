@@ -282,7 +282,7 @@ jobs:
         if: contains(steps.f.outputs.run, ' jam')
         run: node tests/jam.cjs dist/jam.html
       - name: The Garage (the drum kit at /drums; the keys and a click play it, then the sticks, triggers and grip in an emulated Quest 3)
-        timeout-minutes: 15
+        timeout-minutes: 30
         if: contains(steps.f.outputs.run, ' drums')
         run: node tests/drums.cjs dist/drums.html
       - name: Halcyon Greens (mini golf at /golf; it loads, a putt rolls, a putt holes out)

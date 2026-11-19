@@ -351,7 +351,7 @@ const srv = require('http').createServer((q, r) => { const f = path.join(ROOT, d
     const x0 = G.rig.position.x; ctl('left').updateAxis('thumbstick', 'x-axis', 1); await frames(6); ctl('left').updateAxis('thumbstick', 'x-axis', 0); out.moved = G.rig.position.x > x0 + 0.05;
     { // dawn in the headset: one board to read, its shop and NEXT DAY poked with a finger
       G.clock.finish(); await frames(5); const D = G.dawn, btn = (re) => G.buttons.find((b) => re.test(b.name)), kb = btn(/KNIFE/), nb = btn(/NEXT DAY/), R = H('right'); G.prog.P.money = G.prog.price('knife');
-      const poke = async (b) => { put('right', b.getPos().clone().add(V(0, 0, 0.3)), new Q()); await frames(3); const d = R.tip.clone().sub(R.pos); put('right', b.getPos().clone().sub(d)); await frames(5); put('right', b.getPos().clone().add(V(0, 0, 0.3))); await frames(3); };
+      const poke = async (b) => { const t = b.getPos(), cur = t.clone().add(V(0, 0, 0.3)); put('right', cur, new Q()); await frames(4); for (let k = 0; k < 4 && R.tip.distanceTo(t) > 0.015; k++) { cur.add(t.clone().sub(R.tip)); put('right', cur); await frames(4); } await frames(2); put('right', t.clone().add(V(0, 0, 0.3))); await frames(3); };   // (the fingertip brought onto the box, then away)
       out.dawn = { board: !!D.board, shop: !!kb, next: !!nb, reach: nb ? +nb.getPos().distanceTo(G.camera.getWorldPosition(V(0, 0, 0))).toFixed(2) : 9, day0: G.prog.P.day }; if (window.__shot) await window.__shot('14-vr-dawn-board');
       if (kb) await poke(kb); out.dawn.bought = G.prog.has('knife'); if (nb) await poke(nb); out.dawn.day = G.prog.P.day; out.dawn.cleared = !D.board && !G.ended && G.game.state === 'prep' && !G.buttons.includes(nb); }
     return out; });

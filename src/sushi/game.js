@@ -39,6 +39,7 @@ export function buildGame(scene) {
   game.restock();
   // the morning again (a run begun over): the takings, the stock and the counter as they were before the first bowl
   game.newDay = () => { for (const c of [...game.customers]) { if (c.ticket) c.ticket.removeFromParent(); if (c.nb) G.block?.give(c.nb); else if (!c.guest) c.p.root.removeFromParent(); } game.customers.length = 0; game.seats.forEach((s) => { s.c = null; s.dirty = null; });
+    for (const it of [...G.items]) if (it.kind === 'cash' || ((it.kind === 'bowl' || it.kind === 'drink') && (it.dirty || it.served))) it.remove();   // (yesterday's bowls and coins are not left on the counter)
     game.money = game.tips = game.served = game.lost = game.lateServed = game.extra = game.refused = 0; game.skill = 0; game.spawnT = 4; game.scores = []; game.ticketNo = 1; if (game.summary) { game.summary.removeFromParent(); game.summary = null; } game.state = 'prep'; C.setOpen(false); game.restock(); };
   K.on('reset', game.newDay);
 
@@ -213,6 +214,7 @@ export function buildGame(scene) {
   game.rating = () => (game.scores.length ? game.scores.reduce((a, b) => a + b, 0) / game.scores.length / 20 : 0);
   game.serving = () => K.phase !== 'dawn';   // the village comes to eat by day and at dusk, late customers and the regulars through the night; at dawn the stall closes
   const freeSeat = () => game.seats.findIndex((s, i) => i < G.mods.seats && !s.c && !s.dirty);   // (a stool not yet bought is not sat on, except by a visitor from THE MARKET)
+  game.freeSeat = freeSeat;
   game.forceSpawn = (opt) => { const i = freeSeat(); return i >= 0 ? spawn(i, null, opt) : null; };
   game.special = game.forceSpawn;   // (a night's event seats its own: events.js)
 
@@ -291,7 +293,7 @@ export function buildGame(scene) {
     // LED register + hints
     let potsOff = 0; for (const q of C.pots) if (!q.on) potsOff++;
     game.hintT = (game.hintT || 0) - dt; if (game.hintT <= 0) { game.hintT = 0.5; const P = G.prog.P, f = G.money.fmt;
-      G.hint = G.reportMsg ? G.reportMsg : G.talk && /login|blocked|cannot|no microphone/.test(G.talk.mic || '') && !potsOff && Math.floor(G.t / 4) % 2 ? 'VOICE: ' + G.talk.mic.toUpperCase() : game.state === 'prep' ? (potsOff ? `LIGHT ${potsOff} BRAZIER${potsOff > 1 ? 'S' : ''} (LEFT)` : 'HANG THE NOREN: OPEN (RIGHT POST)') : game.state === 'closed' ? (K.phase === 'dawn' ? 'DAWN' : 'THE DAY IS DONE') : game.state === 'closing' ? 'LAST ORDERS' : game.soldOut ? 'SOLD OUT: TAKE IN THE NOREN' : potsOff && C.pots.some((q) => !q.on && (!q.type || game.cfg().menu.some((k) => RECIPES[k].broth === q.type))) ? 'A BRAZIER HAS GONE OUT!' : G.events?.name() || G.rush.name() || `${TEXT.day} ${P.day}  ${f(G.prog.taken())} ${TEXT.of} ${f(G.prog.target())}  ${TEXT.fee} ${f(G.prog.fee() + P.debt)}`; }
+      G.hint = G.reportMsg ? G.reportMsg : K.over ? 'DAWN' : G.talk && /login|blocked|cannot|no microphone/.test(G.talk.mic || '') && !potsOff && Math.floor(G.t / 4) % 2 ? 'VOICE: ' + G.talk.mic.toUpperCase() : game.state === 'prep' ? (potsOff ? `LIGHT ${potsOff} BRAZIER${potsOff > 1 ? 'S' : ''} (LEFT)` : 'HANG THE NOREN: OPEN (RIGHT POST)') : game.state === 'closed' ? (K.phase === 'dawn' ? 'DAWN' : 'THE DAY IS DONE') : game.state === 'closing' ? 'LAST ORDERS' : game.soldOut ? 'SOLD OUT: TAKE IN THE NOREN' : potsOff && C.pots.some((q) => !q.on && (!q.type || game.cfg().menu.some((k) => RECIPES[k].broth === q.type))) ? 'A BRAZIER HAS GONE OUT!' : G.events?.name() || G.rush.name() || `${TEXT.day} ${P.day}  ${f(G.prog.taken())} ${TEXT.of} ${f(G.prog.target())}  ${TEXT.fee} ${f(G.prog.fee() + P.debt)}`; }
     game.ledT -= dt;
     if (game.ledT <= 0) {
       game.ledT = 0.5;

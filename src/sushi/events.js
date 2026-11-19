@@ -81,6 +81,6 @@ export function buildEvents() {
   let t = 0;
   E.update = (dt) => { for (let i = E.cur.length - 1; i >= 0; i--) { const ev = E.cur[i]; if (RUN[ev.id].tick) call(ev, 'tick', dt); }
     if ((t -= dt) > 0) return; t = 1; if (K.phase !== 'night' || G.game.state !== 'open' || E.cur.length || G.guest) { E.wait = false; return; }
-    const due = E.list.find((x) => !x.done && K.pfrac >= x.at); E.wait = !!due; if (!due) return; if (E.fire(due.id) || ++due.tries > 90) { due.done = true; E.wait = false; } };   // (while one is due the counter takes nobody new, so a stool comes free for it)
+    const due = E.list.find((x) => !x.done && K.pfrac >= x.at); E.wait = !!due; if (!due) return; if (E.fire(due.id) || ++due.tries > 90 || G.game.freeSeat() >= 0) { due.done = true; E.wait = false; } };   // (while one is due the counter takes nobody new, so a stool comes free for it; one that cannot begin with a stool free is let go)
   return E;
 }

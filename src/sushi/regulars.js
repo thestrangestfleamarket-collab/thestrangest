@@ -27,7 +27,7 @@ const ARC_COP = [['Someone has been taking small things from doorsteps. I am wat
 const ARC_KID = [['I am learning to read! I know nine of them already.', 'is learning to read.'], ['I read your whole board today. Nearly all of it.', 'read the menu board.'], ['I wrote my own name. I left it at home, but I did.', 'wrote their own name.']];
 // their usual hours, as shares of the run: morning, midday, afternoon, dusk, the evening, late, the small hours
 export const SLOTS = [[0.02, 0.11], [0.13, 0.22], [0.24, 0.3], [0.31, 0.39], [0.42, 0.58], [0.6, 0.71], [0.73, 0.87]];
-export const LIKE = { great: 85, good: 70, bad: 50, up: 1, half: 0.5, down: -1, walked: -2, tip: 0.06, friend: 4, friendP: 0.35, beat: 1.5, ask: 1 };   // how a bowl's score moves their affection (-5..10), what affection does
+export const LIKE = { great: 85, good: 70, bad: 50, up: 1, half: 0.5, down: -1, walked: -2, wronged: 3, tip: 0.06, friend: 4, friendP: 0.35, beat: 1.5, ask: 1 };   // how a bowl's score moves their affection (-5..10), what affection does
 const hash = (a, b, c) => { const x = Math.sin(a * 12.9898 + b * 78.233 + c * 37.719) * 43758.5453; return x - Math.floor(x); };
 
 export function buildRegulars() {
@@ -62,6 +62,7 @@ export function buildRegulars() {
   R.update = (dt) => { if ((t -= dt) > 0) return; t = 1; const g = G.game; if (!g) return;
     for (const c of g.customers) { if (!c.nb || c.state !== 'eating' || c.taled || c.t < 5) continue; c.taled = true; const m = rec(c), arc = R.arc(c.nb.n), b = arc[m.b]; if (!b || m.a < LIKE.up + m.b * LIKE.beat || m.bd >= G.prog.P.day) continue;
       m.b++; m.bd = G.prog.P.day; G.story?.notes.push(`${c.nb.def.name} ${b[1]}`); if (G.story) G.story.dirty = true; R.told = { id: c.nb.def.id, beat: m.b }; G.talk?.event(c, 'told', { as: 'tale', prompt: TEXT.tale(b[0]), lines: [b[0]] }); } };
-  K.on('reset', () => { R.today = {}; R.asked = {}; });
+  // a new day: yesterday's grudges are over on the street, but whoever the cook wronged thinks less of the stall
+  K.on('reset', () => { R.today = {}; R.asked = {}; const B = G.block; if (!B) return; for (const id in B.mad) { const m = G.prog.reg(id); m.a = clamp(m.a - LIKE.wronged, -5, 10); delete B.mad[id]; } for (const id in B.told) delete B.told[id]; });
   return R;
 }

@@ -1,18 +1,23 @@
 // every sound of the night: recorded ones (data/sushi/snd, CC0) and ones made in the browser, each from where it is through one chain (spatial: direction, distance by its kind, the air dulling what is far, the alley's brick answering, the counter in the way); the rain and the street as a bed that changes as you move; and the boombox: real stations off the air, its own tape when none will play
 import * as THREE from 'three';
-import { G } from './ctx.js';
+import { G, ROOFUP } from './ctx.js';
 
 // the recordings (tools/sushi-assets.py snd; credits in docs/sushi-sounds.md)
 export const SNDS = ['boil', 'simmer', 'steam', 'rain', 'eaves', 'drip', 'traffic', 'pour', 'drain', 'chop1', 'chop2', 'chop3', 'ceramic1', 'ceramic2', 'metal1', 'metal2', 'clank', 'wood1', 'wood2', 'glass1', 'glass2', 'shatter', 'crash', 'cloth1', 'cloth2', 'coin1', 'coin2', 'plop1', 'plop2', 'ignite', 'knob'];
+// the later ones (tools/sushi-sfx.py: ElevenLabs' sound effects), fetched once the first are in: the rain on the roof and on the pavement, the city's night, a burner's flame, the neon's hum, a car on the wet, footsteps, a stool, the register, chopsticks, a slurp, the counter bell
+export const SNDS2 = ['roofrain', 'rainst', 'citynight', 'burner', 'neon', 'carwet', 'step1', 'step2', 'step3', 'step4', 'stool', 'register', 'sticks', 'slurp', 'bell'];
 // how each kind of source carries: the distance at which it is at full level (ref) and how fast it falls after (roll); far is where it stops
 const KIND = { item: { ref: 0.35, roll: 1.4, far: 30 }, pot: { ref: 0.45, roll: 1.3, far: 30 }, voice: { ref: 1, roll: 1.2, far: 40 }, radio: { ref: 0.8, roll: 1.1, far: 40 }, tv: { ref: 0.7, roll: 1.2, far: 40 },
-  car: { ref: 3, roll: 1, far: 90 }, street: { ref: 7, roll: 0.9, far: 140 }, eaves: { ref: 0.6, roll: 1.5, far: 25, flat: true }, roof: { ref: 1, roll: 1.4, far: 25, flat: true } };
+  car: { ref: 3, roll: 1, far: 90 }, street: { ref: 7, roll: 0.9, far: 140 }, eaves: { ref: 0.6, roll: 1.5, far: 25, flat: true }, roof: { ref: 1.6, roll: 1.2, far: 25, flat: true }, ground: { ref: 2, roll: 1, far: 30 }, sign: { ref: 1.5, roll: 1.2, far: 30 } };
 // what each thing is made of, for how it sounds when it is taken, set down or knocked
 const MAT = { ceramic: ['ceramic1', 'ceramic2', 0.85, 1.05], metal: ['metal1', 'metal2', 0.9, 1.1], glass: ['glass1', 'glass2', 0.95, 1.1], wood: ['wood1', 'wood2', 0.9, 1.15], cloth: ['cloth1', 'cloth2', 0.9, 1.1], soft: ['cloth1', 'cloth2', 1.3, 1.6], paper: ['cloth2', 'cloth1', 1.5, 1.8], plastic: ['wood1', 'wood2', 1.5, 1.8], coin: ['coin1', 'coin2', 0.95, 1.08] };
 export const matOf = (it) => it.mat || (it.kind === 'bowl' ? 'ceramic' : it.kind === 'drink' ? 'glass' : it.tool ? 'metal' : it.kind === 'sticks' ? 'wood' : it.kind === 'rag' ? 'cloth' : it.kind === 'cash' ? (it.value >= 100 ? 'paper' : 'coin') : it.kind === 'food' || it.kind === 'raw' ? 'soft' : 'wood');
 // one-shot sounds by name: which recordings, how loud, how much the pitch may wander
 const SHOT = { chop: [['chop1', 'chop2', 'chop3'], 0.75, 0.94, 1.06], plop: [['plop1', 'plop2'], 0.35, 0.85, 1.15], splash: [['drain'], 0.4, 1.1, 1.3], drain: [['drain'], 0.55, 0.95, 1.05], ignite: [['ignite'], 0.6, 0.97, 1.03], knob: [['knob'], 0.5, 0.95, 1.05],
-  shatter: [['shatter'], 0.8, 0.92, 1.05], crash: [['crash'], 0.8, 0.9, 1.05], clank: [['clank'], 0.6, 0.9, 1.05], coin: [['coin1', 'coin2'], 0.5, 0.95, 1.05] };
+  shatter: [['shatter'], 0.8, 0.92, 1.05], crash: [['crash'], 0.8, 0.9, 1.05], clank: [['clank'], 0.6, 0.9, 1.05], coin: [['coin1', 'coin2'], 0.5, 0.95, 1.05],
+  step: [['step1', 'step2', 'step3', 'step4'], 0.4, 0.92, 1.08], slurp: [['slurp'], 0.3, 0.92, 1.08], sticks: [['sticks'], 0.3, 0.95, 1.08], stool: [['stool'], 0.3, 0.92, 1.05], cash: [['register'], 0.5, 0.98, 1.02], bell: [['bell'], 0.45, 1, 1] };
+// where a sound comes from when its caller names no place: the bell on the ticket rail, the register on the back counter
+const HOME = { bell: new THREE.Vector3(0, 1.95, -0.53), cash: new THREE.Vector3(0.2, 1.05, 1.68) };
 // the alley: listener and sources between two brick backs (3.4 m behind the cart, 5.6 m across); a short slap off each and a small tail, open to the sky
 function alleyIR(c) {
   const n = (c.sampleRate * 1.1) | 0, b = c.createBuffer(2, n, c.sampleRate);
@@ -65,7 +70,7 @@ export class GameAudio {
 
   load(base = '/sushi-assets/snd/') {
     return Promise.all(SNDS.map((n) => fetch(base + n + '.mp3').then((r) => (r.ok ? r.arrayBuffer() : Promise.reject(r.status))).then((ab) => this.ctx.decodeAudioData(ab)).then((bf) => { this.buf[n] = bf; this.loaded++; }).catch(() => { this.missing = (this.missing || 0) + 1; })))
-      .then(() => this.beds());
+      .then(() => { this.beds(); return Promise.all(SNDS2.map((n) => fetch(base + n + '.mp3').then((r) => (r.ok ? r.arrayBuffer() : Promise.reject(r.status))).then((ab) => this.ctx.decodeAudioData(ab)).then((bf) => { this.buf[n] = bf; this.loaded2 = (this.loaded2 || 0) + 1; }).catch(() => { this.missing2 = (this.missing2 || 0) + 1; }))); });
   }
 
   // ---- one chain for every source: gain -> distance -> air (a low-pass that closes with distance, more behind the counter or glass) -> direction; a send to the alley's brick that grows as it goes further
@@ -125,25 +130,28 @@ export class GameAudio {
     if (this.bedOn || !this.buf.rain || !(G.rainK > 0.005)) return; this.bedOn = true; const c = this.ctx;
     this.rainG = c.createGain(); this.rainG.gain.value = 0; this.rainG.connect(this.bed);
     const r = c.createBufferSource(); r.buffer = this.buf.rain; r.loop = true; r.loopStart = 0.05; r.loopEnd = r.buffer.duration - 0.05; r.connect(this.rainG); r.start(0, Math.random() * 10);
-    this.edges = [[-0.9, 2.62, -1.86], [0.9, 2.62, -1.86], [-0.9, 2.62, 2.14], [0.9, 2.62, 2.14]].map(([x, y, z], i) => this.loop(i % 2 ? 'drip' : 'eaves', 'eaves', new THREE.Vector3(x, i % 2 ? 0.1 : y, z), { rate: 0.94 + i * 0.04 }));
-    this.roof = this.loop('eaves', 'roof', new THREE.Vector3(0, 3.1, 0.15), { rate: 1.12, wet: 0.3 });
+    this.edges = [[-0.9, 2.62 + ROOFUP, -1.86], [0.9, 2.62 + ROOFUP, -1.86], [-0.9, 2.62 + ROOFUP, 2.14], [0.9, 2.62 + ROOFUP, 2.14]].map(([x, y, z], i) => this.loop(i % 2 ? 'drip' : 'eaves', 'eaves', new THREE.Vector3(x, i % 2 ? 0.1 : y, z), { rate: 0.94 + i * 0.04 }));
+    this.roof = this.loop('eaves', 'roof', new THREE.Vector3(0, 3.1 + ROOFUP, 0.15), { rate: 1.12, wet: 0.3 });
   }
   // as loud as what falls: nothing on a dry day, a soft hiss in the drizzle; and the avenue's traffic at the block's end, busier by day than in the small hours
   rainLevel(now) {
     if (!this.street && this.buf.traffic) this.street = this.loop('traffic', 'street', new THREE.Vector3(35, 1.5, -1), { wet: 1.6 }); if (this.street) { const h = G.clock ? G.clock.hour : 12; this.street.level(h > 25 && h < 29.5 ? 0.4 : h > 22 ? 0.6 : 0.9); }
     const k = Math.min(1, (G.rainK || 0) / 0.32); if (k > 0) this.beds(); if (!this.bedOn) return;
-    this.rainG.gain.setTargetAtTime(k * 1.3, now, 0.8); this.edges.forEach((e) => e.level(0.45 * k)); this.roof.level(0.2 * k);
+    // the roof's own patter overhead and the pavement's hiss round the cart, once those recordings are in (the first roof loop gives way to it)
+    if (!this.roof2 && this.buf.roofrain) this.roof2 = this.loop('roofrain', 'roof', new THREE.Vector3(0, 3.1 + ROOFUP, 0.15), { wet: 0.3 });
+    if (!this.pave && this.buf.rainst) this.pave = [[-3.2, -3.2], [3.2, -3.2], [-3.2, 3.4], [3.2, 3.4]].map(([x, z], i) => this.loop('rainst', 'ground', new THREE.Vector3(x, 0.05, z), { rate: 0.96 + i * 0.03 }));
+    this.rainG.gain.setTargetAtTime(k * (this.pave ? 0.8 : 1.3), now, 0.8); this.edges.forEach((e) => e.level(0.3 * k)); this.roof.level(this.roof2 ? 0 : 0.2 * k); if (this.roof2) this.roof2.level(0.5 * k); if (this.pave) this.pave.forEach((e) => e.level(0.3 * k));
   }
 
   play(name, at, k = 1) {
     if (!this.ready) return;
-    const it = at && at.obj ? at : null, pos = it ? it.obj.position : at && at.isVector3 ? at : null;
+    const it = at && at.obj ? at : null, pos = it ? it.obj.position : at && at.isVector3 ? at : HOME[name] || null;
     if (name === 'grab') return this.touch(it, pos, 0.22 * k);
     const SET = { place: 'paper', clink: 'coin', bottle: 'glass' };
     if ((name === 'set' || SET[name]) && this.buf.wood1) return this.touch(it || { mat: SET[name] || 'wood', obj: { position: pos } }, pos, 0.35 * k);
     if (name === 'break') name = it && matOf(it) === 'glass' ? 'shatter' : 'crash';
     if (name === 'pour' && this.buf.pour) return this.flow('p' + (pos ? pos.x.toFixed(1) : ''), pos || this.ear(), 0.02);
-    const S = SHOT[name]; if (S && this.buf[S[0][0]]) return this.shot(S[0][(Math.random() * S[0].length) | 0], pos, S[1] * k, S[2] + Math.random() * (S[3] - S[2]));
+    const S = SHOT[name]; if (S && this.buf[S[0][0]]) return this.shot(S[0][(Math.random() * S[0].length) | 0], pos || HOME[name], S[1] * k, S[2] + Math.random() * (S[3] - S[2]));
     let dest; if (pos) { const e = this.spatial('item', pos.clone()); setTimeout(e.free, 1500); dest = e.input; }   // made here, still from where it happens
     switch (name) {
       case 'patter': break;   // the rain is recorded now
@@ -223,6 +231,7 @@ export class GameAudio {
       this.trainGain.gain.value = env.train * 0.5; if (env.train > 0.25 && Math.random() < 0.09) this.tone(70, 0.06, { vol: 0.12 * env.train, type: 'square' }); // wheel clack
     }
     const L = G.camera, l = c.listener;
+    if (L && !l.positionX && l.setPosition) { const p = L.getWorldPosition(_p), f = L.getWorldDirection(_f); l.setPosition(p.x, p.y, p.z); l.setOrientation(f.x, f.y, f.z, 0, 1, 0); }   // (a browser whose listener has no parameters)
     if (L && l.positionX) {
       const p = L.getWorldPosition(_p), f = L.getWorldDirection(_f);
       l.positionX.value = p.x; l.positionY.value = p.y; l.positionZ.value = p.z;
@@ -238,9 +247,15 @@ export class GameAudio {
       if (!this.pots.length) { this.pots = G.cart.pots.map((pt) => ({ pt, e: this.loop(pt.type ? 'simmer' : 'boil', 'pot', () => _q.set(pt.x, pt.liqY > 0 ? pt.liqY : pt.baseY + 0.1, pt.z), { rate: 0.95 + Math.random() * 0.1 }) })); this.hiss = this.loop('steam', 'pot', () => { const pt = G.cart.pots[0]; return _q.set(pt.x, pt.rimY + 0.15, pt.z); }, { rate: 0.8 }); }
       let top = 0; for (const q of this.pots) { const k = Math.max(0, Math.min(1, (q.pt.heat - 0.55) / 0.45)) * (q.pt.liqY > 0 ? 1 : 0); q.e.level((q.pt.type ? 0.3 : 0.45) * k * k); if (!q.pt.type) top = k; }
       this.hiss.level(0.05 * top * top);
+      // each lit burner's flame under its pot
+      if (this.buf.burner) for (const q of this.pots) { q.b ||= this.loop('burner', 'pot', new THREE.Vector3(q.pt.x, 0.76, q.pt.z), { rate: 0.94 + Math.random() * 0.12 }); q.b.level(q.pt.on ? 0.13 : 0); }
     }
+    // the neon's hum up at the sign while the cart is open, and the city's night under everything, low
+    if (G.cart && this.buf.neon) { this.neon ||= this.loop('neon', 'sign', new THREE.Vector3(0, 3.9 + ROOFUP, -0.3)); this.neon.level(G.cart.open ? 0.22 : 0); }
+    if (this.buf.citynight && !this.city) { const s = c.createBufferSource(), g = (this.city = c.createGain()); s.buffer = this.buf.citynight; s.loop = true; s.loopStart = 0.05; s.loopEnd = s.buffer.duration - 0.05; g.gain.value = 0.16; s.connect(g); g.connect(this.master); s.start(); }
     // a car going by the street's end: its tyres on the wet
-    for (const g of G.passing || []) { if (!g.userData.lead) continue; if (!g.userData.snd) { const e = (g.userData.snd = this.spatial('car', () => g.position)), n = this.loopNoise(420, 0.4, 1, 'bandpass', e.input); e.n = n; n.gain.value = 0; } const s = g.userData.snd, v = g.userData.v || 0; s.n.gain.setTargetAtTime(v ? 0.5 : 0, now, 0.2); s.n.filter.frequency.value = 300 + v * 30; }
+    for (const g of G.passing || []) { if (!g.userData.lead) continue; if (!g.userData.snd) { const e = (g.userData.snd = this.spatial('car', () => g.position)), n = this.loopNoise(420, 0.4, 1, 'bandpass', e.input); e.n = n; n.gain.value = 0; } const s = g.userData.snd, v = g.userData.v || 0; s.n.gain.setTargetAtTime(v ? (this.buf.carwet ? 0.2 : 0.5) : 0, now, 0.2); s.n.filter.frequency.value = 300 + v * 30;
+      if (v && !s.was && this.buf.carwet && g.visible) this.shot('carwet', () => g.position, 0.45, 0.95 + Math.random() * 0.1, 'car'); s.was = !!v; }   // (the recording of one going by on the wet, from where the car is)
     for (const f of this.flows) { f.idle += dt; if (f.idle > 0.15) f.e.level(0); }
     for (const e of this.emit) { if (e.alive && !e.alive()) { e.free(); continue; } this.place(e); }
     if (!this.radioOn || this.live()) return;

@@ -1,7 +1,7 @@
 // the run's one clock: one night, from the last of the dusk to the dawn (owner, 19 Nov 2026: "night only"; G.clock = { phase, t, frac }) and the calendar (G.clock.date()); frac runs 0 to 1 over the whole run, the light's phases and the story's beats (story.js) follow it; G.clock.on(name, fn) hangs a system on a phase's beginning ('night' 'dawn'); ?fast=1 runs it quick, G.clock.skip() goes on to the next phase
 import { G, clamp } from './ctx.js';
 
-export const RUN = 24 * 60;   // seconds of play, the whole run
+export const RUN = 38 * 60;   // seconds of play, the whole run
 // the light over the run: the night's service, dawn
 export const PHASES = [['night', 0, 0.92], ['dawn', 0.92, 1]];
 export const ORDER = PHASES.map((p) => p[0]);

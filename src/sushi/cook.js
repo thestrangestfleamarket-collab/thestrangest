@@ -6,7 +6,10 @@ import { avatarsReady, makePerson } from './avatars.js';
 export function buildCook() {
   const cook = { on: false, P: null }; G.cook = cook; let yaw = null;
   const _c = new THREE.Vector3(), _d = new THREE.Vector3(), tL = new THREE.Vector3(), tR = new THREE.Vector3(), TINY = new THREE.Vector3(0.001, 0.001, 0.001), ONE = new THREE.Vector3(1, 1, 1);
-  const make = () => { const P = makePerson(0, 'carving_chef'); if (!P.polyfork) return null; P.pose = 'stand'; P.root.traverse((o) => { o.userData.nopick = true; if (o.isMesh) o.castShadow = true; }); G.scene.add(P.root); P.hands = { L: null, R: null }; return P; };
+  const make = () => { const P = makePerson(0, 'carving_chef'); if (!P.polyfork) return null; P.pose = 'stand'; P.root.traverse((o) => { o.userData.nopick = true; if (o.isMesh) o.castShadow = true; }); G.scene.add(P.root); P.hands = { L: null, R: null };
+    // what of your own body is right under your eyes (the collar, the neck's stump) is not drawn: looking down you see your chest and arms, not a slab across the bottom of the view
+    if (P.mesh && P.mesh.material) { const m = (P.mesh.material = P.mesh.material.clone()); m.onBeforeCompile = (s) => { s.fragmentShader = s.fragmentShader.replace('#include <clipping_planes_fragment>', '#include <clipping_planes_fragment>\n  if (dot(vViewPosition, vViewPosition) < 0.1156) discard;'); }; m.customProgramCacheKey = () => 'cook-near'; }
+    return P; };
   cook.update = (dt) => {
     if (!cook.P) { if (!avatarsReady() || G.mode === 'menu') return; cook.P = make(); if (!cook.P) return; }
     const P = cook.P, cam = G.camera; cam.getWorldPosition(_c); cam.getWorldDirection(_d); const want = Math.atan2(_d.x, _d.z);

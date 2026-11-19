@@ -21,6 +21,7 @@ import { buildGrit } from './grit.js';
 import { buildGuide } from './guide.js';
 import { buildMenu } from './menu.js';
 import { buildBoards } from './boards.js';
+import { Cash } from './till.js';
 import { buildReport } from './report.js';
 import { buildTank } from './tank.js';
 import { buildTV } from './tv.js';
@@ -189,7 +190,7 @@ function frame(now) {
 }
 renderer.setAnimationLoop(frame);
 
-G.debug = { boards, weather, dawn, tv, Items, DRINKS, PH, person: makePerson, PF, tenant: tenantFigure, city, guide, menu: gameMenu, report, tick, frame, render, input, startDesktop, startVR, THREE, share, guest, tank };
+G.debug = { boards, Cash, weather, dawn, tv, Items, DRINKS, PH, person: makePerson, PF, tenant: tenantFigure, city, guide, menu: gameMenu, report, tick, frame, render, input, startDesktop, startVR, THREE, share, guest, tank };
 if (G.guest) { menu.querySelector('h2').textContent = 'RAMEN, as yourself: walk the block up to the ramen cart, take a stool, order a bowl and pay for it. The cook, the customers and everyone passing are the same people every page on the block sees.'; $('help').innerHTML = '<div><b>Browser</b> WASD walk · mouse look · V first / third person · E sit at a stool or get up · click the menu to order · M settings</div><div><b>VR</b> left stick walk · right stick turn · trigger by a stool to sit · step away to get up · poke the menu to order</div><div><b>Back</b> walk out at the end of the street, or LEAVE, to THE MARKET</div>'; $('keys').textContent = 'WASD walk · V view · E sit / get up · click: order · M settings · Esc: free mouse'; deskBtn.textContent = 'Walk the block in this browser'; }
 window.G = G;
 { const box = $('say'); // on a screen: M the settings board, G the guide, T to type what you say if you would rather not speak it

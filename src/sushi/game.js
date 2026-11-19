@@ -258,7 +258,7 @@ export function buildGame(scene) {
       if (c.state === 'waiting' || c.state === 'eating') { c.chatT = (c.chatT ?? rand(28, 60)) - dt; if (c.chatT <= 0 && !(c.voice && c.voice.busy)) { c.chatT = rand(50, 100); G.talk?.event(c, 'chat'); } }
       if (c.state === 'walk' || c.state === 'leaving') {
         if (p.reeling?.()) continue; p.pose = 'walk'; const wp = c.path[0]; _d.copy(wp).sub(p.root.position); const d = _d.length();
-        if (d < 0.06) { c.path.shift(); if (!c.path.length) { if (c.state === 'walk') { c.state = 'sitting'; c.t = 0; p.pose = 'sit'; p.root.position.set(SEATS[c.seat], 0, -1.2); } else { if (c.nb) G.block.give(c.nb); else if (c.guest) { p.pose = 'stand'; G.live?.stood(c.guest); } else p.root.removeFromParent(); game.customers.splice(game.customers.indexOf(c), 1); } } }
+        if (d < 0.06) { c.path.shift(); if (!c.path.length) { if (c.state === 'walk') { c.state = 'sitting'; c.t = 0; p.pose = 'sit'; G.audio.play('stool', p.root.position.clone().setY(0.1)); p.root.position.set(SEATS[c.seat], 0, -1.2); } else { if (c.nb) G.block.give(c.nb); else if (c.guest) { p.pose = 'stand'; G.live?.stood(c.guest); } else p.root.removeFromParent(); game.customers.splice(game.customers.indexOf(c), 1); } } }
         else { _d.multiplyScalar(Math.min(d, 1.35 * dt) / d); p.root.position.add(_d); const ty = Math.atan2(_d.x, _d.z); let dy = ty - p.root.rotation.y; dy = Math.atan2(Math.sin(dy), Math.cos(dy)); p.root.rotation.y += dy * Math.min(1, dt * 8); }
       } else if (c.state === 'sitting') {
         p.root.rotation.y *= 1 - Math.min(1, dt * 8); c.t += dt;
@@ -267,7 +267,7 @@ export function buildGame(scene) {
           c.ticketT = T.panelTex(400, 620, () => { });
           c.ticket = new THREE.Mesh(new THREE.PlaneGeometry(0.2, 0.31), new THREE.MeshBasicMaterial({ map: c.ticketT, color: 0xc4c4c4, side: THREE.DoubleSide }));
           c.ticket.position.set(SEATS[c.seat], 1.825, -0.525); c.ticket.rotation.z = rand(-0.04, 0.04); c.ticket.userData.nopick = true; scene.add(c.ticket);
-          drawTicket(c, true); c.drawT = 0; G.audio.play('bell'); if (!G.talk) G.audio.play('voice'); else if (c.line) c.line(c); else if (!G.regs?.orderLine(c)) G.talk.event(c, 'order');
+          drawTicket(c, true); c.drawT = 0; G.audio.play('bell'); if (!G.talk) G.audio.play('voice', c.p.root.position.clone().setY(1.3)); else if (c.line) c.line(c); else if (!G.regs?.orderLine(c)) G.talk.event(c, 'order');
         }
       } else if (c.state === 'waiting') {
         if (G.prog.P.tut || game.served + game.lost > 0) c.patience -= dt; // the first day's first bowl is off the clock
@@ -278,15 +278,15 @@ export function buildGame(scene) {
       else if (c.state === 'eating') {
         const bw = c.bowl, away = bw.dead || bw.held || bw.obj.position.distanceTo(C.seatSpots[c.seat]) > 0.32; // their bowl is theirs only while it is in front of them: take it and they stop, and say so
         if (away) { c.p.pose = 'sit'; c.gone = (c.gone || 0) + dt; if (!c.took) { c.took = true; c.p.gesture?.('no'); G.talk?.event(c, 'react', bw.dead ? 'smash their bowl while they were still eating' : 'take their bowl away while they were still eating'); }
-          if (bw.dead || c.gone > 16) { if (bw.eaten > 0.6) { game.served++; if (K.phase === 'night') game.lateServed++; game.scores.push(Math.max(0, c.result.score - 30)); if (c.result.pay) till.pay(c, c.result.pay, 0); else leave(c, false); } else leave(c, true); }
+          if (bw.dead || c.gone > 16) { if (bw.eaten > 0.6) { game.served++; if (K.hour > 23) game.lateServed++; game.scores.push(Math.max(0, c.result.score - 30)); if (c.result.pay) till.pay(c, c.result.pay, 0); else leave(c, false); } else leave(c, true); }
           continue; }
         if (c.took) { c.took = false; c.gone = 0; c.p.pose = 'eat'; }
         c.t += dt; const dur = (c.dur ??= K.hour > 23 ? 24 : 17); c.bowl.eaten = clamp(c.t / dur, 0, 1); c.bowl.refresh();
-        if (Math.random() < dt * 0.5) G.audio.play('slurp');
+        if (Math.random() < dt * 0.5) G.audio.play(Math.random() < 0.3 ? 'sticks' : 'slurp', c.p.root.position.clone().setY(1.22));
         if (c.t >= dur) {
           const r = c.result; let pay = r.pay, tip = r.tip;
           if (c.order.drink) { if (c.gotDrink) pay += DRINKS[c.order.drink]; else { tip = Math.round(tip / 2); G.fx.popup(new V3(SEATS[c.seat] + 0.2, 1.2, -0.6), [`Never got the ${c.order.drink}…`, 'tip halved'], false); r.score = Math.max(0, r.score - 10); } }
-          game.served++; if (K.phase === 'night') game.lateServed++; game.scores.push(r.score); G.regs?.served(c, r); G.events?.done(c); if (G.events) pay = G.events.pay(c, pay);
+          game.served++; if (K.hour > 23) game.lateServed++; game.scores.push(r.score); G.regs?.served(c, r); G.events?.done(c); if (G.events) pay = G.events.pay(c, pay);
           if (G.regs?.friend(c)) { const j = freeSeat(); if (j >= 0) spawn(j, null, { stranger: true }); }   // one who likes the cart brings a friend along
           c.bowl.makeDirty(); game.seats[c.seat].dirty = c.bowl; if (pay) till.pay(c, pay, tip); else leave(c, false); // they pay in cash, laid on the ledge, and wait for their change
         }

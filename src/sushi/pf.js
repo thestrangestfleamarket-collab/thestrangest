@@ -61,7 +61,7 @@ export function pfPerson(key, sticks, opt = {}) {
   const root = new THREE.Group(), inner = new THREE.Group(), body = new THREE.Group(); root.add(inner); inner.add(body);
   const O = b.origin.map((v) => new THREE.Vector3(...v)), bones = BONES.map((n) => Object.assign(new THREE.Bone(), { name: n })), mesh = new THREE.SkinnedMesh(geo, MAT);
   bones.forEach((bn, i) => { bn.position.copy(O[i]); body.add(bn); }); mesh.bind(new THREE.Skeleton(bones, O.map((v) => new THREE.Matrix4().makeTranslation(-v.x, -v.y, -v.z))), new THREE.Matrix4()); mesh.frustumCulled = false; body.add(mesh);
-  const ix = (n) => BONES.indexOf(n), ARM = { L: [ix('upperArmL'), ix('forearmL'), ix('handL')], R: [ix('upperArmR'), ix('forearmR'), ix('handR')] }, UP = UPPER.map(ix);
+  const ix = (n) => BONES.indexOf(n), ARM = { L: [ix('upperArmL'), ix('forearmL'), ix('handL')], R: [ix('upperArmR'), ix('forearmR'), ix('handR')] }, UP = UPPER.map(ix), LEGS = ['thighL', 'shinL', 'shoeL', 'toeL', 'thighR', 'shinR', 'shoeR', 'toeR'].map(ix), QI = new THREE.Quaternion();
   const DIR = (a, c) => O[c].clone().sub(O[a]).normalize(), LEN = (a, c) => O[c].distanceTo(O[a]);
   let eyes = null; if (face && EYEBALLS) { const [ex, ey, ez] = face; eyes = [-1, 1].map((sx) => { const e = eyeball(); e.position.set(sx * ex, ey, ez).sub(O[HEAD]); bones[HEAD].add(e); const lid = new THREE.Mesh(EYE.lg, EYE.lid); lid.rotation.x = -1.5; lid.position.copy(e.position); bones[HEAD].add(lid); e.userData.lid = lid; return e; }); }
   const sitHip = O[0].y + (clips.Sitting ? clips.Sitting.H[0] : -0.39) * ks;
@@ -119,12 +119,14 @@ export function pfPerson(key, sticks, opt = {}) {
       const rate = st.push ? -0.9 : this.pose === 'walk' && st.cur.c.speed ? this.speed / (st.cur.c.speed * ks) : 1; st.cur.t += dt * rate; if (st.prev) { st.prev.t += dt; st.fade -= dt; if (st.fade <= 0) st.prev = null; }
       const w = st.prev ? 1 - st.fade / st.fade0 : 1;
       for (let i = 0; i < NB; i++) { sample(st.cur.c, st.cur.t, st.cur.loop, i, R[i], i ? null : hp); if (st.prev) { sample(st.prev.c, st.prev.t, st.prev.loop, i, qa, i ? null : hq); qa.slerp(R[i], w); R[i].copy(qa); if (!i) hp.lerpVectors(hq, hp, w); } }
+      // standing still at the cart's street the legs come under the body (the recorded idle stands wide, one foot forward), the hips up with them
+      if (opt.cart) { st.legN = (st.legN || 0) + ((this.pose === 'stand' && !st.push && !st.down ? 1 : 0) - (st.legN || 0)) * Math.min(1, dt * 4); if (st.legN > 0.01) { const k = 0.85 * st.legN; for (const i of LEGS) R[i].slerp(QI, k); hp.y *= 1 - k; } }
       // a gesture over the trunk, arms and head, eased in and out
       const o = st.over; if (o) { o.t += dt; o.w = Math.min(1, o.t / 0.3, (o.end - o.t) / 0.4); if (o.t >= o.end) st.over = null; else for (const i of UP) { sample(o.c, o.t, false, i, qa, null); R[i].slerp(qa, Math.max(0, o.w)); } }
       // where to look: yaw and pitch in the body's own space, as far as a neck goes
       this.lookW += ((this.look ? 1 : 0) - this.lookW) * Math.min(1, dt * 3.5); if (this.look) this.lookAt.lerp(this.look, Math.min(1, dt * 6));
       let ty = 0, tp = 0; if (this.lookW > 0.02 && !st.down) { body.updateWorldMatrix(true, false); inv.copy(body.matrixWorld).invert(); tgt.copy(this.lookAt).applyMatrix4(inv).sub(opt.cart && seated ? va.copy(J[HEAD]).setY(J[HEAD].y + 0.12) : va.copy(O[HEAD]).setY(O[HEAD].y + 0.12)); ty = Math.atan2(tgt.x, tgt.z) * this.lookW; tp = (Math.atan2(tgt.y, Math.hypot(tgt.x, tgt.z)) + (opt.cart && seated ? 0.3 : 0)) * this.lookW; }   // (on a stool the head is where the sitting has it, and the recorded sitting bows it: it comes up to whoever it looks at)
-      st.bt = (st.bt ?? Math.random() * 30) + dt; if (opt.cart && seated && !st.down) { const iw = 1 - this.lookW; ty += iw * (0.3 * Math.sin(st.bt * 0.21 + (this.seed || 0)) + 0.13 * Math.sin(st.bt * 0.63)); tp += iw * (-0.1 + 0.05 * Math.sin(st.bt * 0.37)); }   // seated with nothing to look at, the eyes wander: the street, the pots, the bowl
+      st.bt = (st.bt ?? Math.random() * 30) + dt; if (opt.cart && seated && !st.down) { const iw = 1 - this.lookW; ty += iw * (0.3 * Math.sin(st.bt * 0.21 + (this.seed || 0)) + 0.13 * Math.sin(st.bt * 0.63)); tp += iw * ((this.pose === 'eat' ? 0.2 : -0.1) + 0.05 * Math.sin(st.bt * 0.37)); }   // seated with nothing to look at, the eyes wander: the street, the pots, the bowl
       const hy = Math.max(-1.1, Math.min(1.1, ty)), hpi = Math.max(-0.45, Math.min(0.5, tp)), k = Math.min(1, dt * 3.2); st.yaw += (hy * 0.75 - st.yaw) * k; st.pitch += (hpi * 0.7 - st.pitch) * k;
       qa.setFromEuler(e1.set(0, st.yaw * 0.22, 0)); for (const i of PART.torso) R[i].premultiply(qa); qa.setFromEuler(e1.set(-st.pitch, st.yaw, 0, 'YXZ')); for (const i of PART.head) R[i].premultiply(qa);
       // a duck folds forward; a blow past what the feet hold floors them and they get up again
@@ -133,7 +135,7 @@ export function pfPerson(key, sticks, opt = {}) {
       const F = st.down; let fa = 0, fl = 0; if (F) { F.t += dt; const t = F.t; if (t < 0.55) fa = 1.45 * (t / 0.55) ** 2; else if (t < 2.7) fa = 1.45 - 0.07 * Math.max(0, Math.sin((t - 0.55) * 8)) * Math.max(0, 1 - (t - 0.55) * 2.5); else if (t < 4.3) fa = 1.45 * (1 - sm((t - 2.7) / 1.6)); else st.down = null; fl = Math.sin(Math.PI * Math.min(1, t / 0.9)); }
       if (st.down) { body.quaternion.setFromAxisAngle(ax.set(F.d.z, 0, -F.d.x), fa); body.position.y = Math.sin(fa) * 0.11; } else if (body.position.y || body.quaternion.w < 1) { body.quaternion.identity(); body.position.y = 0; }
       const eatC = this.pose === 'eat' ? Math.pow((Math.sin((this.eatT + dt) * 2.4) + 1) / 2, 1.3) : 0;
-      if (opt.cart && !st.down) { if (seated) lean(0, 1, 0.012 * Math.sin(st.bt * 1.5) + 0.08 * eatC);   // breathing (the recorded sitting already leans to the counter); down to the bowl with each mouthful
+      if (opt.cart && !st.down) { if (seated) lean(0, 1, 0.012 * Math.sin(st.bt * 1.5) + 0.045 * eatC);   // breathing (the recorded sitting already leans to the counter); down to the bowl with each mouthful
         else if (this.pose === 'stand') lean(0, 1, 0.006 * Math.sin(st.bt * 1.4)); }
       J[0].copy(hp).multiplyScalar(ks).add(O[0]); for (let i = 1; i < NB; i++) { const p = PI[i]; J[i].copy(O[i]).sub(O[p]).applyQuaternion(R[p]).add(J[p]); }
       // seated at the counter: hands on it, the right one to the mouth with the chopsticks while eating; a wave is the right hand up by the head

@@ -35,6 +35,7 @@ export const TUB = { x: 0.935, z: 0.885, cap: 6 }, COOLZ = 0.63;   // the bus tu
 export const DRINKS = { soda: 75, tea: 75 };   // a can from the cooler: cola, iced tea
 export const BOWL_BROTH = 0.044, BOWL_TARE = 0.05; // a pot's or crock's level that one bowl takes (two ladles of broth, one of tare)
 export const YIELD = { chashu: 8, naruto: 10, negi: 12, egg: 2 }; // servings in one roll, log, stalk or egg
+const _bb = new THREE.Box3();
 export function buildCart(scene, city) {
   const cart = new THREE.Group(); scene.add(cart); G.pickRoot.add(cart);
   const C = { group: cart, pots: [], bins: {}, board: null, open: false, ups: [], knobs: [], shown: { noodles: [], raw: {}, drinks: {} }, stock: { noodles: 0, kettle: 0, jar: { shoyu: 0, shio: 0, miso: 0 }, drinks: { soda: 0, tea: 0 }, raw: { chashu: 0, naruto: 0, negi: 0, egg: 0 } } };
@@ -143,7 +144,7 @@ export function buildCart(scene, city) {
     // over the pots a bare bulb; over the prep side a lamp turned down onto the bins and the board; the third lights the customers' faces from the cook's side of the beam (a lamp straight over a head leaves the face in its own shade)
     const l = sh ? new THREE.PointLight(0xffb070, 0, 6, 1.8) : i === 1 ? new THREE.SpotLight(0xffb878, 0, 6, 0.86, 0.9, 1.5) : new THREE.SpotLight(0xffc088, 0, 5, 1.12, 0.75, 1.3);
     if (sh) { l.position.set(0, -0.28, 0); pv.add(l); } else if (i === 1) { l.position.set(0.55, 2.34, 0.05); l.target.position.set(0.22, 0.9, -0.36); cart.add(l, l.target); } else { l.position.set(0, 2.04, -0.36); l.target.position.set(0, 1.22, -1.5); cart.add(l, l.target); }
-    C.workLights.push({ l, k: sh ? 0.6 : i === 2 ? 7.5 : 7 });
+    C.workLights.push({ l, k: sh ? 0.6 : i === 2 ? 5 : 6 });
     if (sh) { const sl = new THREE.SpotLight(0xffb070, 0, 5, 0.9, 0.85, 1.7); sl.position.set(x, 2.3, z); sl.target.position.set(x + 0.15, 0, z + 0.05); cart.add(sl, sl.target); sl.castShadow = true; sl.shadow.mapSize.set(512, 512); sl.shadow.bias = -0.002; sl.shadow.camera.near = 0.1; sl.shadow.camera.far = 5; C.workLights.push({ l: sl, k: 12, night: true }); }
   });
   // the sign and the lanterns: lit while the cart is open, brighter as the street darkens (steadily: nothing flickers)
@@ -303,7 +304,7 @@ export function buildCart(scene, city) {
   const binStart = { chashu: 8, egg: 4, negi: 8, nori: 20, menma: 14, naruto: 8, corn: 14 };
   Object.keys(TOPPINGS).forEach((k, i) => {
     const x = -0.15 + i * 0.128, z = -0.45, b = { type: k, stock: binStart[k], x, z, pieces: [] };
-    cyl(0.074, 0.062, 0.07, steelDS, x, 0.937, z, cart, 4, true).rotation.y = Math.PI / 4;
+    cyl(0.084, 0.077, 0.07, steelDS, x, 0.937, z, cart, 4, true).rotation.y = Math.PI / 4;
     box(0.086, 0.004, 0.086, steel, x, 0.905, z, cart);
     const lt = T.panelTex(256, 96, () => { });
     b.label = lt;
@@ -312,6 +313,10 @@ export function buildCart(scene, city) {
       const f = new Food(k); const o = f.obj; f.remove(); // borrow the mesh only
       o.userData.item = null; o.position.set(x + ((n % 2) - 0.5) * 0.04 + (k === 'nori' ? 0 : 0), 0.912 + Math.floor(n / 2) * 0.012 + (k === 'egg' ? 0 : 0), z + ((n % 3) - 1) * 0.028);
       o.rotation.y = n * 1.3; if (k === 'nori') { o.position.set(x, 0.912 + n * 0.0025, z); o.rotation.y = 0.1 * n; }
+      { // nothing in a bin reaches through its walls: a piece too wide for it is made to fit, one too near a wall is moved in
+        const IN = 0.05, bx = _bb.setFromObject(o), cx = (bx.min.x + bx.max.x) / 2, cz = (bx.min.z + bx.max.z) / 2, hx = (bx.max.x - bx.min.x) / 2, hz = (bx.max.z - bx.min.z) / 2, sc = Math.min(1, IN / Math.max(hx, hz, 1e-4));
+        if (sc < 1) { o.scale.multiplyScalar(sc); o.position.x = x + (o.position.x - x) * sc; o.position.z = z + (o.position.z - z) * sc; }
+        const ox = (cx - x) * sc, oz = (cz - z) * sc; o.position.x += clamp(ox, -(IN - hx * sc), IN - hx * sc) - ox; o.position.z += clamp(oz, -(IN - hz * sc), IN - hz * sc) - oz; }
       o.userData.dyn = true; cart.add(o); b.pieces.push(o);
     }
     b.refresh = () => {

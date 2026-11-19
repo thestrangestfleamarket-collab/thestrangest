@@ -54,6 +54,6 @@
 | Propane Tank (the stove's gas bottles) | `data/sushi/m/propane_tank.glb` | Poly Haven, https://polyhaven.com/a/propane_tank | CC0 |
 
 - The till's money (`data/sushi/money/`): United States government pictures, public domain. The $5, $10 and $20 (their 1985 designs) and the $1's back: the Bureau of Engraving and Printing's, https://www.uscurrency.gov (`tools/sushi-assets.py money`; its specimen pictures, faintly overprinted SPECIMEN). The $1's front and the quarter, dime and penny: Bureau of Engraving and Printing and United States Mint pictures from Wikimedia Commons.
-- The recorded sounds (`data/sushi/snd/`): OpenGameArt, CC0, listed in `docs/sushi-sounds.md`.
+- The sounds (`data/sushi/snd/`): recordings from OpenGameArt, CC0, and fifteen ElevenLabs sound effects (generated on the owner's account, 19 Nov 2026; `tools/sushi-sfx.py`), all listed in `docs/sushi-sounds.md`.
 - Everything else (the cart, the tenements and their shopfronts, the rooms behind their glass, signs, murals and graffiti, the subway stair, the street's furniture, the avenues' houses, the skyline, the food, the other sounds) is made in the page's own code.
 - Archived: the 1860s village (`archive/ramen-village/`), the outbreak (`archive/ramen-outbreak/`), the Polyfork cast (`archive/ramen-polyfork/`), YATAI '86's unused street things (`archive/ramen-yatai/`).

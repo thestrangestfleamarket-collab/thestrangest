@@ -192,7 +192,7 @@ export function buildInput(renderer, rig, camera, dom) {
     desk.focus += (aim.dist - desk.focus) * Math.min(1, dt * 5);
     stepHand(h, dt);
     const it = h.held;
-    G.hoverText = it ? `${it.name} — ${it.hint()}  [LMB release${it.tool ? ' · hold RMB/E to ' + (it.useMode === 'chop' ? 'chop' : 'pour') : ''}]` : aim.board ? '[LMB] press · hold to move the board' : aim.button ? `[LMB] ${aim.button.name}` : aim.cand ? `[LMB] grab ${aim.cand.name}` : '';
+    G.hoverText = it ? `${it.name} — ${it.hint()}  [LMB release${it.tool ? ' · hold RMB/E to ' + (it.useMode === 'chop' ? 'chop' : 'pour') : ''}]` : aim.board ? '' : aim.button ? `[LMB] ${aim.button.name}` : aim.cand ? `[LMB] grab ${aim.cand.name}` : '';
   }
 
   function updateXR(dt) {

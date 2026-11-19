@@ -50,7 +50,8 @@ export function buildMenu(scene, cart, guide, talk, shadowLights, report) {
       g.fillStyle = '#b8b4a8'; g.font = `bold 21px ${T.JP}`; g.textAlign = 'left'; g.fillText(G.renderer.xr.isPresenting ? 'Stick ↑↓ move · ←→ change · trigger or A/X select · B/Y close · grip moves the board' : '↑↓ or wheel move · ←→ change · Enter or click select · M close · hold click to move', 20, h - 16, w - 36); });
   }
   const rec = G.boards ? G.boards.add('settings', board, W, H) : null;
-  if (rec) { rec.hover = (hit) => { const i = slot(hit); if (i >= 0 && i !== sel) { sel = i; draw(); } }; rec.press = (hit) => { const i = hit ? slot(hit) : -1; if (i >= 0) act(i); }; }
+  let hov = -1;   // (a pointer that rests on a row does not take the highlight back from the stick: only one that moves to another row)
+  if (rec) { rec.hover = (hit) => { const i = slot(hit), k = i < 0 ? -1 : i - top; if (k === hov) return; hov = k; if (i >= 0 && i !== sel) { sel = i; draw(); } }; rec.press = (hit) => { const i = hit ? slot(hit) : -1; if (i >= 0) act(i); }; }
   const place = () => { if (rec) G.boards.summon(rec, 0.66, 0.1); else { const c = G.camera, p = c.getWorldPosition(new V3()), d = c.getWorldDirection(new V3()); d.y = 0; d.normalize(); board.position.copy(p).addScaledVector(d, 0.66); board.position.y = Math.max(1.2, p.y - 0.1); board.lookAt(p.x, board.position.y, p.z); } };
   m.toggle = (on = !m.open) => { m.open = G.menuOpen = on; board.visible = on; if (on) { place(); draw(); } G.audio.play('click'); };
   addEventListener('keydown', (e) => { if (!m.open || G.mode !== 'desktop' || (e.target && e.target.tagName === 'INPUT')) return; const k = e.code;

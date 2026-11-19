@@ -1,16 +1,12 @@
 # RAMEN credits
 
-- People and their motion (`data/sushi/cast.json`, from `node tools/sushi-cast.cjs`): Polyfork, https://polyfork.dev, its licence (use in games, no reselling the files). Who is who is in `src/sushi/cast.js`; the nurse is its diner waitress with her dress dyed white in the page.
+- People and their motion (`data/sushi/cast.json`, from `node tools/sushi-cast.cjs`): Polyfork, https://polyfork.dev, its licence (use in games, no reselling the files): each person's own model (the id in `data/characters.json`) and Polyfork's recorded clips. Who is who is in `src/sushi/cast.js`; the nurse is its diner waitress with her dress dyed white in the page.
+- The cars (`data/sushi/cars.json`, from `node tools/sushi-cars.cjs`): Polyfork's, the same licence: Yellow Cab (`yellow-cab-8df4a0`), Police Cruiser (`police-cruiser-a2d25e`), Boxy-sedan-70s (`boxy-sedan-70s-7d55f7`), Station-wagon-70s (`station-wagon-70s-11d67b`), Hatchback-80s (`hatchback-80s-e95554`), Town Car (`town-car-56eeb6`), Muscle-car-60s (`muscle-car-60s-524d46`), Camper-van (`camper-van-8d10e2`); each at `https://polyfork.dev/asset/<id>`. The five Sketchfab cars they replaced are in `archive/ramen-cars/`.
 - The goldfish is Polyfork's koi (`data/sushi/koi.json`), gilded in the page.
-- The street's cars, trees and pay phone (`data/sushi/m/`, from `node tools/sushi-models.cjs`: turned, sized, thinned, a car's pictures drawn into one, its paint left white for the page to colour; the originals kept in `data/full/sushi/src/`, not in git): Sketchfab, CC BY 4.0 (https://creativecommons.org/licenses/by/4.0/), taken from Objaverse's copy; each is at `https://sketchfab.com/3d-models/<id>`.
+- The street's trees and pay phone (`data/sushi/m/`, from `node tools/sushi-models.cjs`: sized, thinned; the originals kept in `data/full/sushi/src/`, not in git): Sketchfab, CC BY 4.0 (https://creativecommons.org/licenses/by/4.0/), taken from Objaverse's copy; each is at `https://sketchfab.com/3d-models/<id>`.
 
 | What | File | Title, author | Id |
 |---|---|---|---|
-| Station wagon | `car_wagon.glb` | "Fairheaven SW '84 - Low poly model", Daniel Zhabotinsky | aa0becb6e854422596cac6b21bf79787 |
-| Sedan (and the yellow cab) | `car_sedan.glb` | "Riverside '88 - Low poly model", Daniel Zhabotinsky | 8509a7f82665442592627940b7a1cfab |
-| Compact | `car_compact.glb` | "Kiri '86 - Low poly model", Daniel Zhabotinsky | 5c17c582ef9549798f694b660feea42a |
-| Van | `car_van.glb` | "Shvan '92 - Low poly model", Daniel Zhabotinsky | 09d718c9cf72401b8534d265a06a803f |
-| Police cruiser (its markings left off) | `car_cruiser.glb` | "1980 Chevrolet Caprice-Police", David_Holiday | c94f3f61ad484e5f86a4628797cfea52 |
 | Street trees (leaves coloured for October in the page) | `tree_elm.glb`, `tree_elm_lo.glb` | "Elm tree", evolveduk | f36443d3e59946bfa38b3f5cb90ea5fa |
 | Pay phone | `payphone.glb` | "Pay Phone", Víctor Hernández | a0339aa975e54bb7ac65982ca3cc5802 |
 

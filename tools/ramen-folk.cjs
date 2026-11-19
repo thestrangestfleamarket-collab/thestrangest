@@ -4,7 +4,7 @@ const { chromium } = require('playwright'), path = require('path'), fs = require
 const ROOT = path.resolve(__dirname, '..'), DIST = path.join(ROOT, 'dist'), OUT = path.join(ROOT, 'data/sushi'), KEYS = ['octobusk', 'mushroom', 'w_badger', 'tomato', 'bigcat'], NOSONG = process.argv.includes('--nosong');
 const srv = require('http').createServer((q, r) => { const f = path.join(DIST, decodeURIComponent(q.url.split('?')[0])); fs.readFile(f, (e, d) => { if (e) { r.writeHead(404); return r.end(); } r.writeHead(200, { 'content-type': f.endsWith('.html') ? 'text/html' : 'application/octet-stream' }); r.end(d); }); });
 
-const bake = async ({ KEYS, song }) => {
+const bake = async ({ KEYS, song }) => { const TALL = { w_badger: 1.5 };
   const D = __dbg, T = D.THREE, MW = D.cv().TILE / 0.84, Y = D.MAPK.MODS.yatai, out = { folk: {}, log: [] }, wait = (ms) => new Promise((r) => setTimeout(r, ms));
   const b64 = (a) => { const u = new Uint8Array(a.buffer, a.byteOffset, a.byteLength); let s = ''; for (let i = 0; i < u.length; i += 0x8000) s += String.fromCharCode.apply(null, u.subarray(i, i + 0x8000)); return btoa(s); };
   const r4 = (v) => Math.round(v * 1e4) / 1e4, m12 = (e) => [r4(e[0]), r4(e[1]), r4(e[2]), r4(e[4]), r4(e[5]), r4(e[6]), r4(e[8]), r4(e[9]), r4(e[10]), Math.round(e[12] * 10) / 10, Math.round(e[13] * 10) / 10, Math.round(e[14] * 10) / 10];
@@ -27,8 +27,9 @@ const bake = async ({ KEYS, song }) => {
   const real = ONLINE.self;
   for (const k of KEYS) { const body = BODIES.by[k]; if (!body) { out.folk[k] = null; out.log.push(k + ': the market has no such body'); continue; }
     const M = BODIES.mesh(body), N = body.npc, me = bodyMesh(N); let sc = [MW, MW, MW]; if (me) { N.g.updateMatrixWorld(true); const v = me.getWorldScale(new T.Vector3()); sc = [v.x, v.y, v.z]; } else out.log.push(k + ': not standing anywhere, taken at one metre to the metre');
+    { M.me.geometry.computeBoundingBox(); const bb = M.me.geometry.boundingBox, ext = bb.max.y - bb.min.y, h = ext * sc[1] / MW;  }   // (a body met only indoors, where the market draws its rooms at another size, is given its height: the page brings it to it)
     const S = { k: 'b:' + k, kind: 'b', me: M.me, PM: M.PM, body, scale: sc }; ONLINE.self = () => S; let fig = null, clips = null; try { fig = Y.pack(); clips = Y.clips(); } catch (e) { out.log.push(k + ': ' + e.message); } finally { ONLINE.self = real; }
-    out.folk[k] = { label: body.label, height: body.height, tris: typeof body.tris === 'function' ? body.tris() : 0, fig, clips, x: [] }; }
+    out.folk[k] = { ...(TALL[k] ? { tall: TALL[k] } : {}), label: body.label, height: body.height, tris: typeof body.tris === 'function' ? body.tris() : 0, fig, clips, x: [] }; }
   // the mushroom seller's skull and hair ride his head
   { const F = out.folk.mushroom, HI = BODIES.BONES.indexOf('head'), N = BODIES.by.mushroom && BODIES.by.mushroom.npc, me = bodyMesh(N), ex = []; await wait(6000);
     if (F && N) { N.g.traverse((o) => { if (o.isMesh && o !== me && o.visible && o.geometry.attributes.position && (o.geometry.index ? o.geometry.index.count : o.geometry.attributes.position.count) > 60) ex.push(o); });

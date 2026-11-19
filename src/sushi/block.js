@@ -3,7 +3,6 @@ import * as THREE from 'three';
 import { G } from './ctx.js';
 import { makePerson } from './avatars.js';
 import { buildReact } from './react.js';
-import { hasFolk } from './folk.js';
 import { KERB, FKERB, NZ, WSX0, WSX1, XWALK, WXZ, ground } from './plan.js';
 
 // plan: 'inside s' (in the house or shop they stand at), 'stand s', 'play s' (the busker, playing where he stands), 'go place' (a spot on the corner, work, west, east, north), 'gone s' (off the corner), 'with id' / 'alone' (someone walks along)
@@ -37,7 +36,7 @@ export const CAST = [
     knows: { olena: 'the old lady, who buys your chanterelles and says her mother\'s were better', hector: 'who keeps the bodega and sends people to your booth', badger: 'who keeps THE BAR and takes your morels for his kitchen' }, plan: ['gone 70', 'go rail', 'stand 16', 'go bench', 'stand 10', 'go work', 'gone 90'] },
   { id: 'badger', style: 'm:w_badger', market: true, slots: [6], name: 'Badger', age: 50, work: 'east', job: 'keeps THE BAR on Market St and pours its drinks; when he has put the last one out he walks up to the corner for the last bowl of the night', quirk: 'Gruff, dry, dead on his feet, counts the night\'s takings in his head while he eats.', tonight: 'pouring at THE BAR until last call, then the walk up to the cart',
     knows: { octopus: 'the busker, whom you stand one beer a night', danny: 'the arcade kid, whose band is too loud for your cellar and plays there anyway', jo: 'who sings with that band and never pays for a drink', ray: 'the cop, who looks in at closing' }, plan: ['gone 240', 'go lamp', 'stand 8', 'go work', 'gone 200'] },
-].filter((d) => !d.market || hasFolk(d.style.slice(2)));
+];
 const _v = new THREE.Vector3();
 export function buildBlock(root, shops, o = {}) {
   const NEAR = o.near ?? -4.4, FAR = o.far ?? -5.4, SPLIT = o.split ?? -5, END = o.end ?? 60, WEST = o.west ?? -60, NORTH = 46, FARZ = FKERB - 2.2;

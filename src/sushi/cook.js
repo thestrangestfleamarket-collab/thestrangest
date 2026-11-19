@@ -16,7 +16,7 @@ export function buildCook() {
     // your hands: a headset's wrists (on a screen the arms hang as a body's do)
     let n = 0; P.hands.L = P.hands.R = null;
     for (const h of G.hands || []) { if (h.models) { for (const s of ['L', 'R']) { const M = h.models[s]; if (M.root.visible) { P.hands[s] = (s === 'L' ? tL : tR).copy(M.root.position); n++; } } } }
-    const b = P.bones; b.find((x) => x.name === 'head').scale.copy(TINY); for (const s of ['L', 'R']) b.find((x) => x.name === 'hand' + s).scale.copy(n && P.hands[s] ? TINY : ONE);
+    for (const x of P.part('head')) x.scale.copy(TINY); for (const s of ['L', 'R']) P.part('hand' + s)[0].scale.copy(n && P.hands[s] ? TINY : ONE);
     P.update(dt); cook.on = true; };
   return cook;
 }

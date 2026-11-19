@@ -50,7 +50,9 @@ const DIFF={
   normal:{speed:1.5,window:1.1,err:.28,lead:.7,regrab:2.8,gap:1.0,parry:.25},
   hard:  {speed:2.1,window:1.6,err:.14,lead:1, regrab:2.0,gap:.75,parry:.45}
 };
-const ROUND_TIME=90, MAX_HP=100, YOU=0x3fd6e0, FOE=0xff7a59, BG=0x0d1326;
+const ROUND_TIME=90, MAX_HP=100, BG=0x0d1326;
+const TINTS=[0x3fd6e0,0x5cf07a,0xffd84a,0xff7a59,0xff5fa2,0xa98bff,0xf2f6ff,0xff5a4d];   // the colours a player may wear
+let YOU=TINTS[0], FOE=TINTS[3];
 const SLOTS_FLAT=[[-.9,.85,0],[.9,.85,0],[-.9,1.75,0],[.9,1.75,0]];
 const SLOTS_VR=[[-.45,1.05,-.35],[.45,1.05,-.35],[-.55,1.45,-.25],[.55,1.45,-.25]];
 const PH=['menu','count','play','roundEnd','over'];
@@ -90,9 +92,9 @@ function platform(z,col,parent){
   top.position.y=.06;g.add(top);
   const rim=new THREE.Mesh(new THREE.TorusGeometry(1.15,.035,8,48),new THREE.MeshBasicMaterial({color:col}));
   rim.rotation.x=Math.PI/2;rim.position.y=.12;g.add(rim);
-  g.position.z=z;parent.add(g);
+  g.position.z=z;parent.add(g);return [mark.material,rim.material];
 }
-platform(PZ,YOU,env);platform(BZ,FOE,scene);
+const padYou=platform(PZ,YOU,env),padFoe=platform(BZ,FOE,scene);
 const pylons=new THREE.Group();env.add(pylons);
 for(let i=0;i<10;i++){            // distant pylons give the lane some depth
   const h=3+Math.random()*5,side=i%2?1:-1;
@@ -137,7 +139,7 @@ const flatHand=makeHand(youBody,new V3(.3,-.2,-.15),new V3(0,-.15,-.5));flatHand
 const vrHands=[0,1].map(i=>{
   const hand=i?'right':'left';
   const c=renderer.xr.getController(i);rig.add(c);
-  c.add(new THREE.Mesh(new THREE.SphereGeometry(.035,12,8),new THREE.MeshBasicMaterial({color:YOU})));
+  const dot=new THREE.Mesh(new THREE.SphereGeometry(.035,12,8),new THREE.MeshBasicMaterial({color:YOU}));c.add(dot);
   const h=makeHand(c,new V3(0,-.01,0),new V3(0,0,-.14));
   h.sight=new THREE.Mesh(new THREE.CylinderGeometry(.0012,.0012,5,6),new THREE.MeshBasicMaterial({color:YOU,transparent:true,opacity:.35,depthWrite:false}));
   h.sight.rotation.x=Math.PI/2;h.sight.position.set(0,.006,-2.7);h.sight.visible=false;c.add(h.sight);
@@ -147,7 +149,7 @@ const vrHands=[0,1].map(i=>{
   c.addEventListener('squeezeend',()=>{h.jet=false;});
   h.gauge=new THREE.Mesh(new THREE.BoxGeometry(.1,.008,.008),new THREE.MeshBasicMaterial({color:YOU}));h.gauge.position.set(0,.05,.04);h.gauge.visible=false;c.add(h.gauge);
   h.discMesh.position.set(0,0,-.06);
-  h.side=hand;
+  h.side=hand;h.dot=dot;
   c.addEventListener('connected',e=>{h.pad=e.data&&e.data.gamepad||null;const k=e.data&&e.data.handedness;if(k==='left'||k==='right')h.side=k;});
   c.addEventListener('disconnected',()=>{h.pad=null;});
   return h;
@@ -327,6 +329,7 @@ const linked=()=>net.on&&net.lastRx>0;
 function closeLink(){
   if(net.link){try{net.link.close();}catch(e){}}
   net.link=null;net.on=false;net.lastRx=0;net.lastQ=0;
+  if(foe.netTint!==undefined){foe.netTint=undefined;setTints(tint,3);}
 }
 function openLink(role,code){
   closeLink();
@@ -352,7 +355,7 @@ function tx(){
   const s=[];
   for(const p of shots)if(p.owner===you&&!p.dead&&s.length<30)
     s.push([p.id,SHOTS.indexOf(p.key),r2(p.pos.x),r2(p.pos.y),r2(p.pos.z),r2(p.vel.x),r2(p.vel.y),r2(p.vel.z),ALL.indexOf(p.gun),r2(p.pow)]);
-  const pk={q:Date.now(),r:net.role,rn:roundNo,h:[r2(you.head.x),r2(you.head.y),r2(you.head.z)],hp:Math.round(you.hp),sh,sp,sk,s,k:kills.slice(-30),w:-1,lk:r2(you.lk),bm:0};
+  const pk={q:Date.now(),r:net.role,rn:roundNo,h:[r2(you.head.x),r2(you.head.y),r2(you.head.z)],hp:Math.round(you.hp),sh,sp,sk,s,k:kills.slice(-30),w:-1,lk:r2(you.lk),bm:0,cl:tint};
   if(you.beam){const b=you.beam;pk.bm=[r2(b.o.x),r2(b.o.y),r2(b.o.z),Math.round(b.d.x*1e3)/1e3,Math.round(b.d.y*1e3)/1e3,Math.round(b.d.z*1e3)/1e3];}
   pk.gh=-1;pk.hd=hands().map((h,i)=>{
     const busy=h.held||h.shieldP>0;if(busy)pk.gh=i;if(h.held)pk.w=KEYS.indexOf(h.held.key);
@@ -371,6 +374,7 @@ function rx(pk){                           // everything in here is untrusted in
   const h=Array.isArray(pk.h)?pk.h:[];      // the rival's world is ours turned half a turn about the centre
   if(game==='disc')foe.goal.set(clamp(-num(h[0]),-ROOM.x,ROOM.x),clamp(num(h[1]),.3,ROOM.y),clamp(-num(h[2]),BZ-1.5,BZ+1.5));
   else foe.goal.set(clamp(-num(h[0]),-1.6,1.6),clamp(num(h[1]),.3,2.4),clamp(-num(h[2]),BZ-1.3,BZ+1.3));
+  if(TINTS[pk.cl]&&pk.cl!==foe.netTint){foe.netTint=pk.cl;setTints(tint,pk.cl);}
   foe.netDisc=!!pk.dk;foe.netBurn=clamp(num(pk.jb),0,2);
   if(net.role==='guest'&&Array.isArray(pk.ph))follow(pk.ph);
   if(pk.rn===roundNo)foe.hp=clamp(num(pk.hp),0,MAX_HP);
@@ -461,9 +465,25 @@ function beamOn(who,holders,o,d,dt,col){   // a beam burns a shield in its way f
     if((searT-=dt)<=0){searT=.25;burst(bT2,col,false);if(who===you){flash.style.opacity=.6;setTimeout(()=>{flash.style.opacity=0;},90);sfx('hurt',0,.5);}else sfx('hit',pan(foe.head.x),.6);}
   }
 }
+let tint=0,foeTint=3;
+function redisc(o,col,scale){             // a disc is made in its colour, so a new colour is a new disc
+  const old=o.discMesh||o.m,m=makeShot('disc',col);m.position.copy(old.position);m.visible=old.visible;if(scale)m.scale.setScalar(scale);
+  old.parent.add(m);old.parent.remove(old);if(o.discMesh)o.discMesh=m;else o.m=m;o.worn=-1;
+}
+function setTints(mine,theirs){           // your colour is yours to pick; a rival who picked the same is shown in another
+  tint=TINTS[mine]?mine:0;foeTint=TINTS[theirs]?theirs:3;if(foeTint===tint)foeTint=tint===3?0:3;
+  YOU=TINTS[tint];FOE=TINTS[foeTint];
+  youFig.tone(YOU);foeFig.tone(FOE);
+  for(const h of [flatHand,...vrHands]){h.shield.userData.tone(YOU);h.beam.userData.tone(YOU);redisc(h,YOU);if(h.sight)h.sight.material.color.setHex(YOU);if(h.dot)h.dot.material.color.setHex(YOU);}
+  foe.shield.userData.tone(FOE);foe.beam.userData.tone(FOE);redisc(foe,FOE);holst.forEach(o=>redisc(o,YOU,.8));
+  padYou.forEach(m=>m.color.setHex(YOU));padFoe.forEach(m=>m.color.setHex(FOE));mark.material.color.setHex(YOU);
+  const css=n=>'#'+n.toString(16).padStart(6,'0');
+  document.documentElement.style.setProperty('--you',css(YOU));document.documentElement.style.setProperty('--foe',css(FOE));
+  document.querySelectorAll('#tint .dab').forEach(b=>b.setAttribute('aria-pressed',String(+b.dataset.c===tint)));
+}
 function setGame(g){                      // duel: the open lane and its pickups; disc: the closed room, discs and the jetpack
   game=g==='disc'?'disc':'duel';const disc=game==='disc';
-  room.visible=disc;pylons.visible=!disc;board.position.set(0,disc?5.4:3.9,disc?-ROOM.z+.1:BZ-1.5);
+  room.visible=disc;pylons.visible=!disc;floor.visible=grid.visible=!disc;board.position.set(0,disc?5.4:3.9,disc?-ROOM.z+.1:BZ-1.5);
   jet.x=jet.y=jet.vx=jet.vy=0;rig.position.set(0,0,PZ);
   for(const h of [flatHand,...vrHands]){h.vis.userData.show(null);h.shield.visible=false;h.beam.visible=false;h.discMesh.visible=false;if(h.sight)h.sight.visible=false;if(h.gauge)h.gauge.visible=false;}
   for(const s of slots)s.mesh.visible=false;for(const o of holst)o.m.visible=false;mark.visible=false;foe.discMesh.visible=false;
@@ -774,8 +794,8 @@ function idleText(){
 function drawBoard(){
   bx.clearRect(0,0,1024,256);bx.fillStyle='rgba(13,19,38,.85)';bx.fillRect(0,0,1024,256);
   bx.fillStyle='#18224a';bx.fillRect(40,40,380,36);bx.fillRect(604,40,380,36);
-  bx.fillStyle='#3fd6e0';bx.fillRect(40,40,380*you.hp/MAX_HP,36);
-  bx.fillStyle='#ff7a59';const fw=380*foe.hp/MAX_HP;bx.fillRect(984-fw,40,fw,36);
+  bx.fillStyle='#'+YOU.toString(16).padStart(6,'0');bx.fillRect(40,40,380*you.hp/MAX_HP,36);
+  bx.fillStyle='#'+FOE.toString(16).padStart(6,'0');const fw=380*foe.hp/MAX_HP;bx.fillRect(984-fw,40,fw,36);
   bx.fillStyle='#eef1ff';bx.textAlign='center';bx.font='700 64px system-ui,sans-serif';
   bx.fillText(fmt(clock),512,84);
   bx.font='500 30px system-ui,sans-serif';bx.fillStyle='#a3aedb';
@@ -879,6 +899,13 @@ window.addEventListener('keydown',e=>{
   if(e.code==='KeyE'&&game==='duel')flatHand.drop=true;
 });
 startBtn.addEventListener('click',tryStart);
+TINTS.forEach((c,i)=>{
+  const b=document.createElement('button');b.type='button';b.className='dab';b.dataset.c=i;b.id='tint'+i;b.style.background='#'+c.toString(16).padStart(6,'0');
+  b.setAttribute('aria-label','Colour '+(i+1));b.setAttribute('aria-pressed','false');
+  b.addEventListener('click',()=>{setTints(i,net.on&&foe.netTint!==undefined?foe.netTint:3);try{localStorage.setItem('qzar-tint',i);}catch(e){}});
+  $('tint').appendChild(b);
+});
+{let saved=0;try{saved=+localStorage.getItem('qzar-tint')||0;}catch(e){}setTints(saved,3);}
 document.querySelectorAll('#game .seg').forEach(b=>b.addEventListener('click',()=>{if(isGuest())return setStatus('Your rival hosts this duel and picks the game.');if(state==='menu'||state==='over')setGame(b.dataset.g);}));
 function press(sel,b){document.querySelectorAll(sel).forEach(x=>x.setAttribute('aria-pressed',String(x===b)));}
 document.querySelectorAll('#diff .seg').forEach(b=>b.addEventListener('click',()=>{diff=DIFF[b.dataset.d];press('#diff .seg',b);}));
@@ -926,4 +953,4 @@ mrBtn.addEventListener('click',()=>enterXR('immersive-ar'));
   vrBtn.hidden=!vr;mrBtn.hidden=!mr;
   if(!vr&&!mr)note.textContent='VR and passthrough buttons appear when this page is opened directly in a headset browser over HTTPS.';
 })();
-window.__qzar={setGame,jet,holst,throwDisc,ROOM,get game(){return game;},W,ALL,fired,flatHand,setHeld,spawn,V3,scene,camera,makeGun,makeShield,makeShot,you,foe,shots,net,get state(){return state;},get round(){return roundNo;},hurt};
+window.__qzar={setTints,TINTS,get tints(){return [YOU,FOE];},setGame,jet,holst,throwDisc,ROOM,get game(){return game;},W,ALL,fired,flatHand,setHeld,spawn,V3,scene,camera,makeGun,makeShield,makeShot,you,foe,shots,net,get state(){return state;},get round(){return roundNo;},hurt};

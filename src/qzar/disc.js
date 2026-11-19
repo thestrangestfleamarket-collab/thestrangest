@@ -32,19 +32,19 @@ function leave(o, d, out) {               // where a ray from inside the room me
   return out.copy(o).addScaledVector(d, t);
 }
 
-function makeRoom() {
+function makeRoom() {                     // the holodeck's look: black, a green grid a metre square on every face
   const g = new THREE.Group(), walls = new THREE.Group(), c = document.createElement('canvas'); c.width = c.height = 128; const x = c.getContext('2d');
-  x.fillStyle = '#0a0f22'; x.fillRect(0, 0, 128, 128); x.strokeStyle = '#2f3f86'; x.lineWidth = 3; x.strokeRect(0, 0, 128, 128); x.strokeStyle = '#1a2452'; x.lineWidth = 1; x.strokeRect(32, 32, 64, 64);
-  const tex = new THREE.CanvasTexture(c); tex.colorSpace = THREE.SRGBColorSpace; tex.wrapS = tex.wrapT = THREE.RepeatWrapping; tex.anisotropy = 2;
+  x.fillStyle = '#080e0a'; x.fillRect(0, 0, 128, 128); x.strokeStyle = '#1c783a'; x.lineWidth = 7; x.strokeRect(0, 0, 128, 128); x.strokeStyle = '#3cff78'; x.lineWidth = 2.5; x.strokeRect(0, 0, 128, 128);
+  const tex = new THREE.CanvasTexture(c); tex.colorSpace = THREE.SRGBColorSpace; tex.wrapS = tex.wrapT = THREE.RepeatWrapping; tex.anisotropy = 4;
   const wall = (w, h, px, py, pz, rx, ry) => {
     const geo = new THREE.PlaneGeometry(w, h), uv = geo.attributes.uv; for (let i = 0; i < uv.count; i++) uv.setXY(i, uv.getX(i) * w, uv.getY(i) * h);
     const m = new THREE.Mesh(geo, new THREE.MeshBasicMaterial({ map: tex })); m.position.set(px, py, pz); m.rotation.set(rx, ry, 0); walls.add(m);
   };
   wall(2 * ROOM.z, ROOM.y, -ROOM.x, ROOM.y / 2, 0, 0, Math.PI / 2); wall(2 * ROOM.z, ROOM.y, ROOM.x, ROOM.y / 2, 0, 0, -Math.PI / 2);
   wall(2 * ROOM.x, ROOM.y, 0, ROOM.y / 2, -ROOM.z, 0, 0); wall(2 * ROOM.x, ROOM.y, 0, ROOM.y / 2, ROOM.z, 0, Math.PI);
-  wall(2 * ROOM.x, 2 * ROOM.z, 0, ROOM.y, 0, Math.PI / 2, 0);
+  wall(2 * ROOM.x, 2 * ROOM.z, 0, ROOM.y, 0, Math.PI / 2, 0); wall(2 * ROOM.x, 2 * ROOM.z, 0, .02, 0, -Math.PI / 2, 0);
   const box = new THREE.BoxGeometry(2 * ROOM.x, ROOM.y, 2 * ROOM.z); box.translate(0, ROOM.y / 2, 0);
-  const lines = new THREE.LineSegments(new THREE.EdgesGeometry(box), new THREE.LineBasicMaterial({ color: 0x6f86ff }));
+  const lines = new THREE.LineSegments(new THREE.EdgesGeometry(box), new THREE.LineBasicMaterial({ color: 0x3cff78 }));
   g.add(walls, lines); g.userData.walls = walls; return g;
 }
 

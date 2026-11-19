@@ -11,6 +11,8 @@ const srv = require('http').createServer((q, r) => { const f = path.join(ROOT, d
   const open = async hash => { const pg = await ctx.newPage(); pg.on('pageerror', e => errs.push(e.message.slice(0, 300))); await pg.goto(URL + hash); await pg.waitForFunction(() => !!window.__qzar, null, { timeout: 60000 }).catch(() => {}); return pg; };
   const until = (pg, fn, arg) => pg.waitForFunction(fn, arg, { polling: 50, timeout: 60000 }).then(() => true, () => false);
   const pg = await open('');
+  await pg.click('#tint4');
+  ok(await pg.evaluate(() => __qzar.tints[0] === __qzar.TINTS[4] && getComputedStyle(document.documentElement).getPropertyValue('--you').trim() === '#ff5fa2'), 'you pick your colour');
   await pg.click('#start');
   ok(await until(pg, () => __qzar.state === 'play'), 'the page starts and a round against the bot begins');
   await pg.evaluate(() => { __qzar.foe.grabT = 1e9; __qzar.setHeld(__qzar.flatHand, 'buckler'); });
@@ -67,11 +69,15 @@ const srv = require('http').createServer((q, r) => { const f = path.join(ROOT, d
   ok(await until(dp, () => __qzar.you.hp === 75), 'a catch tried too early counts as a hit');
   await dp.close();
   const A = await open('#local'), B = await open('#local');
+  await A.click('#tint5'); await B.click('#tint5');
   await A.click('#oNet'); await A.click('#host'); const code = await A.inputValue('#code');
   await B.click('#oNet'); await B.fill('#code', code); await B.click('#join');
   ok(await until(A, () => __qzar.net.lastRx > 0) && await until(B, () => __qzar.net.lastRx > 0), 'two pages link by the code');
   await A.click('#start');
   ok(await until(A, () => __qzar.state === 'play') && await until(B, () => __qzar.state === 'play'), 'the host starts the round for both');
+  ok(await B.evaluate(() => __qzar.tints[0] === __qzar.TINTS[5] && __qzar.tints[1] !== __qzar.TINTS[5]), 'a rival who picked your colour is shown in another');
+  await B.evaluate(() => __qzar.setTints(1, 5));
+  ok(await B.evaluate(() => __qzar.tints[1] === __qzar.TINTS[5]), "otherwise the rival wears the colour they picked");
   let seen = false;
   await A.evaluate(() => __qzar.setHeld(__qzar.flatHand, 'pip'));
   for (let i = 0; i < 20 && !seen; i++) { await A.mouse.click(200, 120); await A.waitForTimeout(250); seen = await B.evaluate(() => __qzar.shots.some(s => s.far)); }

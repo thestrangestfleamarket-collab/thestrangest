@@ -51,8 +51,9 @@ function makeBody(col, o) {
     upper: bone(.05, .042, suit), fore: bone(.052, .04, armor), elbow: knob(.05, plate), hand: knob(.045, suit), cuff: trim(box(.02, .05, .02), lamp),
     at: new V(), from: new V(), to: new V(), t: 1
   }));
+  let hue = null;
   if (o.outline) {                         // only the figure's edge is drawn: its inside hides what is behind the edge and shows the room through
-    const hue = new THREE.Color(col).lerp(new THREE.Color(0xffffff), .35), fill = new THREE.MeshBasicMaterial({ colorWrite: false });
+    hue = new THREE.Color(col).lerp(new THREE.Color(0xffffff), .35); const fill = new THREE.MeshBasicMaterial({ colorWrite: false });
     const edge = (w, a) => new THREE.ShaderMaterial({
       uniforms: { c: { value: hue }, w: { value: w }, a: { value: a } }, side: THREE.BackSide, transparent: a < 1, depthWrite: a >= 1, blending: a < 1 ? THREE.AdditiveBlending : THREE.NormalBlending,
       vertexShader: 'uniform float w; void main(){ gl_Position = projectionMatrix * modelViewMatrix * vec4(position + normal * w, 1.0); }',
@@ -111,7 +112,8 @@ function makeBody(col, o) {
       l.cuff.position.copy(end).lerp(mid, .3).addScaledVector(right, side * .045);
     });
   }
-  return { group: g, update };
+  function tone(c) { for (const m of jets) m.material.color.set(c); lamp.color.set(c); if (hue) hue.set(c).lerp(new THREE.Color(0xffffff), .35); }
+  return { group: g, update, tone };
 }
 
 export { makeBody };

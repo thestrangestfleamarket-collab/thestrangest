@@ -51,6 +51,8 @@ h1 span{color:var(--warn)}
 button{font:inherit;cursor:pointer}
 button:focus-visible,input:focus-visible{outline:2px solid var(--warn);outline-offset:2px}
 .seg{flex:1;padding:8px 10px;background:transparent;color:var(--muted);border:1px solid var(--line);border-radius:4px;font-family:var(--font-display);white-space:nowrap}
+.dab{flex:1;height:28px;min-width:28px;border:2px solid transparent;border-radius:4px;padding:0}
+.dab[aria-pressed="true"]{border-color:var(--ink);box-shadow:0 0 0 2px var(--bg) inset}
 .seg[aria-pressed="true"]{color:var(--bg);background:var(--you);border-color:var(--you)}
 #code{flex:1;min-width:0;width:90px;padding:8px 10px;background:var(--bg);color:var(--ink);border:1px solid var(--line);border-radius:4px;font:inherit;font-family:var(--font-display);letter-spacing:.2em;text-transform:uppercase;text-align:center}
 #status{color:var(--warn)}
@@ -90,6 +92,7 @@ button:focus-visible,input:focus-visible{outline:2px solid var(--warn);outline-o
         <li>A disc in your hand knocks theirs away, and each block spends one of its bounces: after one it bounces once, after two it breaks on the first wall, and the third block shatters it in your hand. An empty hand can catch one: in a headset pull the trigger as it reaches your hand, on a screen press F or right-click as it arrives. Mistime it and it counts as a hit.</li>
         <li>Each disc comes back three seconds after you take it. The boost holds ten seconds and refills when you let go.</li>
       </ul>
+      <div class="row" id="tint" role="group" aria-label="Your colour"></div>
       <div class="row" id="game" role="group" aria-label="Game">
         <button class="seg" type="button" data-g="duel" id="gDuel" aria-pressed="true">Duel</button>
         <button class="seg" type="button" data-g="disc" id="gDisc" aria-pressed="false">Disc arena</button>

@@ -1,9 +1,9 @@
-// Polyfork's (polyfork.dev) people on their 15 bones and their recorded motion (a game's cast.json, from tools/sushi-cast.cjs), as THE SPECKLED BAND's are; THE LAST CHANCE's (src/saloon/) since RAMEN's became Rocketbox's (rb.js), with what the cart asks of them: walking, standing, sitting on a stool, hands that talk, a nod, a head shake, a laugh, a wave from the shoulder, a blow taken as it really lands (the struck limb and what it hangs from knocked about their joints and sprung back, a step back or a fall past what the feet can hold, a hand to where it hurts, a duck), marks on their clothes, chopsticks to the mouth, a head that turns to what it looks at, eyes that blink
+// Polyfork's (polyfork.dev) people on their 15 bones and their recorded motion (a game's cast.json, from tools/sushi-cast.cjs), as THE SPECKLED BAND's are; RAMEN's and THE LAST CHANCE's (src/saloon/), with what the cart asks of them: walking, standing, sitting on a stool, hands that talk, a nod, a head shake, a laugh, a wave from the shoulder, a blow taken as it really lands (the struck limb and what it hangs from knocked about their joints and sprung back, a step back or a fall past what the feet can hold, a hand to where it hurts, a duck), marks on their clothes, chopsticks to the mouth, a head that turns to what it looks at, eyes that blink
 import * as THREE from 'three';
-import { mat } from './ctx.js';
+import { G, mat } from './ctx.js';
 
-// who: [sex, voice, pitch, youngest, oldest, what they do]
-export const PF = {};   // filled by the game that uses them (THE LAST CHANCE: src/saloon/cast.js)
+// who: [sex, voice, pitch, youngest, oldest, what they do, a dye of their own or null for none]
+export const PF = {};   // filled by the game that uses them (src/sushi/cast.js, src/saloon/cast.js)
 // the dye for a body that came in later clothes: its cloth (everything that is not skin or hair) recoloured by shade into a period palette: [dark, middle, light]
 export const DRESS = {
   carving_chef: [0x1c2440, 0x2c3a62, 0xd8d0bc], hanga_roa_fisherman: [0x2a2a30, 0x3a4a6a, 0xc8bca0], male_villager: [0x2e2620, 0x5a4a38, 0xb8a888],
@@ -41,7 +41,7 @@ const geoOf = (key) => { if (GEO[key]) return GEO[key]; const b = D.bodies[key],
   for (const q of piece.values()) { const s = ARMB[q.bone]; q.drop = false; if (!s || !q.rigid) continue; const A = AX[s], c = q.c.map((x) => x / q.k - 0), r = [c[0] - A.S[0], c[1] - A.S[1], c[2] - A.S[2]], t = r[0] * A.d[0] + r[1] * A.d[1] + r[2] * A.d[2], off = Math.hypot(r[0] - A.d[0] * t, r[1] - A.d[1] * t, r[2] - A.d[2] * t); q.drop = t > A.l - 0.02 || off > 0.1; }
   const held = (v) => piece.get(top(id(v))).drop;
   const keep = []; for (let i = 0; i < T0.length; i += 3) if (!held(T0[i])) keep.push(T0[i], T0[i + 1], T0[i + 2]);
-  const g = new THREE.BufferGeometry(); g.setAttribute('position', new THREE.BufferAttribute(P, 3)); g.setAttribute('color', new THREE.BufferAttribute(dye(lin(b64(b.vcol), Q.length), DRESS[key], (v) => FACEB.has(BN[v * 2])), 3)); g.setAttribute('skinIndex', new THREE.BufferAttribute(si, 4)); g.setAttribute('skinWeight', new THREE.BufferAttribute(sw, 4)); g.setIndex(new THREE.BufferAttribute(new Uint16Array(keep), 1)); g.computeVertexNormals();
+  const g = new THREE.BufferGeometry(); g.setAttribute('position', new THREE.BufferAttribute(P, 3)); g.setAttribute('color', new THREE.BufferAttribute(dye(lin(b64(b.vcol), Q.length), PF[key] && PF[key].length > 6 ? PF[key][6] : DRESS[key], (v) => FACEB.has(BN[v * 2])), 3)); g.setAttribute('skinIndex', new THREE.BufferAttribute(si, 4)); g.setAttribute('skinWeight', new THREE.BufferAttribute(sw, 4)); g.setIndex(new THREE.BufferAttribute(new Uint16Array(keep), 1)); g.computeVertexNormals();
   // the face: the nose is the head's foremost point; the eyes sit above it, either side
   const O = b.origin; let face = null; { let zm = -9, ny = 0; for (let v = 0; v < n; v++) if (BN[v * 2] === HEAD && BW[v] > 200 && Math.abs(P[v * 3]) < 0.03 && P[v * 3 + 1] < O[HEAD][1] + 0.2 && P[v * 3 + 2] > zm) { zm = P[v * 3 + 2]; ny = P[v * 3 + 1]; }
     const zs = []; for (let v = 0; v < n; v++) if (BN[v * 2] === HEAD && BW[v] > 200 && Math.abs(P[v * 3]) > 0.025 && Math.abs(P[v * 3]) < 0.07 && Math.abs(P[v * 3 + 1] - ny - 0.04) < 0.05) zs.push(P[v * 3 + 2]); zs.sort((a, c) => c - a); if (zs.length) face = [0.036, ny + 0.042, zs[0] - 0.006]; }
@@ -56,9 +56,14 @@ const SEAT = 0.79; // where a hip sits on the cart's stools
 const LIMBS = { head: [0.06, 70, 0.7], torso: [3, 28, 0.5], upperArm: [0.35, 35, 1], forearm: [0.07, 45, 1], hand: [0.006, 80, 0.6], thigh: [2, 90, 0.35], shin: [0.25, 90, 0.4] };
 const STEP_J = 0.8, FALL_J = 4, FALL_HEAD_J = 3; // a push (N s) the feet answer with a step back; one they cannot hold
 const sm = (x) => (x <= 0 ? 0 : x >= 1 ? 1 : x * x * (3 - 2 * x)); let SPOT = null; const ray = new THREE.Raycaster();
+const GONE = 34, SLOW = 14, _cam = new THREE.Vector3();   // metres from the eyes (opt.far): past SLOW the pose is worked every other frame, past GONE (deep in the haze) nothing is drawn
+const FR = new THREE.Frustum(), _pm = new THREE.Matrix4(), _sp = new THREE.Sphere(); let frT = -1, frN = 0;
+const onScreen = (p) => { if (frT !== G.t) { frT = G.t; frN++; G.camera.updateMatrixWorld(); FR.setFromProjectionMatrix(_pm.multiplyMatrices(G.camera.projectionMatrix, G.camera.matrixWorldInverse)); } _sp.center.copy(p).y += 0.9; _sp.radius = 1.6; return FR.intersectsSphere(_sp); };
 
 // a person: P.root to place and turn; P.pose 'walk' | 'stand' | 'sit' | 'eat'; P.look a point to look at or null; P.talkT seconds of talking hands; P.gesture(name); P.waveT > 0 waves; P.push(bone, impulse, at) a blow on a limb (P.hit(dir, at, f) the same by strength); P.duck(); P.down() while knocked down; P.stain(at, color, r)
-export function pfPerson(key, sticks) {
+// opt: { far } far off or out of view it is worked less and not drawn (RAMEN's street)
+export function pfPerson(key, sticks, opt = {}) {
+  if (!D.bodies[key]) key = Object.keys(D.bodies)[0];   // (a name this build has no body for: whoever is first)
   const b = D.bodies[key], [sex] = PF[key] || ['m'], clips = CL[sex], SK = D.skel[sex], ks = b.hipY / SK.hipY, { g: geo, face } = geoOf(key);
   const root = new THREE.Group(), inner = new THREE.Group(), body = new THREE.Group(); root.add(inner); inner.add(body);
   const O = b.origin.map((v) => new THREE.Vector3(...v)), bones = BONES.map((n) => Object.assign(new THREE.Bone(), { name: n })), mesh = new THREE.SkinnedMesh(geo, MAT);
@@ -68,7 +73,7 @@ export function pfPerson(key, sticks) {
   const DIR = (a, c) => O[c].clone().sub(O[a]).normalize(), LEN = (a, c) => O[c].distanceTo(O[a]);
   let eyes = null; if (face && EYEBALLS) { const [ex, ey, ez] = face; eyes = [-1, 1].map((sx) => { const e = eyeball(); e.position.set(sx * ex, ey, ez).sub(O[HEAD]); bones[HEAD].add(e); const lid = new THREE.Mesh(EYE.lg, EYE.lid); lid.rotation.x = -1.5; lid.position.copy(e.position); bones[HEAD].add(lid); e.userData.lid = lid; return e; }); }
   const sitHip = O[0].y + (clips.Sitting ? clips.Sitting.P[1] : -0.34) * ks;
-  const st = { cur: { c: clips.Idle, t: Math.random() * 5, loop: true }, prev: null, fade: 0, fade0: 1, over: null, yaw: 0, pitch: 0, ey: 0, ep: 0, blink: 1 + Math.random() * 3, lid: 0, sac: 0, sx: 0, sy: 0, base: 'Idle', fold: 0, hit: null, down: null, duck: null, push: null, wd: 0, wl: 0, phys: 0 };
+  const st = { cur: { c: clips.Idle, t: Math.random() * 5, loop: true }, prev: null, fade: 0, fade0: 1, over: null, yaw: 0, pitch: 0, ey: 0, ep: 0, blink: 1 + Math.random() * 3, lid: 0, sac: 0, sx: 0, sy: 0, base: 'Idle', fold: 0, hit: null, down: null, duck: null, push: null, wd: 0, wl: 0, phys: 0, par: Math.random() < 0.5 ? 1 : 0 };
   const CH = BONES.map((n, i) => { const L = LIMBS[n.replace(/[LR]$/, '')]; if (!L) return null; const set = []; for (let k = 0; k < NB; k++) { let a = k; while (a > 0 && a !== i) a = PI[a]; if (a === i) set.push(k); } return { set, I: L[0], K: L[1], C: 2 * 0.65 * Math.sqrt(L[1]), max: L[2], a: new THREE.Vector3(), w: new THREE.Vector3() }; });
   const J = BONES.map(() => new THREE.Vector3()), R = BONES.map(() => new THREE.Quaternion()), hp = new THREE.Vector3(), hq = new THREE.Vector3(), tgt = new THREE.Vector3(), inv = new THREE.Matrix4();
   const ax = new THREE.Vector3(), qh = new THREE.Quaternion(), spot = new THREE.Vector3(), sv = [0, 1, 2].map(() => new THREE.Quaternion()), stains = [];
@@ -81,9 +86,10 @@ export function pfPerson(key, sticks) {
   const reachW = (side, T, w) => { if (w <= 0.001) return; const A = ARM[side]; A.forEach((i, k) => sv[k].copy(R[i])); reach(side, T); A.forEach((i, k) => R[i].copy(sv[k].slerp(R[i], w))); };
   const lean = (x, z, a, head) => { qh.setFromAxisAngle(ax.set(z, 0, -x).normalize(), a); for (const i of UP) R[i].premultiply(qh); if (head) R[HEAD].premultiply(qh.setFromAxisAngle(ax, head)); };   // the trunk, head and arms tipped as one toward (x, z)
   const P = {
-    root, sticks, style: key, sex, pose: 'stand', speed: 1.3, look: null, lookW: 0, lookAt: new THREE.Vector3(), waveT: 0, eatT: Math.random() * 3, talkT: 0, habitT: 4 + Math.random() * 8, mood: 0, polyfork: true, bones,
+    root, sticks, style: key, sex, pose: 'stand', speed: 1.3, look: null, lookW: 0, lookAt: new THREE.Vector3(), waveT: 0, eatT: Math.random() * 3, talkT: 0, habitT: 4 + Math.random() * 8, mood: 0, polyfork: true, bones, mesh, eyeY: O[HEAD].y + 0.12,
     // an impulse imp (world, N s) landing at at on the named bone: it and each limb it hangs from turn about their joints by r × imp / I and spring back; the feet answer what reaches the hips
     push(name, imp, at) {
+      if (st.acc) { st.force = 1; this.update(0); st.force = 0; }   // (a pose left unworked while far or out of view is brought up to now before the blow lands)
       body.updateWorldMatrix(true, false); inv.copy(body.matrixWorld).invert(); body.getWorldQuaternion(qh).invert();
       const j = imp.clone().applyQuaternion(qh), a = at.clone().applyMatrix4(inv), seated = this.pose === 'sit' || this.pose === 'eat', r = new THREE.Vector3(); let i = BONES.indexOf(name); if (i < 0) i = TORSO;
       for (let k = i; k > 0; k = PI[k]) { const c = CH[k]; if (!c) continue; c.w.addScaledVector(r.copy(a).sub(J[k]).cross(j), 1 / c.I); st.phys = 3; }
@@ -108,6 +114,9 @@ export function pfPerson(key, sticks) {
     stains,
     gesture(name) { const c = clips[GEST[name] || name]; if (c && this.pose !== 'walk') st.over = { c, t: 0, w: 0, end: Math.min(c.dur, name === 'laugh' ? 3.2 : c.dur) }; if (name === 'wave') this.waveT = 1.6; },
     update(dt) {
+      if (opt.far) { st.acc = (st.acc || 0) + dt; if (G.camera && !this.hands) { root.getWorldPosition(_w); G.camera.getWorldPosition(_cam); const d = _w.distanceTo(_cam), vr = G.renderer && G.renderer.xr.isPresenting;
+          body.visible = d < GONE; if (!st.force && (!body.visible || (!vr && !onScreen(_w)) || (d > SLOW && (frN & 1) === st.par))) { if (st.acc < 0.25) return; } }
+        dt = st.acc; st.acc = 0; }
       const seated = this.pose === 'sit' || this.pose === 'eat';
       this.talkT = Math.max(0, this.talkT - dt); if (st.fold > 0) st.fold -= dt;
       for (let i = stains.length - 1; i >= 0; i--) { const s = stains[i]; s.life -= dt; s.m.material.opacity = 0.85 * Math.min(1, s.life / 25); if (s.life <= 0) { s.m.removeFromParent(); s.m.material.dispose(); stains.splice(i, 1); } }

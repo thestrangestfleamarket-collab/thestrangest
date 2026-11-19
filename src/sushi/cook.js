@@ -1,4 +1,4 @@
-// you, the cook: a Rocketbox body in a cook's work clothes (rb.js) under your eyes, turning as your body turns, its arms reaching to your hands; its head is left out (you see through its eyes) and so are its hands while your own are drawn
+// you, the cook: Polyfork's carving chef (pf.js) under your eyes, turning as your body turns, its arms reaching to your hands; its head is left out (you see through its eyes) and so are its hands while your own are drawn
 import * as THREE from 'three';
 import { G } from './ctx.js';
 import { avatarsReady, makePerson } from './avatars.js';
@@ -6,7 +6,7 @@ import { avatarsReady, makePerson } from './avatars.js';
 export function buildCook() {
   const cook = { on: false, P: null }; G.cook = cook; let yaw = null;
   const _c = new THREE.Vector3(), _d = new THREE.Vector3(), tL = new THREE.Vector3(), tR = new THREE.Vector3(), TINY = new THREE.Vector3(0.001, 0.001, 0.001), ONE = new THREE.Vector3(1, 1, 1);
-  const make = () => { const P = makePerson(0, 'cook'); if (!P.real) return null; P.pose = 'stand'; P.root.traverse((o) => { o.userData.nopick = true; if (o.isMesh) o.castShadow = true; }); G.scene.add(P.root); P.hands = { L: null, R: null }; return P; };
+  const make = () => { const P = makePerson(0, 'carving_chef'); if (!P.polyfork) return null; P.pose = 'stand'; P.root.traverse((o) => { o.userData.nopick = true; if (o.isMesh) o.castShadow = true; }); G.scene.add(P.root); P.hands = { L: null, R: null }; return P; };
   cook.update = (dt) => {
     if (!cook.P) { if (!avatarsReady() || G.mode === 'menu') return; cook.P = make(); if (!cook.P) return; }
     const P = cook.P, cam = G.camera; cam.getWorldPosition(_c); cam.getWorldDirection(_d); const want = Math.atan2(_d.x, _d.z);

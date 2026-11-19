@@ -1,4 +1,4 @@
-// A GUEST IN THE ALLEY: a tenant of THE MARKET come down THE DARK ALLEY as themselves (146bg sends them here, /holo?g=sushi&as=guest; on its own /sushi?guest=1): on a screen they walk it in third or first person, in a headset as they stand; their own figure (its standing, walking and sitting baked in THE MARKET) is sent to everyone else in the alley, and they are drawn as one of the street's bodies in the colours they wear and at their height (tenant.js); a stool to sit on and be served at, the bowl paid from their own money; the street's end, or LEAVE, back to THE MARKET at the alley's mouth
+// A GUEST IN THE ALLEY: a tenant of THE MARKET come down THE DARK ALLEY as themselves (146bg sends them here, /holo?g=sushi&as=guest; on its own /sushi?guest=1): on a screen they walk it in third or first person, in a headset as they stand; their own figure (its standing, walking and sitting baked in THE MARKET) is drawn here and sent to everyone else in the alley; a stool to sit on and be served at, the bowl paid from their own money; the street's end, or LEAVE, back to THE MARKET at the alley's mouth
 import * as THREE from 'three';
 import { G, BOUNDS, clamp } from './ctx.js';
 import { SEATS, RECIPES } from './cart.js';
@@ -22,8 +22,8 @@ export function buildGuest(live) {
 
   // their own figure, posed from what THE MARKET baked (standing, a walk of eight steps, sitting), else a stand-in
   const fig = Y.fig && Y.fig.D ? (() => { try { return JSON.parse(Y.fig.D); } catch (e) { return null; } })() : null, clips = Y.clips || null;
-  let av = null; try { if (fig) { av = tenantFigure(fig, 1, Y.fig.k); av.key = Y.fig.k; } } catch (e) { console.warn('the guest figure', e); av = null; }
-  const stand = av ? null : makePerson(7, 'denim'); if (stand) stand.root.traverse((o) => { o.userData.nopick = true; });
+  let av = null; try { if (fig) { av = tenantFigure(fig, 1); av.key = Y.fig.k; } } catch (e) { console.warn('the guest figure', e); av = null; }
+  const stand = av ? null : makePerson(7, 'student_with_backpack'); if (stand) stand.root.traverse((o) => { o.userData.nopick = true; });
   const body = av ? av.root : stand.root; (G.peopleRoot || G.scene).add(body); body.position.copy(me.at);
   const poseK = Y.fig && Y.fig.k ? String(Y.fig.k).slice(0, String(Y.fig.k).lastIndexOf(':')) : '';
   const frame = (L, f) => { const n = L.length, a = Math.floor(f) % n, b = (a + 1) % n, x = f - Math.floor(f), A = L[a], B = L[b], o = new Array(A.length); for (let i = 0; i < A.length; i++) o[i] = A[i] + (B[i] - A[i]) * x; return o; };
@@ -96,7 +96,7 @@ export function buildGuest(live) {
     cam.getWorldDirection(_c); if (me.sat) me.yaw = 0; else if (me.moved > 0.25 && step > 1e-4) me.yaw = Math.atan2(me.at.x - prev.x, me.at.z - prev.z); else if (xr || me.view === 'first') me.yaw = Math.atan2(_c.x, _c.z);
     me.ph = (me.ph + step / WALK) % 1;
     const how = me.sat ? 'sit' : me.moved > 0.25 ? 'walk' : 'stand'; me.how = how;
-    if (av) { M = posed(how); if (M) av.pose(M); av.update(dt, how, me.moved); } else { stand.pose = how; stand.speed = Math.max(0.6, me.moved); stand.update(dt, G.t); }
+    if (av) { M = posed(how); if (M) av.pose(M); av.update(dt * 2); } else { stand.pose = how; stand.speed = Math.max(0.6, me.moved); stand.update(dt, G.t); }
     body.position.set(me.at.x, 0, me.at.z); body.rotation.y += Math.atan2(Math.sin(me.yaw - body.rotation.y), Math.cos(me.yaw - body.rotation.y)) * Math.min(1, dt * 10); body.visible = !xr && me.view === 'third';
     if (!xr && G.mode === 'desktop') { const eye = me.sat ? 1.2 : 1.62; cam.position.set(0, eye, 0); if (me.view === 'third') { cam.updateMatrixWorld(true); cam.getWorldDirection(_c); const back = me.sat ? 1.7 : 2.6, wz = clamp(me.at.z - _c.z * back, BOUNDS.minZ, BOUNDS.maxZ), k = Math.abs(_c.z) > 0.05 ? Math.max(0.35, Math.min(1, (wz - me.at.z) / (-_c.z * back))) : 1; cam.position.set(-_c.x * back * k, eye + 0.35 - _c.y * back * 0.5 + (1 - k) * 0.5, -_c.z * back * k); } }   // (against a wall the camera comes in closer, and up)
     // what they could do here, said on the screen

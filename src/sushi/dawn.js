@@ -19,12 +19,13 @@ export function buildDawn(scene) {
       ...(R.dish || R.extras ? [[TEXT.dish, R.dish ? RECIPES[R.dish].name : TEXT.extras]] : []), ...(G.events ? G.events.log.map((e) => [e.name, e.text]) : [])]; };
   D.show = () => { if (D.card || G.guest) return; G.ended = true; G.guideText = ''; G.hoverText = ''; if (G.game && G.game.summary) G.game.summary.visible = false;   // (the morning is to be seen: the day's board is put away)
     const R = G.prog.close(), title = TEXT.title, intro = R.out ? TEXT.out : TEXT.intro, rows = D.rows(R), last = G.story && G.story.notes.length ? G.story.notes[G.story.notes.length - 1] : '';
-    panel.innerHTML = ''; const box = document.createElement('div'); box.style.cssText = 'background:rgba(10,8,7,0.86);border:1px solid #6a5a48;padding:14px 24px;width:min(460px,90vw);max-height:96vh;overflow:auto;box-sizing:border-box;text-align:center;font-size:14px'; panel.appendChild(box);
+    panel.innerHTML = ''; const wrap = document.createElement('div'); wrap.style.cssText = 'background:rgba(10,8,7,0.88);border:1px solid #6a5a48;padding:12px 22px;width:min(800px,94vw);max-height:96vh;overflow:auto;box-sizing:border-box;font-size:14px;display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:4px 26px;align-items:start'; panel.appendChild(wrap);
+    const box = document.createElement('div'), side = document.createElement('div'); box.style.textAlign = 'center'; wrap.appendChild(box); wrap.appendChild(side); { const st = document.getElementById('stat'); if (st) st.textContent = ''; }   // (the card on the left, the shop beside it)
     const h = document.createElement('div'); h.style.cssText = 'font-size:30px;letter-spacing:4px;margin-bottom:6px;white-space:nowrap'; h.textContent = title; box.appendChild(h);
     const it = document.createElement('div'); it.style.cssText = 'margin-bottom:8px;opacity:.9'; it.textContent = intro; box.appendChild(it);
     const tb = document.createElement('table'); tb.style.cssText = 'margin:0 auto;border-spacing:12px 1px;font-size:14px'; for (const [k, v] of rows) { const r = tb.insertRow(); r.insertCell().textContent = k; const c = r.insertCell(); c.textContent = String(v); c.style.textAlign = 'right'; } box.appendChild(tb);
     if (last) { const e = document.createElement('div'); e.style.cssText = 'margin:6px 3px 0;font-size:13px;opacity:.7;font-style:italic'; e.textContent = last; box.appendChild(e); }
-    if (!R.out) G.shop.dom(box);
+    if (!R.out) G.shop.dom(side);
     const note = document.createElement('div'); note.style.cssText = 'margin-top:8px;font-size:12px;opacity:.75'; note.textContent = G.prog.saved ? TEXT.kept : TEXT.keep; box.appendChild(note); G.prog.saving.then((ok) => { note.textContent = ok ? TEXT.kept : TEXT.keep; });
     const bs = 'margin:10px 6px 0;font:600 17px Georgia,serif;letter-spacing:3px;padding:10px 24px;background:#1a1410;color:#e8dcc8;border:1px solid #6a5a48;border-radius:0;cursor:pointer';
     if (!R.out) { const b = document.createElement('button'); b.textContent = TEXT.next; b.style.cssText = bs; b.onclick = next; box.appendChild(b); }

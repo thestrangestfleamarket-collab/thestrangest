@@ -117,7 +117,7 @@ export function buildGame(scene) {
   }
 
   function spawn(seat, guest, opt) { opt = opt || {}; // guest: a tenant of THE MARKET who sat down at the cart there (live.js): a customer like any other, but a real person
-    const due = guest || opt.ev || opt.stranger ? null : G.regs?.due(), nb = due ? G.block.take(due) : null, p = guest ? guest.p : nb ? nb.p : makePerson((Math.random() * 1e6) | 0), x = SEATS[seat], side = nb ? (p.root.position.x < x ? -1 : 1) : Math.random() < 0.5 ? -1 : 1; // most who sit down are the street's own people
+    const due = guest || opt.ev || opt.stranger ? null : G.regs?.due(), nb = due ? G.block.take(due) : null, p = guest ? guest.p : nb ? nb.p : makePerson((Math.random() * 1e6) | 0), x = SEATS[seat], side = nb ? (p.root.position.x < x ? -1 : 1) : Math.random() < 0.5 ? -1 : 1; // a regular whose hour it is (regulars.js), else a stranger
     if (!nb && !guest) p.root.position.set(side * 14, 0, -2.35); G.peopleRoot.add(p.root);
     p.root.traverse((o) => { o.userData.nopick = true; if (o.isMesh) o.castShadow = true; });
     if (nb) G.regs.came(nb);

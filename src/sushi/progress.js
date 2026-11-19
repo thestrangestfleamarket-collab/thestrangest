@@ -75,9 +75,9 @@ export function buildProgress(params) {
     if (v.asks && typeof v.asks === 'object') for (const k of DAYDISH) if (v.asks[k] > 0) P.asks[k] = v.asks[k] | 0;
     if (v.regs && typeof v.regs === 'object') for (const id in v.regs) { const r = v.regs[id]; if (r && typeof r === 'object') P.regs[id] = { a: clamp(+r.a || 0, -5, 10), k: String(r.k || ''), d: String(r.d || ''), ok: r.ok ? 1 : 0, n: r.n | 0, b: r.b | 0, bd: r.bd | 0 }; } return P; };
   const post = (path, body) => NET.tok().then(() => fetch(path, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) })).then((r) => (r.ok ? r.json() : null)).catch(() => null);
-  const off = G.guest || params.has('prog') || !/^https?:$/.test(location.protocol);
+  const off = G.guest || params.has('prog') || !/^https?:$/.test(location.protocol); prog.loaded = off;
   prog.save = () => (off ? Promise.resolve(false) : post('/sushi/save', prog.P).then((j) => (prog.saved = !!(j && j.ok))));
-  prog.load = () => (off ? Promise.resolve(false) : post('/sushi/load', {}).then((j) => { prog.loaded = true; if (!j) return false; prog.saved = true; const P = tidy(j.run); if (P && !G.clock.running && !prog.result) { prog.P = P; prog.next(); } return !!P; }));
+  prog.load = () => (off ? Promise.resolve(false) : post('/sushi/load', {}).then((j) => { prog.loaded = true; if (!j) return false; prog.saved = true; const P = tidy(j.run); if (P && !prog.result) { prog.P = P; if (G.clock.running) prog.apply(); else prog.next(); } return !!P; }));   // (a run that comes back after the stall has opened still counts: the day goes on as that run's)
   prog.take = (v) => { const P = tidy(v); if (P) { prog.P = P; prog.next(); } return !!P; };   // (a check sets a run by hand)
   if (params.get('prog') === 'all') Object.assign(prog.P, { day: 5, tut: true, rep: 70, recipes: [...DAYDISH], extras: true });
   prog.apply();

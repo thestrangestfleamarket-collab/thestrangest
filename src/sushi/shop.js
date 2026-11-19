@@ -9,7 +9,7 @@ export function buildShop() {
   S.items = () => UPGRADES.map((u) => { const owned = G.prog.has(u.id), price = G.prog.price(u.id); return { id: u.id, name: PT.ups[u.id][0], what: PT.ups[u.id][1], price, owned, can: !owned && G.prog.P.money >= price }; });
   S.buy = (id) => { const ok = G.prog.buy(id); G.audio.play(ok ? 'cash' : 'click'); return ok; };
   // on a screen: the list, redrawn after each purchase
-  S.dom = (box) => { const el = document.createElement('div'); el.style.cssText = 'margin-top:12px;border-top:1px solid #6a5a48;padding-top:8px;text-align:left;font-size:13px'; box.appendChild(el);
+  S.dom = (box) => { const el = document.createElement('div'); el.style.cssText = 'padding-top:6px;text-align:left;font-size:13px'; box.appendChild(el);
     const draw = () => { el.innerHTML = ''; const h = document.createElement('div'); h.style.cssText = 'display:flex;justify-content:space-between;font-weight:700;letter-spacing:2px;margin-bottom:4px'; h.innerHTML = `<span>${TEXT.title}</span><span>${TEXT.savings} ${G.money.fmt(G.prog.P.money)}</span>`; el.appendChild(h);
       for (const it of S.items()) { const r = document.createElement('div'); r.style.cssText = 'display:flex;align-items:center;gap:8px;padding:2px 0;opacity:' + (it.owned ? 0.55 : 1);
         const t = document.createElement('div'); t.style.cssText = 'flex:1;line-height:1.2'; t.innerHTML = `<b>${it.name}</b><br><span style="opacity:.75;font-size:12px">${it.what}</span>`; r.appendChild(t);

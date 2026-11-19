@@ -1,4 +1,4 @@
-// a tenant of THE MARKET at the cart, as one of the village's own bodies (rb.js) in the colours they wear and at their own height, their name over them (live.js): their figure, sent once by their market page (146bg), is read for those, and what they hold (a guitar) is drawn where their hands have it, its place sent ten times a second; the body itself walks, stands, sits and eats as the cart's people do
+// a tenant of THE MARKET at the cart, as themselves: one of the street's bodies (rb.js) in the colours they really wear and at their own height, their name over them (live.js): their figure, sent once by their market page (146bg), is read for those, and what they hold (a guitar) is drawn where their hands have it, its place sent ten times a second; the body itself walks, stands, sits and eats as the cart's people do
 import * as THREE from 'three';
 import { makePerson, avatarsReady } from './avatars.js';
 import { bodyInfo, VISITORS } from './rb.js';
@@ -12,13 +12,15 @@ export function wornColours(c) {
   const top = [...n.entries()].sort((a, b) => b[1] - a[1]).map(([k]) => [((k >> 8) & 15) * 17, ((k >> 4) & 15) * 17, (k & 15) * 17]);
   const a = top[0] || [58, 74, 106], b = top.find((x) => Math.abs(x[0] - a[0]) + Math.abs(x[1] - a[1]) + Math.abs(x[2] - a[2]) > 90) || a.map((v) => v * 0.55); return [a, b];
 }
-// the body's own pictures with its clothes dyed theirs: the robe and sleeves the first colour, the sash and leggings the second (the weave and pattern kept by shade)
-const dyed = (key, [a, b]) => { const info = bodyInfo(key), img = info && info.tex.image; if (!img) return null; const W = img.width, cv = document.createElement('canvas'); cv.width = cv.height = W; const g = cv.getContext('2d'); g.drawImage(img, 0, 0);
-  const q = W / 1024, x0 = Math.round(520 * q), y0 = Math.round(520 * q), s = 496 * q, d = g.getImageData(x0, y0, Math.round(s), Math.round(s)), p = d.data, w = d.width;
-  const band = (v0, v1, col, k) => { let m = 0, n = 0; for (let y = Math.round(v0 * s); y < Math.round(v1 * s); y++) for (let x = 0; x < w; x++) { const i = (y * w + x) * 4; m += p[i] + p[i + 1] + p[i + 2]; n++; } m = m / Math.max(1, n) || 1;
-    for (let y = Math.round(v0 * s); y < Math.round(v1 * s); y++) for (let x = 0; x < w; x++) { const i = (y * w + x) * 4, l = Math.min(1.6, (p[i] + p[i + 1] + p[i + 2]) / m) * k; p[i] = Math.min(255, col[0] * l); p[i + 1] = Math.min(255, col[1] * l); p[i + 2] = Math.min(255, col[2] * l); } };
-  band(0.02, 0.25, a, 1); band(0.33, 0.6, a, 1); band(0.63, 0.8, a, 1); band(0.25, 0.33, b, 1); band(0.81, 0.9, b, 0.8);
-  g.putImageData(d, x0, y0); const t = new THREE.CanvasTexture(cv); t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = 2; return t; };
+// the body's own pictures with its clothes in their colours: what it wears above the waist the first, below it the second (the cloth's folds kept by shade; skin, hair and shoes left); where each is in the picture comes with the body (rb.js wear)
+const dyed = (key, [a, b]) => { const info = bodyInfo(key), img = info && info.tex.image, wear = info && info.wear; if (!img || !wear) return null; const W = img.width, cv = document.createElement('canvas'); cv.width = cv.height = W; const g = cv.getContext('2d'); g.drawImage(img, 0, 0);
+  const q = W / 1024, bw = Math.round(1024 * q), bh = Math.round(512 * q), d = g.getImageData(0, 0, bw, bh), p = d.data, N = wear.n, pad = 8 * q, sum = [0, 0, 0], cnt = [0, 0, 0];
+  const at = (x, y) => wear.m[Math.min(N - 1, Math.max(0, ((y - pad) / (bh - 2 * pad) * N) | 0)) * N + Math.min(N - 1, Math.max(0, ((x - pad) / (bw - 2 * pad) * N) | 0))];
+  const skin = (i) => { const r = p[i], gg = p[i + 1], bb = p[i + 2]; return r > gg && gg > bb && r - bb > 28 && r > 110 && r - bb < 120; };
+  for (let y = 0; y < bh; y++) for (let x = 0; x < bw; x++) { const k = at(x, y); if (k === 1 || k === 2) { const i = (y * bw + x) * 4; if (skin(i)) continue; sum[k] += p[i] + p[i + 1] + p[i + 2]; cnt[k]++; } }
+  const mean = [1, sum[1] / Math.max(1, cnt[1]) || 1, sum[2] / Math.max(1, cnt[2]) || 1], col = [null, a, b];
+  for (let y = 0; y < bh; y++) for (let x = 0; x < bw; x++) { const k = at(x, y); if (k !== 1 && k !== 2) continue; const i = (y * bw + x) * 4; if (skin(i)) continue; const l = Math.min(1.7, (p[i] + p[i + 1] + p[i + 2]) / mean[k]), c = col[k]; p[i] = Math.min(255, c[0] * l); p[i + 1] = Math.min(255, c[1] * l); p[i + 2] = Math.min(255, c[2] * l); }
+  g.putImageData(d, 0, 0); const t = new THREE.CanvasTexture(cv); t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = 2; return t; };
 const hash = (s) => { let h = 7; for (let i = 0; i < s.length; i++) h = (h * 31 + s.charCodeAt(i)) >>> 0; return h; };
 
 // D: {kind 'w' | 'b', np matrices, n points, lo, hi, s scale to metres, p points, c colours, b piece or bones, i index, x held things [{n, lo, hi, p, c, i}]}; mirror: -1 when the market's alley runs the other way round; who: their name or id (which body they come as)

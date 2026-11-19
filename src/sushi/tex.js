@@ -88,8 +88,8 @@ export function liquid(m, o = {}) {
   m.customProgramCacheKey = () => 'liquid'; m.userData.liquid = U; return m;
 }
 
-export const JP = "'Noto Sans JP','Noto Sans CJK JP','Hiragino Sans','Hiragino Kaku Gothic ProN','Yu Gothic','Meiryo','IPAGothic','IPAPGothic',sans-serif";
-export const MONO = "'Courier New',Courier,monospace";
+export const JP = "'Helvetica Neue',Helvetica,Arial,'Noto Sans JP','Noto Sans CJK JP','Hiragino Sans','Hiragino Kaku Gothic ProN','Yu Gothic','Meiryo','IPAGothic','IPAPGothic',sans-serif";   // the one family everything written is set in: the page's own (sushi.html --ui), with Japanese behind it
+export const MONO = JP;
 
 export function rng(seed) {
   let a = seed >>> 0;
@@ -116,7 +116,7 @@ export function canvasTex(w, h, draw, o = {}) {
 const loTex = (lo, w, h, draw, o = {}) => canvasTex(w, h, draw, { ...o, lo });
 
 // photographed surfaces (CC0, tools/sushi-assets.py), asked for before the street is built; a drawn picture stands in for one that has not come
-const PHOTOS = ['dirt', 'mud', 'grass', 'field', 'stone_path', 'stone_wall', 'cedar', 'plaster_white', 'plaster_clay', 'roof_tiles', 'thatch', 'bamboo', 'tatami', 'bark', 'wood', 'wood_dark', 'wood_light', 'wood_counter', 'cloth'];
+const PHOTOS = ['brick_red', 'brick_orange', 'brick_brown', 'brick_dark', 'brick_painted', 'plaster', 'plaster_worn', 'concrete', 'concrete_dirty', 'asphalt', 'paving', 'shutter', 'shutter_rust', 'corrugated', 'rust', 'wood', 'wood_dark', 'wood_light', 'tile_brown', 'tile_white', 'wood_counter', 'cloth', 'bark', 'grass'];
 const PIMG = {}, PTEX = {};
 export function loadPhotos(base = '/sushi-assets/tex/', ms = 9000) {
   return Promise.all(PHOTOS.map((n) => new Promise((res) => { const im = new Image(); im.onload = () => { PIMG[n] = im; const t = PTEX[n]; if (t) { t.dispose(); t.image = small(im); t.needsUpdate = true; } res(); }; im.onerror = res; im.src = base + n + '.jpg'; setTimeout(res, ms); })));

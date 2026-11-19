@@ -1,4 +1,4 @@
-// the run's weather, after THE MARKET's (src/131-weather.js: cloud, rain, mist and wind, its rain drawn as streaks round you): here it is the run's own, a sum of the run's clock (G.clock.frac), so every page in the village sees the same sky: a clear day, cloud gathering through the dusk, a thin drizzle while the night is at its worst, then clearing to a misty dawn; what is heard (audio.js) follows what falls
+// the run's weather, after THE MARKET's (src/131-weather.js: cloud, rain, mist and wind, its rain drawn as streaks round you): here it is the run's own, a sum of the run's clock (G.clock.frac), so every page on the block sees the same sky: a clear day, cloud gathering through the dusk, a thin drizzle while the night is at its worst, then clearing to a hazy dawn; what is heard (audio.js) follows what falls
 import * as THREE from 'three';
 import { G, clamp } from './ctx.js';
 
@@ -16,13 +16,13 @@ export function weatherAt(f) {
 
 export function buildWeather(scene, o = {}) {
   const W = { now: weatherAt(0), rainK: 0 };
-  // the rain: thin streaks falling round you (THE MARKET's), never drawn under the stall's roof or a house's eaves
+  // the rain: thin streaks falling round you (THE MARKET's), never drawn under the cart's roof or indoors
   const NR = o.lean ? 700 : 1400, RB = 14, RH = 12, rs = new Float32Array(NR * 3), rp = new Float32Array(NR * 6);
   for (let i = 0; i < NR; i++) { rs[i * 3] = (Math.random() - 0.5) * 2 * RB; rs[i * 3 + 1] = Math.random() * RH; rs[i * 3 + 2] = (Math.random() - 0.5) * 2 * RB; }
   const rg = new THREE.BufferGeometry(); rg.setAttribute('position', new THREE.BufferAttribute(rp, 3).setUsage(THREE.DynamicDrawUsage));
   const rm = new THREE.LineBasicMaterial({ color: 0x9aaabb, transparent: true, opacity: 0.32, depthWrite: false, fog: true });
   const RAIN = new THREE.LineSegments(rg, rm); RAIN.frustumCulled = false; RAIN.visible = false; RAIN.userData.nopick = true; scene.add(RAIN);
-  const dry = (x, y, z) => (Math.abs(x) < 1.95 && z > -1.95 && z < 2.25 && y < 2.75) || ((z > 2.2 || z < -4.4) && y < 3.5);   // under the stall's roof, under the eaves
+  const dry = (x, y, z) => (Math.abs(x) < 1.95 && z > -1.95 && z < 2.25 && y < 2.75) || z > 3.4 || z < -16.6;   // under the cart's roof, behind the fronts
   const cam = new THREE.Vector3();
   W.update = (dt) => {
     const K = G.clock, w = W.now = weatherAt(K ? K.frac : 0); W.rainK += clamp(w.rain - W.rainK, -dt * 0.05, dt * 0.05); G.rainK = W.rainK; G.wet = W.rainK > 0.01; G.wind = w.wind;

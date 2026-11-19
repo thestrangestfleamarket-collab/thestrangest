@@ -1,0 +1,161 @@
+// the block's building fronts, downtown New York in 1985: five- and six-storey tenements painted once each (brick, windows, lintels, cornice; a second picture of what shines at night), their shopfronts (a bodega, a rolled-down gate, a laundromat, a record shop, a coffee shop; across the street a bar, a television repair shop, a pizza counter, a cheque casher, a liquor store), stoops and fire escapes
+import * as THREE from 'three';
+import { mat, mesh, box } from './ctx.js';
+import * as T from './tex.js';
+
+export const SANS = "'Helvetica Neue', Helvetica, Arial, sans-serif", SLAB = "Rockwell, 'Courier New', Georgia, serif", SCRIPT = "'Brush Script MT', 'Segoe Script', 'Comic Sans MS', cursive";
+export const LOT = 7.6, GF = 3.7, FL = 3.05;   // a tenement lot's width, the shop floor's height, a floor's
+
+const pair = (w, h) => { const mk = () => { const c = document.createElement('canvas'); c.width = w; c.height = h; return c; }, a = mk(), b = mk(), g = a.getContext('2d'), e = b.getContext('2d'); e.fillStyle = '#000'; e.fillRect(0, 0, w, h); return { a, b, g, e, w, h }; };
+const texOf = (c, small) => { let s = c; if (small) { s = document.createElement('canvas'); s.width = c.width / 2; s.height = c.height / 2; s.getContext('2d').drawImage(c, 0, 0, s.width, s.height); } const t = new THREE.CanvasTexture(s); t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = 8; return t; };
+const brick = (g, x, y, w, h, name, tint, sx, sy) => { const im = T.photoImg(name); g.save(); g.beginPath(); g.rect(x, y, w, h); g.clip(); if (im) { for (let yy = y; yy < y + h; yy += sy) for (let xx = x; xx < x + w; xx += sx) g.drawImage(im, xx, yy, sx + 1, sy + 1); } else { g.fillStyle = '#8a6a5a'; g.fillRect(x, y, w, h); } g.globalCompositeOperation = 'multiply'; g.fillStyle = tint; g.fillRect(x, y, w, h); g.restore(); };
+const TAGS = ['RICO 157', 'LADY K', 'ZAP 1', 'SPIN 2', 'MAX 9', 'JET 5', 'NEO 3', 'TRIX', 'DUKE', 'LOBO', 'EL 7', 'KIM'], INK = ['#101014', '#c8201c', '#e8e4d8', '#1c3a9a', '#d8a020', '#1c7a3a', '#b02a8a', '#e86a1c'];
+// marker and spray tags, each a quick slanted hand
+export const tags = (g, R, x, y, w, h, n, big = 1) => { for (let i = 0; i < n; i++) { const t = TAGS[(R() * TAGS.length) | 0], s = (16 + R() * 26) * big; g.save(); g.translate(x + R() * w * 0.8, y + s + R() * Math.max(1, h - s)); g.rotate(-0.25 + R() * 0.3); g.transform(1, 0, -0.3, 1, 0, 0); g.font = `italic bold ${s | 0}px ${SCRIPT}`; g.fillStyle = INK[(R() * INK.length) | 0]; g.globalAlpha = 0.75 + R() * 0.25; g.fillText(t, 0, 0); g.lineWidth = Math.max(1.5, s / 14); g.strokeStyle = g.fillStyle; g.beginPath(); g.moveTo(-4, s * 0.18); g.quadraticCurveTo(s * 1.2, s * 0.5, s * (1.6 + t.length * 0.32), s * 0.05); g.stroke(); g.restore(); } };
+// a piece: fat outlined letters in two colours with a shadow, as a wall or a gate gets overnight
+export const piece = (g, text, x, y, s, c0, c1, out = '#101014') => { g.save(); g.translate(x, y); g.transform(1, -0.06, -0.18, 1, 0, 0); g.font = `900 ${s | 0}px Impact, 'Arial Black', ${SANS}`; g.lineJoin = 'round'; g.textBaseline = 'alphabetic'; g.fillStyle = 'rgba(0,0,0,0.6)'; g.fillText(text, s * 0.08, s * 0.08); g.lineWidth = s * 0.16; g.strokeStyle = out; g.strokeText(text, 0, 0); const gr = g.createLinearGradient(0, -s, 0, 0); gr.addColorStop(0, c0); gr.addColorStop(1, c1); g.fillStyle = gr; g.fillText(text, 0, 0); g.lineWidth = s * 0.03; g.strokeStyle = 'rgba(255,255,255,0.7)'; g.strokeText(text, -s * 0.02, -s * 0.03); g.restore(); };
+
+// ---- the floors above the shop: [brick photograph, its tint, the stone of the lintels, the cornice's paint]
+const KINDS = [['brick_red', '#c8a89a', '#b8ae9c', '#3a2a22'], ['brick_brown', '#d8c8b0', '#8a6a52', '#2a3a30'], ['brick_orange', '#b89a88', '#c8c0b0', '#4a3a2a'], ['brick_painted', '#c8c4b8', '#a8a498', '#30343a'], ['brick_dark', '#d8b8a8', '#a89888', '#2a2420'], ['brick_red', '#a88a80', '#d0c8b8', '#1c1c20']];
+const LITC = ['#ffcf8a', '#ffe2b0', '#ffb872', '#a8c4ff', '#ffd8a0', '#f0e0c0'];
+function upper(seed, kind, floors) {
+  const [bn, tint, lintel, trim] = KINDS[kind % KINDS.length], HU = floors * FL + 1.0, P = pair(512, 1024), { g, e, w, h } = P, R = T.rng(seed * 7 + 3), px = w / LOT, py = h / HU;
+  brick(g, 0, 0, w, h, bn, tint, 1.9 * px, 1.9 * py);
+  for (let i = 0; i < 26; i++) { g.fillStyle = `rgba(0,0,0,${0.03 + R() * 0.05})`; const x = R() * w; g.fillRect(x, 0, 3 + R() * 9, h * (0.3 + R() * 0.7)); }   // soot and rain down the brick
+  const ch = 0.95 * py; g.fillStyle = trim; g.fillRect(0, 0, w, ch); g.fillStyle = 'rgba(255,255,255,0.12)'; g.fillRect(0, ch * 0.1, w, ch * 0.08); g.fillStyle = 'rgba(0,0,0,0.4)'; g.fillRect(0, ch * 0.8, w, ch * 0.2);
+  for (let i = 0; i < 13; i++) { g.fillStyle = 'rgba(0,0,0,0.28)'; g.fillRect((i + 0.3) * w / 13, ch * 0.3, w / 34, ch * 0.5); }   // the cornice's brackets
+  for (let f = 0; f < floors; f++) for (let i = 0; i < 4; i++) {
+    const cx = (0.95 + i * 1.9) * px, ys = h - (f * FL + 0.85) * py, wh = 1.8 * py, ww = 0.95 * px, x0 = cx - ww / 2, y0 = ys - wh;
+    g.fillStyle = lintel; g.fillRect(cx - 0.62 * px, y0 - 0.3 * py, 1.24 * px, 0.3 * py); g.fillRect(cx - 0.6 * px, ys, 1.2 * px, 0.12 * py);
+    g.fillStyle = 'rgba(0,0,0,0.18)'; g.fillRect(cx - 0.6 * px, ys + 0.12 * py, 1.2 * px, 0.5 * py * R());
+    g.fillStyle = R() < 0.5 ? '#d8d4c4' : '#2a2a2e'; g.fillRect(x0 - 3, y0 - 3, ww + 6, wh + 6);
+    const gr = g.createLinearGradient(0, y0, 0, ys); gr.addColorStop(0, '#2a3644'); gr.addColorStop(1, '#10151c'); g.fillStyle = gr; g.fillRect(x0, y0, ww, wh);
+    g.fillStyle = 'rgba(160,190,220,0.14)'; g.beginPath(); g.moveTo(x0, y0 + wh * 0.5); g.lineTo(x0 + ww, y0 + wh * 0.15); g.lineTo(x0 + ww, y0 + wh * 0.3); g.lineTo(x0, y0 + wh * 0.7); g.fill();
+    const lit = R() < 0.34, blind = R() < 0.6 ? 0.25 + R() * 0.5 : 0, bc = ['#c8bfa8', '#a8a090', '#8a9aa0', '#b0a07a', '#d8d0c0', '#7a2a2a'][(R() * 6) | 0];
+    if (blind) { g.fillStyle = bc; g.fillRect(x0, y0, ww, wh * blind); }
+    if (lit) { const c = LITC[(R() * LITC.length) | 0]; e.fillStyle = c; e.globalAlpha = 0.55 + R() * 0.4; e.fillRect(x0, y0, ww, wh); if (blind) { e.globalAlpha = 0.25; e.fillStyle = '#000'; e.fillRect(x0, y0, ww, wh * blind); } e.globalAlpha = 1; e.fillStyle = '#000'; e.fillRect(x0, y0 + wh * 0.5 - 2, ww, 4); e.fillRect(cx - 1.5, y0, 3, wh); }
+    g.fillStyle = '#1c1c20'; g.fillRect(x0, y0 + wh * 0.5 - 2, ww, 4);
+    if (R() < 0.13) { g.fillStyle = '#8a8c86'; g.fillRect(cx - 0.32 * px, ys - 0.42 * py, 0.64 * px, 0.42 * py); g.fillStyle = '#5a5c58'; for (let k = 0; k < 5; k++) g.fillRect(cx - 0.28 * px, ys - (0.36 - k * 0.07) * py, 0.56 * px, 2); e.fillStyle = '#000'; e.fillRect(cx - 0.32 * px, ys - 0.42 * py, 0.64 * px, 0.42 * py); }   // an air conditioner in the sash
+    else if (R() < 0.1) { g.fillStyle = '#5a3a2a'; g.fillRect(x0, ys - 0.16 * py, ww, 0.16 * py); for (let k = 0; k < 7; k++) { g.fillStyle = ['#3a7a3a', '#c83a4a', '#e8c83a', '#4a8a4a'][k % 4]; g.beginPath(); g.arc(x0 + (k + 0.5) * ww / 7, ys - 0.2 * py, 0.07 * px, 0, 7); g.fill(); } }   // a window box
+  }
+  return P;
+}
+
+// ---- a shop floor: metres in, pixels out (x from the front's left as you face it, y up from the pavement)
+function shopCanvas() {
+  const P = pair(1024, 512), { g, e, w, h } = P, px = w / LOT, py = h / GF, X = (x) => x * px, Y = (y) => h - y * py;
+  const S = { P, g, e, px, py, X, Y,
+    fill(c, x0, y0, x1, y1, style) { c.fillStyle = style; c.fillRect(X(x0), Y(y1), (x1 - x0) * px, (y1 - y0) * py); },
+    both(x0, y0, x1, y1, style, glow = 1) { S.fill(g, x0, y0, x1, y1, style); e.globalAlpha = glow; S.fill(e, x0, y0, x1, y1, style); e.globalAlpha = 1; },
+    // letters on a board; glow: how much of them shines at night (a lit box sign, neon)
+    text(t, x, y, size, color, o = {}) { for (const [c, k] of [[g, 1], [e, o.glow || 0]]) { if (!k) continue; c.save(); c.globalAlpha = k; c.font = `${o.weight || 'bold'} ${Math.round(size * py)}px ${o.font || SANS}`; c.textAlign = o.align || 'center'; c.textBaseline = 'middle'; c.fillStyle = color; if (o.neon && c === e) { c.shadowColor = color; c.shadowBlur = 14; } if (o.stroke) { c.lineWidth = size * py * 0.12; c.strokeStyle = o.stroke; c.strokeText(t, X(x), Y(y), o.max ? o.max * px : undefined); } c.fillText(t, X(x), Y(y), o.max ? o.max * px : undefined); c.restore(); } },
+    // a pane: what is behind it drawn bright (that is its night look), then the day's dark glass and a pale streak of sky laid over
+    glass(x0, y0, x1, y1, draw, glow = 0.9, dark = 0.5) { for (const c of [g, e]) { c.save(); c.beginPath(); c.rect(X(x0), Y(y1), (x1 - x0) * px, (y1 - y0) * py); c.clip(); draw(c, x0, y0, x1, y1); c.restore(); }
+      S.fill(g, x0, y0, x1, y1, `rgba(14,20,30,${dark})`); g.fillStyle = 'rgba(170,200,230,0.1)'; g.beginPath(); g.moveTo(X(x0), Y(y0 + (y1 - y0) * 0.5)); g.lineTo(X(x1), Y(y1 - (y1 - y0) * 0.1)); g.lineTo(X(x1), Y(y1 - (y1 - y0) * 0.35)); g.lineTo(X(x0), Y(y0 + (y1 - y0) * 0.2)); g.fill();
+      S.fill(e, x0, y0, x1, y1, `rgba(0,0,0,${1 - glow})`); g.strokeStyle = '#2a2a2e'; g.lineWidth = 5; g.strokeRect(X(x0), Y(y1), (x1 - x0) * px, (y1 - y0) * py); },
+    door(x0, x1, color, o = {}) { const top = o.top || 2.2; S.fill(g, x0 - 0.06, 0, x1 + 0.06, top + 0.08, o.frame || '#1c1c20'); S.fill(g, x0, 0.03, x1, top, color); if (o.glass) S.glass(x0 + 0.12, 0.95, x1 - 0.12, top - 0.15, (c) => { c.fillStyle = o.glass; c.fillRect(0, 0, 2000, 2000); }, o.glow ?? 0.5); else { g.strokeStyle = 'rgba(0,0,0,0.3)'; g.lineWidth = 3; g.strokeRect(X(x0 + 0.12), Y(top - 0.15), (x1 - x0 - 0.24) * px, 0.9 * py); g.strokeRect(X(x0 + 0.12), Y(1.0), (x1 - x0 - 0.24) * px, 0.8 * py); } S.fill(g, x1 - 0.14, 1.0, x1 - 0.08, 1.12, '#a89a6a'); S.fill(g, x0, 0, x1, 0.18, 'rgba(0,0,0,0.35)'); },
+    wall(name, tint) { brick(g, 0, 0, w, h, name, tint, 1.9 * px, 1.9 * py); },
+    tags(R, x0, y0, x1, y1, n, big) { tags(g, R, X(x0), Y(y1), (x1 - x0) * px, (y1 - y0) * py, n, big); },
+    grime(R) { for (let i = 0; i < 40; i++) { g.fillStyle = `rgba(0,0,0,${0.03 + R() * 0.06})`; g.fillRect(R() * w, h - R() * 0.5 * py, 20 + R() * 120, 0.5 * py); } S.fill(g, 0, 0, LOT, 0.12, 'rgba(0,0,0,0.3)'); },
+  };
+  return S;
+}
+const shelves = (cols) => (c, x0, y0, x1, y1) => { const g = c, s = c.canvas.width / LOT, sy = c.canvas.height / GF, H = c.canvas.height; g.fillStyle = '#f2ead0'; g.fillRect(x0 * s, H - y1 * sy, (x1 - x0) * s, (y1 - y0) * sy); let k = 0; for (let y = y0 + 0.1; y < y1 - 0.2; y += 0.34) { g.fillStyle = '#6a5a48'; g.fillRect(x0 * s, H - y * sy, (x1 - x0) * s, 4); for (let x = x0 + 0.05; x < x1 - 0.1; x += 0.13 + (k % 3) * 0.03) { g.fillStyle = cols[(k * 7 + ((x * 13) | 0)) % cols.length]; g.fillRect(x * s, H - (y + 0.26) * sy, 0.1 * s, 0.25 * sy); k++; } } };
+const lotResident = (S, R, x0, x1, c) => { S.door(x0, x1, c, { top: 2.25 }); S.fill(S.g, x0 - 0.06, 2.33, x1 + 0.06, 2.7, '#141418'); S.text(String(100 + ((R() * 80) | 0) * 2), (x0 + x1) / 2, 2.52, 0.2, '#c8b060', { font: SLAB }); };
+
+// what each kind of front shows; each returns its sign's words for the checks and where its door is (metres from the lot's left)
+const SHOPS = {
+  bodega(S, R) { S.wall('brick_painted', '#b8b0a0');
+    S.both(0.25, 2.72, 5.75, 3.5, '#f2c81c', 0.5); S.text('BODEGA LA ESPERANZA', 3.0, 3.22, 0.36, '#c81c1c', { glow: 0.6, font: `Impact, 'Arial Black', ${SANS}`, weight: '900', max: 5.2 }); S.text('GROCERY · CERVEZA FRIA · SANDWICHES · LOTTO', 3.0, 2.88, 0.17, '#1c2c7a', { glow: 0.6, max: 5.2 });
+    S.glass(0.4, 0.75, 2.3, 2.6, shelves(['#c8201c', '#f2c81c', '#1c5a9a', '#e8e4d8', '#2a7a3a', '#e86a1c', '#7a2a8a']), 0.95, 0.42); S.glass(3.5, 0.75, 5.6, 2.6, shelves(['#e8e4d8', '#c8201c', '#1c5a9a', '#f2c81c', '#3a3a3a', '#2a7a3a']), 0.95, 0.42);
+    S.fill(S.g, 0.4, 0.1, 2.3, 0.75, '#7a1c1c'); S.fill(S.g, 3.5, 0.1, 5.6, 0.75, '#7a1c1c'); S.door(2.5, 3.35, '#8a2020', { glass: '#e8dcb0', glow: 0.9 });
+    S.text('OPEN', 1.35, 2.3, 0.2, '#ff3a2a', { glow: 1, neon: 1 }); S.text('COLD BEER', 4.55, 2.3, 0.18, '#3ad8ff', { glow: 1, neon: 1 }); S.text('SODA 50¢', 4.55, 1.05, 0.16, '#101014'); S.text('WE ACCEPT FOOD STAMPS', 1.35, 1.0, 0.1, '#101014', { max: 1.7 });
+    lotResident(S, R, 6.25, 7.15, '#3a2a22'); S.tags(R, 5.8, 0.3, 7.5, 1.8, 3, 0.7); return { name: 'BODEGA LA ESPERANZA', door: 2.92 }; },
+  shutter(S, R) { S.wall('brick_dark', '#c8b8a8');
+    S.fill(S.g, 0.25, 2.75, 5.75, 3.45, '#3a3832'); S.text('A. KOWALSKI & SON · PRINTING · OFFSET', 3.0, 3.1, 0.24, 'rgba(200,190,160,0.45)', { font: SLAB, max: 5.2 });   // a painted sign, long faded
+    const sh = T.photoImg('shutter'); if (sh) { for (let x = 0.3; x < 5.7; x += 1.35) S.g.drawImage(sh, S.X(x), S.Y(2.72), 1.35 * S.px, 2.72 * S.py); S.fill(S.g, 0.3, 0, 5.7, 2.72, 'rgba(60,70,80,0.35)'); } else S.fill(S.g, 0.3, 0, 5.7, 2.72, '#6a7078');
+    piece(S.g, 'LOISAIDA', S.X(0.7), S.Y(0.75), 1.25 * S.py, '#ffd21f', '#e8501c'); S.tags(R, 0.4, 0.2, 5.6, 2.6, 9); S.fill(S.g, 0.3, 0, 5.7, 0.1, '#1c1c20');
+    lotResident(S, R, 6.25, 7.15, '#2a3440'); return { name: 'PRINTING (SHUT)', door: 6.7 }; },
+  laundromat(S, R) { S.wall('brick_painted', '#d8d8d0');
+    S.both(0.25, 2.72, 5.75, 3.5, '#f4f4ee', 0.85); S.text('LAUNDROMAT', 3.0, 3.2, 0.4, '#1c4aa8', { glow: 0.9, weight: '900', max: 5 }); S.text('WASH · DRY · FOLD      OPEN 7 DAYS  7 AM – 11 PM', 3.0, 2.86, 0.16, '#c81c1c', { glow: 0.9, max: 5.2 });
+    const wash = (c, x0, y0, x1, y1) => { const s = c.canvas.width / LOT, sy = c.canvas.height / GF, H = c.canvas.height; c.fillStyle = '#eef2ee'; c.fillRect(x0 * s, H - y1 * sy, (x1 - x0) * s, (y1 - y0) * sy); c.fillStyle = '#c8d8d8'; c.fillRect(x0 * s, H - y1 * sy, (x1 - x0) * s, 0.5 * sy); for (let x = x0 + 0.1; x < x1 - 0.6; x += 0.72) for (const y of [0.55, 1.35]) { c.fillStyle = y > 1 ? '#f2e8c8' : '#e8ecec'; c.fillRect(x * s, H - (y + 0.75) * sy, 0.66 * s, 0.75 * sy); c.strokeStyle = '#8a9498'; c.lineWidth = 3; c.strokeRect(x * s, H - (y + 0.75) * sy, 0.66 * s, 0.75 * sy); c.fillStyle = '#2a3a48'; c.beginPath(); c.arc((x + 0.33) * s, H - (y + 0.34) * sy, 0.2 * s, 0, 7); c.fill(); c.strokeStyle = '#b8c0c4'; c.lineWidth = 5; c.stroke(); } };
+    S.glass(0.4, 0.5, 4.2, 2.6, wash, 1, 0.3); S.fill(S.g, 0.4, 0.1, 4.2, 0.5, '#2a5aa8'); S.door(4.5, 5.45, '#d8d8d0', { glass: '#eef2ee', glow: 1 });
+    S.text('DROP-OFF SERVICE', 2.3, 2.38, 0.14, '#1c4aa8', { glow: 0.8 }); lotResident(S, R, 6.25, 7.15, '#40382c'); S.tags(R, 5.7, 0.3, 7.5, 1.6, 2, 0.7); return { name: 'LAUNDROMAT', door: 4.97 }; },
+  records(S, R) { S.wall('brick_dark', '#a89a98');
+    S.both(0.25, 2.72, 5.75, 3.5, '#141418', 0.3); S.text('DOWNTOWN RECORDS', 3.0, 3.2, 0.38, '#ff4aa8', { glow: 1, neon: 1, weight: '900', max: 5.1 }); S.text('LPs · 45s · TAPES · BOUGHT & SOLD', 3.0, 2.87, 0.17, '#3ad8ff', { glow: 0.9, max: 5 });
+    const lps = (c, x0, y0, x1, y1) => { const s = c.canvas.width / LOT, sy = c.canvas.height / GF, H = c.canvas.height, RR = T.rng(85); c.fillStyle = '#2a2420'; c.fillRect(x0 * s, H - y1 * sy, (x1 - x0) * s, (y1 - y0) * sy); for (let y = y0 + 0.08; y < y1 - 0.4; y += 0.43) for (let x = x0 + 0.08; x < x1 - 0.4; x += 0.43) { const a = ['#c8201c', '#f2c81c', '#1c5a9a', '#e8e4d8', '#101014', '#e86a1c', '#7a2a8a', '#2a9a8a'], c0 = a[(RR() * 8) | 0], c1 = a[(RR() * 8) | 0]; c.fillStyle = c0; c.fillRect(x * s, H - (y + 0.38) * sy, 0.38 * s, 0.38 * sy); c.fillStyle = c1; const k = (RR() * 3) | 0; if (k === 0) { c.beginPath(); c.arc((x + 0.19) * s, H - (y + 0.19) * sy, 0.12 * s, 0, 7); c.fill(); } else if (k === 1) c.fillRect(x * s, H - (y + 0.2) * sy, 0.38 * s, 0.1 * sy); else { c.beginPath(); c.moveTo(x * s, H - y * sy); c.lineTo((x + 0.38) * s, H - (y + 0.38) * sy); c.lineTo((x + 0.38) * s, H - y * sy); c.fill(); } } };
+    S.glass(0.4, 0.6, 2.6, 2.6, lps, 0.85, 0.4); S.glass(3.7, 0.6, 5.6, 2.6, lps, 0.85, 0.4); S.fill(S.g, 0.4, 0.1, 2.6, 0.6, '#1c1c20'); S.fill(S.g, 3.7, 0.1, 5.6, 0.6, '#1c1c20'); S.door(2.75, 3.55, '#1c1c20', { glass: '#c8a070', glow: 0.8 });
+    S.text('RECORDS', 1.5, 2.3, 0.2, '#ff4aa8', { glow: 1, neon: 1 }); S.text('NEW WAVE · HIP HOP · SALSA · PUNK', 4.65, 0.8, 0.09, '#e8e4d8', { max: 1.8 }); lotResident(S, R, 6.25, 7.15, '#3a2a22'); S.tags(R, 5.7, 0.2, 7.5, 2.4, 5, 0.8); S.tags(R, 0.4, 0.1, 2.6, 0.6, 2, 0.5); return { name: 'DOWNTOWN RECORDS', door: 3.15 }; },
+  coffee(S, R) { S.wall('brick_painted', '#c8c0b0');
+    S.both(0.2, 2.72, 7.4, 3.5, '#b8bcc0', 0.6); S.text('ODESSA COFFEE SHOP', 3.8, 3.2, 0.38, '#c81c1c', { glow: 0.9, font: SLAB, max: 6.6 }); S.text('BREAKFAST ALL DAY · PIEROGI · BLINTZES · OPEN 24 HOURS', 3.8, 2.86, 0.15, '#1c1c20', { glow: 0.7, max: 6.8 });
+    const booths = (c, x0, y0, x1, y1) => { const s = c.canvas.width / LOT, sy = c.canvas.height / GF, H = c.canvas.height; c.fillStyle = '#f2e2b8'; c.fillRect(x0 * s, H - y1 * sy, (x1 - x0) * s, (y1 - y0) * sy); for (let x = x0 + 0.2; x < x1 - 0.9; x += 1.25) { c.fillStyle = '#8a2a22'; c.fillRect(x * s, H - 1.5 * sy, 0.35 * s, 0.8 * sy); c.fillRect((x + 0.75) * s, H - 1.5 * sy, 0.35 * s, 0.8 * sy); c.fillStyle = '#d8d4c8'; c.fillRect((x + 0.33) * s, H - 1.15 * sy, 0.44 * s, 0.06 * sy); c.fillStyle = '#ffe8a0'; c.beginPath(); c.arc((x + 0.55) * s, H - 2.3 * sy, 0.1 * s, 0, 7); c.fill(); } };
+    S.glass(0.4, 0.7, 4.9, 2.6, booths, 0.95, 0.35); S.fill(S.g, 0.4, 0.1, 4.9, 0.7, '#5a5e62'); S.door(5.2, 6.15, '#8a8e92', { glass: '#f2e2b8', glow: 0.95 }); S.text('OPEN 24 HRS', 2.6, 2.35, 0.17, '#ff3a2a', { glow: 1, neon: 1 }); S.tags(R, 6.3, 0.2, 7.5, 2.2, 2, 0.7); return { name: 'ODESSA COFFEE SHOP', door: 5.67 }; },
+  stoop(S, R, o) { S.wall(o.brick || 'brick_brown', o.tint || '#c8b8a0'); S.fill(S.g, 0, 0, LOT, 1.05, 'rgba(60,40,30,0.5)');   // the basement's brownstone, the parlour floor above
+    for (const x of [0.6, 5.2]) { S.glass(x, 1.55, x + 1.6, 3.3, (c) => { c.fillStyle = R() < 0.5 ? '#e8c890' : '#2a3038'; c.fillRect(0, 0, 2000, 2000); }, 0.6, 0.55); S.fill(S.g, x - 0.1, 3.3, x + 1.7, 3.5, '#b8ae9c'); S.fill(S.g, x - 0.1, 1.43, x + 1.7, 1.55, '#b8ae9c'); S.fill(S.g, x, 0.25, x + 1.6, 0.9, '#14161a'); S.g.strokeStyle = '#0c0c0e'; S.g.lineWidth = 4; for (let k = 0; k < 9; k++) { S.g.beginPath(); S.g.moveTo(S.X(x + k * 0.2), S.Y(0.9)); S.g.lineTo(S.X(x + k * 0.2), S.Y(0.25)); S.g.stroke(); } }
+    S.fill(S.g, 2.95, 1.0, 4.65, 3.45, '#1c1c20'); S.fill(S.g, 3.1, 1.0, 4.5, 3.3, o.door || '#3a2a22'); S.glass(3.3, 2.2, 4.3, 3.15, (c) => { c.fillStyle = '#e8c890'; c.fillRect(0, 0, 2000, 2000); }, 0.5, 0.5); S.text(String(100 + ((R() * 80) | 0) * 2 + 1), 3.8, 1.75, 0.2, '#c8b060', { font: SLAB });
+    S.tags(R, 0.2, 0.1, 2.9, 1.3, 3, 0.7); return { name: 'TENEMENT', door: 3.8 }; },
+  bar(S, R) { S.wall('brick_dark', '#8a7a78'); S.fill(S.g, 0.2, 0, 5.8, 2.7, '#1c2420'); S.fill(S.g, 0.25, 2.72, 5.75, 3.5, '#101412');
+    S.text("LUCKY'S TAVERN", 3.0, 3.12, 0.38, '#d8c070', { font: SLAB, glow: 0.25, max: 5 }); S.glass(0.6, 1.2, 2.6, 2.4, (c) => { c.fillStyle = '#2a1410'; c.fillRect(0, 0, 2000, 2000); }, 0.9, 0.2);
+    S.text('BAR', 1.6, 1.95, 0.42, '#ff3a2a', { glow: 1, neon: 1, weight: '900' }); S.text('COLD BEER ON TAP', 1.6, 1.45, 0.13, '#ffb040', { glow: 1, neon: 1 }); S.door(3.4, 4.3, '#2a1c14', { glass: '#3a1c10', glow: 0.5 }); S.tags(R, 4.4, 0.2, 5.8, 2.2, 3, 0.7); lotResident(S, R, 6.25, 7.15, '#2a2a2e'); return { name: "LUCKY'S TAVERN", door: 3.85 }; },
+  tv(S, R) { S.wall('brick_brown', '#b8a898'); S.both(0.25, 2.72, 5.75, 3.5, '#f2ead8', 0.5); S.text('ACE TV & RADIO REPAIR', 3.0, 3.2, 0.34, '#1c3a9a', { glow: 0.6, weight: '900', max: 5.2 }); S.text('SALES · SERVICE · WE BUY USED SETS', 3.0, 2.87, 0.16, '#c81c1c', { glow: 0.6, max: 5 });
+    S.fill(S.g, 0.4, 0.3, 4.0, 2.6, '#08080a'); S.fill(S.g, 0.4, 0.1, 4.0, 0.3, '#2a2a2e'); S.door(4.4, 5.3, '#2a3a5a', { glass: '#1c2430', glow: 0.3 }); S.tags(R, 5.6, 0.2, 7.5, 2.0, 3, 0.7); lotResident(S, R, 6.25, 7.15, '#3a3a3e'); return { name: 'ACE TV & RADIO REPAIR', door: 4.85, window: [0.4, 4.0] }; },
+  pizza(S, R) { S.wall('brick_painted', '#d8d0c0'); S.both(0.25, 2.72, 5.75, 3.5, '#f4f0e4', 0.85); S.fill(S.g, 0.25, 2.72, 5.75, 2.8, '#1c7a3a'); S.fill(S.g, 0.25, 3.42, 5.75, 3.5, '#c81c1c');
+    S.text("SAL'S PIZZA", 2.1, 3.12, 0.4, '#c81c1c', { glow: 0.9, weight: '900', max: 3.4 }); S.text('SLICE 75¢ · HEROS · CALZONE', 4.5, 3.12, 0.15, '#1c7a3a', { glow: 0.9, max: 2.3 });
+    S.glass(0.4, 0.9, 3.9, 2.6, (c, x0, y0, x1, y1) => { const s = c.canvas.width / LOT, sy = c.canvas.height / GF, H = c.canvas.height; c.fillStyle = '#f8ecc8'; c.fillRect(x0 * s, H - y1 * sy, (x1 - x0) * s, (y1 - y0) * sy); c.fillStyle = '#b8bcc0'; c.fillRect(x0 * s, H - 1.5 * sy, (x1 - x0) * s, 0.6 * sy); for (let i = 0; i < 4; i++) { c.fillStyle = '#e8b040'; c.beginPath(); c.ellipse((x0 + 0.5 + i * 0.8) * s, H - 1.56 * sy, 0.3 * s, 0.06 * sy, 0, 0, 7); c.fill(); } c.fillStyle = '#8a2a22'; c.fillRect(x0 * s, H - y1 * sy, (x1 - x0) * s, 0.25 * sy); }, 1, 0.3);
+    S.fill(S.g, 0.4, 0.1, 3.9, 0.9, '#c81c1c'); S.door(4.2, 5.15, '#d8d0c0', { glass: '#f8ecc8', glow: 1 }); lotResident(S, R, 6.25, 7.15, '#40382c'); S.tags(R, 5.6, 0.2, 7.5, 1.8, 2, 0.7); return { name: "SAL'S PIZZA", door: 4.67 }; },
+  checks(S, R) { S.wall('brick_red', '#a89088'); S.both(0.25, 2.72, 5.75, 3.5, '#f2c81c', 0.8); S.text('CHECKS CASHED', 3.0, 3.2, 0.4, '#101014', { glow: 0.9, weight: '900', max: 5.2 }); S.text('MONEY ORDERS · UTILITY BILLS · NOTARY', 3.0, 2.86, 0.16, '#c81c1c', { glow: 0.9, max: 5 });
+    const sh = T.photoImg('shutter_rust') || T.photoImg('shutter'); if (sh) for (let x = 0.3; x < 5.7; x += 1.35) S.g.drawImage(sh, S.X(x), S.Y(2.7), 1.35 * S.px, 2.7 * S.py); else S.fill(S.g, 0.3, 0, 5.7, 2.7, '#5a5048'); S.tags(R, 0.4, 0.2, 5.6, 2.5, 7); lotResident(S, R, 6.25, 7.15, '#2a2a2e'); return { name: 'CHECKS CASHED', door: 6.7 }; },
+  liquor(S, R) { S.wall('brick_orange', '#a89080'); S.both(0.2, 2.72, 7.4, 3.5, '#1c1c20', 0.2); S.text('LIQUORS', 2.6, 3.12, 0.5, '#ffd21f', { glow: 1, neon: 1, weight: '900', max: 4 }); S.text('WINES', 5.9, 3.12, 0.4, '#ff3a2a', { glow: 1, neon: 1, weight: '900', max: 2.6 });
+    S.glass(0.4, 0.8, 4.6, 2.6, shelves(['#5a3a1c', '#2a5a2a', '#8a2a2a', '#c8a040', '#1c1c20', '#e8e4d8']), 0.9, 0.4); S.fill(S.g, 0.4, 0.1, 4.6, 0.8, '#3a1c1c'); S.door(5.0, 5.95, '#3a1c1c', { glass: '#e8c890', glow: 0.9 }); S.tags(R, 6.1, 0.2, 7.5, 2.0, 3, 0.7); return { name: 'LIQUORS · WINES', door: 5.47 }; },
+};
+
+// ---- the fronts stood up: X = { city, R, lampMats, NZ, FZ, addHalo }; near: the row behind the cart (its fronts face -z); far: across the street
+export function buildFronts(X, near, far) {
+  const { city, R, lampMats } = X, out = { shops: [], names: [] };
+  const sideM = {}, side = (name, tint) => (sideM[name + tint] ||= T.surface(T.worldUV(mat({ map: T.photo(name), color: tint }), 1.9), { bomb: 0, grime: 0.4, band: 1.1, scale: 0.6 }));
+  const roofM = mat({ color: 0x2a2a2e }), corniceM = {}, stone = T.surface(T.worldUV(mat({ map: T.photo('concrete_dirty'), color: 0x9a8a78 }), 2), { grime: 0.5 }), iron = mat({ color: 0x17181b });
+  const barsT = T.canvasTex(64, 64, (g, w, h) => { g.clearRect(0, 0, w, h); g.fillStyle = '#17181b'; for (let x = 0; x < w; x += 16) g.fillRect(x + 5, 0, 5, h); g.fillRect(0, 0, w, 7); g.fillRect(0, h - 6, w, 6); }); barsT.wrapS = THREE.RepeatWrapping;
+  const stairT = T.canvasTex(64, 64, (g, w, h) => { g.clearRect(0, 0, w, h); g.fillStyle = '#17181b'; g.fillRect(0, 0, 7, h); g.fillRect(w - 7, 0, 7, h); for (let y = 4; y < h; y += 16) g.fillRect(0, y, w, 6); }); stairT.wrapT = THREE.RepeatWrapping;
+  const barsM = mat({ map: barsT, alphaTest: 0.5, side: THREE.DoubleSide }), stairM = mat({ map: stairT, alphaTest: 0.5, side: THREE.DoubleSide });
+  const quad = (w, h, m, x, y, z, ry, ru = 1, rv = 1) => { const g = new THREE.PlaneGeometry(w, h), uv = g.attributes.uv; for (let i = 0; i < uv.count; i++) uv.setXY(i, uv.getX(i) * ru, uv.getY(i) * rv); const q = mesh(g, m, x, y, z, city); q.rotation.y = ry; q.castShadow = false; return q; };
+  const upperM = {}, upperOf = (kind, floors) => { const k = kind + '|' + floors; if (!upperM[k]) { const P = upper(kind * 11 + floors, kind, floors), m = T.surface(mat({ map: texOf(P.a), emissiveMap: texOf(P.b, true), emissive: 0xffffff, emissiveIntensity: 0 }), { bomb: 0, grime: 0.22, band: 0.4, scale: 0.5 }); m.userData.k = 1.15; lampMats.push(m); upperM[k] = m; } return upperM[k]; };
+  // a fire escape: a landing at each floor, its rail, the stairs between, the drop ladder
+  const escape = (x, z, s, floors) => { for (let f = 0; f < floors; f++) { const y = GF + f * FL + 0.72; box(3.0, 0.05, 0.95, iron, x, y, z - s * 0.5, city).castShadow = false; quad(3.0, 0.95, barsM, x, y + 0.5, z - s * 0.97, 0, 20, 1); for (const e of [-1.5, 1.5]) quad(0.95, 0.95, barsM, x + e, y + 0.5, z - s * 0.5, Math.PI / 2, 6, 1);
+      if (f < floors - 1) { const st = quad(0.55, 3.75, stairM, x + (f % 2 ? -0.55 : 0.55), y + FL / 2, z - s * 0.45, 0, 1, 12); st.rotation.z = (f % 2 ? -1 : 1) * 0.62; } }
+    quad(0.42, 2.2, stairM, x - 1.2, GF + 0.72 - 1.1, z - s * 0.9, 0, 1, 7); };
+  const stoopAt = (x, z, s) => { for (let i = 0; i < 5; i++) box(1.5, 0.2, 0.3, stone, x, 0.1 + i * 0.2, z - s * (1.35 - i * 0.3), city); for (const e of [-0.85, 0.85]) { box(0.2, 0.75, 1.5, stone, x + e, 0.37, z - s * 0.75, city); const r = quad(1.5, 0.8, barsM, x + e, 1.1, z - s * 0.75, Math.PI / 2, 10, 1); r.rotation.z = 0; } };
+  const lot = (x, z, s, spec, far) => { const { kind, floors, shop, depth = 13, o = {} } = spec, D = depth, H = GF + floors * FL + 1.0, cz = z + s * D / 2, K = KINDS[kind % KINDS.length];
+    if (shop === 'lot') return vacant(x, z, s, spec);
+    const b = box(LOT - 0.02, H, D, side(K[0], K[1]), x, H / 2, cz, city); b.castShadow = false;
+    const rf = box(LOT - 0.3, 0.3, D - 0.3, roofM, x, H + 0.05, cz, city); rf.castShadow = false;
+    const cm = (corniceM[K[3]] ||= mat({ color: K[3] })); box(LOT + 0.1, 0.5, 0.5, cm, x, H - 0.3, z - s * 0.2, city).castShadow = false;
+    // the painted floors above; the row across the street is seen the other way round
+    const up = mesh(new THREE.PlaneGeometry(LOT - 0.02, floors * FL + 1.0), upperOf(kind, floors), x, GF + (floors * FL + 1.0) / 2, z - s * 0.012, city); up.rotation.y = s > 0 ? Math.PI : 0; up.castShadow = false;
+    const S = shopCanvas(), RR = T.rng(Math.round(x * 31 + z * 17 + 99)), info = SHOPS[shop](S, RR, o); S.grime(RR);
+    const gm = T.surface(mat({ map: texOf(S.P.a, far), emissiveMap: texOf(S.P.b, true), emissive: 0xffffff, emissiveIntensity: 0 }), { bomb: 0, grime: 0.2, band: 0.5, scale: 0.5 }); gm.userData.k = 1.5; lampMats.push(gm);
+    const gp = mesh(new THREE.PlaneGeometry(LOT - 0.02, GF), gm, x, GF / 2, z - s * 0.012, city); gp.rotation.y = s > 0 ? Math.PI : 0; gp.castShadow = false;
+    const dx = x + s * (info.door - LOT / 2) * -1;   // (a front faced from the street reads left to right; on the near row that is east to west)
+    if (shop === 'stoop') stoopAt(dx, z, s);
+    if (floors >= 4) escape(x + (shop === 'stoop' ? 1.9 : -0.95) * (s > 0 ? -1 : 1), z, s, floors);
+    out.shops.push({ shop, name: info.name, x, z, s, door: new THREE.Vector3(dx, 0, z - s * 1.2), info, H });
+    out.names.push(info.name);
+    return info;
+  };
+  // the empty lot across the street: rubble and weeds behind a chain-link fence, a mural down the wall beside it, the sky open to the south
+  const vacant = (x, z, s) => { const fm = mat({ map: T.canvasTex(64, 64, (g) => { g.clearRect(0, 0, 64, 64); g.strokeStyle = '#8a8e94'; g.lineWidth = 2.5; for (let i = -64; i < 128; i += 16) { g.beginPath(); g.moveTo(i, 0); g.lineTo(i + 64, 64); g.moveTo(i + 64, 0); g.lineTo(i, 64); g.stroke(); } }), alphaTest: 0.4, side: THREE.DoubleSide, color: 0xb0b0b0 }); fm.map.wrapS = fm.map.wrapT = THREE.RepeatWrapping;
+    quad(LOT, 2.6, fm, x, 1.3, z - s * 0.05, 0, 24, 8); for (let i = 0; i <= 3; i++) box(0.06, 2.7, 0.06, iron, x - LOT / 2 + i * LOT / 3, 1.35, z - s * 0.05, city).castShadow = false; box(LOT, 0.05, 0.05, iron, x, 2.62, z - s * 0.05, city).castShadow = false;
+    const dirt = T.surface(T.worldUV(mat({ map: T.photo('concrete_dirty'), color: 0x7a6a58 }), 3), { grime: 0.6 }); box(LOT, 0.3, 13, dirt, x, -0.1, z + s * 6.5, city).castShadow = false;
+    const rub = T.surface(T.worldUV(mat({ map: T.photo('brick_red'), color: 0x9a8a80 }), 1.5), { grime: 0.6 }); for (let i = 0; i < 16; i++) { const b = box(0.4 + R() * 1.2, 0.2 + R() * 0.5, 0.4 + R() * 1.1, rub, x - 3.2 + R() * 6.4, 0.12, z + s * (1 + R() * 10), city); b.rotation.set(R() * 0.4, R() * 3, R() * 0.4); b.castShadow = false; }
+    const weed = T.sway(mat({ color: 0x5a6a3a, side: THREE.DoubleSide }), 'grass'); for (let i = 0; i < 26; i++) { const w = mesh(new THREE.ConeGeometry(0.12 + R() * 0.18, 0.5 + R() * 0.9, 5), weed, x - 3.5 + R() * 7, 0.3, z + s * (0.4 + R() * 11), city); w.castShadow = false; }
+    // the walls either side: the mural on one, old paint and tags on the other
+    const wallH = GF + 5 * FL + 1, mk = (flip, draw) => { const t = T.canvasTex(1024, 1024, (g, w, h) => { brick(g, 0, 0, w, h, 'brick_red', '#b8a090', 1.9 * w / 13, 1.9 * h / wallH); draw(g, w, h); }); const m = T.surface(mat({ map: t }), { bomb: 0, grime: 0.3 }); const q = quad(13, wallH, m, x + flip * (LOT / 2 - 0.02), wallH / 2, z + s * 6.5, flip * -Math.PI / 2 * 1); return q; };
+    mk(1, (g, w, h) => { const y0 = h * 0.55; g.fillStyle = '#2a6aa8'; g.fillRect(w * 0.08, y0, w * 0.84, h * 0.33); g.fillStyle = '#f2c81c'; g.beginPath(); g.arc(w * 0.5, y0 + h * 0.33, h * 0.2, Math.PI, 0); g.fill(); g.fillStyle = '#1c7a3a'; g.fillRect(w * 0.08, y0 + h * 0.27, w * 0.84, h * 0.06); for (let i = 0; i < 5; i++) { g.fillStyle = ['#c8201c', '#e86a1c', '#7a2a8a', '#e8e4d8', '#c8201c'][i]; g.fillRect(w * (0.14 + i * 0.15), y0 + h * (0.17 - (i % 2) * 0.04), w * 0.1, h * 0.1 + (i % 2) * h * 0.04); g.fillStyle = '#3a2a22'; g.beginPath(); g.moveTo(w * (0.13 + i * 0.15), y0 + h * (0.17 - (i % 2) * 0.04)); g.lineTo(w * (0.19 + i * 0.15), y0 + h * (0.12 - (i % 2) * 0.04)); g.lineTo(w * (0.25 + i * 0.15), y0 + h * (0.17 - (i % 2) * 0.04)); g.fill(); }
+      piece(g, 'LA LUCHA CONTINUA', w * 0.1, y0 + h * 0.1, h * 0.06, '#ffffff', '#f2c81c'); g.fillStyle = '#e8e4d8'; g.font = `bold ${h * 0.022}px ${SANS}`; g.fillText('PLAZA CULTURAL · LOISAIDA · 1985', w * 0.1, y0 + h * 0.36); tags(g, T.rng(41), w * 0.05, h * 0.9, w * 0.9, h * 0.08, 8); });
+    mk(-1, (g, w, h) => { g.fillStyle = 'rgba(220,210,190,0.5)'; g.fillRect(w * 0.1, h * 0.3, w * 0.8, h * 0.22); g.fillStyle = 'rgba(40,40,60,0.55)'; g.font = `bold ${h * 0.07}px ${SLAB}`; g.fillText('UNEEDA BISCUIT', w * 0.14, h * 0.4); g.font = `bold ${h * 0.04}px ${SLAB}`; g.fillText('5¢ THE PACKAGE', w * 0.14, h * 0.47); piece(g, 'ZAP', w * 0.15, h * 0.86, h * 0.1, '#3ad8ff', '#1c3a9a'); piece(g, 'TRIX', w * 0.55, h * 0.88, h * 0.09, '#ff4aa8', '#7a2a8a'); tags(g, T.rng(43), w * 0.05, h * 0.88, w * 0.9, h * 0.1, 9); });
+    return { name: 'EMPTY LOT', door: LOT / 2 }; };
+  near.forEach((spec, i) => lot(X.W0 + LOT / 2 + i * LOT, X.NZ, 1, spec, false));
+  far.forEach((spec, i) => lot(X.W0 + LOT / 2 + i * LOT, X.FZ, -1, spec, true));
+  // awnings where a shop has one: striped canvas out over the pavement
+  out.awning = (x, z, s, w, c0, c1) => { const t = T.canvasTex(128, 32, (g, cw, chh) => { for (let i = 0; i < 8; i++) { g.fillStyle = i % 2 ? c0 : c1; g.fillRect(i * 16, 0, 16, chh); } }), m = T.sway(mat({ map: t, side: THREE.DoubleSide }), 'cloth'); const a = mesh(new THREE.PlaneGeometry(w, 1.3, 6, 2), m, x, 2.85, z - s * 0.6, city); a.rotation.x = s * -1.05; a.rotation.z = 0; a.castShadow = false; return a; };
+  return out;
+}

@@ -1,4 +1,4 @@
-// wind and what it moves (the stall's lanterns and noren here, the village's noren, trees and rice in their shaders), rain's splashes and drips, moths, a steaming manhole, the elevated train, the street's sounds
+// wind and what it moves (the cart's lanterns, bulbs and noren here; awnings and street trees in their shaders), rain's splashes and drips, moths round the lamps at night, the street's sounds
 import * as THREE from 'three';
 import { G, V3, mat, box, cyl, mesh, clamp } from './ctx.js';
 import * as T from './tex.js';
@@ -23,7 +23,7 @@ export function buildLife(scene, city, cart) {
     gustT -= dt; if (gustT <= 0) { gust = 0.5 + Math.random() * 0.6; gustT = 7 + Math.random() * 14; }
     gust = Math.max(0, gust - dt * 0.22);
     env.wind = clamp((G.wind ?? 0.28) + 0.14 * Math.sin(t * 0.21) + 0.1 * Math.sin(t * 0.67 + 1) + gust, 0, 1.3);   // the weather's wind (weather.js), swelling and gusting
-    T.WIND.t.value += dt; T.WIND.k.value += (env.wind - T.WIND.k.value) * Math.min(1, dt * 0.8);   // what hangs and grows in the village moves with it (tex.js sway)
+    T.WIND.t.value += dt; T.WIND.k.value += (env.wind - T.WIND.k.value) * Math.min(1, dt * 0.8);   // what hangs and grows in the street moves with it (tex.js sway)
     cart.lanterns.forEach((pv, i) => swing(lp[i], pv, dt, 0.42, env.wind * 1.5, t, i));
     cart.bulbs.forEach((pv, i) => swing(bp[i], pv, dt, 0.26, env.wind * 0.35, t, i + 3));
     for (const n of cart.noren) { // cloth: pinned along the top edge, rippling more toward the hem
@@ -35,26 +35,26 @@ export function buildLife(scene, city, cart) {
     if (city.rain) city.rain.rotation.z = -0.03 - env.wind * 0.07;
   });
 
-  if (city.rain) {
-  // ---- rain: splash rings on wet ground + drips off the canopy
+  {
+  // ---- rain: splash rings on wet ground + drips off the canopy, while it falls (G.rainK, weather.js)
   const ringG = new THREE.RingGeometry(0.75, 1, 18).rotateX(-Math.PI / 2), rings = [];
   for (let i = 0; i < 16; i++) { const r = nop(new THREE.Mesh(ringG, new THREE.MeshBasicMaterial({ color: 0xbfd0ff, transparent: true, opacity: 0, depthWrite: false }))); r.userData.t = Math.random(); r.renderOrder = -3; root.add(r); rings.push(r); }
-  const place = (r) => { let x, z; do { x = (Math.random() - 0.5) * 16; z = -13 + Math.random() * 15; } while (Math.abs(x) < 1.8 && z > -1.85 && z < 2.2); r.position.set(x, z < -3.2 && z > -11.3 ? -0.112 : 0.006, z); r.userData.s = 0.03 + Math.random() * 0.05; };
+  const place = (r) => { let x, z; do { x = (Math.random() - 0.5) * 16; z = -13 + Math.random() * 15; } while (Math.abs(x) < 1.8 && z > -1.85 && z < 2.2); r.position.set(x, z < -5.4 && z > -13.2 ? -0.142 : 0.006, z); r.userData.s = 0.03 + Math.random() * 0.05; };
   rings.forEach(place);
   const dripG = new THREE.SphereGeometry(0.006, 6, 5).scale(1, 2.6, 1), dripM = new THREE.MeshBasicMaterial({ color: 0xcfe0ff, transparent: true, opacity: 0.7 }), drips = [];
   for (let i = 0; i < 8; i++) { const d = nop(new THREE.Mesh(dripG, dripM)); d.userData = { v: 0, wait: Math.random() * 3, nopick: true }; root.add(d); drips.push(d); }
   const edge = (d) => { const s = Math.random(); if (s < 0.5) d.position.set((Math.random() - 0.5) * 3.4, 2.62, -1.82); else d.position.set((Math.random() - 0.5) * 3.4, 2.62, 2.12); d.userData.v = 0; d.userData.wait = Math.random() * 2.5; d.visible = false; };
   drips.forEach(edge);
-  ups.push((dt) => {
-    for (const r of rings) { r.userData.t += dt * 2.2; if (r.userData.t > 1) { r.userData.t = 0; place(r); } const s = r.userData.s * (0.3 + r.userData.t); r.scale.set(s, 1, s); r.material.opacity = 0.32 * (1 - r.userData.t); }
+  ups.push((dt) => { const wk = clamp((G.rainK || 0) / 0.25, 0, 1); root.visible = true; for (const r of rings) r.visible = wk > 0.02; if (wk <= 0.02) { for (const d of drips) d.visible = false; return; }
+    for (const r of rings) { r.userData.t += dt * 2.2; if (r.userData.t > 1) { r.userData.t = 0; place(r); } const s = r.userData.s * (0.3 + r.userData.t); r.scale.set(s, 1, s); r.material.opacity = 0.32 * wk * (1 - r.userData.t); }
     for (const d of drips) { const u = d.userData; if (u.wait > 0) { u.wait -= dt; continue; } d.visible = true; u.v += 9.8 * dt; d.position.y -= u.v * dt; if (d.position.y < 0.02) { const r = rings[(Math.random() * rings.length) | 0]; r.position.set(d.position.x, 0.006, d.position.z); r.userData.t = 0; r.userData.s = 0.05; edge(d); } }
   });
 
   }
   // ---- moths circling the lights
   const mk = (n, c, r, size) => { const g = new THREE.BufferGeometry(); g.setAttribute('position', new THREE.BufferAttribute(new Float32Array(n * 3), 3)); const p = nop(new THREE.Points(g, new THREE.PointsMaterial({ color: 0xfff0d0, size, transparent: true, opacity: 0.85, depthWrite: false }))); p.frustumCulled = false; root.add(p); return { p, n, c, r, ph: Array.from({ length: n }, () => [Math.random() * 6, 1.5 + Math.random() * 2.5, Math.random() * 6]) }; };
-  const swarms = [mk(4, new V3(-0.55, 2.34, -0.25), 0.13, 0.008), mk(4, new V3(0, 2.34, -1.05), 0.16, 0.008), mk(12, new V3(-7.5, 6.0, -4.75), 0.7, 0.03), mk(10, new V3(9.5, 6.0, -4.75), 0.7, 0.03)];
-  ups.push((dt, t) => { for (const s of swarms) { const a = s.p.geometry.attributes.position; s.ph.forEach(([p0, w, p1], i) => { const rr = s.r * (0.5 + 0.5 * Math.sin(t * 0.9 * w + p1)); a.setXYZ(i, s.c.x + Math.cos(t * w + p0) * rr, s.c.y + Math.sin(t * w * 1.7 + p1) * s.r * 0.5, s.c.z + Math.sin(t * w + p0) * rr); }); a.needsUpdate = true; } });
+  const swarms = [mk(4, new V3(-0.55, 2.34, -0.25), 0.13, 0.008), mk(4, new V3(0, 2.34, -1.05), 0.16, 0.008), ...(city.street ? city.street.lampAt.slice(0, 2).map(([x, y, z], i) => mk(12 - i * 2, new V3(x, y - 0.5, z), 0.7, 0.03)) : [])];
+  ups.push((dt, t) => { const dark = (cart.lampK || 0) > 0.3; for (const s of swarms) { s.p.visible = dark; if (!dark) continue; const a = s.p.geometry.attributes.position; s.ph.forEach(([p0, w, p1], i) => { const rr = s.r * (0.5 + 0.5 * Math.sin(t * 0.9 * w + p1)); a.setXYZ(i, s.c.x + Math.cos(t * w + p0) * rr, s.c.y + Math.sin(t * w * 1.7 + p1) * s.r * 0.5, s.c.z + Math.sin(t * w + p0) * rr); }); a.needsUpdate = true; } });
 
   if (city.rain) {
   // ---- manhole venting steam into the lamp light

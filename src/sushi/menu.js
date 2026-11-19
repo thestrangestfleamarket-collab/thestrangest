@@ -21,7 +21,10 @@ export function buildMenu(scene, cart, guide, talk, shadowLights, report) {
     ['OPEN / CLOSE CART', () => G.game.state.toUpperCase(), () => G.game.toggleOpen()],
     ['REPORT A BUG (X / A)', () => (report.busy ? 'RECORDING' : 'PICTURE + VOICE'), () => { m.toggle(false); setTimeout(() => report.press(), 400); }],
     ['LEAVE VR', () => '', () => G.renderer.xr.getSession()?.end()],
-    ...(G.guest ? [['LEAVE THE VILLAGE', () => 'TO THE MARKET', () => G.guestRole?.leave()]] : []),
+    ['RADIO', () => (G.audio.radioOn ? 'ON' : 'OFF'), () => G.audio.setRadio(!G.audio.radioOn)],
+    ['STATION', () => G.audio.label().toUpperCase(), () => { if (!G.audio.radioOn) G.audio.setRadio(true); else G.audio.tune(); }],
+    ['TELEVISION', () => (G.tv?.on ? 'CH ' + G.tv.ch.ch + ' ' + G.tv.ch.name : 'OFF'), () => (G.tv.on ? G.tv.next() : G.tv.power(true))],
+    ...(G.guest ? [['LEAVE THE BLOCK', () => 'TO THE MARKET', () => G.guestRole?.leave()]] : []),
   ];
   const rh = H / (rows.length + 1.4), far = new V3(0, -99, 0), tmp = new V3();
   rows.forEach((r, i) => { const local = new V3(W * 0.22, H / 2 - rh * (i + 1.75), 0.004); const b = { getPos: () => (m.open ? board.localToWorld(tmp.copy(local)).clone() : far), r: 0.028, name: r[0], press: () => { r[2](); G.audio.play('click'); draw(); } }; G.buttons.push(b); });

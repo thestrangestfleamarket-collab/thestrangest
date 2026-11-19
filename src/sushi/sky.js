@@ -1,4 +1,4 @@
-// the sky over the village, after THE MARKET's (src/132-sky.js): its colours by the sun's height (horizon, middle, zenith, the side toward the sun and away from it), the sun's disc and halo, the moon lit on the side that faces the sun, the stars turned by the sidereal time over Edo, and clouds drifting at the weather's cover (a baked picture read twice, so it costs the headset little); nothing in it twinkles or flickers
+// the sky over the street, after THE MARKET's (src/132-sky.js): its colours by the sun's height (horizon, middle, zenith, the side toward the sun and away from it), the sun's disc and halo, the moon lit on the side that faces the sun, the stars turned by the sidereal time over Edo, and clouds drifting at the weather's cover (a baked picture read twice, so it costs the headset little); nothing in it twinkles or flickers
 import * as THREE from 'three';
 import * as E from './ephem.js';
 
@@ -51,7 +51,7 @@ export function buildSky(scene) {
       }` });
   const dome = new THREE.Mesh(new THREE.SphereGeometry(400, 32, 16), mat); dome.renderOrder = 10; dome.frustumCulled = false;   // (drawn after everything solid, so only the sky that shows is worked out)
   Object.assign(dome.userData, { nopick: true, dyn: true }); scene.add(dome);
-  // the stars: points on the celestial sphere, turned as the night goes by the matrix from the sky's coordinates to the village's
+  // the stars: points on the celestial sphere, turned as the night goes by the matrix from the sky's coordinates to the street's
   const R = (() => { let s = 1862; return () => { s = (s * 16807) % 2147483647; return s / 2147483647; }; })(), pos = [], mag = [];
   const eq = (ra, dec) => { const a = ra * Math.PI / 180, b = dec * Math.PI / 180; return [Math.cos(b) * Math.cos(a), Math.cos(b) * Math.sin(a), Math.sin(b)]; };
   for (const [ra, dec, m] of BRIGHT) { pos.push(...eq(ra, dec)); mag.push(m); }

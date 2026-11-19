@@ -1,6 +1,7 @@
-// the sky's sums, copied from THE MARKET's EPH (src/134bb-ephem.js: Meeus, JPL's approximate elements), over Edo instead of New York: where the Sun and the Moon stand at a moment, how much of the Moon is lit, and the sidereal time that turns the stars
+// the sky's sums, copied from THE MARKET's EPH (src/134bb-ephem.js: Meeus, JPL's approximate elements): where the Sun and the Moon stand at a moment over a place (site(lat, lon)), how much of the Moon is lit, and the sidereal time that turns the stars
 const D2R = Math.PI / 180, R2D = 180 / Math.PI, sn = (x) => Math.sin(x * D2R), cs = (x) => Math.cos(x * D2R), nrm = (x) => ((x % 360) + 360) % 360, s180 = (x) => { x = nrm(x); return x > 180 ? x - 360 : x; }, cl = (v, a, b) => Math.max(a, Math.min(b, v));
-export const LAT = 35.68, LON = 139.77, EPS = 23.43928;   // Edo (Nihonbashi)
+export let LAT = 35.68, LON = 139.77; export const EPS = 23.43928;   // (where a page has not said: Tokyo)
+export const site = (lat, lon) => { LAT = lat; LON = lon; };
 const EM = [1.00000261, 0.00000562, 0.01671123, -0.00004392, -0.00001531, -0.01294668, 100.46457166, 35999.37244981, 102.93768193, 0.32327364, 0, 0];
 const helio = (q, T) => { const a = q[0] + q[1] * T, e = q[2] + q[3] * T, I = q[4] + q[5] * T, L = q[6] + q[7] * T, wb = q[8] + q[9] * T, O = q[10] + q[11] * T, w = wb - O, Mr = s180(L - wb) * D2R; let E = Mr + e * Math.sin(Mr);
   for (let i = 0; i < 8; i++) E -= (E - e * Math.sin(E) - Mr) / (1 - e * Math.cos(E)); const xp = a * (Math.cos(E) - e), yp = a * Math.sqrt(1 - e * e) * Math.sin(E), cw = cs(w), sw = sn(w), cO = cs(O), sO = sn(O), cI = cs(I), sI = sn(I);

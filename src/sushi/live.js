@@ -13,7 +13,7 @@ import { tenantFigure } from './tenant.js';
 // the fingers as a headset player's (162cb): each digit's three bends and its spread, between the rig's open hand and its fist (001-rig FREST, FFIST)
 const FREST = [[10, 15, 10, 0], [10, 18, 10, -0.18], [12, 22, 12, -0.06], [14, 25, 13, 0.08], [16, 28, 14, 0.22]], FFIST = [[35, 40, 30, 0], [85, 100, 60, 0], [88, 100, 60, 0], [90, 100, 60, 0.02], [92, 100, 60, 0.05]], DEG = Math.PI / 180;
 const fingers = (c) => { const f = []; for (let i = 0; i < 5; i++) { const k = Math.max(0, Math.min(1, +c[i] || 0)); for (let j = 0; j < 4; j++) f.push(Math.round((j < 3 ? DEG : 1) * (FREST[i][j] + (FFIST[i][j] - FREST[i][j]) * k) * 100) / 100); } return f; };
-const DRINKS = [['sake', 'SAKE'], ['tea', 'TEA']];
+const DRINKS = [['soda', 'SODA'], ['tea', 'ICED TEA']];
 
 export function buildLive() {
   const live = { watchers: new Map(), last: null, cooks: new Map(), voices: new Map(), slot: -1, sx: 0, me: '', ks: 0, peers: [] }; G.live = live;
@@ -75,7 +75,7 @@ export function buildLive() {
   const lib = { g: new Map(), m: new Map(), box: new Map(), made: false, t: -9 };
   const learn = (root) => root && root.traverse((o) => { if (!o.isMesh || o.isSkinnedMesh || !o.geometry || !o.geometry.attributes.position) return; const k = geoKey(o.geometry); if (k && !lib.g.has(k)) lib.g.set(k, o.geometry); for (const m of [].concat(o.material)) if (m) { const d = JSON.stringify(matDesc(m)); if (!lib.m.has(d)) lib.m.set(d, m); } });
   const study = () => { if (G.t - lib.t < 3) return; lib.t = G.t; learn(G.itemRoot); for (const it of G.items) learn(it.obj); for (const h of G.hands || []) if (h.arm) for (const k in h.arm) learn(h.arm[k]);
-    if (!lib.made) { lib.made = true; const made = []; try { for (const k in TOPPINGS) { made.push(new Food(k)); learn(toppingMesh(k)); } made.push(new Food('noodle')); for (const k in RAW) made.push(new Raw(k)); for (const d of ['sake', 'tea', 'sake', 'tea', 'water']) { try { made.push(new Drink(d)); } catch (e) { /* not a drink here */ } } made.push(new Bowl()); } catch (e) { /* what could be made */ } for (const it of made) { learn(it.obj); it.remove(); } } };
+    if (!lib.made) { lib.made = true; const made = []; try { for (const k in TOPPINGS) { made.push(new Food(k)); learn(toppingMesh(k)); } made.push(new Food('noodle')); for (const k in RAW) made.push(new Raw(k)); for (const d of ['soda', 'tea', 'water']) { try { made.push(new Drink(d)); } catch (e) { /* not a drink here */ } } made.push(new Bowl()); } catch (e) { /* what could be made */ } for (const it of made) { learn(it.obj); it.remove(); } } };
   const matOf = (d) => { const k = JSON.stringify(d); let m = lib.m.get(k); if (!m) { m = new THREE.MeshLambertMaterial({ color: Array.isArray(d) ? d[0] : 0xffffff, transparent: !!(d[2] & 2), opacity: d[3] == null ? 1 : d[3] }); lib.m.set(k, m); } return m; };
   const boxOf = (s) => { const k = s.join(); let g = lib.box.get(k); if (!g) lib.box.set(k, g = new THREE.BoxGeometry(s[0] || 0.001, s[1] || 0.001, s[2] || 0.001)); return g; };
   let tmpl = null; const cartCopy = () => { if (!tmpl) { tmpl = new THREE.Group(); const isItem = (o) => { for (let q = o; q; q = q.parent) if (q === G.itemRoot || (q.userData && q.userData.item)) return true; return false; }; G.cart.group.updateWorldMatrix(true, true); const inv = new THREE.Matrix4().copy(G.cart.group.matrixWorld).invert();

@@ -1,4 +1,4 @@
-// wear and clutter round the cart: gas bottles, rags, crates, bags, litter, stains, hand-brushed prices, a tired bulb
+// wear and clutter round the cart: gas bottles, rags, crates, bags, litter, stains, hand-lettered prices, the morning paper on the ledge
 import * as THREE from 'three';
 import { G, mat, box, cyl, mesh, mergeStatic } from './ctx.js';
 import * as T from './tex.js';
@@ -26,7 +26,7 @@ export function buildGrit(scene, city, cart) {
   const bag = mat({ color: 0x08080a, roughness: 0.32, clearcoat: 0.5, clearcoatRoughness: 0.4 });
   for (const [x, z, s] of [[3.9, 2.5, 1], [4.35, 2.42, 0.85], [4.1, 2.15, 0.7], [-6.3, 2.5, 0.9]]) { const b = mesh(new THREE.IcosahedronGeometry(0.3 * s, 1), bag, x, 0.22 * s, z, root); b.scale.set(1, 0.75, 0.9); b.rotation.set(R(), R() * 3, R()); cyl(0.02, 0.06, 0.1, bag, x, 0.46 * s, z, root, 6); }
   const br = new THREE.Group(); br.position.set(1.9, 0, 2.86); br.rotation.x = -0.18; root.add(br); cyl(0.013, 0.013, 1.3, mat({ color: 0x8a6a3a, roughness: 0.8 }), 0, 0.75, 0, br, 6); box(0.28, 0.2, 0.05, mat({ color: 0x9a8040, roughness: 1 }), 0, 0.1, 0, br);
-  // beer crate with empties under the prep wing's outer side
+  // a soda crate with empties under the prep wing's outer side
   const crate = mat({ color: 0x9a7a14, roughness: 0.7 }); for (const y of [0.16, 0.5]) { box(0.42, 0.3, 0.32, crate, 1.55, y, 0.3, root).rotation.y = y * 0.3; }
   for (let i = 0; i < 6; i++) cyl(0.03, 0.03, 0.2, mat({ color: 0x3a1c08, roughness: 0.15, transparent: true, opacity: 0.86 }), 1.44 + (i % 3) * 0.1, 0.72, 0.22 + Math.floor(i / 3) * 0.13, root, 8);
 
@@ -34,10 +34,10 @@ export function buildGrit(scene, city, cart) {
   cyl(0.055, 0.045, 0.02, mat({ color: 0xb8bcc0, metalness: 0.9, roughness: 0.4 }), -1.05, 1.012, -0.8, root, 14);
   const butt = mat({ color: 0xd8c8a8, roughness: 0.9 }); for (let i = 0; i < 5; i++) { const b = cyl(0.004, 0.004, 0.03, butt, -1.05 + (R() - 0.5) * 0.05, 1.026, -0.8 + (R() - 0.5) * 0.05, root, 5); b.rotation.set(1.57, 0, R() * 3); }
   for (let i = 0; i < 9; i++) stain((R() - 0.5) * 2.2, R() < 0.5 ? -0.62 - R() * 0.25 : -0.5 + R() * 0.32, 0.02 + R() * 0.06, 0.02 + R() * 0.05, 0.5, R() < 0.5 ? 1.003 : 0.9045, 0x1a0a04);
-  const paper = box(0.3, 0.012, 0.21, mat({ map: T.dirty(T.canvasTex(256, 180, (g) => { g.fillStyle = '#cfc8b4'; g.fillRect(0, 0, 256, 180); g.fillStyle = '#222'; g.font = `bold 34px ${T.JP}`; g.fillText('夕刊スポーツ', 12, 40); for (let y = 60; y < 170; y += 9) g.fillRect(10, y, 100 + ((y * 7) % 130), 3); g.fillRect(150, 60, 96, 70); }), 9, { stains: 8, yellow: 1 }), roughness: 0.9 }), 1.05, 1.008, -0.76, root); paper.rotation.y = 0.35;
+  const paper = box(0.3, 0.012, 0.21, mat({ map: T.dirty(T.canvasTex(256, 180, (g) => { g.fillStyle = '#cfc8b4'; g.fillRect(0, 0, 256, 180); g.fillStyle = '#222'; g.font = `bold 34px ${T.JP}`; g.fillText('DAILY LEDGER', 12, 40, 232); g.font = 'bold 22px Georgia, serif'; g.fillText('METS 2 BACK, 3 TO PLAY', 10, 66, 236); for (let y = 80; y < 170; y += 9) g.fillRect(10, y, 100 + ((y * 7) % 30), 3); g.fillRect(150, 78, 96, 70); }), 9, { stains: 8, yellow: 1 }), roughness: 0.9 }), 1.05, 1.008, -0.76, root); paper.rotation.y = 0.35;
 
   // hand-brushed price strips taped to the cart's front, none of them straight
-  ['SHOYU $4.50', 'SHIO $4.50', 'MISO $5.00', 'TONKOTSU $5.50', 'BEER $1.50'].forEach((s, i) => {
+  ['SHOYU $4.50', 'SHIO $4.50', 'MISO $5.00', 'TONKOTSU $5.50', 'SODA 75¢'].forEach((s, i) => {
     const t = T.canvasTex(96, 384, (g, w, h) => { g.fillStyle = '#d8ceb0'; g.fillRect(0, 0, w, h); g.fillStyle = '#16120e'; g.font = `bold 46px ${T.JP}`; g.textAlign = 'center'; g.save(); g.translate(w / 2 + 14, h / 2 + 4); g.rotate(Math.PI / 2); g.fillText(s, 0, 0, h - 30); g.restore(); g.fillStyle = '#a01c1c'; g.fillRect(0, 0, w, 10); });
     T.dirty(t, 40 + i, { stains: 10, drips: 4, yellow: 1 });
     const m = mesh(new THREE.PlaneGeometry(0.11, 0.44), mat({ map: t, roughness: 0.95, side: THREE.DoubleSide }), -0.9 + i * 0.42 + (R() - 0.5) * 0.06, 0.62 + (R() - 0.5) * 0.06, -0.595, root); m.rotation.set(0, Math.PI, (R() - 0.5) * 0.14); m.castShadow = false;

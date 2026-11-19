@@ -521,7 +521,7 @@ export function normalOf(tex, strength = 2) {
 export function posterTex(kind) {
   return canvasTex(256, 384, (g, w, h) => {
     const R = rng(kind * 31 + 7);
-    const P = [['#d8c8a0', '#a01c1c', '生ビール', 'ICE COLD BEER', '#1c1c1c'], ['#1c2c5a', '#ffd21f', 'ディスコ', "SATURDAY NIGHT '86", '#ff5ab0'], ['#e8e0d0', '#1c5a3a', '火の用心', 'FIRE SAFETY WEEK', '#a01c1c'], ['#2a1a2e', '#ff7a2a', '映画祭', 'MIDNIGHT CINEMA', '#22d8ff'], ['#c8d8e0', '#12406a', '歌謡ショー', 'LIVE · 8PM', '#c8201c']][kind % 5];
+    const P = [['#d8c8a0', '#a01c1c', '生ビール', 'ICE COLD BEER', '#1c1c1c'], ['#1c2c5a', '#ffd21f', 'ディスコ', "SATURDAY NIGHT '85", '#ff5ab0'], ['#e8e0d0', '#1c5a3a', '火の用心', 'FIRE SAFETY WEEK', '#a01c1c'], ['#2a1a2e', '#ff7a2a', '映画祭', 'MIDNIGHT CINEMA', '#22d8ff'], ['#c8d8e0', '#12406a', '歌謡ショー', 'LIVE · 8PM', '#c8201c']][kind % 5];
     g.fillStyle = P[0]; g.fillRect(0, 0, w, h);
     g.fillStyle = P[4]; g.beginPath(); g.arc(w / 2, 150, 70, 0, 7); g.fill(); g.fillStyle = P[1]; g.fillRect(0, 250, w, 60);
     g.textAlign = 'center'; g.fillStyle = P[1]; g.font = `bold 62px ${JP}`; g.fillText(P[2], w / 2, 76, w - 16);

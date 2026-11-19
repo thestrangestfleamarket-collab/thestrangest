@@ -1,4 +1,4 @@
-// THE SLOWFIRE CHECK: node tests/qzar.cjs [dist/qzar.html]. SLOWFIRE DUEL starts, a round against the bot begins and ends when the bot's health is gone, the shield holds until its power is spent, a gun can be dropped or thrown, every weapon fires, the mirror sends a shot back, and two linked pages see each other's shots and agree on who won the round; no page errors.
+// THE SLOWFIRE CHECK: node tests/qzar.cjs [dist/qzar.html]. SLOWFIRE DUEL starts, a round against the bot begins and ends when the bot's health is gone, the shield holds until its power is spent, a gun can be dropped or thrown, every weapon fires, the mirror sends a shot back, in the disc arena a disc bounces twice then breaks and the jetpack lifts, spends and refills, and two linked pages see each other's shots and agree on who won the round; no page errors.
 const { chromium } = require('playwright'), path = require('path'), fs = require('fs');
 const fails = [], ok = (c, m) => { if (!c) { fails.push(m); console.log((process.env.GITHUB_ACTIONS ? '::error title=qzar::' : 'FAIL ') + m); } else console.log('ok   ' + m); };
 const PAGE = path.resolve(process.argv[2] || 'dist/qzar.html'), ROOT = path.dirname(PAGE);
@@ -40,6 +40,28 @@ const srv = require('http').createServer((q, r) => { const f = path.join(ROOT, d
   ok(await pg.evaluate(() => __qzar.state === 'roundEnd' && __qzar.you.wins === 1), 'the round is yours when the bot has no health left');
   ok(await until(pg, () => __qzar.round === 2 && __qzar.state === 'play'), 'and the next round begins');
   await pg.close();
+  const dp = await open('');
+  await dp.click('#gDisc'); await dp.click('#start');
+  ok(await until(dp, () => __qzar.state === 'play' && __qzar.game === 'disc'), 'the disc arena starts a round');
+  await dp.evaluate(() => { const q = __qzar; q.foe.discs.fill(1e9); window.d = q.throwDisc(q.you, new q.V3(0, 3, 0), new q.V3(9, 0, 0)); });
+  ok(await until(dp, () => d.hits === 2 && !d.dead), 'a disc bounces off two walls');
+  ok(await until(dp, () => d.dead && d.hits === 3), 'and breaks on the third');
+  await dp.keyboard.down('Space'); await dp.waitForTimeout(900); const up = await dp.evaluate(() => [__qzar.jet.y, __qzar.jet.e, __qzar.jet.vy]);
+  await dp.keyboard.down('ShiftLeft'); await dp.waitForTimeout(500); const fast = await dp.evaluate(() => __qzar.jet.vy); await dp.keyboard.up('ShiftLeft'); await dp.keyboard.up('Space');
+  ok(up[0] > .5 && up[1] < 10 && fast > up[2] * 1.4, 'the jetpack lifts you, spends its energy, and lifts faster with both (' + up.map(v => v.toFixed(1)) + ', ' + fast.toFixed(1) + ')');
+  ok(await until(dp, () => __qzar.jet.y === 0 && __qzar.jet.e > 9.9), 'you come down and it refills on the ground');
+  await dp.mouse.click(200, 100);
+  ok(await until(dp, () => __qzar.shots.some(s => s.key === 'disc' && s.owner === __qzar.you)) && await until(dp, () => __qzar.holst.filter(o => o.t <= 0).length === 4), 'a click throws a disc and it comes back to its holster');
+  await dp.evaluate(() => { const q = __qzar; q.shots.forEach(s => { s.dead = s.gone = true; }); q.foe.hp = 100; q.throwDisc(q.you, new q.V3(q.foe.head.x, q.foe.head.y - .3, q.foe.head.z + .6), new q.V3(0, 0, -9)); });
+  ok(await until(dp, () => __qzar.foe.hp === 75), 'a disc that lands takes a quarter of the health');
+  const incoming = d => dp.evaluate(d => { const q = __qzar; q.shots.forEach(s => { s.dead = s.gone = true; }); q.you.hp = 100; q.throwDisc(q.foe, new q.V3(q.you.head.x, q.you.head.y - .3, q.you.head.z - d), new q.V3(0, 0, .01)); }, d);
+  await incoming(.9); await dp.evaluate(() => { __qzar.flatHand.disc = true; }); await dp.keyboard.press('KeyF');
+  ok(await until(dp, () => __qzar.shots.some(s => s.key === 'disc' && s.owner === __qzar.you && s.vel.z < -5)) && await dp.evaluate(() => __qzar.you.hp === 100), 'a disc in your hand knocks theirs back');
+  await incoming(.9); await dp.evaluate(() => { const q = __qzar; q.flatHand.disc = false; q.flatHand.cool = 9; q.holst.forEach(o => { o.t = 9; }); }); await dp.waitForTimeout(100); await dp.keyboard.press('KeyF');
+  ok(await until(dp, () => __qzar.flatHand.disc) && await dp.evaluate(() => __qzar.you.hp === 100), 'an empty hand catches one that is close enough');
+  await incoming(2); await dp.evaluate(() => { const q = __qzar; q.flatHand.disc = false; q.flatHand.cool = 9; }); await dp.waitForTimeout(100); await dp.keyboard.press('KeyF');
+  ok(await until(dp, () => __qzar.you.hp === 75), 'a catch tried too early counts as a hit');
+  await dp.close();
   const A = await open('#local'), B = await open('#local');
   await A.click('#oNet'); await A.click('#host'); const code = await A.inputValue('#code');
   await B.click('#oNet'); await B.fill('#code', code); await B.click('#join');
@@ -47,7 +69,8 @@ const srv = require('http').createServer((q, r) => { const f = path.join(ROOT, d
   await A.click('#start');
   ok(await until(A, () => __qzar.state === 'play') && await until(B, () => __qzar.state === 'play'), 'the host starts the round for both');
   let seen = false;
-  for (let i = 0; i < 150 && !seen; i++) { await A.mouse.click(36, 200); await A.waitForTimeout(200); seen = await B.evaluate(() => __qzar.shots.some(s => s.far)); }
+  await A.evaluate(() => __qzar.setHeld(__qzar.flatHand, 'pip'));
+  for (let i = 0; i < 20 && !seen; i++) { await A.mouse.click(200, 120); await A.waitForTimeout(250); seen = await B.evaluate(() => __qzar.shots.some(s => s.far)); }
   ok(seen, "the guest sees the host's shot");
   await B.evaluate(() => __qzar.hurt(__qzar.you, 100));
   ok(await until(A, () => __qzar.state === 'roundEnd' && __qzar.you.wins === 1) && await until(B, () => __qzar.foe.wins === 1), 'both agree the host won the round');

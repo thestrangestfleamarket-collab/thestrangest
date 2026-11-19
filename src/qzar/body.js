@@ -41,6 +41,7 @@ function makeBody(col, o) {
   chest.children[2].rotation.y = Math.PI;
   add(box(.24, .22, .1), plate, chest).position.set(0, -.15, .16);
   for (const s of [-1, 1]) { add(box(.03, .14, .03), lamp, chest).position.set(s * .07, -.15, .212); const pad = add(new THREE.SphereGeometry(.095, 12, 8, 0, Math.PI * 2, 0, Math.PI * .55), armor, chest); pad.position.set(s * .2, -.055, 0); pad.rotation.z = -s * .35; }
+  const jets = [-1, 1].map(s => { const geo = new THREE.ConeGeometry(.045, .3, 10); geo.translate(0, -.15, 0); geo.rotateX(Math.PI); geo.translate(0, -.3, 0); const m = add(geo, new THREE.MeshBasicMaterial({ color: col, transparent: true, opacity: .8, blending: THREE.AdditiveBlending, depthWrite: false }), chest); m.position.set(s * .07, -.26, .2); m.visible = false; return m; });
   const belly = bone(.12, .13, suit), hips = new THREE.Group(); g.add(hips);
   add(new THREE.CylinderGeometry(.145, .12, .15, 8), armor, hips).position.y = -.02; add(box(.1, .1, .04), plate, hips).position.set(0, -.04, -.125); add(box(.3, .035, .26), plate, hips).position.y = .05;
 
@@ -52,7 +53,8 @@ function makeBody(col, o) {
   const N = new V(), P = new V(), T = new V(), fwd = new V(0, 0, o.face), up = new V(), right = new V(), hip = new V(), sh = new V(), mid = new V(), end = new V(), pole = new V(), want = new V(), last = new V(), vel = new V(), tar = [null, null];
   let ready = false; const floor = o.floor + .035;
 
-  function update(dt, H, hands) {
+  function update(dt, H, hands, burn = 0) {
+    for (const m of jets) { m.visible = burn > 0; m.scale.set(1, burn * (.8 + Math.random() * .4), 1); }
     if (!ready) { ready = true; last.copy(H); for (const l of limbs) l.at.set(H.x - l.s * o.face * .11, floor, H.z); }
     a1.copy(H).sub(last).divideScalar(Math.max(dt, .001)); vel.lerp(a1, .25); last.copy(H);
     N.copy(H); N.y -= NECK;
@@ -63,8 +65,10 @@ function makeBody(col, o) {
     face(chest, N, up, fwd); face(hips, P, UP, fwd); span(belly, P, a1.copy(N).addScaledVector(up, -.28));
     face(head, H, a1.copy(UP).addScaledVector(right, -right.dot(vel) * .05).normalize(), fwd);
 
-    const moving = limbs[0].t < 1 || limbs[1].t < 1;
+    const moving = limbs[0].t < 1 || limbs[1].t < 1, aloft = P.y - floor > THIGH + SHIN + .12;
     for (const l of limbs) {
+      if (aloft) { want.copy(P).addScaledVector(right, l.s * .1).addScaledVector(fwd, -.14); want.y -= .8; l.at.lerp(want, Math.min(1, dt * 10)); l.t = 1; continue; }
+      if (l.at.y > floor + .08 && l.t >= 1) l.at.set(P.x + right.x * l.s * .11, floor, P.z + right.z * l.s * .11);
       want.set(P.x + right.x * l.s * .11 + vel.x * .08, floor, P.z + right.z * l.s * .11 + vel.z * .08);
       if (l.t < 1) {
         l.t = Math.min(1, l.t + dt / .17); l.at.lerpVectors(l.from, l.to, l.t); l.at.y = floor + Math.sin(l.t * Math.PI) * .07;
@@ -76,7 +80,7 @@ function makeBody(col, o) {
       a3.copy(l.at); a3.y += .05; pole.copy(fwd).addScaledVector(right, l.s * .25);
       bend(hip, a3, THIGH, SHIN, pole, mid, end);
       span(l.thigh, hip, mid); span(l.shin, mid, end); l.knee.position.copy(mid).addScaledVector(fwd, .02); l.ankle.position.copy(end);
-      l.foot.position.set(l.at.x + fwd.x * .05, l.at.y, l.at.z + fwd.z * .05); l.foot.rotation.y = o.face > 0 ? Math.PI : 0;
+      l.foot.position.set(l.at.x + fwd.x * .05, l.at.y, l.at.z + fwd.z * .05); l.foot.rotation.x = aloft ? .5 * o.face : 0; l.foot.rotation.y = o.face > 0 ? Math.PI : 0;
     });
 
     tar[0] = hands[0] || null; tar[1] = hands[1] || null;

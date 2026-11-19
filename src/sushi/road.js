@@ -56,7 +56,7 @@ export function buildRoad(X) {
   }
   const marks = new THREE.Mesh(mergeGeometries(gs), new THREE.MeshLambertMaterial({ map: at, transparent: true, depthWrite: false, polygonOffset: true, polygonOffsetFactor: -2, polygonOffsetUnits: -2 })); marks.renderOrder = -3; marks.castShadow = false; marks.receiveShadow = true; marks.userData.nopick = true; marks.userData.keep = true; city.add(marks);
   // ---- iron in the road: manhole covers set in the asphalt, storm drains at the gutters with their mouths in the kerb
-  strew(city, 'manhole', [[VENT[0], ROAD - 0.074, VENT[1], 0.4, 1], [-7.2, ROAD - 0.074, MID - 0.3, 1.9, 1], [12.4, ROAD - 0.074, MID + 0.5, 0.2, 0.92], [-21.5, ROAD - 0.074, MID + 1.1, 2.6, 1]], 0x8a8684);
+  strew(city, 'manhole', [[VENT[0], ROAD - 0.074, VENT[1], 0.4, 1], [-7.2, ROAD - 0.074, MID - 0.3, 1.9, 1]], 0x8a8684);
   const iron = flat(0x1e1e22), dark = flat(0x050506);
   for (const [x, s] of [[5.3, 1], [-15.6, 1], [-6.4, -1], [17.8, -1]]) { const z = (s > 0 ? KERB : FKERB) - s * 0.45; // a grate of bars in a frame, its pit dark under it
     box(1.0, 0.02, 0.56, dark, x, ROAD - 0.004, z, city).castShadow = false; for (const e of [-1, 1]) { box(1.06, 0.04, 0.05, iron, x, ROAD + 0.012, z + e * 0.28, city).castShadow = false; box(0.05, 0.04, 0.56, iron, x + e * 0.505, ROAD + 0.012, z, city).castShadow = false; }

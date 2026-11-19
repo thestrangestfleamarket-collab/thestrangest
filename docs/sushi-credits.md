@@ -11,7 +11,7 @@
 | Compact | `car_compact.glb` | "Kiri '86 - Low poly model", Daniel Zhabotinsky | 5c17c582ef9549798f694b660feea42a |
 | Van | `car_van.glb` | "Shvan '92 - Low poly model", Daniel Zhabotinsky | 09d718c9cf72401b8534d265a06a803f |
 | Police cruiser (its markings left off) | `car_cruiser.glb` | "1980 Chevrolet Caprice-Police", David_Holiday | c94f3f61ad484e5f86a4628797cfea52 |
-| Street trees (leaves coloured for October in the page) | `tree_maple.glb`, `tree_elm.glb`, `tree_elm_lo.glb` | "Maple Tree", "Elm tree", evolveduk | b5e945e7abcc471da6547c04e314774c, f36443d3e59946bfa38b3f5cb90ea5fa |
+| Street trees (leaves coloured for October in the page) | `tree_elm.glb`, `tree_elm_lo.glb` | "Elm tree", evolveduk | f36443d3e59946bfa38b3f5cb90ea5fa |
 | Pay phone | `payphone.glb` | "Pay Phone", Víctor Hernández | a0339aa975e54bb7ac65982ca3cc5802 |
 
 - The hydrant and the manhole covers (`data/sushi/m/fire_hydrant.glb`, its paint taken out for the page's black and silver, and `manhole.glb`; `tools/sushi-models.cjs`): Poly Haven, CC0: Fire Hydrant, Gonçalo Felício, https://polyhaven.com/a/fire_hydrant; Water Manhole Cover, Raunox, https://polyhaven.com/a/water_manhole_cover.

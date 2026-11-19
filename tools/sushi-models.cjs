@@ -2,7 +2,7 @@
 const { chromium } = require('playwright'), fs = require('fs'), path = require('path'), http = require('http'), https = require('https');
 const ROOT = path.resolve(__dirname, '..'), HF = 'https://huggingface.co/datasets/allenai/objaverse/resolve/main/glbs/', PH = 'https://api.polyhaven.com/files/';
 // out: [source, where it comes from, options]. fwd: the way its nose points as it comes; size: metres along `axis`; tris: most triangles kept; tex: picture size; drop: parts left out (a name's pattern)
-const car = (src, url, len, fwd, o = {}) => ({ [src]: [src, url, { size: len, axis: 'x', fwd, tris: 3400, tex: 512, atlas: 1, ...o }] });
+const car = (src, url, len, fwd, o = {}) => ({ [src]: [src, url, { size: len, axis: 'x', fwd, tris: 2600, tex: 512, atlas: 1, ...o }] });
 const DROP = 'engine|hood_inner|door_?(rl|rr|fl|fr)?_?inner|inner_|_inner|doorcard|suspension|exhaust|transfer|steering|gearknob|dashboard|pusher|_card|void|searchlight|decal|livery';   // what a parked car never shows
 const LIST = {
   ...car('car_wagon', HF + '000-124/aa0becb6e854422596cac6b21bf79787.glb', 5.3, '-x', { drop: DROP }),
@@ -10,12 +10,11 @@ const LIST = {
   ...car('car_compact', HF + '000-084/5c17c582ef9549798f694b660feea42a.glb', 4.4, '-x', { drop: DROP }),
   ...car('car_van', HF + '000-087/09d718c9cf72401b8534d265a06a803f.glb', 5.2, '-x', { drop: DROP }),
   ...car('car_cruiser', HF + '000-119/c94f3f61ad484e5f86a4628797cfea52.glb', 5.4, '-x', { drop: DROP }),
-  tree_maple: ['tree_maple', HF + '000-131/b5e945e7abcc471da6547c04e314774c.glb', { size: 1, axis: 'y', tris: 2200, err: 0.1, leaf: 0.5, tex: 512 }],
   tree_elm: ['tree_elm', HF + '000-091/f36443d3e59946bfa38b3f5cb90ea5fa.glb', { size: 1, axis: 'y', tris: 1800, err: 0.1, leaf: 1, tex: 512 }],
   tree_elm_lo: ['tree_elm', HF + '000-091/f36443d3e59946bfa38b3f5cb90ea5fa.glb', { size: 1, axis: 'y', tris: 450, err: 0.5, leaf: 0.5, tex: 256 }],
-  payphone: ['payphone', HF + '000-002/a0339aa975e54bb7ac65982ca3cc5802.glb', { size: 2.2, axis: 'y', tris: 2400, tex: 512, atlas: 1, paint: '^$' }],
+  payphone: ['payphone', HF + '000-002/a0339aa975e54bb7ac65982ca3cc5802.glb', { size: 2.2, axis: 'y', tris: 1300, err: 0.1, tex: 512, atlas: 1, paint: '^$' }],
   fire_hydrant: ['fire_hydrant', PH + 'fire_hydrant', { size: 0.78, axis: 'y', tris: 1300, tex: 256, only: 'aged', gray: 1 }],
-  manhole: ['water_manhole_cover', PH + 'water_manhole_cover', { size: 0.9, axis: 'x', tris: 300, err: 0.2, tex: 256 }],
+  manhole: ['water_manhole_cover', PH + 'water_manhole_cover', { size: 0.9, axis: 'x', tex: 256 }],
 };
 const NM = '/node_modules/', PAGE = `<script type="importmap">{"imports":{"three":"${NM}three/build/three.module.js","three/addons/":"${NM}three/examples/jsm/"}}</script><script type="module">
 import * as THREE from 'three';import {GLTFLoader} from 'three/addons/loaders/GLTFLoader.js';import {GLTFExporter} from 'three/addons/exporters/GLTFExporter.js';import {mergeGeometries,mergeVertices} from 'three/addons/utils/BufferGeometryUtils.js';import {MeshoptSimplifier as MS} from '${NM}meshoptimizer/meshopt_simplifier.js';

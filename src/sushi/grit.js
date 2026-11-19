@@ -2,7 +2,7 @@
 import * as THREE from 'three';
 import { G, mat, box, cyl, mesh, mergeStatic } from './ctx.js';
 import * as T from './tex.js';
-import { glb } from './models.js';
+import { glb, strew } from './models.js';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import { NZ, KERB } from './plan.js';
 
@@ -25,11 +25,10 @@ export function buildGrit(scene, city, cart) {
   const bucket = cyl(0.16, 0.13, 0.28, mat({ color: 0x2a4a7a, roughness: 0.55, side: THREE.DoubleSide }), 1.5, 0.14, 0.85, root, 16, true); cyl(0.13, 0.13, 0.01, bucket.material, 1.5, 0.01, 0.85, root, 16); mesh(new THREE.CircleGeometry(0.15, 16).rotateX(-Math.PI / 2), mat({ color: 0x2a2a26, roughness: 0.15 }), 1.5, 0.2, 0.85, root);
   const card = mat({ map: T.dirty(T.canvasTex(256, 256, (g) => { g.fillStyle = '#8a6a44'; g.fillRect(0, 0, 256, 256); g.fillStyle = '#5a4020'; g.font = 'bold 40px sans-serif'; g.fillText('中華麺', 60, 140); g.fillRect(0, 122, 256, 6); }), 6, { stains: 20, drips: 8, scratches: 20 }), roughness: 0.95 });
   for (const [x, y, z, w, h, d, ry] of [[-2.9, 0.2, NZ - 0.32, 0.55, 0.4, 0.4, 0.2], [-2.85, 0.56, NZ - 0.3, 0.45, 0.32, 0.36, -0.3], [-3.5, 0.15, NZ - 0.42, 0.5, 0.3, 0.45, 0.6], [1.75, 0.16, 1.5, 0.42, 0.32, 0.36, 0.4]]) box(w, h, d, card, x, y, z, root).rotation.y = ry;
-  const bag = mat({ color: 0x08080a, roughness: 0.32, clearcoat: 0.5, clearcoatRoughness: 0.4 });
-  for (const [x, z, s] of [[3.9, NZ - 0.38, 1], [4.35, NZ - 0.42, 0.85], [4.1, NZ - 0.8, 0.7], [-6.3, NZ - 0.38, 0.9]]) { const b = mesh(new THREE.IcosahedronGeometry(0.3 * s, 1), bag, x, 0.22 * s, z, root); b.scale.set(1, 0.75, 0.9); b.rotation.set(R(), R() * 3, R()); cyl(0.02, 0.06, 0.1, bag, x, 0.46 * s, z, root, 6); }
+  strew(root, 'trashbag', [[3.9, 0, NZ - 0.4, 0.4, 1], [4.4, 0, NZ - 0.45, 2.1, 0.85], [4.1, 0, NZ - 0.85, 4, 0.75], [-6.3, 0, NZ - 0.4, 1, 0.9]], 0x8a8a8a);   // the night's bin bags against the wall (the street's own model)
   const br = new THREE.Group(); br.position.set(2.15, 0, NZ - 0.28); br.rotation.x = 0.16; root.add(br); cyl(0.013, 0.013, 1.3, mat({ color: 0x8a6a3a, roughness: 0.8 }), 0, 0.75, 0, br, 6); box(0.28, 0.2, 0.05, mat({ color: 0x9a8040, roughness: 1 }), 0, 0.1, 0, br);
   // soda crates with their empties by the prep wing's outer side: Poly Haven's plastic crate, twice, a wooden one under them; bottles of brown and green glass standing in the top one
-  { const cx = 1.56, cz = 0.32, slat = mat({ map: T.photo('wood', () => T.woodTex('#6a4a2a', '#2a180c')), color: 0xb09a80 }), W = 0.44, D = 0.34, H = 0.26;
+  { const cx = 1.56, cz = 0.32, slat = T.surface(mat({ map: T.photo('wood', () => T.woodTex('#6a4a2a', '#2a180c')), color: 0xb09a80 }), { grime: 0.35 }), W = 0.44, D = 0.34, H = 0.26;
     for (const [y0, hh] of [[0, 0.03], [0.1, 0.05], [0.2, 0.05]]) { for (const e of [-1, 1]) { box(W, hh, 0.014, slat, cx, y0 + hh / 2 + 0.005, cz + e * D / 2, root); box(0.014, hh, D, slat, cx + e * W / 2, y0 + hh / 2 + 0.005, cz, root); } }
     for (const ex of [-1, 1]) for (const ez of [-1, 1]) box(0.03, H, 0.03, slat, cx + ex * (W / 2 - 0.02), H / 2, cz + ez * (D / 2 - 0.02), root); for (let i = 0; i < 4; i++) box(0.09, 0.012, D, slat, cx - 0.165 + i * 0.11, 0.012, cz, root);
     glb('plastic_crate_02', 0xb8a8a0).then((m) => { const b = new THREE.Box3().setFromObject(m), sz = b.getSize(new THREE.Vector3()), k = 0.42 / Math.max(sz.x, sz.z), h = sz.y * k; [[H, 0.08], [H + h, -0.12]].forEach(([y, ry]) => { const o = m.clone(); o.scale.setScalar(k); o.position.set(cx, y - b.min.y * k, cz); o.rotation.y = ry; root.add(o); });

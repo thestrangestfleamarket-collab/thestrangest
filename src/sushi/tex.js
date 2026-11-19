@@ -116,7 +116,7 @@ export function canvasTex(w, h, draw, o = {}) {
 const loTex = (lo, w, h, draw, o = {}) => canvasTex(w, h, draw, { ...o, lo });
 
 // photographed surfaces (CC0, tools/sushi-assets.py), asked for before the street is built; a drawn picture stands in for one that has not come
-const PHOTOS = ['brick_red', 'brick_orange', 'brick_brown', 'brick_dark', 'brick_painted', 'concrete', 'concrete_dirty', 'asphalt', 'paving', 'shutter', 'shutter_rust', 'corrugated', 'wood', 'wood_dark', 'wood_light', 'tile_white', 'wood_counter', 'cloth', 'bark'];
+const PHOTOS = ['brick_red', 'brick_orange', 'brick_brown', 'brick_dark', 'brick_painted', 'concrete', 'concrete_dirty', 'asphalt', 'paving', 'shutter', 'shutter_rust', 'corrugated', 'wood', 'wood_dark', 'wood_light', 'tile_white', 'wood_counter', 'cloth', 'bark', 'asphalt_road', 'asphalt_old'];
 const PIMG = {}, PTEX = {};
 export function loadPhotos(base = '/sushi-assets/tex/', ms = 9000) {
   return Promise.all(PHOTOS.map((n) => new Promise((res) => { const im = new Image(); im.onload = () => { PIMG[n] = im; const t = PTEX[n]; if (t) { t.dispose(); t.image = small(im); t.needsUpdate = true; } res(); }; im.onerror = res; im.src = base + n + '.jpg'; setTimeout(res, ms); })));
@@ -560,4 +560,24 @@ export function smudgeTex(repeat = [1, 1], seed = 4) {
     for (let i = 0; i < 90; i++) { g.globalAlpha = 0.25 + R() * 0.4; g.strokeStyle = R() > 0.5 ? '#3c3c3c' : '#e6e6e6'; g.lineWidth = 8 + R() * 40; g.lineCap = 'round'; g.beginPath(); const x = R() * w, y = R() * h; g.arc(x, y, 30 + R() * 160, R() * 6, R() * 6 + 0.4 + R() * 1.2); g.stroke(); }
     for (let i = 0; i < 400; i++) { g.globalAlpha = 0.3; g.fillStyle = R() > 0.5 ? '#222' : '#fff'; g.beginPath(); g.ellipse(R() * w, R() * h, 2 + R() * 7, 2 + R() * 5, R() * 3, 0, 7); g.fill(); }
   }, { repeat, linear: true });
+}
+
+// what shiny things mirror (shop glass, a car's paint, a puddle): a small picture of the street all round (the sky over a line of housefronts, lamps and lit windows after dark), painted again as the light changes (alley.js)
+let ENVT = null;
+export const env = () => { if (!ENVT) { const c = document.createElement('canvas'); c.width = 256; c.height = 128; ENVT = new THREE.CanvasTexture(c); ENVT.mapping = THREE.EquirectangularReflectionMapping; ENVT.colorSpace = THREE.SRGBColorSpace; envPaint(new THREE.Color(0x4a78c0), new THREE.Color(0xb8c4cc), 1, 0); } return ENVT; };
+export function envPaint(zen, hor, day, lit) {
+  const t = env(), c = t.image, g = c.getContext('2d'), w = c.width, h = c.height, R = rng(19), hx = (k) => '#' + k.getHexString();
+  const sky = g.createLinearGradient(0, 0, 0, h / 2); sky.addColorStop(0, hx(zen)); sky.addColorStop(1, hx(hor)); g.fillStyle = sky; g.fillRect(0, 0, w, h / 2);
+  const d = 0.1 + 0.9 * day, gr = Math.round(70 * d); g.fillStyle = `rgb(${gr},${gr},${Math.round(gr * 1.05)})`; g.fillRect(0, h / 2, w, h / 2);
+  for (let x = 0; x < w; x += 6 + R() * 10) { const bh = 10 + R() * 22, bw = 8 + R() * 12, k = (0.5 + R() * 0.5) * d; g.fillStyle = `rgb(${Math.round(150 * k)},${Math.round(105 * k)},${Math.round(88 * k)})`; g.fillRect(x, h / 2 - bh, bw, bh + 6);
+    for (let y = h / 2 - bh + 3; y < h / 2 - 2; y += 5) for (let xx = x + 2; xx < x + bw - 2; xx += 4) { const on = R() < 0.3; g.fillStyle = on && lit > 0.2 ? `rgba(255,${200 + ((R() * 40) | 0)},130,${lit})` : `rgba(20,26,36,${0.5 + 0.3 * day})`; g.fillRect(xx, y, 2, 3); } }
+  if (lit > 0.05) for (let i = 0; i < 9; i++) { const x = (i + 0.5) * w / 9 + (R() - 0.5) * 8, y = h / 2 - 24 - R() * 8, rg = g.createRadialGradient(x, y, 0, x, y, 9); rg.addColorStop(0, `rgba(255,190,110,${lit})`); rg.addColorStop(1, 'rgba(255,150,60,0)'); g.fillStyle = rg; g.fillRect(x - 9, y - 9, 18, 18); }
+  t.dispose(); t.needsUpdate = true;
+}
+// brushed steel, for the cart's sheet metal and pots: fine strokes all one way, a few soft bands, nothing scribbled
+export function brushedTex(repeat = [1, 1], base = '#b4b8bc') {
+  return canvasTex(256, 256, (g, w, h) => { const R = rng(31); g.fillStyle = base; g.fillRect(0, 0, w, h);
+    for (let i = 0; i < 2600; i++) { g.globalAlpha = 0.03 + R() * 0.07; g.fillStyle = R() > 0.5 ? '#fff' : '#3c4046'; const y = R() * h, x = R() * w, l = 30 + R() * 200; g.fillRect(x, y, l, 1); if (x + l > w) g.fillRect(0, y, x + l - w, 1); }
+    for (let i = 0; i < 5; i++) { const y = R() * h, b = 10 + R() * 26, gd = g.createLinearGradient(0, y - b, 0, y + b); gd.addColorStop(0, 'rgba(255,255,255,0)'); gd.addColorStop(0.5, `rgba(${R() > 0.5 ? '255,255,255' : '40,44,50'},0.07)`); gd.addColorStop(1, 'rgba(255,255,255,0)'); g.globalAlpha = 1; g.fillStyle = gd; g.fillRect(0, y - b, w, 2 * b); g.fillRect(0, y - b - h, w, 2 * b); g.fillRect(0, y - b + h, w, 2 * b); }
+    g.globalAlpha = 1; }, { repeat });
 }

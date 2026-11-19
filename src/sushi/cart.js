@@ -83,9 +83,9 @@ export function buildCart(scene, city) {
   for (const s of [-1, 1]) {
     const w = mesh(new THREE.TorusGeometry(0.36, 0.035, 8, 28), black, s * 1.2, 0.39, 0.5, cart); w.rotation.y = Math.PI / 2;
     for (let i = 0; i < 6; i++) { const sp = box(0.02, 0.7, 0.03, woodDark, s * 1.2, 0.39, 0.5, cart); sp.rotation.x = (i * Math.PI) / 6; }
-    box(0.05, 0.05, 1.1, woodDark, s * 0.9, 0.7, 2.3, cart);
+    box(0.05, 0.05, 0.72, woodDark, s * 0.9, 0.7, 2.14, cart);
   }
-  box(1.85, 0.05, 0.05, woodDark, 0, 0.7, 2.83, cart);
+  box(1.85, 0.05, 0.05, woodDark, 0, 0.7, 2.5, cart);
 
   // noren + lanterns + roof sign (customer side)
   const norenT = T.canvasTex(1024, 256, (g, w, h) => {

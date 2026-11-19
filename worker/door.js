@@ -140,8 +140,7 @@ export default {
     if ((request.method === "GET" || request.method === "HEAD") && p === "/duel") return page(env, url, "/duel", request, "no-cache");
     if (p === "/duel/") return Response.redirect(url.origin + "/duel" + url.search, 301);
     // SLOWFIRE DUEL (src/qzar/): its own page at /qzar, to anyone with the link
-    if ((request.method === "GET" || request.method === "HEAD") && p === "/qzar") return page(env, url, "/qzar", request, "no-cache");
-    if (p === "/qzar/") return Response.redirect(url.origin + "/qzar" + url.search, 301);
+    if ((request.method === "GET" || request.method === "HEAD") && (p === "/qzar" || p === "/qzar/")) return Response.redirect("https://claude.ai/artifact/9inZsDMyTHoZaQ9J1v2BQL", 302);   // owner, 19 Nov 2026: /qzar leads to his artifact; SLOWFIRE DUEL's page is still built, at no address
     // DEAD END (src/hide/): its own page at /hide, to anyone with the link; its pictures, models and sounds under /hide-assets/; the thing's mind and voice (POST /hide/mind, /hide/say) to anyone who plays
     if ((request.method === "GET" || request.method === "HEAD") && p === "/hide") return page(env, url, "/hide", request, "no-cache");
     if (p === "/hide/") return Response.redirect(url.origin + "/hide" + url.search, 301);

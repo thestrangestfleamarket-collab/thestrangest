@@ -23,7 +23,7 @@ export function buildAlley(scene, o = {}) {
   // ---- the ground: the pavement's concrete flags, the kerbs, the asphalt and its paint, the avenue at the east end
   const paveM = real('paving', 2.4, 0xb4b0a8, { grime: 0.45 }), kerbM = real('concrete', 2, 0x9a9890, { grime: 0.5, bomb: 0 }), roadM = real('asphalt', 4, 0x8a8a90, { grime: 0.35 }), lineM = flat(0xc8c4b0), yellowM = flat(0xb89a2a);
   const flag = (x0, x1, z0, z1, m = paveM, y = 0) => { const b = box(x1 - x0, 0.4, z1 - z0, m, (x0 + x1) / 2, y - 0.2, (z0 + z1) / 2, city); b.castShadow = false; return b; };
-  const SUB = { x0: 19.2, x1: 23.6, z0: -4.9, z1: -3.3 };   // the subway stair's well in the pavement
+  const SUB = { x0: 19.2, x1: 23.6, z0: -5.12, z1: -3.92 };   // the subway stair's well in the pavement, by the kerb
   flag(W0 - 60, SUB.x0, KERB, NZ); flag(SUB.x1, E0 + 4, KERB, NZ); flag(SUB.x0, SUB.x1, SUB.z1, NZ); flag(SUB.x0, SUB.x1, KERB, SUB.z0);
   flag(W0 - 60, E0 + 4, FZ, FKERB);
   box(E0 + 4 - (W0 - 60), 0.16, 0.18, kerbM, (E0 + 4 + W0 - 60) / 2, -0.07, KERB - 0.09, city).castShadow = false; box(E0 + 4 - (W0 - 60), 0.16, 0.18, kerbM, (E0 + 4 + W0 - 60) / 2, -0.07, FKERB + 0.09, city).castShadow = false;
@@ -97,8 +97,8 @@ export function buildAlley(scene, o = {}) {
   S.easy = !!(G.set && G.set.easy); city.setEasy = (on) => { S.easy = on; paint(); };
   // where the block's people stop: the bodega's door, the laundromat's, the record shop's, the corner by the subway stair, a stoop up the block, the pay phone
   const P = (x, z) => new THREE.Vector3(x, 0, z), door = (shop) => { const s = fronts.shops.find((q) => q.shop === shop && q.s > 0); return s ? P(s.door.x, NZ - 1.2) : P(0, NZ - 1.2); };
-  const shops = [{ type: 'bar', open: true, p: door('bodega'), name: 'the bodega' }, { type: 'kitchen', open: true, p: door('laundromat'), name: 'the laundromat' }, { type: 'stage', open: true, p: door('records'), name: 'the record shop' }, { type: 'corner', open: true, p: P(E0 - 1.5, -3.6), name: 'the corner' }, { type: 'stoop', open: true, p: P(W0 + LOT + 4.4, NZ - 1.3), name: 'the stoop' }, { type: 'fence', open: true, p: P(street.phone.x + 0.9, street.phone.z + 0.5), name: 'the pay phone' }];
+  const shops = [{ type: 'bar', open: true, p: door('bodega'), name: 'the bodega' }, { type: 'kitchen', open: true, p: door('laundromat'), name: 'the laundromat' }, { type: 'stage', open: true, p: door('records'), name: 'the record shop' }, { type: 'corner', open: true, p: P(E0 - 1.2, -3.3), name: 'the corner' }, { type: 'stoop', open: true, p: P(W0 + 1.5 * LOT + 1.4, NZ - 1.2), name: 'the stoop' }, { type: 'fence', open: true, p: P(street.phone.x + 0.9, street.phone.z + 0.9), name: 'the pay phone' }];
   const tvShop = fronts.shops.find((q) => q.shop === 'tv'), all = [...shops, ...(tvShop ? [{ type: 'tv', open: true, p: P(tvShop.x + (tvShop.info.window[0] + tvShop.info.window[1]) / 2 - LOT / 2, FZ + 1.55) }] : [])];
-  const block = buildBlock(city, shops, { near: -2.6, far: -4.2, split: -3.4, end: E0 + 3 }); ups.push((dt, t) => block.update(dt, t));
-  return Object.assign(api, { group: city, shops: all, fronts, street, glow, fill, sun, moon, lamps: lampMats, alley: true, vent: street.vent, skyDome: sky, weatherAt, setEasy(on) { S.easy = on; paint(); }, update(dt, t) { for (const u of ups) u(dt, t); }, halo, rain: null, cars: street.cars, glowMap, bakeFar() { }, reflect() { } });
+  const block = buildBlock(city, shops, { near: -2.6, far: -3.5, split: -3.05, end: E0 + 3 });   // (two lanes of the pavement, clear of the kerb's poles, the phone and the subway stair) ups.push((dt, t) => block.update(dt, t));
+  return Object.assign(api, { group: city, jd: (h) => city.jd(h), shops: all, fronts, street, glow, fill, sun, moon, lamps: lampMats, alley: true, vent: street.vent, skyDome: sky, weatherAt, setEasy(on) { S.easy = on; paint(); }, update(dt, t) { for (const u of ups) u(dt, t); }, halo, rain: null, cars: street.cars, glowMap, bakeFar() { }, reflect() { } });
 }

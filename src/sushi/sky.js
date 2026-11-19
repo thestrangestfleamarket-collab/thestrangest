@@ -1,4 +1,4 @@
-// the sky over the street, after THE MARKET's (src/132-sky.js): its colours by the sun's height (horizon, middle, zenith, the side toward the sun and away from it), the sun's disc and halo, the moon lit on the side that faces the sun, the stars turned by the sidereal time over Edo, and clouds drifting at the weather's cover (a baked picture read twice, so it costs the headset little); nothing in it twinkles or flickers
+// the sky over the street, after THE MARKET's (src/132-sky.js): its colours by the sun's height (horizon, middle, zenith, the side toward the sun and away from it), the sun's disc and halo, the moon lit on the side that faces the sun, the stars turned by the sidereal time over the place (ephem.js site), and clouds drifting at the weather's cover (a baked picture read twice, so it costs the headset little); nothing in it twinkles or flickers
 import * as THREE from 'three';
 import * as E from './ephem.js';
 
@@ -8,7 +8,7 @@ const P = [[-90, 0x1a2234, 0x141a28, 0x0c101c, 0x1a2234, 0x1a2234], [-18, 0x1e28
   [-6, 0x3c4070, 0x1f2a58, 0x0f1838, 0x8a4a40, 0x2a3060], [-2.5, 0x8a6a80, 0x4a4a84, 0x1e2a58, 0xe8703a, 0x6a5878], [0, 0xd89070, 0x8a7aa0, 0x2e4078, 0xff8a3a, 0xb888a0],
   [3, 0xf0b070, 0x98aed0, 0x3c62a8, 0xffb050, 0xb4bede], [8, 0xc8d4e0, 0x9ec2ea, 0x4a84d0, 0xd8d4d0, 0xb0c4dc], [16, 0xc4d4e4, 0x88b8ea, 0x3f7fd8, 0xc8d8e8, 0xbcd0e4], [90, 0xc0d2e4, 0x7aaee6, 0x3270d0, 0xc0d2e4, 0xc0d2e4]];
 const SUN = [[-2, 0xff4a20], [0, 0xff6428], [3, 0xff8c3a], [8, 0xffc070], [20, 0xfff0d0], [90, 0xfff8ee]];
-// the brightest stars (right ascension, declination, magnitude) and the Dipper, so the sky over Edo is its own; the rest a faint field thickest along the Milky Way
+// the brightest stars (right ascension, declination, magnitude) and the Dipper, so the sky over the street is its own; the rest a faint field thickest along the Milky Way
 const BRIGHT = [[101.29, -16.72, -1.4], [279.23, 38.78, 0], [213.92, 19.18, -0.1], [79.17, 45.99, 0.1], [78.63, -8.2, 0.1], [114.83, 5.22, 0.4], [88.79, 7.41, 0.5], [297.7, 8.87, 0.8], [68.98, 16.51, 0.9], [247.35, -26.43, 1],
   [201.3, -11.16, 1], [116.33, 28.03, 1.1], [310.36, 45.28, 1.25], [152.09, 11.97, 1.35], [37.95, 89.26, 2], [165.93, 61.75, 1.8], [165.46, 56.38, 2.4], [178.46, 53.69, 2.4], [183.86, 57.03, 3.3], [193.51, 55.96, 1.8], [200.98, 54.93, 2.2], [206.89, 49.31, 1.9],
   [263.73, 12.56, 2.1], [10.9, 56.54, 2.2], [14.18, 60.72, 2.5], [2.29, 59.15, 2.3], [21.45, 60.24, 2.7], [28.6, 63.67, 3.4], [83.0, -0.3, 2.2], [84.05, -1.2, 1.7], [85.19, -1.94, 1.8], [81.28, 6.35, 1.6], [86.94, -9.67, 2.1], [56.87, 24.1, 2.9], [186.65, -63.1, 0.8], [252.17, -69.03, 1.9], [233.67, 26.71, 2.2], [222.68, 74.16, 2.1], [326.05, 9.88, 2.4], [345.94, 28.08, 2.4], [346.19, 15.2, 2.5], [3.31, 15.18, 2.8]];

@@ -155,7 +155,9 @@ export function buildFronts(X, near, far) {
     return { name: 'EMPTY LOT', door: LOT / 2 }; };
   near.forEach((spec, i) => lot(X.W0 + LOT / 2 + i * LOT, X.NZ, 1, spec, false));
   far.forEach((spec, i) => lot(X.W0 + LOT / 2 + i * LOT, X.FZ, -1, spec, true));
-  // awnings where a shop has one: striped canvas out over the pavement
-  out.awning = (x, z, s, w, c0, c1) => { const t = T.canvasTex(128, 32, (g, cw, chh) => { for (let i = 0; i < 8; i++) { g.fillStyle = i % 2 ? c0 : c1; g.fillRect(i * 16, 0, 16, chh); } }), m = T.sway(mat({ map: t, side: THREE.DoubleSide }), 'cloth'); const a = mesh(new THREE.PlaneGeometry(w, 1.3, 6, 2), m, x, 2.85, z - s * 0.6, city); a.rotation.x = s * -1.05; a.rotation.z = 0; a.castShadow = false; return a; };
+  // awnings where a shop has one: striped canvas from under the sign out over the pavement, stirring in the wind
+  const awning = (s0, w, c0, c1, off = 0) => { const t = T.canvasTex(128, 32, (g, cw, chh) => { for (let i = 0; i < 8; i++) { g.fillStyle = i % 2 ? c0 : c1; g.fillRect(i * 16, 0, 16, chh); } g.fillStyle = 'rgba(0,0,0,0.25)'; g.fillRect(0, chh - 5, cw, 5); }), m = T.sway(T.surface(mat({ map: t, side: THREE.DoubleSide }), { bomb: 0, grime: 0.3 }), 'cloth');
+    const a = mesh(new THREE.PlaneGeometry(w, 1.15, 8, 2), m, s0.x - s0.s * off, 2.46, s0.z - s0.s * 0.5, city); a.rotation.x = s0.s * 1.147; a.castShadow = false; a.userData.keep = true; for (const e of [-1, 1]) { const r = box(0.03, 0.03, 1.05, iron, s0.x - s0.s * off + e * (w / 2 - 0.02), 2.25, s0.z - s0.s * 0.52, city); r.castShadow = false; } };
+  for (const s0 of out.shops) { if (s0.shop === 'bodega') awning(s0, 5.5, '#c81c1c', '#f2c81c', -0.8); else if (s0.shop === 'pizza') awning(s0, 5.5, '#1c7a3a', '#f4f0e4', -0.8); else if (s0.shop === 'coffee') awning(s0, 7.0, '#7a1c1c', '#e8e0d0', 0); }
   return out;
 }

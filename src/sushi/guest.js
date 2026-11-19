@@ -1,4 +1,4 @@
-// A GUEST IN THE ALLEY: a tenant of THE MARKET come down THE DARK ALLEY as themselves (146bg sends them here, /holo?g=sushi&as=guest; on its own /sushi?guest=1): on a screen they walk it in third or first person, in a headset as they stand; their own figure (its standing, walking and sitting baked in THE MARKET) is sent to everyone else in the alley, and they are drawn as one of the village's bodies in its colours and at its height (tenant.js); a stool to sit on and be served at, the bowl paid from their own money; the street's end, or LEAVE, back to THE MARKET at the alley's mouth
+// A GUEST IN THE ALLEY: a tenant of THE MARKET come down THE DARK ALLEY as themselves (146bg sends them here, /holo?g=sushi&as=guest; on its own /sushi?guest=1): on a screen they walk it in third or first person, in a headset as they stand; their own figure (its standing, walking and sitting baked in THE MARKET) is sent to everyone else in the alley, and they are drawn as one of the street's bodies in the colours they wear and at their height (tenant.js); a stool to sit on and be served at, the bowl paid from their own money; the street's end, or LEAVE, back to THE MARKET at the alley's mouth
 import * as THREE from 'three';
 import { G, BOUNDS, clamp } from './ctx.js';
 import { SEATS, RECIPES } from './cart.js';
@@ -9,7 +9,7 @@ import * as T from './tex.js';
 
 const SEATZ = -1.16, STOOLZ = -1.62, START = [1.4, -3.2], MOUTH = 25.2, WALK = 1.45;   // where a guest sits and stands to sit; where they come in; the street's end
 // what a guest walks round: the cart, the dumpsters and pallets, in the cart's own metres [x0, z0, x1, z1]
-const SOLID = [[-1.95, -1.4, 1.95, 2.35], [-12.5, -5.2, -10.5, -4.1], [16, 1.9, 20.3, 3.0], [7, 2.1, 8.2, 3.0]];
+const SOLID = [[-1.95, -1.4, 1.95, 2.35], [19.0, -5.2, 23.8, -3.8], [-19.6, -5.2, -18.8, -4.3], [-16.2, 1.8, -14.2, 3.4]];   // the cart, the subway stair's well, the pay phone, a stoop
 
 export function buildGuest(live) {
   const card = (() => { try { return JSON.parse(sessionStorage.getItem('holo') || 'null') || {}; } catch (e) { return {}; } })(), Y = card.yatai || {};

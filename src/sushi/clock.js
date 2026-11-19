@@ -1,10 +1,13 @@
-// the run's one clock: one day and one night (G.clock = { phase, t, frac }); frac runs 0 to 1 over the whole run, the light's phases and the story's beats (story.js) follow it; G.clock.on(name, fn) hangs a system on a phase's beginning ('day' 'dusk' 'night' 'dawn'); ?fast=1 runs it quick, G.clock.skip() goes on to the next phase
+// the run's one clock: one day and one night (G.clock = { phase, t, frac }) and the calendar (G.clock.date()); frac runs 0 to 1 over the whole run, the light's phases and the story's beats (story.js) follow it; G.clock.on(name, fn) hangs a system on a phase's beginning ('day' 'dusk' 'night' 'dawn'); ?fast=1 runs it quick, G.clock.skip() goes on to the next phase
 import { G, clamp } from './ctx.js';
 
 export const RUN = 38 * 60;   // seconds of play, the whole run
 // the light over the run: the day, dusk, the night's service, dawn
 export const PHASES = [['day', 0, 0.3], ['dusk', 0.3, 0.4], ['night', 0.4, 0.9], ['dawn', 0.9, 1]];
 export const ORDER = PHASES.map((p) => p[0]);
+const DAY0 = Date.UTC(1985, 9, 4), DOW = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'], MON = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+// the calendar: day one of a run is Friday 4 October 1985, and each day after is the next date
+export const dateOf = (day) => { const d = new Date(DAY0 + (Math.max(1, day | 0) - 1) * 864e5); return { n: Math.max(1, day | 0), dow: DOW[d.getUTCDay()], d: d.getUTCDate(), month: MON[d.getUTCMonth()], text: `${DOW[d.getUTCDay()]} ${d.getUTCDate()} ${MON[d.getUTCMonth()]} ${d.getUTCFullYear()}`, short: `${DOW[d.getUTCDay()].slice(0, 3)} ${d.getUTCDate()} ${MON[d.getUTCMonth()].slice(0, 3)} ${d.getUTCFullYear()}` }; };
 const HOURS = { day: [10, 17.5], dusk: [17.5, 19.5], night: [19.5, 29], dawn: [29, 30.5] };   // the street's hour over each (29 is five in the morning)
 
 export function buildClock(params) {
@@ -20,6 +23,8 @@ export function buildClock(params) {
     if (quiet) return; if (c.phase !== was) emit(c.phase, c.phase); };
   c.time = (h = c.hour) => { const m = Math.floor((((h % 24) + 24) % 24) * 60), hh = Math.floor(m / 60); return `${((hh + 11) % 12) + 1}:${String(m % 60).padStart(2, '0')}${hh >= 12 ? 'PM' : 'AM'}`; };   // the hour as a clock shows it
   c.daypart = (h = c.hour) => { const x = ((h % 24) + 24) % 24; return x < 5 ? 'night' : x < 12 ? 'morning' : x < 17 ? 'afternoon' : x < 22 ? 'evening' : 'night'; };   // what to call the hour (a greeting follows it: talk.js)
+  c.day = () => (G.prog ? (G.prog.result ? G.prog.result.day : G.prog.P.day) : 1);   // the run's day being played (the card at dawn has already turned the page)
+  c.date = (h = c.hour) => dateOf(c.day() + (h >= 24 ? 1 : 0));   // today's date by the street's hour (after midnight it is tomorrow's)
   c.at = (phase) => PHASES.find((p) => p[0] === phase)?.[1];   // where a phase begins, as a share of the run
   c.start = () => { if (c.running || c.over) return; c.running = true; emit('day', 'day'); };   // the cart opens: the day begins to pass
   c.go = (name) => { const at = c.at(name); if (at == null) return; c.running = true; c.over = false; set(at + 1e-6); };   // to a phase's beginning (a test, or a debug key)

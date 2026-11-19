@@ -4,8 +4,8 @@ import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { TYPES, NODES, NODE_R, BX, BZ, MOTHER, FIGHTER, CRUISER, TURRET, MINE } from './sim.js';
 
 const BASE = '/space-assets/', FILES = ['mother', 'fighter', 'frigate', 'cruiser', 'turret', 'mine'], LEN = [0.5, 0.05, 0.11, 0.2, 0.07, 0.026];
-// the two fleets' colours, light blue and light green: the hulls' paint, their engines' and shots' light, their rings
-const HULL = [new THREE.Color(0.36, 0.62, 1.0), new THREE.Color(0.4, 0.9, 0.5)], GLOW = [new THREE.Color(0.25, 0.7, 1.0), new THREE.Color(0.35, 1.0, 0.45)], TEAM = [new THREE.Color(0.3, 0.66, 1), new THREE.Color(0.35, 0.95, 0.5)];
+// the two fleets' colours, light blue and pink: the hulls' paint, their engines' and shots' light, their rings
+const HULL = [new THREE.Color(0.36, 0.62, 1.0), new THREE.Color(1.0, 0.5, 0.74)], GLOW = [new THREE.Color(0.25, 0.7, 1.0), new THREE.Color(1.0, 0.4, 0.7)], TEAM = [new THREE.Color(0.3, 0.66, 1), new THREE.Color(1.0, 0.45, 0.72)];
 const MAXU = 40, STEP = 0.1, CELLS = [22, 5, 8, 12, 6, 4], FLING = [0.07, 0.3, 0.18, 0.11, 0.15, 0.25], _x = new THREE.Vector3();
 const _m = new THREE.Matrix4(), _q = new THREE.Quaternion(), _e = new THREE.Euler(0, 0, 0, 'YXZ'), _p = new THREE.Vector3(), _s = new THREE.Vector3(), _a = new THREE.Vector3(), _b = new THREE.Vector3(), _c = new THREE.Color(), _q2 = new THREE.Quaternion();
 const Z = new THREE.Vector3(0, 0, 1), ZERO = new THREE.Matrix4().makeScale(0, 0, 0);
@@ -63,14 +63,24 @@ function detail(mat, tex, scale, depth) { DETOF.set(mat, [tex, scale, depth]); m
       float lod2 = lod + 2.585, fade2 = clamp(4.5 - lod2, 0.0, 1.0) * 0.85; vec2 uv2 = uv.yx * 6.0 + 0.37; vec3 hr2 = textureLod(tDetH, uv2, lod2).rgb, tn2 = textureLod(tDetN, uv2, lod2).yxz * 2.0 - 1.0;   // the same set again, six times finer and turned: small panels inside the big ones
       normal = normalize(normal + vD2V * ((T * tn.x + B * tn.y) * 1.1 * fade + (T * tn2.x + B * tn2.y) * 0.7 * fade2)); roughnessFactor = clamp(mix(roughnessFactor, hra.g * mix(1.0, 0.7 + 0.6 * hr2.r, fade2), 0.55 * fade), 0.04, 1.0);
       diffuseColor.rgb *= mix(1.0, hra.b * (0.5 + 0.85 * hra.r), fade) * mix(1.0, hr2.b * (0.72 + 0.5 * hr2.r), fade2); } }`); }; return mat; }
+// each navy's own build, so a fleet is known by its outline: the Admiralty's ships longer and narrower with a pointed bow and a fin aft, the Corsairs' broad and squat with a pod out on each side and two horns forward; every added piece is sunk into the hull
+function shape(parts, name) { const m = /^([a-z]+?)(2)?(?:-(\d)-\d)?$/.exec(name), ti = m ? FILES.indexOf(m[1]) : -1; if (ti < 0 || !parts.length) return parts; const fc = m[3] !== undefined ? +m[3] : m[2] ? 1 : 0, S = ti === MINE ? (fc ? [1, 1, 1] : [1.15, 0.7, 1.15]) : fc ? [1.2, 1.06, 0.88] : [0.88, 0.95, 1.12], bb = new THREE.Box3();
+  for (const q of parts) { q.geo.scale(S[0], S[1], S[2]); q.geo.computeBoundingBox(); bb.union(q.geo.boundingBox); }
+  const sz = bb.getSize(new THREE.Vector3()), c = bb.getCenter(new THREE.Vector3()), W = sz.x, H = sz.y, L = sz.z, add = [], put = (g, x, y, z, rx = 0, ry = 0, rz = 0) => { g = g.toNonIndexed(); g.rotateX(rx); g.rotateY(ry); g.rotateZ(rz); g.translate(c.x + x, c.y + y, c.z + z); add.push(g); };
+  if (ti === MINE) { if (fc) for (let i = 0; i < 4; i++) put(new THREE.ConeGeometry(W * 0.13, W * 0.42, 5), Math.cos(i * 1.5708) * W * 0.42, 0, Math.sin(i * 1.5708) * W * 0.42, i % 2 ? (i === 1 ? 1 : -1) * Math.PI / 2 : 0, 0, i % 2 ? 0 : (i ? 1 : -1) * Math.PI / 2); }
+  else if (fc) for (const sx of [-1, 1]) { put(new THREE.CylinderGeometry(H * 0.17, H * 0.22, L * 0.42, 8), sx * W * 0.56, -H * 0.06, -L * 0.06, Math.PI / 2); put(new THREE.BoxGeometry(W * 0.58, H * 0.08, L * 0.14), sx * W * 0.29, -H * 0.06, -L * 0.06); if (ti !== TURRET) put(new THREE.ConeGeometry(Math.min(W, H) * 0.12, L * 0.26, 5), sx * W * 0.26, 0, L * 0.4, Math.PI / 2, sx * 0.2); }
+  else if (ti !== TURRET) { put(new THREE.ConeGeometry(Math.min(W, H) * 0.14, L * 0.26, 8), 0, 0, L * 0.45, Math.PI / 2); put(new THREE.BoxGeometry(W * 0.04, H * 0.7, L * 0.2), 0, H * 0.35, -L * 0.3, -0.25); }
+  if (!add.length) return parts;
+  const n = add.reduce((t, g) => t + g.attributes.position.count, 0), P = new Float32Array(n * 3), N = new Float32Array(n * 3), U = new Float32Array(n * 2); let o = 0; for (const g of add) { P.set(g.attributes.position.array, o * 3); N.set(g.attributes.normal.array, o * 3); U.set(g.attributes.uv.array, o * 2); o += g.attributes.position.count; }
+  const geo = new THREE.BufferGeometry(); geo.setAttribute('position', new THREE.BufferAttribute(P, 3)); geo.setAttribute('normal', new THREE.BufferAttribute(N, 3)); geo.setAttribute('uv', new THREE.BufferAttribute(U, 2)); return [...parts, { geo, mat: parts[0].mat, gain: parts[0].gain }]; }
 // one model's parts; each part's picture is measured (how bright it is all over) so every hull can be painted to the same lightness
 async function loadOne(L, name) { const g = await L.loadAsync(BASE + 'm/' + name + '.glb'), parts = [], cv = document.createElement('canvas'); cv.width = cv.height = 16; const x = cv.getContext('2d', { willReadFrequently: true });
   g.scene.updateMatrixWorld(true); g.scene.traverse(o => { if (!o.isMesh) return; const geo = o.geometry.clone(); geo.applyMatrix4(o.matrixWorld); let lum = 0.5;
     try { const im = o.material.map && o.material.map.image; if (im) { x.drawImage(im, 0, 0, 16, 16); const d = x.getImageData(0, 0, 16, 16).data; let t = 0; for (let i = 0; i < d.length; i += 4) t += Math.pow((0.299 * d[i] + 0.587 * d[i + 1] + 0.114 * d[i + 2]) / 255, 2.2); lum = t / 256; } } catch (e) {}
     parts.push({ geo, mat: o.material, gain: Math.min(5, Math.max(0.6, 0.3 / Math.max(0.02, lum))) }); });
   // every hull but a mine's carries its plates, blocks and pipes as geometry
-  const ti = FILES.indexOf(name.split('-')[0].replace(/2$/, '')); if (ti < 0 || ti === MINE) return parts;
-  return greeble(parts, [2200, 240, 520, 1000, 320][ti], [0.5, 1.8, 1.1, 0.75, 1.5][ti], 7 + ti * 13 + name.length).map((q, i) => ({ ...q, gain: parts[i].gain })); }
+  const ti = FILES.indexOf(name.split('-')[0].replace(/2$/, '')); if (ti < 0 || ti === MINE) return shape(parts, name);
+  return shape(greeble(parts, [2200, 240, 520, 1000, 320][ti], [0.5, 1.8, 1.1, 0.75, 1.5][ti], 7 + ti * 13 + name.length).map((q, i) => ({ ...q, gain: parts[i].gain })), name); }
 // the hull's file for a navy's kind of ship: each kind has three hulls
 const hullName = (fc, type, v) => (v ? FILES[type] + '-' + fc + '-' + (v + 1) : FILES[type] + (fc ? '2' : ''));
 async function loadModels(onStep) {

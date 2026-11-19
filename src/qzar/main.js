@@ -6,7 +6,7 @@ import { WCOL, makeGun, makeShield, makeShot, makeBeam, glowTex, setEnv } from '
 import { makeBody } from './body.js';
 import { initAudio, sfx } from './audio.js';
 import { Materials } from '../shoot/textures.js';
-import { ROOM, JET, HOLSTERS, wallHit, fly, bank, leave, makeRoom } from './disc.js';
+import { ROOM, SIZES, setRoom, JET, HOLSTERS, wallHit, boost, bank, leave, makeRoom } from './disc.js';
 const $=id=>document.getElementById(id);
 const app=$('app'),canvas=$('view'),note=$('note'),statusEl=$('status');
 const V3=THREE.Vector3;
@@ -50,7 +50,9 @@ const DIFF={
   normal:{speed:1.5,window:1.1,err:.28,lead:.7,regrab:2.8,gap:1.0,parry:.25},
   hard:  {speed:2.1,window:1.6,err:.14,lead:1, regrab:2.0,gap:.75,parry:.45}
 };
-const ROUND_TIME=90, MAX_HP=100, YOU=0x3fd6e0, FOE=0xff7a59, BG=0x0d1326;
+const ROUND_TIME=90, MAX_HP=100, BG=0x0d1326;
+const TINTS=[0x3fd6e0,0x5cf07a,0xffd84a,0xff7a59,0xff5fa2,0xa98bff,0xf2f6ff,0xff5a4d];   // the colours a player may wear
+let YOU=TINTS[0], FOE=TINTS[3];
 const SLOTS_FLAT=[[-.9,.85,0],[.9,.85,0],[-.9,1.75,0],[.9,1.75,0]];
 const SLOTS_VR=[[-.45,1.05,-.35],[.45,1.05,-.35],[-.55,1.45,-.25],[.55,1.45,-.25]];
 const PH=['menu','count','play','roundEnd','over'];
@@ -69,7 +71,7 @@ scene.background=bgColor;scene.fog=fog;
 const rig=new THREE.Group();rig.position.set(0,0,PZ);scene.add(rig);
 const camera=new THREE.PerspectiveCamera(60,1,.05,100);rig.add(camera);
 function flatCamera(){camera.position.set(0,2.7,3.8);camera.lookAt(0,1.0,BZ);}
-const room=makeRoom();room.visible=false;scene.add(room);
+let room=makeRoom(),passOn=false,roomSize=1;room.visible=false;scene.add(room);
 flatCamera();
 scene.add(new THREE.HemisphereLight(0xbfd0ff,0x1a1f3a,2.8));
 const sun=new THREE.DirectionalLight(0xffffff,2.2);sun.position.set(3,8,4);scene.add(sun);
@@ -90,9 +92,9 @@ function platform(z,col,parent){
   top.position.y=.06;g.add(top);
   const rim=new THREE.Mesh(new THREE.TorusGeometry(1.15,.035,8,48),new THREE.MeshBasicMaterial({color:col}));
   rim.rotation.x=Math.PI/2;rim.position.y=.12;g.add(rim);
-  g.position.z=z;parent.add(g);
+  g.position.z=z;parent.add(g);return Object.assign([mark.material,rim.material],{pad:g});
 }
-platform(PZ,YOU,env);platform(BZ,FOE,scene);
+const padYou=platform(PZ,YOU,env),padFoe=platform(BZ,FOE,scene);
 const pylons=new THREE.Group();env.add(pylons);
 for(let i=0;i<10;i++){            // distant pylons give the lane some depth
   const h=3+Math.random()*5,side=i%2?1:-1;
@@ -118,8 +120,8 @@ function rack(turned){                 // one of each weapon, only the one in us
 /* ---------- fighters ---------- */
 const pan=x=>clamp((x-you.head.x)/2.5,-1,1);
 const youBody=new THREE.Group(),foeBody=new THREE.Group();scene.add(youBody,foeBody);
-const youFig=makeBody(YOU,{skin:MAT.set('panel'),env:envTex,opacity:.5,face:-1,floor:.12,onStep:()=>sfx('step',0,.5)});
-const foeFig=makeBody(FOE,{skin:MAT.set('panel'),env:envTex,opacity:1,face:1,floor:.12,onStep:x=>sfx('step',pan(x),.22)});
+const youFig=makeBody(YOU,{outline:true,skin:MAT.set('panel'),env:envTex,opacity:1,face:-1,floor:.12,onStep:()=>sfx('step',0,.5)});
+const foeFig=makeBody(FOE,{outline:true,skin:MAT.set('panel'),env:envTex,opacity:1,face:1,floor:.12,onStep:x=>sfx('step',pan(x),.22)});
 scene.add(youFig.group,foeFig.group);
 const you={hp:MAX_HP,head:new V3(0,1.5,PZ),vel:new V3(),wins:0,push:new V3(),chillT:0,lk:0,beam:null};
 const foe={hp:MAX_HP,head:new V3(0,1.5,BZ),wins:0,held:null,cool:0,grabT:1,goal:new V3(0,1.5,BZ),wanderT:0,shield:shieldMesh(FOE),shieldP:0,netShield:null,netW:-1,netHands:null,netGh:-1,vel:new V3(),rack:rack(true),discs:[0,0,0,0],lean:0,wantAlt:0,discMesh:makeShot('disc',FOE),netDisc:false,shieldKey:'buckler',chillT:0,lkSeen:0,beamT:0,beamDir:new V3(0,0,1),beam:makeBeam(FOE),netBeam:null};
@@ -128,15 +130,16 @@ foe.rack.position.set(-.3,-.2,.15);foe.rack.scale.setScalar(1.5);foeBody.add(foe
 foeBody.add(foe.shield);
 
 function makeHand(parent,visPos,shieldPos){
-  const h={parent,held:null,cool:0,want:false,vis:rack(),shield:shieldMesh(YOU),shieldP:0,pad:null,kick:0,base:visPos,was:new V3(),v:new V3(),shieldKey:'buckler',down:false,charging:false,chargeT:0,beamT:0,beamDir:new V3(0,0,-1),beam:makeBeam(YOU),jet:false,disc:false,near:-1,discMesh:makeShot('disc',YOU)};
+  const h={parent,held:null,cool:0,want:false,vis:rack(),shield:shieldMesh(YOU),shieldP:0,pad:null,kick:0,base:visPos,was:new V3(),v:new V3(),shieldKey:'buckler',down:false,charging:false,chargeT:0,beamT:0,beamDir:new V3(0,0,-1),beam:makeBeam(YOU),jet:false,disc:false,wear:0,worn:-1,side:'right',near:-1,discMesh:makeShot('disc',YOU)};
   scene.add(h.beam);h.discMesh.visible=false;parent.add(h.discMesh);
   h.vis.position.copy(visPos);h.shield.position.copy(shieldPos);
   parent.add(h.vis);parent.add(h.shield);return h;
 }
 const flatHand=makeHand(youBody,new V3(.3,-.2,-.15),new V3(0,-.15,-.5));flatHand.vis.scale.setScalar(1.5);flatHand.discMesh.position.set(.32,-.25,-.25);
 const vrHands=[0,1].map(i=>{
+  const hand=i?'right':'left';
   const c=renderer.xr.getController(i);rig.add(c);
-  c.add(new THREE.Mesh(new THREE.SphereGeometry(.035,12,8),new THREE.MeshBasicMaterial({color:YOU})));
+  const dot=new THREE.Mesh(new THREE.SphereGeometry(.035,12,8),new THREE.MeshBasicMaterial({color:YOU}));c.add(dot);
   const h=makeHand(c,new V3(0,-.01,0),new V3(0,0,-.14));
   h.sight=new THREE.Mesh(new THREE.CylinderGeometry(.0012,.0012,5,6),new THREE.MeshBasicMaterial({color:YOU,transparent:true,opacity:.35,depthWrite:false}));
   h.sight.rotation.x=Math.PI/2;h.sight.position.set(0,.006,-2.7);h.sight.visible=false;c.add(h.sight);
@@ -146,7 +149,8 @@ const vrHands=[0,1].map(i=>{
   c.addEventListener('squeezeend',()=>{h.jet=false;});
   h.gauge=new THREE.Mesh(new THREE.BoxGeometry(.1,.008,.008),new THREE.MeshBasicMaterial({color:YOU}));h.gauge.position.set(0,.05,.04);h.gauge.visible=false;c.add(h.gauge);
   h.discMesh.position.set(0,0,-.06);
-  c.addEventListener('connected',e=>{h.pad=e.data&&e.data.gamepad||null;});
+  h.side=hand;h.dot=dot;
+  c.addEventListener('connected',e=>{h.pad=e.data&&e.data.gamepad||null;const k=e.data&&e.data.handedness;if(k==='left'||k==='right')h.side=k;});
   c.addEventListener('disconnected',()=>{h.pad=null;});
   return h;
 });
@@ -295,7 +299,7 @@ function tryStart(){
 function startMatch(){you.wins=0;foe.wins=0;menu.hidden=true;startRound();}
 function resetRound(){
   you.hp=foe.hp=MAX_HP;clock=ROUND_TIME;clearShots();overShown=false;say('');
-  [flatHand,...vrHands].forEach(h=>{h.held=null;h.shieldP=0;h.cool=0;h.want=false;h.charging=false;h.beamT=0;h.disc=false;});
+  [flatHand,...vrHands].forEach(h=>{h.held=null;h.shieldP=0;h.cool=0;h.want=false;h.charging=false;h.beamT=0;h.disc=false;h.wear=0;});
   for(const m of [jet,foeJet]){m.x=m.y=m.vx=m.vy=0;m.e=JET.energy;}rig.position.set(0,0,PZ);holst.forEach(o=>{o.t=0;});foe.discs.fill(0);foe.cool=1.5;foe.lean=0;foe.wantAlt=0;foe.netDisc=false;foe.netBurn=0;foe.netW=-1;foe.rack.userData.show(null);
   foe.held=null;foe.shieldP=0;foe.netShield=null;foe.netHands=null;foe.vel.set(0,0,0);you.push.set(0,0,0);tickAt=4;timers.length=0;you.chillT=foe.chillT=0;you.lk=0;foe.lkSeen=0;foe.beamT=0;foe.netBeam=null;foe.beam.visible=false;foe.grabT=1.2;foe.head.set(0,1.5,BZ);foe.goal.copy(foe.head);
   slots.forEach((s,i)=>{s.type=null;s.timer=.4+i*.5;});
@@ -325,6 +329,7 @@ const linked=()=>net.on&&net.lastRx>0;
 function closeLink(){
   if(net.link){try{net.link.close();}catch(e){}}
   net.link=null;net.on=false;net.lastRx=0;net.lastQ=0;
+  if(foe.netTint!==undefined){foe.netTint=undefined;setTints(tint,3);}
 }
 function openLink(role,code){
   closeLink();
@@ -350,7 +355,7 @@ function tx(){
   const s=[];
   for(const p of shots)if(p.owner===you&&!p.dead&&s.length<30)
     s.push([p.id,SHOTS.indexOf(p.key),r2(p.pos.x),r2(p.pos.y),r2(p.pos.z),r2(p.vel.x),r2(p.vel.y),r2(p.vel.z),ALL.indexOf(p.gun),r2(p.pow)]);
-  const pk={q:Date.now(),r:net.role,rn:roundNo,h:[r2(you.head.x),r2(you.head.y),r2(you.head.z)],hp:Math.round(you.hp),sh,sp,sk,s,k:kills.slice(-30),w:-1,lk:r2(you.lk),bm:0};
+  const pk={q:Date.now(),r:net.role,rn:roundNo,h:[r2(you.head.x),r2(you.head.y),r2(you.head.z)],hp:Math.round(you.hp),sh,sp,sk,s,k:kills.slice(-30),w:-1,lk:r2(you.lk),bm:0,cl:tint};
   if(you.beam){const b=you.beam;pk.bm=[r2(b.o.x),r2(b.o.y),r2(b.o.z),Math.round(b.d.x*1e3)/1e3,Math.round(b.d.y*1e3)/1e3,Math.round(b.d.z*1e3)/1e3];}
   pk.gh=-1;pk.hd=hands().map((h,i)=>{
     const busy=h.held||h.shieldP>0;if(busy)pk.gh=i;if(h.held)pk.w=KEYS.indexOf(h.held.key);
@@ -358,7 +363,7 @@ function tx(){
     (mode==='vr'?h.parent:h.disc?h.discMesh:h.vis).getWorldPosition(tmp);return [r2(tmp.x),r2(tmp.y),r2(tmp.z)];
   });
   if(game==='disc'){pk.dk=0;hands().forEach((h,i)=>{if(h.disc){pk.dk=1;pk.gh=i;}});pk.jb=you.burn||0;}
-  if(net.role==='host')pk.ph=[PH.indexOf(state),r2(timer),r2(clock),you.wins,foe.wins,roundNo,result,game==='disc'?1:0];
+  if(net.role==='host')pk.ph=[PH.indexOf(state),r2(timer),r2(clock),you.wins,foe.wins,roundNo,result,game==='disc'?1:0,roomSize];
   net.link.send(pk);
 }
 function rx(pk){                           // everything in here is untrusted input from the other player
@@ -369,6 +374,7 @@ function rx(pk){                           // everything in here is untrusted in
   const h=Array.isArray(pk.h)?pk.h:[];      // the rival's world is ours turned half a turn about the centre
   if(game==='disc')foe.goal.set(clamp(-num(h[0]),-ROOM.x,ROOM.x),clamp(num(h[1]),.3,ROOM.y),clamp(-num(h[2]),BZ-1.5,BZ+1.5));
   else foe.goal.set(clamp(-num(h[0]),-1.6,1.6),clamp(num(h[1]),.3,2.4),clamp(-num(h[2]),BZ-1.3,BZ+1.3));
+  if(TINTS[pk.cl]&&pk.cl!==foe.netTint){foe.netTint=pk.cl;setTints(tint,pk.cl);}
   foe.netDisc=!!pk.dk;foe.netBurn=clamp(num(pk.jb),0,2);
   if(net.role==='guest'&&Array.isArray(pk.ph))follow(pk.ph);
   if(pk.rn===roundNo)foe.hp=clamp(num(pk.hp),0,MAX_HP);
@@ -395,6 +401,7 @@ function rx(pk){                           // everything in here is untrusted in
 function follow(ph){                       // the guest mirrors the host's round state
   const st=PH[ph[0]]||'menu',rn=num(ph[5]),was=state;
   if((ph[7]?'disc':'duel')!==game)setGame(ph[7]?'disc':'duel');
+  if(SIZES[ph[8]]&&ph[8]!==roomSize)sizeRoom(ph[8]);
   timer=num(ph[1]);clock=num(ph[2]);foe.wins=num(ph[3]);you.wins=num(ph[4]);
   if(st===state&&rn===roundNo)return;
   roundNo=rn;state=st;
@@ -459,41 +466,71 @@ function beamOn(who,holders,o,d,dt,col){   // a beam burns a shield in its way f
     if((searT-=dt)<=0){searT=.25;burst(bT2,col,false);if(who===you){flash.style.opacity=.6;setTimeout(()=>{flash.style.opacity=0;},90);sfx('hurt',0,.5);}else sfx('hit',pan(foe.head.x),.6);}
   }
 }
+let tint=0,foeTint=3;
+function redisc(o,col,scale){             // a disc is made in its colour, so a new colour is a new disc
+  const old=o.discMesh||o.m,m=makeShot('disc',col);m.position.copy(old.position);m.visible=old.visible;if(scale)m.scale.setScalar(scale);
+  old.parent.add(m);old.parent.remove(old);if(o.discMesh)o.discMesh=m;else o.m=m;o.worn=-1;
+}
+function setTints(mine,theirs){           // your colour is yours to pick; a rival who picked the same is shown in another
+  tint=TINTS[mine]?mine:0;foeTint=TINTS[theirs]?theirs:3;if(foeTint===tint)foeTint=tint===3?0:3;
+  YOU=TINTS[tint];FOE=TINTS[foeTint];
+  youFig.tone(YOU);foeFig.tone(FOE);
+  for(const h of [flatHand,...vrHands]){h.shield.userData.tone(YOU);h.beam.userData.tone(YOU);redisc(h,YOU);if(h.sight)h.sight.material.color.setHex(YOU);if(h.dot)h.dot.material.color.setHex(YOU);}
+  foe.shield.userData.tone(FOE);foe.beam.userData.tone(FOE);redisc(foe,FOE);holst.forEach(o=>redisc(o,YOU,.8));
+  padYou.forEach(m=>m.color.setHex(YOU));padFoe.forEach(m=>m.color.setHex(FOE));mark.material.color.setHex(YOU);
+  const css=n=>'#'+n.toString(16).padStart(6,'0');
+  document.documentElement.style.setProperty('--you',css(YOU));document.documentElement.style.setProperty('--foe',css(FOE));
+  document.querySelectorAll('#tint .dab').forEach(b=>b.setAttribute('aria-pressed',String(+b.dataset.c===tint)));
+}
+function sizeRoom(i){                     // small, medium or large: the room is built again at its new size
+  roomSize=SIZES[i]?i:1;setRoom(roomSize);scene.remove(room);room=makeRoom();room.visible=game==='disc';room.userData.fade(passOn);scene.add(room);
+  if(game==='disc')board.position.set(0,ROOM.y-1.6,-ROOM.z+.1);
+  for(const m of [jet,foeJet])m.x=clamp(m.x,-ROOM.x+.6,ROOM.x-.6);
+  document.querySelectorAll('#size .seg').forEach(b=>b.setAttribute('aria-pressed',String(+b.dataset.s===roomSize)));
+}
 function setGame(g){                      // duel: the open lane and its pickups; disc: the closed room, discs and the jetpack
   game=g==='disc'?'disc':'duel';const disc=game==='disc';
-  room.visible=disc;pylons.visible=!disc;board.position.set(0,disc?5.4:3.9,disc?-ROOM.z+.1:BZ-1.5);
+  room.visible=disc;pylons.visible=!disc;floor.visible=grid.visible=!disc;board.position.set(0,disc?ROOM.y-1.6:3.9,disc?-ROOM.z+.1:BZ-1.5);
+  padYou.pad.visible=padFoe.pad.visible=!disc;youFig.stand(disc?.02:.12);foeFig.stand(disc?.02:.12);$('size').hidden=!disc;
   jet.x=jet.y=jet.vx=jet.vy=0;rig.position.set(0,0,PZ);
   for(const h of [flatHand,...vrHands]){h.vis.userData.show(null);h.shield.visible=false;h.beam.visible=false;h.discMesh.visible=false;if(h.sight)h.sight.visible=false;if(h.gauge)h.gauge.visible=false;}
   for(const s of slots)s.mesh.visible=false;for(const o of holst)o.m.visible=false;mark.visible=false;foe.discMesh.visible=false;
   document.querySelectorAll('#game .seg').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.g===game)));
   $('howDuel').hidden=disc;$('howDisc').hidden=!disc;lastWeapon='?';
 }
-function throwDisc(owner,from,vel){
-  const s=spawn(owner,'disc',from.clone(),vel);if(owner===you){s.id=shotId++;mine.set(s.id,s);}
+function throwDisc(owner,from,vel,used=0){ // used: the bounces a disc has already spent, blocking in the hand
+  const s=spawn(owner,'disc',from.clone(),vel);s.hits=used;if(owner===you){s.id=shotId++;mine.set(s.id,s);}
   sfx('whoosh',pan(from.x),owner===you?.9:.5);fired.disc=(fired.disc||0)+1;return s;
 }
 function reachDisc(at,r){                 // the rival's nearest disc within reach of a point
   let best=null,bd=r;for(const p of shots)if(!p.dead&&p.owner===foe&&p.walls){const d=p.pos.distanceTo(at);if(d<bd){bd=d;best=p;}}
   return best;
 }
-function deflect(p,vel,h){                // their disc, knocked away, is yours
-  killRemote(p);p.gone=true;throwDisc(you,p.pos,vel);sfx('block',pan(p.pos.x));burst(p.pos,YOU,false);if(h)buzz(h,70);
+function deflect(p,vel,h){                // their disc, knocked away, is yours; the disc that did it has spent a bounce
+  killRemote(p);p.gone=true;throwDisc(you,p.pos,vel);sfx('block',pan(p.pos.x));burst(p.pos,YOU,false);
+  if(!h)return;
+  buzz(h,70);
+  if(++h.wear>=3){h.disc=false;h.wear=0;h.cool=.4;sfx('break');burst(h.discMesh.getWorldPosition(new V3()),YOU,true);buzz(h,160);}   // the third block is its last
+}
+const WEAR=[0xffffff,0xffd166,0xff5a4d];
+function wearLook(h){                     // a disc in the hand shows the bounces it has left: white, amber, red
+  if(h.worn===h.wear)return;h.worn=h.wear;
+  h.discMesh.traverse(o=>{if(o.isMesh&&!o.material.transparent)o.material.color.setHex(WEAR[Math.min(2,h.wear)]);});
 }
 function grab(h,at,catchR,missR){         // an empty hand closing on a disc in flight: caught if the timing is right, a hit on you if not
   const got=reachDisc(at,catchR);
-  if(got){killRemote(got);got.gone=true;h.disc=true;h.cool=0;sfx('pickup');buzz(h,90);return;}
+  if(got){killRemote(got);got.gone=true;h.disc=true;h.wear=Math.min(2,got.hits);h.cool=0;sfx('pickup');buzz(h,90);return;}
   const miss=reachDisc(at,missR);if(miss){killRemote(miss);strike(you,miss);}
 }
 let jetHum=0;
 function updateDiscPlayer(dt){
   you.beam=null;const vr=mode==='vr',play=state==='play';
-  const thrust=!play?0:vr?vrHands.filter(h=>h.jet).length:keys.Space?(keys.ShiftLeft||keys.ShiftRight?2:1):0;
-  let lean=vr?camera.position.x:(keys.KeyD||keys.ArrowRight?1:0)-(keys.KeyA||keys.ArrowLeft?1:0);
-  if(vr)lean=Math.abs(lean)<.07?0:clamp((lean-Math.sign(lean)*.07)/.22,-1,1);
-  const on=fly(jet,thrust,play?lean:0,dt,vr?0:1);
-  if(on&&(jetHum-=dt)<=0){jetHum=.22;sfx('step',0,.35*thrust);vrHands.forEach(h=>{if(h.jet)buzz(h,40);});}
-  if(vr){rig.position.set(jet.x,jet.y,PZ);you.head.copy(camera.position).add(rig.position);}
-  else{you.head.set(jet.x,JET.head+jet.y,PZ);rig.position.set(jet.x*.85,jet.y*.85,PZ);}
+  const side=k=>vrHands.some(h=>h.jet&&h.side===k)?1:0;      // each grip pushes you to its own side
+  const dir=!play?0:vr?side('right')-side('left'):(keys.KeyD||keys.ArrowRight?1:0)-(keys.KeyA||keys.ArrowLeft?1:0);
+  const on=boost(jet,dir,dt,vr?0:1),thrust=1;
+  if(on&&(jetHum-=dt)<=0){jetHum=.22;sfx('step',0,.35);vrHands.forEach(h=>{if(h.jet)buzz(h,40);});}
+  if(vr){rig.position.set(jet.x,0,PZ);you.head.copy(camera.position).add(rig.position);}
+  else{you.head.set(jet.x,JET.head,PZ);rig.position.set(jet.x*.85,0,PZ);}
   youBody.position.copy(you.head);youBody.visible=!vr;
   tmp.copy(you.head).sub(prevHead).divideScalar(Math.max(dt,.001));you.vel.lerp(tmp,.2);prevHead.copy(you.head);
   holst.forEach((o,i)=>{o.t-=dt;o.at.set(you.head.x+HOLSTERS[i][0],you.head.y+HOLSTERS[i][1],you.head.z+HOLSTERS[i][2]);o.m.position.copy(o.at);o.m.visible=o.t<=0;if(o.m.userData.tick)o.m.userData.tick(dt*.2);});
@@ -507,41 +544,44 @@ function updateDiscPlayer(dt){
       if(vr){
         let near=-1;if(!h.disc)holst.forEach((o,i)=>{if(o.t<=0&&o.at.distanceTo(at)<.24)near=i;});
         if(near>=0&&near!==h.near)buzz(h,20);h.near=near;
-        if(h.want&&near>=0){h.disc=true;holst[near].t=3;sfx('pickup');buzz(h,40);}
-        else if(h.want&&!h.disc)grab(h,at,.3,.75);
+        if(h.want&&near>=0){h.disc=true;h.wear=0;holst[near].t=3;sfx('pickup');buzz(h,40);}
+        else if(h.want&&!h.disc)grab(h,at,.42,.8);
         else if(h.disc&&!h.down){                // let go: a swing throws it, a still hand drops it
           h.disc=false;const sp=h.v.length();
-          if(sp>1.5)throwDisc(you,at,h.v.clone().multiplyScalar(1.5).clampLength(5,14));else sfx('pop');
+          if(sp>1.5)throwDisc(you,at,h.v.clone().multiplyScalar(1.5).clampLength(5,14),h.wear);else sfx('pop');
         }
       }else{
-        if(!h.disc&&h.cool<=0){const i=holst.findIndex(o=>o.t<=0);if(i>=0){h.disc=true;holst[i].t=3;sfx('pickup',0,.5);}}
+        if(!h.disc&&h.cool<=0){const i=holst.findIndex(o=>o.t<=0);if(i>=0){h.disc=true;h.wear=0;holst[i].t=3;sfx('pickup',0,.5);}}
         if(h.parry){                          // on a screen one press does it: knock it back with the disc you hold, or catch it bare-handed
-          const chest=tmp.copy(you.head);chest.y-=.3;const p=reachDisc(chest,1.3);
+          const chest=tmp.copy(you.head);chest.y-=.3;const p=reachDisc(chest,1.7);
           if(p&&h.disc)deflect(p,bank(p.pos,foe.head,Math.max(W.disc.speed,p.vel.length()),0),h);
-          else if(!h.disc)grab(h,chest.clone(),1.3,2.6);
-          else{const miss=reachDisc(chest,2.6);if(miss){killRemote(miss);strike(you,miss);}}
+          else if(!h.disc)grab(h,chest.clone(),1.7,2.8);
+          else{const miss=reachDisc(chest,2.8);if(miss){killRemote(miss);strike(you,miss);}}
         }
-        if(h.want&&h.disc){h.disc=false;h.cool=.3;throwDisc(you,at,tmp.copy(aimAt).sub(at).setLength(W.disc.speed).clone());}
+        if(h.want&&h.disc){h.disc=false;h.cool=.3;throwDisc(you,at,tmp.copy(aimAt).sub(at).setLength(W.disc.speed).clone(),h.wear);}
       }
     }else h.disc=false;
-    h.want=false;h.parry=false;h.discMesh.visible=h.disc;if(h.disc&&h.discMesh.userData.tick)h.discMesh.userData.tick(dt*.3);
+    h.want=false;h.parry=false;h.discMesh.visible=h.disc;wearLook(h);if(h.disc&&h.discMesh.userData.tick)h.discMesh.userData.tick(dt*.3);
     if(h.gauge){h.gauge.visible=play;h.gauge.scale.x=Math.max(.02,jet.e/JET.energy);h.gauge.material.color.setHex(jet.e>3?YOU:0xff5a4d);}
   }
   return on?thrust:0;
 }
 function updateDiscBot(dt){
-  let dodge=0,rise=false;                 // step aside from a disc on its way, by its present line
+  let dodge=0;                 // step aside from a disc on its way, by its present line
   for(const p of shots){
     if(p.owner!==you||p.vel.z>=0)continue;
     const t=(p.pos.z-BZ)/-p.vel.z;if(t<0||t>diff.window)continue;
     const px=p.pos.x+p.vel.x*t,py=p.pos.y+p.vel.y*t;
-    if(Math.abs(px-foe.head.x)<.7&&py>foe.head.y-1.2&&py<foe.head.y+.5){dodge=px>foe.head.x?-1:1;rise=py<foe.head.y-.4;}
+    if(Math.abs(px-foe.head.x)<.7&&py>foe.head.y-1.2&&py<foe.head.y+.5)dodge=px>foe.head.x?-1:1;
   }
-  if((foe.wanderT-=dt)<=0){foe.wanderT=1.5+Math.random()*2.5;foe.lean=(Math.random()*2-1)*.7;foe.wantAlt=Math.random()<.5?0:.5+Math.random()*3;}
+  if((foe.wanderT-=dt)<=0){foe.wanderT=1.5+Math.random()*2.5;foe.lean=Math.random()<.4?0:Math.random()<.5?-1:1;}
   if(Math.abs(foeJet.x)>ROOM.x-1.4&&Math.sign(foeJet.x)===Math.sign(foe.lean))foe.lean*=-1;
-  const thrust=rise?2:foeJet.y<foe.wantAlt-.2?1:0;
-  const on=fly(foeJet,thrust,clamp(dodge||foe.lean,-1,1)*Math.min(1,diff.speed/1.6),dt,1);
-  foe.head.set(foeJet.x,JET.head+foeJet.y,BZ);foeBody.position.copy(foe.head);
+  const thrust=1,on=dodge?boost(foeJet,dodge,dt,1):false;      // it boosts out of a disc's way, and paces between throws
+  if(!dodge){
+    foeJet.e=Math.min(JET.energy,foeJet.e+JET.refill*dt);foeJet.vx+=(foe.lean*JET.walk*Math.min(1,diff.speed/1.5)-foeJet.vx)*Math.min(1,dt*6);
+    foeJet.x=clamp(foeJet.x+foeJet.vx*dt,-ROOM.x+.6,ROOM.x-.6);
+  }
+  foe.head.set(foeJet.x,JET.head,BZ);foeBody.position.copy(foe.head);
   for(let i=0;i<4;i++)foe.discs[i]-=dt;
   const ready=foe.discs.findIndex(t=>t<=0);foe.discMesh.visible=ready>=0;
   if((foe.cool-=dt)<=0&&ready>=0){
@@ -762,8 +802,8 @@ function idleText(){
 function drawBoard(){
   bx.clearRect(0,0,1024,256);bx.fillStyle='rgba(13,19,38,.85)';bx.fillRect(0,0,1024,256);
   bx.fillStyle='#18224a';bx.fillRect(40,40,380,36);bx.fillRect(604,40,380,36);
-  bx.fillStyle='#3fd6e0';bx.fillRect(40,40,380*you.hp/MAX_HP,36);
-  bx.fillStyle='#ff7a59';const fw=380*foe.hp/MAX_HP;bx.fillRect(984-fw,40,fw,36);
+  bx.fillStyle='#'+YOU.toString(16).padStart(6,'0');bx.fillRect(40,40,380*you.hp/MAX_HP,36);
+  bx.fillStyle='#'+FOE.toString(16).padStart(6,'0');const fw=380*foe.hp/MAX_HP;bx.fillRect(984-fw,40,fw,36);
   bx.fillStyle='#eef1ff';bx.textAlign='center';bx.font='700 64px system-ui,sans-serif';
   bx.fillText(fmt(clock),512,84);
   bx.font='500 30px system-ui,sans-serif';bx.fillStyle='#a3aedb';
@@ -776,8 +816,8 @@ function updateHud(dt){
   hpYou.style.width=(you.hp/MAX_HP*100)+'%';hpFoe.style.width=(foe.hp/MAX_HP*100)+'%';
   clockEl.textContent=fmt(clock);scoreEl.textContent=you.wins+' – '+foe.wins;
   if(game==='disc'){
-    const n=holst.filter(o=>o.t<=0).length+(flatHand.disc?1:0),label='d'+n+Math.round(jet.e*4);
-    if(label!==lastWeapon){lastWeapon=label;weaponEl.innerHTML='Discs '+n+' · Jet '+Math.round(jet.e/JET.energy*100)+'%<small>Click throws at the mark · F or right-click knocks a disc back or catches it · Space lifts, Shift faster · A and D slide</small>';}
+    const n=holst.filter(o=>o.t<=0).length+(flatHand.disc?1:0),label='d'+n+Math.round(jet.e*4)+(flatHand.disc?flatHand.wear:'-');
+    if(label!==lastWeapon){lastWeapon=label;weaponEl.innerHTML='Discs '+n+' · Boost '+Math.round(jet.e/JET.energy*100)+'%'+(flatHand.disc?' · '+(2-flatHand.wear)+' bounce'+(flatHand.wear===1?'':'s')+' left':'')+'<small>Click throws at the mark · F or right-click knocks a disc back or catches it · A and D boost you sideways</small>';}
     if((boardT-=dt)<=0){boardT=.15;drawBoard();}
     return;
   }
@@ -825,6 +865,7 @@ function update(dt,now){
   const shown=disc?foe.discMesh.visible:foe.rack.children.some(m=>m.visible);
   foeFig.update(dt,foe.head,net.on&&foe.netHands?foe.netHands:[shown?(disc?foe.discMesh:foe.rack).getWorldPosition(gripB):null,null],foeBurn);
   if(!disc)updateSlots(dt,now);
+  board.visible=mode==='vr';              // the headset's scoreboard; a screen has the page's own
   updateFx(dt);updateFalling(dt);updateHud(dt);
   if(net.on&&net.link&&(net.sendT-=dt)<=0){net.sendT=1/15;tx();}
 }
@@ -867,6 +908,14 @@ window.addEventListener('keydown',e=>{
   if(e.code==='KeyE'&&game==='duel')flatHand.drop=true;
 });
 startBtn.addEventListener('click',tryStart);
+TINTS.forEach((c,i)=>{
+  const b=document.createElement('button');b.type='button';b.className='dab';b.dataset.c=i;b.id='tint'+i;b.style.background='#'+c.toString(16).padStart(6,'0');
+  b.setAttribute('aria-label','Colour '+(i+1));b.setAttribute('aria-pressed','false');
+  b.addEventListener('click',()=>{setTints(i,net.on&&foe.netTint!==undefined?foe.netTint:3);try{localStorage.setItem('qzar-tint',i);}catch(e){}});
+  $('tint').appendChild(b);
+});
+{let saved=0;try{saved=+localStorage.getItem('qzar-tint')||0;}catch(e){}setTints(saved,3);}
+document.querySelectorAll('#size .seg').forEach(b=>b.addEventListener('click',()=>{if(isGuest())return setStatus('Your rival hosts this duel and picks the room.');if(state==='menu'||state==='over')sizeRoom(+b.dataset.s);}));
 document.querySelectorAll('#game .seg').forEach(b=>b.addEventListener('click',()=>{if(isGuest())return setStatus('Your rival hosts this duel and picks the game.');if(state==='menu'||state==='over')setGame(b.dataset.g);}));
 function press(sel,b){document.querySelectorAll(sel).forEach(x=>x.setAttribute('aria-pressed',String(x===b)));}
 document.querySelectorAll('#diff .seg').forEach(b=>b.addEventListener('click',()=>{diff=DIFF[b.dataset.d];press('#diff .seg',b);}));
@@ -897,10 +946,10 @@ async function enterXR(kind){
     renderer.xr.setReferenceSpaceType('local-floor');
     await renderer.xr.setSession(session);
     mode='vr';camera.position.set(0,0,0);camera.rotation.set(0,0,0);placeSlots();menu.hidden=true;
-    env.visible=!pass;scene.background=pass?null:bgColor;scene.fog=pass?null:fog;room.userData.walls.visible=!pass;
+    env.visible=!pass;scene.background=pass?null:bgColor;scene.fog=pass?null:fog;passOn=pass;room.userData.fade(pass);
     if(pass)renderer.setClearColor(0x000000,0);
     session.addEventListener('end',()=>{
-      mode='flat';env.visible=true;scene.background=bgColor;scene.fog=fog;room.userData.walls.visible=true;
+      mode='flat';env.visible=true;scene.background=bgColor;scene.fog=fog;passOn=false;room.userData.fade(false);
       flatCamera();placeSlots();resize();
       if(state==='menu'||state==='over'){say('');menu.hidden=false;}
     });
@@ -914,4 +963,4 @@ mrBtn.addEventListener('click',()=>enterXR('immersive-ar'));
   vrBtn.hidden=!vr;mrBtn.hidden=!mr;
   if(!vr&&!mr)note.textContent='VR and passthrough buttons appear when this page is opened directly in a headset browser over HTTPS.';
 })();
-window.__qzar={setGame,jet,holst,throwDisc,ROOM,get game(){return game;},W,ALL,fired,flatHand,setHeld,spawn,V3,scene,camera,makeGun,makeShield,makeShot,you,foe,shots,net,get state(){return state;},get round(){return roundNo;},hurt};
+window.__qzar={sizeRoom,setTints,TINTS,get tints(){return [YOU,FOE];},setGame,jet,holst,throwDisc,ROOM,get game(){return game;},W,ALL,fired,flatHand,setHeld,spawn,V3,scene,camera,makeGun,makeShield,makeShot,you,foe,shots,net,get state(){return state;},get round(){return roundNo;},hurt};

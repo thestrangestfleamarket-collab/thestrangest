@@ -1,4 +1,4 @@
-// THE SLOWFIRE CHECK: node tests/qzar.cjs [dist/qzar.html]. SLOWFIRE DUEL starts, a round against the bot begins and ends when the bot's health is gone, the shield holds until its power is spent, a gun can be dropped or thrown, every weapon fires, the mirror sends a shot back, in the disc arena a disc bounces twice then breaks and the jetpack lifts, spends and refills, and two linked pages see each other's shots and agree on who won the round; no page errors.
+// THE SLOWFIRE CHECK: node tests/qzar.cjs [dist/qzar.html]. SLOWFIRE DUEL starts, a round against the bot begins and ends when the bot's health is gone, the shield holds until its power is spent, a gun can be dropped or thrown, every weapon fires, the mirror sends a shot back, in the disc arena a disc bounces twice then breaks the boost carries you sideways, and a disc that blocks spends its bounces, and two linked pages see each other's shots and agree on who won the round; no page errors.
 const { chromium } = require('playwright'), path = require('path'), fs = require('fs');
 const fails = [], ok = (c, m) => { if (!c) { fails.push(m); console.log((process.env.GITHUB_ACTIONS ? '::error title=qzar::' : 'FAIL ') + m); } else console.log('ok   ' + m); };
 const PAGE = path.resolve(process.argv[2] || 'dist/qzar.html'), ROOT = path.dirname(PAGE);
@@ -11,6 +11,8 @@ const srv = require('http').createServer((q, r) => { const f = path.join(ROOT, d
   const open = async hash => { const pg = await ctx.newPage(); pg.on('pageerror', e => errs.push(e.message.slice(0, 300))); await pg.goto(URL + hash); await pg.waitForFunction(() => !!window.__qzar, null, { timeout: 60000 }).catch(() => {}); return pg; };
   const until = (pg, fn, arg) => pg.waitForFunction(fn, arg, { polling: 50, timeout: 60000 }).then(() => true, () => false);
   const pg = await open('');
+  await pg.click('#tint4');
+  ok(await pg.evaluate(() => __qzar.tints[0] === __qzar.TINTS[4] && getComputedStyle(document.documentElement).getPropertyValue('--you').trim() === '#ff5fa2'), 'you pick your colour');
   await pg.click('#start');
   ok(await until(pg, () => __qzar.state === 'play'), 'the page starts and a round against the bot begins');
   await pg.evaluate(() => { __qzar.foe.grabT = 1e9; __qzar.setHeld(__qzar.flatHand, 'buckler'); });
@@ -41,15 +43,16 @@ const srv = require('http').createServer((q, r) => { const f = path.join(ROOT, d
   ok(await until(pg, () => __qzar.round === 2 && __qzar.state === 'play'), 'and the next round begins');
   await pg.close();
   const dp = await open('');
-  await dp.click('#gDisc'); await dp.click('#start');
+  await dp.click('#gDisc'); await dp.click('#size0');
+  ok(await dp.evaluate(() => __qzar.ROOM.x === 3 && __qzar.ROOM.y === 5), 'you pick the size of the room');
+  await dp.click('#size1'); await dp.click('#start');
   ok(await until(dp, () => __qzar.state === 'play' && __qzar.game === 'disc'), 'the disc arena starts a round');
   await dp.evaluate(() => { const q = __qzar; q.foe.discs.fill(1e9); window.d = q.throwDisc(q.you, new q.V3(0, 3, 0), new q.V3(9, 0, 0)); });
   ok(await until(dp, () => d.hits === 2 && !d.dead), 'a disc bounces off two walls');
   ok(await until(dp, () => d.dead && d.hits === 3), 'and breaks on the third');
-  await dp.keyboard.down('Space'); await dp.waitForTimeout(900); const up = await dp.evaluate(() => [__qzar.jet.y, __qzar.jet.e, __qzar.jet.vy]);
-  await dp.keyboard.down('ShiftLeft'); await dp.waitForTimeout(500); const fast = await dp.evaluate(() => __qzar.jet.vy); await dp.keyboard.up('ShiftLeft'); await dp.keyboard.up('Space');
-  ok(up[0] > .5 && up[1] < 10 && fast > up[2] * 1.4, 'the jetpack lifts you, spends its energy, and lifts faster with both (' + up.map(v => v.toFixed(1)) + ', ' + fast.toFixed(1) + ')');
-  ok(await until(dp, () => __qzar.jet.y === 0 && __qzar.jet.e > 9.9), 'you come down and it refills on the ground');
+  await dp.keyboard.down('KeyD'); await dp.waitForTimeout(900); const went = await dp.evaluate(() => [__qzar.jet.x, __qzar.jet.y, __qzar.jet.e]); await dp.keyboard.up('KeyD');
+  ok(went[0] > 1.5 && went[1] === 0 && went[2] < 10, 'the boost carries you sideways, spends its energy, and never lifts you (' + went.map(v => v.toFixed(1)) + ')');
+  ok(await until(dp, () => __qzar.jet.e > 9.9), 'and it refills when you let go');
   await dp.mouse.click(200, 100);
   ok(await until(dp, () => __qzar.shots.some(s => s.key === 'disc' && s.owner === __qzar.you)) && await until(dp, () => __qzar.holst.filter(o => o.t <= 0).length === 4), 'a click throws a disc and it comes back to its holster');
   await dp.evaluate(() => { const q = __qzar; q.shots.forEach(s => { s.dead = s.gone = true; }); q.foe.hp = 100; q.throwDisc(q.you, new q.V3(q.foe.head.x, q.foe.head.y - .3, q.foe.head.z + .6), new q.V3(0, 0, -9)); });
@@ -57,17 +60,26 @@ const srv = require('http').createServer((q, r) => { const f = path.join(ROOT, d
   const incoming = d => dp.evaluate(d => { const q = __qzar; q.shots.forEach(s => { s.dead = s.gone = true; }); q.you.hp = 100; q.throwDisc(q.foe, new q.V3(q.you.head.x, q.you.head.y - .3, q.you.head.z - d), new q.V3(0, 0, .01)); }, d);
   await incoming(.9); await dp.evaluate(() => { __qzar.flatHand.disc = true; }); await dp.keyboard.press('KeyF');
   ok(await until(dp, () => __qzar.shots.some(s => s.key === 'disc' && s.owner === __qzar.you && s.vel.z < -5)) && await dp.evaluate(() => __qzar.you.hp === 100), 'a disc in your hand knocks theirs back');
+  ok(await dp.evaluate(() => __qzar.flatHand.wear === 1), 'and that block spends one of its bounces');
+  await dp.evaluate(() => { __qzar.shots.forEach(s => { s.dead = s.gone = true; }); }); await dp.mouse.click(200, 100);
+  ok(await until(dp, () => __qzar.shots.some(s => s.key === 'disc' && s.owner === __qzar.you && s.hits === 1)), 'thrown, it has one bounce left');
+  await incoming(.9); await dp.evaluate(() => { const q = __qzar; q.flatHand.disc = true; q.flatHand.wear = 2; q.flatHand.cool = 9; q.holst.forEach(o => { o.t = 9; }); }); await dp.keyboard.press('KeyF');
+  ok(await until(dp, () => !__qzar.flatHand.disc && __qzar.shots.some(s => s.owner === __qzar.you && s.vel.z < -5)) && await dp.evaluate(() => __qzar.you.hp === 100), 'a third block still works, then the disc shatters in the hand');
   await incoming(.9); await dp.evaluate(() => { const q = __qzar; q.flatHand.disc = false; q.flatHand.cool = 9; q.holst.forEach(o => { o.t = 9; }); }); await dp.waitForTimeout(100); await dp.keyboard.press('KeyF');
   ok(await until(dp, () => __qzar.flatHand.disc) && await dp.evaluate(() => __qzar.you.hp === 100), 'an empty hand catches one that is close enough');
   await incoming(2); await dp.evaluate(() => { const q = __qzar; q.flatHand.disc = false; q.flatHand.cool = 9; }); await dp.waitForTimeout(100); await dp.keyboard.press('KeyF');
   ok(await until(dp, () => __qzar.you.hp === 75), 'a catch tried too early counts as a hit');
   await dp.close();
   const A = await open('#local'), B = await open('#local');
+  await A.click('#tint5'); await B.click('#tint5');
   await A.click('#oNet'); await A.click('#host'); const code = await A.inputValue('#code');
   await B.click('#oNet'); await B.fill('#code', code); await B.click('#join');
   ok(await until(A, () => __qzar.net.lastRx > 0) && await until(B, () => __qzar.net.lastRx > 0), 'two pages link by the code');
   await A.click('#start');
   ok(await until(A, () => __qzar.state === 'play') && await until(B, () => __qzar.state === 'play'), 'the host starts the round for both');
+  ok(await B.evaluate(() => __qzar.tints[0] === __qzar.TINTS[5] && __qzar.tints[1] !== __qzar.TINTS[5]), 'a rival who picked your colour is shown in another');
+  await B.evaluate(() => __qzar.setTints(1, 5));
+  ok(await B.evaluate(() => __qzar.tints[1] === __qzar.TINTS[5]), "otherwise the rival wears the colour they picked");
   let seen = false;
   await A.evaluate(() => __qzar.setHeld(__qzar.flatHand, 'pip'));
   for (let i = 0; i < 20 && !seen; i++) { await A.mouse.click(200, 120); await A.waitForTimeout(250); seen = await B.evaluate(() => __qzar.shots.some(s => s.far)); }

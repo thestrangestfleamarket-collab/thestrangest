@@ -254,7 +254,9 @@ function makeShield(col) {
   const fill = put(g, new THREE.CircleGeometry(.32, 40), new THREE.MeshBasicMaterial({ color: col, opacity: .12, ...add }));
   const rim = put(g, tor(.32, .008, 48), new THREE.MeshBasicMaterial({ color: col, transparent: true }));
   const gauge = put(g, new THREE.RingGeometry(.34, .375, 48), new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: .9, side: THREE.DoubleSide, depthWrite: false })); let step = -1;
-  g.userData.kind = mirror => { face.material.color.set(mirror ? 0xf2f6ff : col); rim.material.color.set(mirror ? 0xffffff : col); fill.material.opacity = mirror ? .3 : .12; };
+  let mir = false;
+  g.userData.kind = mirror => { mir = mirror; face.material.color.set(mirror ? 0xf2f6ff : col); fill.material.color.set(col); rim.material.color.set(mirror ? 0xffffff : col); fill.material.opacity = mirror ? .3 : .12; };
+  g.userData.tone = c => { col = c; g.userData.kind(mir); };
   g.userData.life = f => {                           // the bright arc round the rim is the power left
     f = Math.max(0, Math.min(1, f)); const n = Math.ceil(f * 30);
     if (n !== step) { step = n; gauge.geometry.dispose(); gauge.geometry = new THREE.RingGeometry(.34, .375, 48, 1, Math.PI / 2, Math.max(.001, n / 30 * Math.PI * 2)); gauge.material.color.setHex(f > .5 ? 0xffffff : f > .25 ? 0xffd166 : 0xff5a4d); }
@@ -300,6 +302,7 @@ function makeShot(key, col) {
 function makeBeam(col) {
   const g = new THREE.Group(), a = new THREE.CylinderGeometry(.012, .012, 1, 8), b = new THREE.CylinderGeometry(.04, .04, 1, 8); a.translate(0, .5, 0); b.translate(0, .5, 0);
   g.add(new THREE.Mesh(a, new THREE.MeshBasicMaterial({ color: 0xffffff })), new THREE.Mesh(b, new THREE.MeshBasicMaterial({ color: col, transparent: true, opacity: .35, blending: THREE.AdditiveBlending, depthWrite: false })));
+  g.userData.tone = c => g.children[1].material.color.set(c);
   g.visible = false; return g;
 }
 

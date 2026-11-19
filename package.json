@@ -1,0 +1,6 @@
+{
+  "private": true,
+  "scripts": { "build": "node tools/space.cjs", "test": "node tests/fleet.cjs dist/space.html", "dev": "wrangler dev", "deploy": "node tools/space.cjs && wrangler deploy" },
+  "devDependencies": { "esbuild": "0.24.0", "iwer": "2.5.0", "meshoptimizer": "1.2.0", "playwright": "^1.56.1", "three": "0.186.1", "wrangler": "^4.42.0" },
+  "dependencies": { "@anthropic-ai/sdk": "1.6.0", "partyserver": "0.5.10" }
+}

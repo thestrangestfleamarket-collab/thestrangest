@@ -1,0 +1,11 @@
+{
+  "name": "spacefleet",
+  "main": "worker/index.js",
+  "compatibility_date": "2026-10-06",
+  "compatibility_flags": ["nodejs_compat"],
+  "assets": { "directory": "./dist", "binding": "ASSETS", "run_worker_first": true },
+  "durable_objects": { "bindings": [{ "name": "Space", "class_name": "Space" }, { "name": "Tally", "class_name": "Tally" }] },
+  "migrations": [{ "tag": "v1", "new_sqlite_classes": ["Space", "Tally"] }],
+  "workers_dev": true,
+  "observability": { "enabled": true }
+}

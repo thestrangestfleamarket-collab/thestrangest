@@ -118,8 +118,8 @@ function rack(turned){                 // one of each weapon, only the one in us
 /* ---------- fighters ---------- */
 const pan=x=>clamp((x-you.head.x)/2.5,-1,1);
 const youBody=new THREE.Group(),foeBody=new THREE.Group();scene.add(youBody,foeBody);
-const youFig=makeBody(YOU,{skin:MAT.set('panel'),env:envTex,opacity:.5,face:-1,floor:.12,onStep:()=>sfx('step',0,.5)});
-const foeFig=makeBody(FOE,{skin:MAT.set('panel'),env:envTex,opacity:1,face:1,floor:.12,onStep:x=>sfx('step',pan(x),.22)});
+const youFig=makeBody(YOU,{outline:true,skin:MAT.set('panel'),env:envTex,opacity:1,face:-1,floor:.12,onStep:()=>sfx('step',0,.5)});
+const foeFig=makeBody(FOE,{outline:true,skin:MAT.set('panel'),env:envTex,opacity:1,face:1,floor:.12,onStep:x=>sfx('step',pan(x),.22)});
 scene.add(youFig.group,foeFig.group);
 const you={hp:MAX_HP,head:new V3(0,1.5,PZ),vel:new V3(),wins:0,push:new V3(),chillT:0,lk:0,beam:null};
 const foe={hp:MAX_HP,head:new V3(0,1.5,BZ),wins:0,held:null,cool:0,grabT:1,goal:new V3(0,1.5,BZ),wanderT:0,shield:shieldMesh(FOE),shieldP:0,netShield:null,netW:-1,netHands:null,netGh:-1,vel:new V3(),rack:rack(true),discs:[0,0,0,0],lean:0,wantAlt:0,discMesh:makeShot('disc',FOE),netDisc:false,shieldKey:'buckler',chillT:0,lkSeen:0,beamT:0,beamDir:new V3(0,0,1),beam:makeBeam(FOE),netBeam:null};

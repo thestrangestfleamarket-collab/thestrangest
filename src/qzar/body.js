@@ -25,31 +25,46 @@ function makeBody(col, o) {
   const suit = new THREE.MeshStandardMaterial({ color: 0x0d111e, roughness: .85, metalness: .1, ...see });
   const lamp = new THREE.MeshBasicMaterial({ color: col, ...see });
   const add = (geo, mat, parent = g) => { const m = new THREE.Mesh(geo, mat); parent.add(m); return m; };
+  const trim = o.outline ? (geo, mat, parent = g) => { const m = new THREE.Object3D(); parent.add(m); return m; } : add;   // armour's fittings: an outline has none
   const bone = (r1, r2, mat) => { const geo = new THREE.CylinderGeometry(r1, r2, 1, 10); geo.translate(0, .5, 0); return add(geo, mat); };
   const knob = (r, mat) => add(new THREE.SphereGeometry(r, 12, 9), mat);
   const box = (w, h, d) => new THREE.BoxGeometry(w, h, d);
 
   const head = new THREE.Group(); g.add(head);
   const skull = add(new THREE.SphereGeometry(.115, 20, 14), armor, head); skull.scale.set(1, 1.1, 1.1);
-  const visor = add(new THREE.TorusGeometry(.1, .024, 8, 20, Math.PI * .95), lamp, head); visor.rotation.set(Math.PI / 2, 0, -Math.PI * .975); visor.position.set(0, .012, -.03);
-  add(box(.03, .05, .2), plate, head).position.set(0, .115, .01); add(box(.25, .05, .08), plate, head).position.set(0, -.04, .03);
+  const visor = trim(new THREE.TorusGeometry(.1, .024, 8, 20, Math.PI * .95), lamp, head); visor.rotation.set(Math.PI / 2, 0, -Math.PI * .975); visor.position.set(0, .012, -.03);
+  trim(box(.03, .05, .2), plate, head).position.set(0, .115, .01); trim(box(.25, .05, .08), plate, head).position.set(0, -.04, .03);
   add(new THREE.CylinderGeometry(.03, .03, .05, 8), suit, head).position.set(0, -.115, .02);
 
   const chest = new THREE.Group(); g.add(chest);
   add(new THREE.CylinderGeometry(.2, .15, .3, 8), armor, chest).position.y = -.15;
-  add(box(.2, .15, .05), plate, chest).position.set(0, -.11, -.15); add(new THREE.CircleGeometry(.035, 6), lamp, chest).position.set(0, -.11, -.177);
+  trim(box(.2, .15, .05), plate, chest).position.set(0, -.11, -.15); trim(new THREE.CircleGeometry(.035, 6), lamp, chest).position.set(0, -.11, -.177);
   chest.children[2].rotation.y = Math.PI;
-  add(box(.24, .22, .1), plate, chest).position.set(0, -.15, .16);
-  for (const s of [-1, 1]) { add(box(.03, .14, .03), lamp, chest).position.set(s * .07, -.15, .212); const pad = add(new THREE.SphereGeometry(.095, 12, 8, 0, Math.PI * 2, 0, Math.PI * .55), armor, chest); pad.position.set(s * .2, -.055, 0); pad.rotation.z = -s * .35; }
+  trim(box(.24, .22, .1), plate, chest).position.set(0, -.15, .16);
+  for (const s of [-1, 1]) { trim(box(.03, .14, .03), lamp, chest).position.set(s * .07, -.15, .212); const pad = add(new THREE.SphereGeometry(.095, 12, 8, 0, Math.PI * 2, 0, Math.PI * .55), armor, chest); pad.position.set(s * .2, -.055, 0); pad.rotation.z = -s * .35; }
   const jets = [-1, 1].map(s => { const geo = new THREE.ConeGeometry(.045, .3, 10); geo.translate(0, -.15, 0); geo.rotateX(Math.PI); geo.translate(0, -.3, 0); const m = add(geo, new THREE.MeshBasicMaterial({ color: col, transparent: true, opacity: .8, blending: THREE.AdditiveBlending, depthWrite: false }), chest); m.position.set(s * .07, -.26, .2); m.visible = false; return m; });
   const belly = bone(.12, .13, suit), hips = new THREE.Group(); g.add(hips);
-  add(new THREE.CylinderGeometry(.145, .12, .15, 8), armor, hips).position.y = -.02; add(box(.1, .1, .04), plate, hips).position.set(0, -.04, -.125); add(box(.3, .035, .26), plate, hips).position.y = .05;
+  add(new THREE.CylinderGeometry(.145, .12, .15, 8), armor, hips).position.y = -.02; trim(box(.1, .1, .04), plate, hips).position.set(0, -.04, -.125); trim(box(.3, .035, .26), plate, hips).position.y = .05;
 
   const limbs = [-1, 1].map(s => ({
     s, thigh: bone(.075, .06, armor), shin: bone(.062, .045, armor), knee: knob(.068, plate), foot: add(box(.1, .07, .24), plate), ankle: knob(.05, suit),
-    upper: bone(.05, .042, suit), fore: bone(.052, .04, armor), elbow: knob(.05, plate), hand: knob(.045, suit), cuff: add(box(.02, .05, .02), lamp),
+    upper: bone(.05, .042, suit), fore: bone(.052, .04, armor), elbow: knob(.05, plate), hand: knob(.045, suit), cuff: trim(box(.02, .05, .02), lamp),
     at: new V(), from: new V(), to: new V(), t: 1
   }));
+  if (o.outline) {                         // only the figure's edge is drawn: its inside hides what is behind the edge and shows the room through
+    const hue = new THREE.Color(col).lerp(new THREE.Color(0xffffff), .35), fill = new THREE.MeshBasicMaterial({ colorWrite: false });
+    const edge = (w, a) => new THREE.ShaderMaterial({
+      uniforms: { c: { value: hue }, w: { value: w }, a: { value: a } }, side: THREE.BackSide, transparent: a < 1, depthWrite: a >= 1, blending: a < 1 ? THREE.AdditiveBlending : THREE.NormalBlending,
+      vertexShader: 'uniform float w; void main(){ gl_Position = projectionMatrix * modelViewMatrix * vec4(position + normal * w, 1.0); }',
+      fragmentShader: 'uniform vec3 c; uniform float a; void main(){ gl_FragColor = vec4(c, a); }'
+    });
+    const line = edge(.012, 1), glow = edge(.045, .22), parts = [];
+    g.traverse(m => { if (m.isMesh && !m.material.transparent) parts.push(m); });
+    for (const m of parts) {
+      m.material = fill; m.renderOrder = 5;
+      const a = new THREE.Mesh(m.geometry, line), b = new THREE.Mesh(m.geometry, glow); a.renderOrder = 6; b.renderOrder = 7; m.add(a, b);
+    }
+  }
   const N = new V(), P = new V(), T = new V(), fwd = new V(0, 0, o.face), up = new V(), right = new V(), hip = new V(), sh = new V(), mid = new V(), end = new V(), pole = new V(), want = new V(), last = new V(), vel = new V(), tar = [null, null];
   let ready = false; const floor = o.floor + .035;
 

@@ -571,7 +571,7 @@ export function envPaint(zen, hor, day, lit) {
   const d = 0.1 + 0.9 * day, gr = Math.round(70 * d); g.fillStyle = `rgb(${gr},${gr},${Math.round(gr * 1.05)})`; g.fillRect(0, h / 2, w, h / 2);
   for (let x = 0; x < w; x += 6 + R() * 10) { const bh = 10 + R() * 22, bw = 8 + R() * 12, k = (0.5 + R() * 0.5) * d; g.fillStyle = `rgb(${Math.round(150 * k)},${Math.round(105 * k)},${Math.round(88 * k)})`; g.fillRect(x, h / 2 - bh, bw, bh + 6);
     for (let y = h / 2 - bh + 3; y < h / 2 - 2; y += 5) for (let xx = x + 2; xx < x + bw - 2; xx += 4) { const on = R() < 0.3; g.fillStyle = on && lit > 0.2 ? `rgba(255,${200 + ((R() * 40) | 0)},130,${lit})` : `rgba(20,26,36,${0.5 + 0.3 * day})`; g.fillRect(xx, y, 2, 3); } }
-  if (lit > 0.05) for (let i = 0; i < 9; i++) { const x = (i + 0.5) * w / 9 + (R() - 0.5) * 8, y = h / 2 - 24 - R() * 8, rg = g.createRadialGradient(x, y, 0, x, y, 9); rg.addColorStop(0, `rgba(255,190,110,${lit})`); rg.addColorStop(1, 'rgba(255,150,60,0)'); g.fillStyle = rg; g.fillRect(x - 9, y - 9, 18, 18); }
+  if (lit > 0.05) for (let i = 0; i < 9; i++) { const x = (i + 0.5) * w / 9 + (R() - 0.5) * 8, y = h / 2 - 24 - R() * 8, rg = g.createRadialGradient(x, y, 0, x, y, 14); rg.addColorStop(0, `rgba(255,214,150,${lit})`); rg.addColorStop(0.3, `rgba(255,170,90,${lit * 0.7})`); rg.addColorStop(1, 'rgba(255,150,60,0)'); g.fillStyle = rg; g.fillRect(x - 14, y - 14, 28, 28); }
   t.dispose(); t.needsUpdate = true;
 }
 // brushed steel, for the cart's sheet metal and pots: fine strokes all one way, a few soft bands, nothing scribbled

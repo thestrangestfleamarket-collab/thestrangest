@@ -104,6 +104,137 @@ const BUILD = {
     g.userData.setAmmo = () => {}; return new THREE.Vector3(0, .03, -.05);
   }
 };
+Object.assign(WCOL, { twin: 0xffb347, lobber: 0xff8a5c, ricochet: 0x6fe3ff, seeker: 0xff5fa2, wall: 0xf4f06a, pillar: 0x8cf46a, ring: 0x5cf0d0, burst: 0xffa14a, charger: 0x9f8cff, mine: 0xff6b6b, splitter: 0x7ad7ff, spiral: 0xe58cff,
+  beam: 0xff4d6d, breaker: 0xd9a066, freezer: 0xbfe9ff, leech: 0x9be36a, boomerang: 0xffe08a, curtain: 0xa0b4ff, decoy: 0xc8c8d8, mirror: 0xf2f6ff });
+const body = (g, w, h, d, z = -.04) => put(g, box(w, h, d), steel, 0, .014, z);
+const tube = (g, r, l, x, y, z, mat = bright) => put(g, cyl(r, r, l), mat, x, y, z - l / 2, H);
+Object.assign(BUILD, {
+  twin(g, c) {
+    body(g, .075, .04, .15); put(g, box(.06, .008, .11), dark, 0, .038, -.04);
+    for (const x of [-.021, .021]) { tube(g, .011, .12, x, .014, -.1); put(g, tor(.013, .003), lit(c), x, .014, -.222); put(g, cyl(.015, .015, .012), dark, x, .014, -.13, H); }
+    put(g, box(.012, .02, .1), cell(c), 0, .014, -.16);
+    pips(g, 8, c, (i, m) => put(g, box(.008, .004, .012), m, i < 4 ? -.02 : .02, .044, -.075 + (i % 4) * .022));
+    grip(g); return new THREE.Vector3(0, .014, -.225);
+  },
+  lobber(g, c) {
+    put(g, cyl(.04, .046, .16, 20), steel, 0, .03, -.085, H); put(g, tor(.042, .008), lit(c), 0, .03, -.168); put(g, cyl(.05, .05, .02, 20), dark, 0, .03, -.01, H);
+    put(g, box(.03, .03, .1), dark, 0, -.008, -.07); for (const z of [-.04, -.1]) put(g, tor(.046, .004), bright, 0, .03, z);
+    pips(g, 3, c, (i, m) => put(g, ball(.016, 10), m, 0, .078, -.04 - i * .04));
+    grip(g); return new THREE.Vector3(0, .03, -.17);
+  },
+  ricochet(g, c) {
+    put(g, box(.11, .024, .17), steel, 0, .014, -.07); put(g, box(.09, .006, .012), lit(c), 0, .014, -.156); for (const x of [-.058, .058]) put(g, box(.008, .034, .15), dark, x, .014, -.07);
+    put(g, cyl(.04, .04, .004, 20), dark, 0, .028, -.07);
+    pips(g, 4, c, (i, m) => put(g, cyl(.034, .034, .005, 20), m, 0, .034 + i * .008, -.07));
+    grip(g); return new THREE.Vector3(0, .014, -.16);
+  },
+  seeker(g, c) {
+    body(g, .048, .08, .13); for (const y of [.034, -.006]) { tube(g, .017, .1, 0, y, -.08, dark); put(g, tor(.018, .003), bright, 0, y, -.18); }
+    put(g, cyl(.002, .002, .06, 6), bright, 0, .085, -.02); put(g, tor(.02, .003), lit(c), 0, .115, -.02, H); for (const x of [-.03, .03]) put(g, box(.004, .05, .06), bright, x, .014, .0, 0, 0, x > 0 ? -.4 : .4);
+    pips(g, 2, c, (i, m) => put(g, ball(.012, 10), m, 0, i ? -.006 : .034, -.176));
+    grip(g); return new THREE.Vector3(0, .014, -.19);
+  },
+  wall(g, c) {
+    body(g, .04, .04, .13); put(g, box(.26, .022, .03), bright, 0, .02, -.125); put(g, box(.24, .008, .006), lit(c), 0, .02, -.142);
+    for (const x of [-.09, .09]) { put(g, box(.006, .006, .09), dark, x * .5, .02, -.08, 0, x > 0 ? -.5 : .5, 0); put(g, box(.012, .04, .04), dark, x * 1.42, .02, -.125); }
+    pips(g, 1, c, (i, m) => put(g, box(.02, .006, .03), m, 0, .037, -.04));
+    grip(g); return new THREE.Vector3(0, .02, -.145);
+  },
+  pillar(g, c) {
+    body(g, .04, .04, .13); put(g, box(.022, .26, .03), bright, 0, .08, -.125); put(g, box(.008, .24, .006), lit(c), 0, .08, -.142);
+    put(g, box(.04, .012, .04), dark, 0, .212, -.125); put(g, box(.04, .012, .04), dark, 0, -.052, -.125); put(g, box(.006, .006, .08), dark, 0, .06, -.08, .6);
+    pips(g, 1, c, (i, m) => put(g, box(.006, .03, .02), m, .022, .014, -.04));
+    grip(g); return new THREE.Vector3(0, .05, -.145);
+  },
+  ring(g, c) {
+    put(g, cyl(.02, .026, .1), steel, 0, .014, -.03, H); put(g, tor(.062, .008), bright, 0, .03, -.125); put(g, tor(.046, .004), lit(c), 0, .03, -.125);
+    for (let k = 0; k < 3; k++) { const a = k * Math.PI * 2 / 3 + .5; put(g, box(.006, .006, .07), dark, Math.cos(a) * .04, .022 + Math.sin(a) * .04, -.09, Math.sin(a) * .35, -Math.cos(a) * .35, 0); }
+    pips(g, 2, c, (i, m) => put(g, tor(.014, .003, 14), m, 0, .014, .01 + i * .014));
+    grip(g); return new THREE.Vector3(0, .03, -.13);
+  },
+  burst(g, c) {
+    body(g, .034, .075, .15); for (let i = 0; i < 3; i++) { tube(g, .008, .09, 0, -.008 + i * .022, -.1); put(g, tor(.009, .002, 12), lit(c), 0, -.008 + i * .022, -.192); }
+    put(g, box(.03, .06, .04), dark, 0, -.045, -.085, -.15); put(g, box(.036, .006, .12), dark, 0, .054, -.04);
+    pips(g, 3, c, (i, m) => put(g, box(.036, .008, .016), m, 0, -.008 + i * .022, -.04));
+    grip(g); return new THREE.Vector3(0, .014, -.195);
+  },
+  charger(g, c) {
+    body(g, .036, .04, .1, -.01); tube(g, .012, .17, 0, .016, -.05); put(g, cyl(.03, .03, .05, 16), cell(c), 0, .016, .03, H);
+    const coils = []; for (let i = 0; i < 5; i++) coils.push(put(g, tor(.017 + i * .003, .003, 18), lit(c), 0, .016, -.08 - i * .03));
+    pips(g, 3, c, (i, m) => put(g, box(.008, .004, .014), m, 0, .038, -.03 + i * .02));
+    g.userData.tick = t => coils.forEach((m, i) => m.scale.setScalar(1 + .12 * Math.sin(t * 9 - i)));
+    grip(g); return new THREE.Vector3(0, .016, -.225);
+  },
+  mine(g, c) {
+    put(g, cyl(.05, .03, .09, 18), steel, 0, .02, -.06, H); put(g, tor(.05, .005), bright, 0, .02, -.105); body(g, .034, .034, .06, .02);
+    const m0 = put(g, new THREE.IcosahedronGeometry(.03), dark, 0, .02, -.09), m1 = put(g, new THREE.OctahedronGeometry(.045), lit(c), 0, .02, -.09); m1.scale.setScalar(.55);
+    pips(g, 2, c, (i, m) => put(g, ball(.01, 8), m, i ? .018 : -.018, .045, .02));
+    const lights = g.userData.setAmmo; g.userData.setAmmo = k => { lights(k); m0.visible = m1.visible = k > 0; };
+    g.userData.tick = t => { m0.rotation.y = t * 2; m1.rotation.x = t * 3; };
+    grip(g); return new THREE.Vector3(0, .02, -.12);
+  },
+  splitter(g, c) {
+    body(g, .036, .04, .12); tube(g, .012, .06, 0, .014, -.1);
+    for (const k of [-1, 0, 1]) { const p = new THREE.Group(); p.position.set(0, .014, -.16); p.rotation.y = -k * .4; g.add(p); put(p, cyl(.007, .009, .07), bright, 0, 0, -.035, H); put(p, tor(.009, .002, 12), lit(c), 0, 0, -.072); }
+    put(g, ball(.018, 12), cell(c), 0, .014, -.16);
+    pips(g, 2, c, (i, m) => put(g, box(.01, .004, .02), m, 0, .037, -.03 - i * .03));
+    grip(g); return new THREE.Vector3(0, .014, -.235);
+  },
+  spiral(g, c) {
+    body(g, .034, .04, .1, -.01); tube(g, .009, .19, 0, .016, -.05);
+    for (let i = 0; i < 12; i++) { const a = i * .9; put(g, ball(.006, 8), lit(c), Math.cos(a) * .019, .016 + Math.sin(a) * .019, -.07 - i * .014); }
+    put(g, tor(.02, .004), bright, 0, .016, -.245);
+    pips(g, 4, c, (i, m) => put(g, box(.008, .004, .012), m, 0, .038, -.035 + i * .017));
+    grip(g); return new THREE.Vector3(0, .016, -.25);
+  },
+  beam(g, c) {
+    body(g, .03, .04, .11, -.01); tube(g, .011, .24, 0, .016, -.05); put(g, ball(.02, 14), lit(c), 0, .016, -.3); put(g, cyl(.02, .014, .03), dark, 0, .016, -.28, H);
+    for (let i = 0; i < 6; i++) put(g, box(.05, .03, .004), dark, 0, .016, -.1 - i * .025); put(g, box(.026, .03, .07), cell(c), 0, -.02, -.03);
+    pips(g, 2, c, (i, m) => put(g, box(.008, .004, .02), m, 0, .038, -.02 - i * .03));
+    grip(g); return new THREE.Vector3(0, .016, -.32);
+  },
+  breaker(g, c) {
+    body(g, .072, .072, .14); put(g, cyl(.03, .03, .08, 14), dark, 0, .014, -.15, H); put(g, box(.09, .056, .022), bright, 0, .014, -.195); put(g, box(.06, .02, .024), lit(c), 0, .014, -.196);
+    for (const x of [-.037, .037]) { screw(g, x, .035, .01); screw(g, x, -.008, .01); screw(g, x, .035, -.09); screw(g, x, -.008, -.09); }
+    pips(g, 2, c, (i, m) => put(g, box(.022, .008, .04), m, i ? .018 : -.018, .054, -.04));
+    grip(g); return new THREE.Vector3(0, .014, -.21);
+  },
+  freezer(g, c) {
+    body(g, .034, .04, .09, -.01); put(g, cyl(.012, .034, .09, 14), bright, 0, .016, -.1, H); put(g, cyl(.028, .028, .11, 14), cell(c), 0, .062, -.01, H); put(g, cyl(.004, .004, .05, 6), dark, 0, .04, -.06, .9);
+    for (let k = 0; k < 4; k++) { const a = k * Math.PI / 2; const m = put(g, new THREE.OctahedronGeometry(.012), lit(c), Math.cos(a) * .03, .016 + Math.sin(a) * .03, -.15); m.scale.z = 2.2; }
+    pips(g, 2, c, (i, m) => put(g, ball(.009, 8), m, .03, .062, -.03 + i * .04));
+    grip(g); return new THREE.Vector3(0, .016, -.16);
+  },
+  leech(g, c) {
+    put(g, ball(.042, 16), dark, 0, .02, -.03); put(g, cyl(.01, .018, .1, 12), steel, 0, .02, -.11, H); put(g, tor(.014, .004, 14), lit(c), 0, .02, -.162);
+    for (const x of [-.04, .04]) put(g, ball(.022, 12), cell(c), x, .03, -.02); put(g, new THREE.TorusGeometry(.03, .004, 6, 14, Math.PI), bright, 0, .05, -.03, 0, H, 0);
+    pips(g, 3, c, (i, m) => put(g, ball(.007, 8), m, 0, .034, -.08 - i * .022));
+    grip(g); return new THREE.Vector3(0, .02, -.165);
+  },
+  boomerang(g, c) {
+    body(g, .03, .034, .1, -.01); put(g, cyl(.006, .006, .05, 8), bright, 0, .05, -.05);
+    const blade = new THREE.Group(); blade.position.set(0, .078, -.05); g.add(blade);
+    for (const k of [-1, 1]) { put(blade, box(.15, .01, .036), bright, k * .058, 0, -.02, 0, k * .6, 0); put(blade, box(.14, .004, .008), lit(c), k * .062, 0, -.04, 0, k * .6, 0); }
+    g.userData.setAmmo = k => { blade.visible = k > 0; }; g.userData.tick = t => { blade.rotation.y = t * 4; };
+    grip(g); return new THREE.Vector3(0, .078, -.1);
+  },
+  curtain(g, c) {
+    body(g, .04, .04, .11); put(g, box(.22, .15, .014), dark, 0, .05, -.125); put(g, box(.23, .008, .02), bright, 0, .128, -.125); put(g, box(.23, .008, .02), bright, 0, -.028, -.125);
+    for (let x = 0; x < 4; x++) for (let y = 0; y < 3; y++) put(g, ball(.009, 8), lit(c), -.075 + x * .05, .005 + y * .045, -.134);
+    pips(g, 1, c, (i, m) => put(g, box(.02, .006, .03), m, 0, .037, -.03));
+    grip(g); return new THREE.Vector3(0, .05, -.14);
+  },
+  decoy(g, c) {
+    put(g, box(.13, .036, .12), steel, 0, .014, -.05); for (let i = 0; i < 4; i++) { tube(g, .009, .06, -.045 + i * .03, .014, -.11); put(g, tor(.01, .002, 12), lit(c), -.045 + i * .03, .014, -.172); }
+    put(g, box(.1, .008, .08), dark, 0, .036, -.05); for (const x of [-.02, .02]) put(g, new THREE.CircleGeometry(.008, 10), lit(c), x, .041, -.05, -H);
+    pips(g, 2, c, (i, m) => put(g, box(.03, .005, .014), m, i ? .03 : -.03, .041, -.085));
+    grip(g); return new THREE.Vector3(0, .014, -.175);
+  },
+  mirror(g, c) {
+    put(g, cyl(.015, .015, .1, 12), rubber, 0, -.03, 0); put(g, cyl(.05, .05, .008, 24), bright, 0, .03, -.03, H); put(g, tor(.05, .005), lit(c), 0, .03, -.036); put(g, cyl(.02, .03, .02, 12), steel, 0, .03, -.018, H);
+    g.userData.setAmmo = () => {}; return new THREE.Vector3(0, .03, -.05);
+  }
+});
 function makeGun(key) {
   const g = new THREE.Group(); g.userData.muzzle = BUILD[key](g, WCOL[key]); return g;
 }
@@ -123,6 +254,7 @@ function makeShield(col) {
   const fill = put(g, new THREE.CircleGeometry(.32, 40), new THREE.MeshBasicMaterial({ color: col, opacity: .12, ...add }));
   const rim = put(g, tor(.32, .008, 48), new THREE.MeshBasicMaterial({ color: col, transparent: true }));
   const gauge = put(g, new THREE.RingGeometry(.34, .375, 48), new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: .9, side: THREE.DoubleSide, depthWrite: false })); let step = -1;
+  g.userData.kind = mirror => { face.material.color.set(mirror ? 0xf2f6ff : col); rim.material.color.set(mirror ? 0xffffff : col); fill.material.opacity = mirror ? .3 : .12; };
   g.userData.life = f => {                           // the bright arc round the rim is the power left
     f = Math.max(0, Math.min(1, f)); const n = Math.ceil(f * 30);
     if (n !== step) { step = n; gauge.geometry.dispose(); gauge.geometry = new THREE.RingGeometry(.34, .375, 48, 1, Math.PI / 2, Math.max(.001, n / 30 * Math.PI * 2)); gauge.material.color.setHex(f > .5 ? 0xffffff : f > .25 ? 0xffd166 : 0xff5a4d); }
@@ -132,15 +264,38 @@ function makeShield(col) {
 }
 
 function makeShot(key, col) {
-  const g = new THREE.Group(), core = new THREE.Color(col).lerp(new THREE.Color(0xffffff), .65);
-  if (key === 'needle') { put(g, cyl(.004, .014, .34, 10), lit(core), 0, 0, 0, H); put(g, cyl(.002, .022, .2, 10), new THREE.MeshBasicMaterial({ color: col, transparent: true, opacity: .45 }), 0, 0, -.08, H); g.add(halo(col, .22)); }
-  else if (key === 'scatter') { put(g, new THREE.OctahedronGeometry(.045), lit(core)); g.add(halo(col, .26)); g.userData.tick = dt => { g.children[0].rotation.z += dt * 9; }; }
+  const g = new THREE.Group(), core = new THREE.Color(col).lerp(new THREE.Color(0xffffff), .65), soft = o => new THREE.MeshBasicMaterial({ color: col, transparent: true, opacity: o, depthWrite: false });
+  const spin = (m, x, y, z) => { g.userData.tick = dt => { m.rotation.x += dt * x; m.rotation.y += dt * y; m.rotation.z += dt * z; }; };
+  const bolt = (r, tail, glow) => { put(g, ball(r), lit(core)); put(g, cyl(.004, r * .7, tail, 10), soft(.5), 0, 0, -tail * .55, H); g.add(halo(col, glow)); };
+  if (key === 'needle') { put(g, cyl(.004, .014, .34, 10), lit(core), 0, 0, 0, H); put(g, cyl(.002, .022, .2, 10), soft(.45), 0, 0, -.08, H); g.add(halo(col, .22)); }
+  else if (key === 'scatter' || key === 'shard' || key === 'splitter') { const m = put(g, new THREE.OctahedronGeometry(key === 'splitter' ? .07 : .045), lit(core)); g.add(halo(col, key === 'splitter' ? .4 : .26)); spin(m, 0, 0, 9); }
   else if (key === 'drifter') {
-    put(g, ball(.28, 28), new THREE.MeshBasicMaterial({ color: col, transparent: true, opacity: .28, depthWrite: false })); put(g, ball(.1), lit(core));
+    put(g, ball(.28, 28), soft(.28)); put(g, ball(.1), lit(core));
     const a = put(g, tor(.3, .008, 48), lit(col)), b = put(g, tor(.3, .006, 48), lit(core), 0, 0, 0, H); g.add(halo(col, 1.1));
     g.userData.tick = dt => { a.rotation.x += dt * 1.7; b.rotation.y += dt * 1.3; };
-  } else { put(g, ball(.045), lit(core)); put(g, cyl(.004, .03, .16, 10), new THREE.MeshBasicMaterial({ color: col, transparent: true, opacity: .5 }), 0, 0, -.09, H); g.add(halo(col, .36)); }
+  }
+  else if (key === 'lobber') { const m = put(g, ball(.12, 16), new THREE.MeshBasicMaterial({ color: 0x10131f })); put(m, tor(.12, .012, 24), lit(col)); put(g, ball(.045), lit(core), 0, .11, 0); g.add(halo(col, .5)); spin(m, 5, 0, 2); }
+  else if (key === 'ricochet') { const m = put(g, cyl(.11, .11, .014, 24), lit(core)); put(m, tor(.11, .012, 24), lit(col), 0, 0, 0, H); g.add(halo(col, .4)); spin(m, 0, 14, 0); }
+  else if (key === 'seeker') { put(g, cyl(0, .06, .18, 12), lit(core), 0, 0, 0, H); put(g, cyl(.06, .02, .08, 12), lit(col), 0, 0, -.13, H); for (const r of [0, H]) put(g, box(.004, .16, .07), lit(col), 0, 0, -.14, 0, 0, r); g.add(halo(col, .45)); }
+  else if (key === 'wall' || key === 'pillar') { const x = key === 'wall'; put(g, x ? box(2.2, .05, .05) : box(.05, 2, .05), lit(core)); put(g, x ? box(2.2, .16, .02) : box(.16, 2, .02), soft(.3)); for (const k of [-1, 1]) { const h = halo(col, .4); h.position.set(x ? k * 1.1 : 0, x ? 0 : k, 0); g.add(h); } }
+  else if (key === 'ring') { put(g, tor(.15, .013, 40), lit(core)); put(g, tor(.15, .03, 40), soft(.3)); }
+  else if (key === 'charger') { put(g, ball(.06), lit(core)); put(g, ball(.09), soft(.35)); g.add(halo(col, .5)); }
+  else if (key === 'mine') { const m = put(g, new THREE.IcosahedronGeometry(.14), new THREE.MeshBasicMaterial({ color: 0x10131f })); const k = put(m, new THREE.OctahedronGeometry(.2), lit(col)); k.scale.setScalar(.55); put(g, ball(.18, 16), soft(.2)); g.add(halo(col, .6)); spin(m, 1.5, 2.2, 0); }
+  else if (key === 'spiral') { put(g, ball(.06), lit(core)); const m = put(g, tor(.09, .008, 20), lit(col)); g.add(halo(col, .34)); spin(m, 7, 5, 0); }
+  else if (key === 'breaker') { put(g, cyl(.07, .11, .22, 14), lit(core), 0, 0, 0, H); put(g, cyl(.115, .115, .04, 14), lit(col), 0, 0, -.1, H); g.add(halo(col, .5)); }
+  else if (key === 'freezer') { const m = put(g, new THREE.IcosahedronGeometry(.1), lit(new THREE.Color(col).lerp(new THREE.Color(0xffffff), .85))); put(g, ball(.14, 14), soft(.25)); g.add(halo(0xbfe9ff, .5)); spin(m, 2, 3, 0); }
+  else if (key === 'leech') { put(g, ball(.065), lit(core)); put(g, cyl(.004, .05, .2, 10), soft(.55), 0, 0, -.12, H); put(g, tor(.08, .008, 20), lit(0x9be36a)); g.add(halo(col, .36)); }
+  else if (key === 'boomerang') { const m = new THREE.Group(); g.add(m); for (const k of [-1, 1]) { put(m, box(.2, .014, .05), lit(core), k * .075, 0, -.03, 0, k * .6, 0); put(m, box(.2, .03, .012), soft(.4), k * .08, 0, -.055, 0, k * .6, 0); } g.add(halo(col, .4)); spin(m, 0, 16, 0); }
+  else if (key === 'curtain') bolt(.035, .08, .16);
+  else if (key === 'decoy') { put(g, ball(.07), lit(core)); put(g, ball(.1), soft(.3)); g.add(halo(col, .4)); }
+  else if (key === 'twin' || key === 'burst') bolt(.04, .14, .3);
+  else bolt(.045, .16, .36);
   return g;
 }
+function makeBeam(col) {
+  const g = new THREE.Group(), a = new THREE.CylinderGeometry(.012, .012, 1, 8), b = new THREE.CylinderGeometry(.04, .04, 1, 8); a.translate(0, .5, 0); b.translate(0, .5, 0);
+  g.add(new THREE.Mesh(a, new THREE.MeshBasicMaterial({ color: 0xffffff })), new THREE.Mesh(b, new THREE.MeshBasicMaterial({ color: col, transparent: true, opacity: .35, blending: THREE.AdditiveBlending, depthWrite: false })));
+  g.visible = false; return g;
+}
 
-export { WCOL, makeGun, makeShield, makeShot, glowTex, setEnv };
+export { WCOL, makeGun, makeShield, makeShot, makeBeam, glowTex, setEnv };

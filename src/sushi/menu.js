@@ -11,6 +11,7 @@ export function buildMenu(scene, cart, guide, talk, shadowLights, report) {
     ['EASY ON THE EYES', () => (S.easy ? 'ON' : 'OFF'), () => { S.easy = !S.easy; try { localStorage.setItem('yatai-easy', S.easy ? '1' : '0'); } catch (e) { /* not kept */ } G.eyes?.(S.easy); }],
     ['THE MARKET', () => (G.live ? G.live.status() : 'NOT LINKED'), () => { }],
     ['GUIDE MODE', () => (guide.on ? 'ON' : 'OFF'), () => guide.set(!guide.on)],
+    ...(G.guest ? [] : [['EASY DAYS', () => (G.prog.P.easy ? 'ON' : 'OFF') + ' · DAY ' + G.prog.P.day, () => G.prog.setEasy(!G.prog.P.easy)]]),
     ['VOLUME', () => Math.round(S.volume * 100) + '%', () => { S.volume = S.volume >= 1.5 ? 0.25 : S.volume + 0.25; if (G.audio.master) G.audio.master.gain.value = S.volume; }],
     ['SPOKEN VOICES', () => (S.tts ? 'ON' : 'OFF'), () => { S.tts = !S.tts; G.muteVoices = !S.tts; if (!S.tts) window.speechSynthesis?.cancel(); }],
     ['MICROPHONE', () => (S.mic ? (talk.mic || 'ON').toUpperCase() : 'OFF'), () => { S.mic = !S.mic; talk.listen(S.mic); }],

@@ -1,12 +1,14 @@
-// GUIDE MODE: while it is on, a card says the next thing to do for the customer who has waited longest and an arrow hangs over the thing to touch, in the right order, the whole night; under it, always, what is left of tonight's stock
+// GUIDE MODE: day one is a short first service it leads (light up, open, one bowl, payment and change), then it turns itself off; off, it says only what applies now (a customer about to walk, a cold brazier, money on the ledge, a rush coming, tonight's event) and nothing otherwise; while it is on, a card says the next thing to do for the customer who has waited longest and an arrow hangs over the thing to touch, in the right order, the whole night; under it, always, what is left of tonight's stock
 import * as THREE from 'three';
 import { G, V3 } from './ctx.js';
 import * as T from './tex.js';
 import { TOPPINGS, TARE, BROTH } from './items.js';
 import { SEATS, RECIPES } from './cart.js';
 
+export const TEXT = { first: 'FIRST DAY', lessons: ['LIGHT UP', 'OPEN', 'ONE BOWL', 'PAYMENT AND CHANGE'], done: ['That is the job.', 'The green button brings the guide back'], walk: (n) => `Seat ${n} is about to walk`, cold: 'A brazier has gone out', left: 'On your left', collect: 'Collect the money on the ledge', box: 'Into the box', sold: 'Sold out', close: 'Take in the sign to close' };
+
 export function buildGuide(scene, C) {
-  const g = { on: true }, nop = (o) => { o.userData.nopick = true; return o; };
+  const g = { on: !G.prog.P.tut, touched: false }, nop = (o) => { o.userData.nopick = true; return o; };
   const tex = T.panelTex(640, 460, () => { });
   const card = nop(new THREE.Mesh(new THREE.PlaneGeometry(0.46, 0.331), new THREE.MeshBasicMaterial({ map: tex, color: 0xd0d0d0 }))); card.position.set(-0.9, 1.86, -0.42); card.rotation.y = 0.55; scene.add(card);
   const am = new THREE.MeshBasicMaterial({ color: new THREE.Color(0.3, 1.6, 0.5), toneMapped: false, transparent: true, opacity: 0.9 });
@@ -14,7 +16,7 @@ export function buildGuide(scene, C) {
   const ring = nop(new THREE.Mesh(new THREE.RingGeometry(0.05, 0.062, 20).rotateX(-Math.PI / 2), am)); ring.renderOrder = 60; scene.add(ring);
   const bpos = new V3(0.78, 0.93, -0.07), bm = new THREE.Mesh(new THREE.CylinderGeometry(0.03, 0.034, 0.03, 12), new THREE.MeshBasicMaterial({ color: 0x30c060 })); bm.position.copy(bpos); C.group.add(bm);
   const lb = nop(new THREE.Mesh(new THREE.PlaneGeometry(0.11, 0.03), new THREE.MeshBasicMaterial({ map: T.labelTex(['GUIDE'], { w: 256, h: 70, fs: 44 }), color: 0xbbbbbb }))); lb.rotation.x = -Math.PI / 2; lb.position.set(0.78, 0.906, 0.0); C.group.add(lb);
-  const btn = { getPos: () => bpos, r: 0.045, press: () => g.set(!g.on), name: 'GUIDE MODE' }; bm.userData.button = btn; G.buttons.push(btn);
+  const btn = { getPos: () => bpos, r: 0.045, press: () => { g.touched = true; g.set(!g.on); }, name: 'GUIDE MODE' }; bm.userData.button = btn; G.buttons.push(btn);
   g.set = (on) => { g.on = on; bm.material.color.set(on ? 0x30c060 : 0x5a2020); G.audio.play('click'); last = null; };
   const held = (f) => { for (const h of G.hands) if (h.held && f(h.held)) return h.held; return null; };
   const stack = new V3(0.93, 1.16, -0.36), matP = new V3(-0.3, 1.02, -0.26), tub = new V3(0.935, 1.12, 0.91), box = new V3(-0.93, 1.05, -0.36);
@@ -61,22 +63,36 @@ export function buildGuide(scene, C) {
     return bowl.held ? [`Serve seat ${c.seat + 1}`, 'Set it on their placemat', C.seatSpots[c.seat].clone().setY(1.2)] : ['Pick up the bowl and serve it', `Seat ${c.seat + 1}`, bp];
   }
 
-  let last = null, acc = 0, cur = null, stock = [];
+  // the first day's lessons: which one now; over when the first customer has paid and the money is in the box
+  g.lesson = () => { const game = G.game, P = G.prog.P; if (P.tut || P.day > 1 || G.guest) return -1; if (game.state === 'prep') return C.pots.some((p) => !p.on) ? 0 : 1; if (!game.served) return 2;
+    if (game.customers.some((c) => c.state === 'paying') || (G.till && G.till.loose().length)) return 3; P.tut = true; G.prog.save(); if (!g.touched) g.set(false); G.fx.popup(C.seatSpots[1].clone().setY(1.5), TEXT.done, true); return -1; };
+  G.prog.on(() => { if (!g.touched && g.on !== !G.prog.P.tut) { g.on = !G.prog.P.tut; bm.material.color.set(g.on ? 0x30c060 : 0x5a2020); last = null; } });   // (a run loaded from the website: its first day is long done)
+  // guide off: only what applies this moment, or nothing
+  function nudge() { const game = G.game; if (G.ended || G.guest || !game) return null;
+    if (G.events && G.events.cur.length) return [G.events.name(), G.events.hint().split(': ').slice(1).join(': '), null];
+    if (game.state !== 'open' && game.state !== 'closing') return null;
+    let c = null; for (const x of game.customers) if (x.state === 'waiting' && x.patience < x.maxPatience * 0.35 && (!c || x.patience / x.maxPatience < c.patience / c.maxPatience)) c = x;
+    if (c) return [TEXT.walk(c.seat + 1), c.order.recipe.name, new V3(SEATS[c.seat], 1.62, -1.15)];
+    const cold = C.pots.find((p) => !p.on && (!p.type || game.cfg().menu.some((k) => RECIPES[k].broth === p.type))); if (cold) return [TEXT.cold, TEXT.left, new V3(-0.67, 0.78, cold.z)];
+    if (game.soldOut && game.state === 'open') return [TEXT.sold, TEXT.close, null];
+    if (!game.customers.some((x) => x.state === 'waiting')) { const tip = G.till && G.till.loose()[0]; if (tip) return [TEXT.collect, TEXT.box, tip.obj.position.clone().setY(1.08)]; }
+    const soon = G.rush.soon(); return soon ? [soon, '', null] : null; }
+  let last = null, acc = 0, cur = null, stock = [], les = -1;
   const stockRows = () => { const a = C.avail(), m = G.game.cfg(), tares = [...new Set(m.menu.map((k) => RECIPES[k].tare))], broths = [...new Set(m.menu.map((k) => RECIPES[k].broth))];
     return [[['NOODLES', a.noodles], ...broths.map((b) => [BROTH[b].label, a.broth[b]]), ...tares.map((k) => [TARE[k].label + ' TARE', a.tare[k]])],
       Object.keys(TOPPINGS).filter((t) => m.menu.some((k) => RECIPES[k].tops[t])).map((t) => [TOPPINGS[t].label, a.tops[t]]),
       m.drinks ? [['SAKE', a.drinks.sake], ['TEA', a.drinks.tea]] : []].filter((r) => r.length); };
   g.update = (dt, t) => {
-    acc += dt; if (acc > 0.2) { acc = 0; try { cur = G.ended ? null : g.on ? step() : ['GUIDE MODE is off', 'Press the green button to turn it on', null]; } catch (e) { cur = null; } try { stock = stockRows(); } catch (e) { stock = []; } }
-    const key = (cur ? cur[0] + '|' + cur[1] : '') + JSON.stringify(stock);
-    if (key !== last) { last = key; G.guideText = g.on && cur ? `${cur[0]} — ${cur[1]}` : '';
+    acc += dt; if (acc > 0.2) { acc = 0; try { les = g.lesson(); cur = G.ended ? null : g.on ? step() : nudge(); } catch (e) { cur = null; } try { stock = stockRows(); } catch (e) { stock = []; } }
+    const key = (cur ? cur[0] + '|' + cur[1] : '') + les + JSON.stringify(stock);
+    if (key !== last) { last = key; G.guideText = cur ? (les >= 0 ? `${TEXT.first} ${les + 1}/4 · ` : '') + cur[0] + (cur[1] ? ' — ' + cur[1] : '') : '';
       tex.redraw((c2, w, h) => { c2.fillStyle = g.on ? '#10241a' : '#241010'; c2.fillRect(0, 0, w, h); c2.strokeStyle = g.on ? '#40e080' : '#a04040'; c2.lineWidth = 10; c2.strokeRect(5, 5, w - 10, h - 10);
-        c2.fillStyle = g.on ? '#40e080' : '#e08080'; c2.font = `bold 34px ${T.MONO}`; c2.textAlign = 'left'; c2.fillText('GUIDE', 26, 52);
+        c2.fillStyle = g.on ? '#40e080' : '#e08080'; c2.font = `bold 34px ${T.MONO}`; c2.textAlign = 'left'; c2.fillText(les >= 0 ? `${TEXT.first} ${les + 1}/4 · ${TEXT.lessons[les]}` : g.on ? 'GUIDE' : 'GUIDE (OFF)', 26, 52, w - 52);
         c2.fillStyle = '#0c140f'; c2.fillRect(10, 300, w - 20, h - 310); c2.fillStyle = '#7fbf98'; c2.font = `bold 24px ${T.MONO}`; c2.fillText("TODAY'S STOCK", 26, 328);
         { let y = 360; c2.font = `bold 25px ${T.MONO}`; for (const row of stock) { let x = 26; for (const [t, n] of row) { const s2 = `${t} ${n}  `, tw = c2.measureText(s2).width; if (x + tw > w - 16) { x = 26; y += 29; } c2.fillStyle = n > 0 ? '#e8f0e0' : '#ff7a6a'; c2.fillText(s2, x, y); x += tw; } y += 29; } }
         if (!cur) return; c2.fillStyle = '#ffffff'; c2.font = `bold 50px ${T.JP}`; const words = cur[0].split(' '); let line = '', y = 124; for (const wd of words) { if (c2.measureText(line + wd).width > w - 52) { c2.fillText(line, 26, y); line = ''; y += 58; } line += wd + ' '; } c2.fillText(line, 26, y);
         c2.fillStyle = '#b8e8c8'; c2.font = `bold 34px ${T.JP}`; c2.fillText(cur[1], 26, Math.min(300 - 28, y + 62), w - 52); }); }
-    const p = g.on && cur ? cur[2] : null; arrow.visible = ring.visible = !!p;
+    const p = cur ? cur[2] : null; arrow.visible = ring.visible = !!p;
     if (p) { arrow.position.set(p.x, p.y + 0.05 + Math.sin(t * 5) * 0.02, p.z); arrow.rotation.y = t * 2; ring.position.set(p.x, p.y - 0.04, p.z); const s = 1 + Math.sin(t * 5) * 0.15; ring.scale.set(s, 1, s); }
   };
   return g;

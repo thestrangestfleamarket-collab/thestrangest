@@ -18,22 +18,23 @@ export const TEXT = {
 };
 // one schema for every upgrade: its price in bowls (of the first dish) and what it sets in G.mods; apply() is the one place they are resolved
 export const UPGRADES = [
-  { id: 'knife', cost: 6, mod: { chop: 2 } },
-  { id: 'basket', cost: 8, mod: { baskets: 2 } },
-  { id: 'tank', cost: 8, mod: { calm: 1.15 } },
-  { id: 'sign', cost: 10, mod: { draw: 1.25 } },
-  { id: 'burner', cost: 12, mod: { heat: 2, cool: 0.5 } },
-  { id: 'pot', cost: 12, mod: { pot: 1.5 } },
-  { id: 'stool', cost: 16, mod: { seats: 3 } },
+  { id: 'knife', cost: 15, mod: { chop: 2 } },
+  { id: 'basket', cost: 20, mod: { baskets: 2 } },
+  { id: 'tank', cost: 20, mod: { calm: 1.15 } },
+  { id: 'sign', cost: 25, mod: { draw: 1.25 } },
+  { id: 'burner', cost: 30, mod: { heat: 2, cool: 0.5 } },
+  { id: 'pot', cost: 30, mod: { pot: 1.5 } },
+  { id: 'stool', cost: 40, mod: { seats: 3 } },
 ];
 const BASE = { baskets: 1, seats: 2, chop: 1, pot: 1, draw: 1, calm: 1, heat: 1, cool: 1 };
 // a dish after the first comes onto the menu when the stall's reputation reaches rep, or regulars have asked for it asks times (one new thing a day)
-export const NEED = [null, { rep: 53, asks: 2 }, { rep: 58, asks: 3 }, { rep: 64, asks: 4 }];
-export const EXTRAS = { rep: 60, day: 4 };   // special requests (firm noodles, extra toppings, one left out)
+export const NEED = [null, { rep: 54, asks: 2 }, { rep: 60, asks: 3 }, { rep: 68, asks: 4 }];
+export const EXTRAS = { rep: 64, day: 5 };   // special requests (firm noodles, extra toppings, one left out)
 const U = RECIPES[DAYDISH[0]].price;   // every amount is counted in bowls of the first dish, so the prices can change under it
 export const DAYS = {
-  target: (d, easy) => Math.round(U * Math.min(12 + 6 * (d - 1), 54) * (easy ? 0.7 : 1)),   // the day's takings to aim for
-  fee: (d, easy) => Math.round(U * Math.min(4 + 3 * (d - 1), 25) * (easy ? 0.5 : 1)),       // due at dawn
+  target: (d, easy) => Math.round(U * Math.min(25 + 10 * (d - 1), 75) * (easy ? 0.6 : 1)),   // the day's takings to aim for
+  fee: (d, easy) => Math.round(U * Math.min(6 + 4 * (d - 1), 36) * (easy ? 0.5 : 1)),         // due at dawn
+  rep: (rating, met, short, refused, events) => Math.round((rating - 3.8) * 5) + (met ? 1 : -1) - (short ? 6 : 0) - Math.min(3, refused) + Math.max(-3, Math.min(3, events)),   // how a day moves the reputation (between -12 and +6; never below -3 on EASY, -2 on day one)
   strikes: 3,   // fees unpaid in a row before the pitch is lost (never on EASY, never on day one)
 };
 const fresh = () => ({ v: 1, day: 1, money: 0, rep: 50, debt: 0, strikes: 0, easy: false, tut: false, ups: [], recipes: [DAYDISH[0]], extras: false, asks: {}, regs: {}, best: 0 });
@@ -59,8 +60,8 @@ export function buildProgress(params) {
   prog.reg = (id) => (prog.P.regs[id] ||= { a: 0, k: '', d: '', ok: 0, n: 0, b: 0, bd: 0 });
   // dawn: the fee is paid from the day's takings and the savings, the reputation moves with the rating, the target and the fee; what was earned comes onto tomorrow's menu
   prog.close = () => { if (prog.result) return prog.result; const P = prog.P, g = G.game, taken = prog.taken(), target = prog.target(), fee = prog.fee(), due = fee + P.debt, have = P.money + taken, paid = Math.min(due, have), short = due - paid, rating = g.rating(), met = taken >= target;
-    let d = g.scores.length ? Math.round((rating - 3.6) * 6) + (met ? 2 : -1) : -2; if (short > 0) d -= 6; d = clamp(d, P.easy ? -3 : -12, 8); if (P.day === 1) d = Math.max(d, -2);
-    const was = P.rep; P.rep = clamp(P.rep + d + (G.events ? G.events.rep : 0), 0, 100); P.money = have - paid; P.debt = short; P.strikes = short > 0 && P.day > 1 ? P.strikes + 1 : 0; P.best = Math.max(P.best, taken);
+    let d = g.scores.length ? DAYS.rep(rating, met, short > 0, g.refused, G.events ? G.events.rep : 0) : -2; d = clamp(d, P.easy ? -3 : -12, 6); if (P.day === 1) d = Math.max(d, -2);
+    const was = P.rep; P.rep = clamp(P.rep + d, 0, 100); P.money = have - paid; P.debt = short; P.strikes = short > 0 && P.day > 1 ? P.strikes + 1 : 0; P.best = Math.max(P.best, taken);
     const R = { day: P.day, taken, target, met, fee, owed: due - fee, paid, short, rating, served: g.served, lost: g.lost, late: g.lateServed, repWas: was, rep: P.rep, money: P.money, dish: null, extras: false, out: !P.easy && P.strikes >= DAYS.strikes };
     for (let i = 1; i < DAYDISH.length && !R.dish; i++) { const k = DAYDISH[i], n = NEED[i] || NEED[NEED.length - 1]; if (!P.recipes.includes(k) && (P.rep >= n.rep || (P.asks[k] | 0) >= n.asks)) { P.recipes.push(k); R.dish = k; } }
     if (!R.dish && !P.extras && (P.rep >= EXTRAS.rep || P.day >= EXTRAS.day)) R.extras = P.extras = true;

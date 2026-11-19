@@ -238,7 +238,7 @@ export function buildGame(scene) {
       game.spawnT -= dt;
       if (game.spawnT <= 0) {
         const i = freeSeat();
-        if (i >= 0 && !game.soldOut && seatedN() < G.rush.max()) { spawn(i, null, { hurry: G.rush.hurry() }); game.spawnT = G.rush.gap(); } else game.spawnT = 2;
+        if (i >= 0 && !game.soldOut && !G.events?.wait && seatedN() < G.rush.max()) { spawn(i, null, { hurry: G.rush.hurry() }); game.spawnT = G.rush.gap(); } else game.spawnT = 2;
       }
     }
     if (game.state === 'closing' && !game.customers.length) { game.state = 'closed'; showSummary(); }

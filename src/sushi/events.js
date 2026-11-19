@@ -77,10 +77,10 @@ export function buildEvents() {
   E.plan = () => { const P = G.prog.P, can = EVENTS.filter((e) => P.day >= e.day && P.rep >= e.rep).sort(() => Math.random() - 0.5), n = Math.min(can.length, NIGHT.most, P.day === 1 ? NIGHT.first : 2 + Math.floor((P.day - 1) / 2) + (P.rep >= 65 ? 1 : 0));
     E.list = can.slice(0, n).map((def, i) => ({ id: def.id, at: NIGHT.from + (i + 0.3 + rand(0, 0.4)) / n * NIGHT.span, tries: 0 })); return E.list; };
   K.on('night', E.plan);
-  K.on('reset', () => { E.list = []; E.cur.length = 0; E.log = []; E.rep = 0; });
+  K.on('reset', () => { E.list = []; E.cur.length = 0; E.log = []; E.rep = 0; E.wait = false; });
   let t = 0;
   E.update = (dt) => { for (let i = E.cur.length - 1; i >= 0; i--) { const ev = E.cur[i]; if (RUN[ev.id].tick) call(ev, 'tick', dt); }
-    if ((t -= dt) > 0) return; t = 1; if (K.phase !== 'night' || G.game.state !== 'open' || E.cur.length || G.guest) return;
-    const due = E.list.find((x) => !x.done && K.pfrac >= x.at); if (!due) return; if (E.fire(due.id) || ++due.tries > 20) due.done = true; };
+    if ((t -= dt) > 0) return; t = 1; if (K.phase !== 'night' || G.game.state !== 'open' || E.cur.length || G.guest) { E.wait = false; return; }
+    const due = E.list.find((x) => !x.done && K.pfrac >= x.at); E.wait = !!due; if (!due) return; if (E.fire(due.id) || ++due.tries > 90) { due.done = true; E.wait = false; } };   // (while one is due the counter takes nobody new, so a stool comes free for it)
   return E;
 }

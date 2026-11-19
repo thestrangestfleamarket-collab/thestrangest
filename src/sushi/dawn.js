@@ -42,8 +42,8 @@ export function buildDawn(scene) {
       g.strokeStyle = '#40e080'; g.lineWidth = 4; g.fillStyle = '#e8dcc8'; g.textAlign = 'center'; if (!R.out) { g.strokeRect(w * 0.56, hh - 110, w * 0.26, 76); g.font = 'bold 38px Georgia'; g.fillText(TEXT.next, w * 0.69, hh - 58, w * 0.25); }
       g.strokeStyle = '#8a7a68'; g.strokeRect(w * 0.06, hh - 96, w * 0.2, 56); g.font = '24px Georgia'; g.fillText(D.sure ? TEXT.sure : TEXT.over, w * 0.16, hh - 60, w * 0.19); };
     const tex = T.panelTex(PW, PH, draw), cam = G.camera.getWorldPosition(new V3()), fw = G.camera.getWorldDirection(new V3()).setY(0).normalize(); D.sure = false;
-    const bd = new THREE.Mesh(new THREE.PlaneGeometry(W, H), new THREE.MeshBasicMaterial({ map: tex, toneMapped: false })); bd.position.copy(cam).addScaledVector(fw, 0.8); bd.lookAt(cam.x, bd.position.y, cam.z); bd.userData.nopick = true; scene.add(bd); D.board = bd;
-    const at = (px, py) => new V3((px / PW - 0.5) * W, (0.5 - py / PH) * H, 0.01), add = (name, px, py, press, r = 0.045) => { const l = at(px, py), b = { name, r, getPos: () => bd.localToWorld(l.clone()), press: () => { press(); if (D.board === bd) tex.redraw(draw); } }; G.buttons.push(b); D.btns.push(b); return b; };
+    const bd = new THREE.Mesh(new THREE.PlaneGeometry(W, H), new THREE.MeshBasicMaterial({ map: tex, toneMapped: false })); bd.position.copy(cam).addScaledVector(fw, 0.8); bd.lookAt(cam.x, bd.position.y, cam.z); bd.userData.nopick = true; scene.add(bd); bd.updateMatrixWorld(true); D.board = bd;
+    const at = (px, py) => new V3((px / PW - 0.5) * W, (0.5 - py / PH) * H, 0.01), add = (name, px, py, press, r = 0.045) => { const l = bd.localToWorld(at(px, py)), b = { name, r, getPos: () => l, press: () => { press(); if (D.board === bd) tex.redraw(draw); } }; G.buttons.push(b); D.btns.push(b); return b; };
     if (!R.out) { items().forEach((it, i) => add(it.name, PW * 0.9, rowY(i), () => G.shop.buy(it.id), 0.035)); bd.userData.button = add(TEXT.next, PW * 0.69, PH - 72, next, 0.07); }
     add(TEXT.over, PW * 0.16, PH - 68, () => { if (R.out || D.sure) over(); else D.sure = true; }, 0.05); };
   G.clock.on('end', D.show);

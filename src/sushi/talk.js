@@ -54,7 +54,7 @@ export const LINES = CANNED;
 
 export function buildTalk() {
   const talk = { live: null, tts: null, mic: 'off', diag: { hear: '-', think: '-', say: '-' } };
-  G.talk = talk;
+  G.talk = talk; talk.canned = canned; talk.lines = CANNED;
   const persona = (c) => {
     const nb = c.p.cast && c.p.cast.name ? c.p.cast : null; if (nb) { const fit = FITS[nb.style] || ['m', 'orion', 1], g = fit[0]; return { g, name: nb.name, age: nb.age, job: nb.job, mood: pick(MOODS), quirk: nb.quirk, style: pick(STYLES), story: G.block.story(nb), speaker: fit[1], pitch: fit[2] }; }
     const g = c.p.sex || 'm', fit = FITS[c.p.style] || [g, pick(VOICES[g]), 1, 24, 60, ''];

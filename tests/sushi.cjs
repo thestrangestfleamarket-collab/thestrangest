@@ -140,7 +140,7 @@ const srv = require('http').createServer((q, r) => { const f = path.join(ROOT, d
     for (let i = 0; i < 40; i++) { step(1); if (!bw.dead) { lastY = bw.obj.position.y; minZ = Math.min(minZ, bw.obj.position.z); if (bw.vel.z > 0.2) rb = true; } rock = Math.max(rock, t0.angleTo(tq(pb.p))); }
     const e1 = G.react.log.slice(n1).find((x) => x.who === pb.def.name); out.bounce = { J: e1 && e1.J, kind: e1 && e1.kind, bone: e1 && e1.bone, through: minZ < ch.z - 0.1, back: rb, whole: !bw.dead || lastY < 0.3, rock: +rock.toFixed(3), mad: !!B.mad[pb.def.id] };
     // the same bowl thrown twice as hard at the head floors them
-    step(60); park(pb, V(1.2, 0, -2.6)); pb.p.root.rotation.y = Math.PI; step(5); const hd = pb.p.bones.find((b) => b.name === 'head').getWorldPosition(V(0, 0, 0)); throwAt(hd.y + 0.12, 13, hd.x);
+    step(60); park(pb, V(1.2, 0, -2.6)); pb.p.root.rotation.y = Math.PI; step(50); const hd = pb.p.bones.find((b) => b.name === 'head').getWorldPosition(V(0, 0, 0)); throwAt(hd.y + 0.12, 13, hd.x);
     let down = false; for (let i = 0; i < 60; i++) { step(1); down = down || pb.p.down(); } const e2 = G.react.log[G.react.log.length - 1]; out.pass = { who: e2 && e2.who === pb.def.name, seated: e2 && e2.seated, J: e2 && e2.J, down, mad: !!B.mad[pb.def.id] }; step(60 * 5); out.pass.up = !pb.p.down() && !pb.p.reeling();
     // a slow hand laid on someone's chest is a touch: nobody is knocked about
     const pt = free(); park(pt, V(-1.3, 0, -2.6)); pt.p.root.rotation.y = 0; step(5); const tc = pt.p.bones.find((b) => b.name === 'torso').getWorldPosition(V(0, 0, 0)), t3 = G.t - 0.01; h.active = true; h.held = null; step(40);

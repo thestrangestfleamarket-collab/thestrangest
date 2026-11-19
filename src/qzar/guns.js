@@ -286,6 +286,11 @@ function makeShot(key, col) {
   else if (key === 'freezer') { const m = put(g, new THREE.IcosahedronGeometry(.1), lit(new THREE.Color(col).lerp(new THREE.Color(0xffffff), .85))); put(g, ball(.14, 14), soft(.25)); g.add(halo(0xbfe9ff, .5)); spin(m, 2, 3, 0); }
   else if (key === 'leech') { put(g, ball(.065), lit(core)); put(g, cyl(.004, .05, .2, 10), soft(.55), 0, 0, -.12, H); put(g, tor(.08, .008, 20), lit(0x9be36a)); g.add(halo(col, .36)); }
   else if (key === 'boomerang') { const m = new THREE.Group(); g.add(m); for (const k of [-1, 1]) { put(m, box(.2, .014, .05), lit(core), k * .075, 0, -.03, 0, k * .6, 0); put(m, box(.2, .03, .012), soft(.4), k * .08, 0, -.055, 0, k * .6, 0); } g.add(halo(col, .4)); spin(m, 0, 16, 0); }
+  else if (key === 'disc') {
+    const m = new THREE.Group(); g.add(m); put(m, tor(.15, .016, 36), lit(core), 0, 0, 0, H); put(m, tor(.11, .006, 30), lit(col), 0, 0, 0, H);
+    for (let k = 0; k < 3; k++) { const a = k * Math.PI * 2 / 3; put(m, box(.012, .008, .1), lit(col), Math.sin(a) * .06, 0, Math.cos(a) * .06, 0, a, 0); }
+    put(m, cyl(.15, .15, .004, 30), soft(.18)); g.add(halo(col, .5)); spin(m, 0, 18, 0);
+  }
   else if (key === 'curtain') bolt(.035, .08, .16);
   else if (key === 'decoy') { put(g, ball(.07), lit(core)); put(g, ball(.1), soft(.3)); g.add(halo(col, .4)); }
   else if (key === 'twin' || key === 'burst') bolt(.04, .14, .3);

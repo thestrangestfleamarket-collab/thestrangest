@@ -77,12 +77,23 @@ button:focus-visible,input:focus-visible{outline:2px solid var(--warn);outline-o
     <div class="card">
       <h1>Slowfire <span>Duel</span></h1>
       <p>Two platforms, slow shots, and your own body as the target. First to win two rounds takes the match.</p>
-      <ul>
+      <ul id="howDuel">
         <li><b>Mouse or finger:</b> move to dodge and to touch floating weapons. Click, Space or FIRE shoots.</li>
         <li><b>Headset:</b> dodge for real, reach out to grab weapons, pull the trigger to shoot.</li>
         <li>Twenty-five weapons turn up, each with limited shots; the readout says what the one in your hand does. Shields block until their power is spent.</li>
         <li>Q or right-click throws what you hold at your rival, E drops it. In a headset the grip lets go: swing and it flies.</li>
       </ul>
+      <ul id="howDisc" hidden>
+        <li>A closed room. A disc bounces off two walls and breaks on the third; a hit takes a quarter of your health.</li>
+        <li><b>Headset:</b> reach behind a shoulder or to a hip, pull the trigger to take a disc, swing and let go to throw. A grip lifts you on the jetpack, both grips lift faster; lean to slide sideways.</li>
+        <li><b>Screen:</b> click throws at the mark, so aim at a wall to bank it. Space lifts, Shift lifts faster, A and D slide.</li>
+        <li>A disc in your hand knocks theirs away. An empty hand can catch one: in a headset pull the trigger as it reaches your hand, on a screen press F or right-click as it arrives. Mistime it and it counts as a hit.</li>
+        <li>Each disc comes back three seconds after you take it. The jetpack holds ten seconds and refills on the ground.</li>
+      </ul>
+      <div class="row" id="game" role="group" aria-label="Game">
+        <button class="seg" type="button" data-g="duel" id="gDuel" aria-pressed="true">Duel</button>
+        <button class="seg" type="button" data-g="disc" id="gDisc" aria-pressed="false">Disc arena</button>
+      </div>
       <div class="row" id="opp" role="group" aria-label="Rival">
         <button class="seg" type="button" data-o="bot" id="oBot" aria-pressed="true">Versus bot</button>
         <button class="seg" type="button" data-o="net" id="oNet" aria-pressed="false">Two players</button>

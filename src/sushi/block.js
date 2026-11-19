@@ -48,7 +48,7 @@ export function buildBlock(root, shops, o = {}) {
     p.root.traverse((o) => { o.userData.nopick = true; }); root.add(p.root); p.cast = def; h.spk = { p, h, passer: true, here: () => !h.taken && !h.hidden && p.root.visible }; h.at = place(def.work, h); p.root.position.copy(h.at); p.root.visible = false; h.t = 5 + n * 9; h.step = 'inside'; return h;
   });
   const by = Object.fromEntries(people.map((h) => [h.def.id, h]));
-  const abed = (h) => { const hr = G.clock ? G.clock.hour : 12, a = h.def.age; return (a < 14 && hr > 21.5 && hr < 29.2) || (a >= 65 && hr > 24.5 && hr < 28.5); };   // children and the old are indoors in the small hours
+  const abed = (h) => { const hr = G.clock ? G.clock.hour : 12, a = h.def.age; return (a < 14 && hr > 21.5) || (a >= 65 && hr > 24.5 && hr < 28.5); };   // children are indoors from half past nine till the morning, the old in the small hours
   const next = (h) => { // begin the next thing on their list
     if (abed(h)) { h.step = 'inside'; h.hidden = true; h.t = 40; h.run = 0; return; }
     for (let guard = 0; guard < 8; guard++) {

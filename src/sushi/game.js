@@ -3,24 +3,24 @@ import * as THREE from 'three';
 import { G, V3, rand, pick, clamp, lerp } from './ctx.js';
 import * as T from './tex.js';
 import { makePerson } from './avatars.js';
-import { SEATS, RECIPES, DRINKS, BOWL_BROTH } from './cart.js';
+import { SEATS, RECIPES, DRINKS, BOWL_BROTH, BOWL_TARE } from './cart.js';
 import { TOPPINGS, TARE, BROTH, doneness } from './items.js';
 import { buildTill, mon } from './till.js';
 import { TEXT as RT } from './rush.js';
 
 // what is on the menu (the dishes unlocked, the night's short card) is the run's (progress.js G.prog.stage); how fast customers come and how long they wait is the day's pressure (rush.js)
 export const TEXT = { firm: 'NOODLES: FIRM (katame)', refund: 'Asked for half back', usual: 'THE USUAL', day: 'DAY', of: 'OF', fee: 'FEE', double: 'PAYS DOUBLE' };
-const D_SODA = 0.24, D_TEA = 0.12, X_CHASHU = 0.16, X_EGG = 0.12 * 0.84; // how often a customer asks for each
-const POT = 0.965;   // a pot's level between brimful and too low to ladle
-// a night's stock: what its expected customers need, and a quarter more so nothing is wasted (the pots and crocks hold the night's bowls, the kettle and jars the quarter)
+const D_SODA = 0.24, D_TEA = 0.12, N_SODA = 0.4, N_TEA = 0.25, X_CHASHU = 0.16, X_EGG = 0.12 * 0.84; // how often a customer asks for each (a drink by day, at night)
+const POT = 0.965;   // a pot's or crock's level between brimful and too low to ladle
+// a night's stock: what its expected customers need, each dish by how many are expected to order it (cfg.mix: { key: bowls }), and a quarter more of everything, so a good day can sell out (the pots and crocks hold what they can of the night's bowls, the kettle and jars the rest and the quarter)
 export function stockPlan(cfg) {
-  const E = cfg.guests, M = cfg.menu, avg = (f) => M.reduce((n, k) => n + f(RECIPES[k]), 0) / M.length, up = (x) => Math.ceil(x * 1.25 - 1e-9);
-  const P = { noodles: up(E), soda: cfg.drinks ? up(E * D_SODA) : 0, tea: cfg.drinks ? up(E * D_TEA) : 0, tops: {}, broth: {}, tare: {}, tareSpare: {} };
-  for (const t of Object.keys(TOPPINGS)) P.tops[t] = up(E * (avg((r) => r.tops[t] || 0) + (cfg.mods ? (t === 'chashu' ? X_CHASHU : t === 'egg' ? X_EGG : 0) : 0)));
-  const cap = Math.floor(POT / BOWL_BROTH * G.mods.pot); let over = 0;   // (what a pot cannot hold waits in the kettle)
-  for (const b of Object.keys(BROTH)) { const n = Math.ceil(E * avg((r) => (r.broth === b ? 1 : 0)) - 1e-9); P.broth[b] = Math.min(cap, n); over += n - P.broth[b]; }
+  const E = cfg.guests, mix = cfg.mix, sum = (f) => Object.keys(mix).reduce((n, k) => n + mix[k] * f(RECIPES[k]), 0), up = (x) => Math.ceil(x * 1.25 - 1e-9);
+  const P = { noodles: up(E), soda: cfg.drinks ? up(cfg.soda) : 0, tea: cfg.drinks ? up(cfg.tea) : 0, tops: {}, broth: {}, tare: {}, tareSpare: {} };
+  for (const t of Object.keys(TOPPINGS)) P.tops[t] = up(sum((r) => r.tops[t] || 0) + (cfg.mods ? E * (t === 'chashu' ? X_CHASHU : t === 'egg' ? X_EGG : 0) : 0));
+  const cap = Math.floor(POT / BOWL_BROTH * G.mods.pot), capT = Math.floor(POT / BOWL_TARE); let over = 0;   // (what a pot cannot hold waits in the kettle, what a crock cannot in its jar)
+  for (const b of Object.keys(BROTH)) { const n = Math.ceil(sum((r) => (r.broth === b ? 1 : 0)) - 1e-9); P.broth[b] = Math.min(cap, n); over += n - P.broth[b]; }
   P.brothSpare = Math.ceil(E * 0.25) + over;
-  for (const k of Object.keys(TARE)) { const n = E * avg((r) => (r.tare === k ? 1 : 0)); P.tare[k] = Math.ceil(n - 1e-9); P.tareSpare[k] = n > 0 ? Math.ceil(n * 0.25) : 0; }
+  for (const k of Object.keys(TARE)) { const n = Math.ceil(sum((r) => (r.tare === k ? 1 : 0)) - 1e-9); P.tare[k] = Math.min(capT, n); P.tareSpare[k] = n > 0 ? Math.ceil(n * 0.25) + n - P.tare[k] : 0; }
   return P;
 }
 
@@ -32,7 +32,8 @@ export function buildGame(scene) {
   };
   const K = G.clock;
   game.cfg = () => G.prog.stage(K.phase === 'night' || K.phase === 'dawn');
-  const dayPlan = () => { const d = G.prog.stage(false), n = G.prog.stage(true); return { menu: [...new Set([...d.menu, ...n.menu])], mods: d.mods, drinks: true, guests: G.rush.expect() }; };   // what the whole run, its day and its night, is stocked for
+  const dayPlan = () => { const d = G.prog.stage(false), n = G.prog.stage(true), e = G.rush.expect(true), mix = {}; for (const k of d.menu) mix[k] = (mix[k] || 0) + e.day / d.menu.length; for (const k of n.menu) mix[k] = (mix[k] || 0) + e.night / n.menu.length;
+    return { mix, mods: d.mods, drinks: true, guests: e.all, soda: (d.drinks ? e.day * D_SODA : 0) + e.night * N_SODA, tea: (d.drinks ? e.day * D_TEA : 0) + e.night * N_TEA }; };   // what the whole run, its day and its night, is stocked for
   G.game = game;
   const till = buildTill(scene, C);
   game.restock = () => { C.restock(stockPlan(dayPlan())); till.reset(); };
@@ -57,8 +58,10 @@ export function buildGame(scene) {
     });
   });
 
+  // which dish a stranger asks for: each of those on the board in turn, in a shuffled round, so the day's orders run across the whole menu (the first lesson's bowl is the first dish)
+  const round = []; const next = (list) => { for (let i = 0; i < 2; i++) { const j = round.findIndex((k) => list.includes(k)); if (j >= 0) return round.splice(j, 1)[0]; round.length = 0; round.push(...list); for (let n = round.length - 1; n > 0; n--) { const m = (Math.random() * (n + 1)) | 0; [round[n], round[m]] = [round[m], round[n]]; } } return pick(list); };
   function makeOrder(want) { // want: a recipe's key (in place of one sold out), or what a tenant of THE MARKET chose from the menu ({ key, drink }, live.js)
-    const w = want && typeof want === 'object' ? want : null, cfg = game.cfg(), a = C.avail(), can = cfg.menu.filter((k) => C.canMake(k, a)), key = (w ? (cfg.menu.includes(w.key) || (w.any && RECIPES[w.key]) ? w.key : null) : want) || pick(can.length ? can : cfg.menu), r = RECIPES[key], tops = { ...r.tops }, mods = []; // what the board says is sold out is not asked for
+    const w = want && typeof want === 'object' ? want : null, cfg = game.cfg(), a = C.avail(), can = cfg.menu.filter((k) => C.canMake(k, a)), key = (w ? (cfg.menu.includes(w.key) || (w.any && RECIPES[w.key]) ? w.key : null) : want) || (!G.prog.P.tut && G.prog.P.day === 1 && can.includes(cfg.menu[0]) ? cfg.menu[0] : next(can.length ? can : cfg.menu)), r = RECIPES[key], tops = { ...r.tops }, mods = []; // what the board says is sold out is not asked for
     let price = r.price, firm = false, no = null;
     if (cfg.mods && !w) {
       if (Math.random() < 0.25) { firm = true; mods.push(TEXT.firm); }
@@ -67,7 +70,7 @@ export function buildGame(scene) {
       else if (Math.random() < 0.12) { tops.egg = (tops.egg || 0) + 1; price += 75; mods.push(`+ EXTRA EGG (x${tops.egg})`); }
     }
     if (w && w.firm && cfg.mods) { firm = true; mods.push(TEXT.firm); } if (w && w.twice) { price *= 2; mods.push(TEXT.double); }
-    const d = Math.random(); const drink = !cfg.drinks ? null : w ? w.drink || null : cfg.night ? (d < 0.4 ? 'soda' : d < 0.65 ? 'tea' : null) : d < D_SODA ? 'soda' : d < D_SODA + D_TEA ? 'tea' : null;
+    const d = Math.random(); const drink = !cfg.drinks ? null : w ? w.drink || null : cfg.night ? (d < N_SODA ? 'soda' : d < N_SODA + N_TEA ? 'tea' : null) : d < D_SODA ? 'soda' : d < D_SODA + D_TEA ? 'tea' : null;
     return { key, recipe: r, tops, mods, firm, no, drink, price, no_: 0, num: game.ticketNo++ };
   }
 

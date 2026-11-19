@@ -67,7 +67,7 @@ function makeBody(col, o) {
     }
   }
   const N = new V(), P = new V(), T = new V(), fwd = new V(0, 0, o.face), up = new V(), right = new V(), hip = new V(), sh = new V(), mid = new V(), end = new V(), pole = new V(), want = new V(), last = new V(), vel = new V(), tar = [null, null];
-  let ready = false; const floor = o.floor + .035;
+  let ready = false, floor = o.floor + .035;
 
   function update(dt, H, hands, burn = 0) {
     for (const m of jets) { m.visible = burn > 0; m.scale.set(1, burn * (.8 + Math.random() * .4), 1); }
@@ -113,7 +113,7 @@ function makeBody(col, o) {
     });
   }
   function tone(c) { for (const m of jets) m.material.color.set(c); lamp.color.set(c); if (hue) hue.set(c).lerp(new THREE.Color(0xffffff), .35); }
-  return { group: g, update, tone };
+  return { group: g, update, tone, stand: y => { floor = y + .035; ready = false; } };
 }
 
 export { makeBody };

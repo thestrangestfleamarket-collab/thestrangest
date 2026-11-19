@@ -43,7 +43,9 @@ const srv = require('http').createServer((q, r) => { const f = path.join(ROOT, d
   ok(await until(pg, () => __qzar.round === 2 && __qzar.state === 'play'), 'and the next round begins');
   await pg.close();
   const dp = await open('');
-  await dp.click('#gDisc'); await dp.click('#start');
+  await dp.click('#gDisc'); await dp.click('#size0');
+  ok(await dp.evaluate(() => __qzar.ROOM.x === 3 && __qzar.ROOM.y === 5), 'you pick the size of the room');
+  await dp.click('#size1'); await dp.click('#start');
   ok(await until(dp, () => __qzar.state === 'play' && __qzar.game === 'disc'), 'the disc arena starts a round');
   await dp.evaluate(() => { const q = __qzar; q.foe.discs.fill(1e9); window.d = q.throwDisc(q.you, new q.V3(0, 3, 0), new q.V3(9, 0, 0)); });
   ok(await until(dp, () => d.hits === 2 && !d.dead), 'a disc bounces off two walls');

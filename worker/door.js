@@ -117,8 +117,7 @@ export default {
     if ((request.method === "GET" || request.method === "HEAD") && p === "/golf") return page(env, url, "/golf", request, "no-cache");
     if (p === "/golf/") return Response.redirect(url.origin + "/golf" + url.search, 301);
     // SPACE FLEET (src/space/): a fleet battle in a headset, its own page at /space, to anyone with the link; its models, sky and sounds under /space-assets/; its one public room is the Space Durable Object
-    if ((request.method === "GET" || request.method === "HEAD") && p === "/space") return page(env, url, "/space", request, "no-cache");
-    if (p === "/space/") return Response.redirect(url.origin + "/space" + url.search, 301);
+    if ((request.method === "GET" || request.method === "HEAD") && (p === "/space" || p === "/space/")) return Response.redirect("https://claude.ai/artifact/9inZsDMyTHoZaQ9J1v2BQL", 302);   // owner, 19 Nov 2026: /space leads to his artifact; SPACE FLEET's page is still built, at no address
     if ((request.method === "GET" || request.method === "HEAD") && SPCA.test(p)) {
       const r = await env.ASSETS.fetch(new Request(url.origin + p)); if (!r.ok) return new Response("not found", { status: 404 });
       const out = new Response(r.body, r); out.headers.set("content-type", SNIPT[p.split(".").pop()]); out.headers.set("cache-control", "public, max-age=86400"); out.headers.set("x-robots-tag", "noindex"); return out; }

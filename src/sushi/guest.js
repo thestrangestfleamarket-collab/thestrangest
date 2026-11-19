@@ -6,16 +6,17 @@ import { tenantFigure } from './tenant.js';
 import { makePerson } from './avatars.js';
 import { mon as usd } from './till.js';
 import * as T from './tex.js';
+import { NZ, KERB, W0, E0 } from './plan.js';
 
-const SEATZ = -1.16, STOOLZ = -1.62, START = [1.4, -3.2], MOUTH = 25.2, WALK = 1.45;   // where a guest sits and stands to sit; where they come in; the street's end
+const SEATZ = -1.16, STOOLZ = -1.62, START = [1.4, -2.6], MOUTH = 25.2, WALK = 1.45;   // where a guest sits and stands to sit; where they come in; the street's end
 // what a guest walks round: the cart, the dumpsters and pallets, in the cart's own metres [x0, z0, x1, z1]
-const SOLID = [[-1.95, -1.4, 1.95, 2.35], [19.0, -5.2, 23.8, -3.8], [-19.6, -5.2, -18.8, -4.3], [-16.2, 1.8, -14.2, 3.4]];   // the cart, the subway stair's well, the pay phone, a stoop
+const SOLID = [[-1.95, -1.4, 1.95, NZ], [-19.6, KERB, -18.8, KERB + 0.85], [-16.2, NZ - 1.5, -14.2, NZ], [-23.8, NZ - 1.5, -21.8, NZ]];   // the cart, the pay phone, the stoops
 
 export function buildGuest(live) {
   const card = (() => { try { return JSON.parse(sessionStorage.getItem('holo') || 'null') || {}; } catch (e) { return {}; } })(), Y = card.yatai || {};
   const me = { seat: -1, cook: '', sat: false, ask: null, askT: 0, menu: null, drink: '', paid: 0, cash: Math.max(0, +Y.cash || 0), view: 'third', yaw: 0, at: new THREE.Vector3(START[0], 0, START[1]), moved: 0, since: live.share ? live.share.since : Date.now(), ph: 0, near: -1, nearCook: null };
   G.guestRole = me; G.hint = 'WASD WALK · MOUSE LOOK · V FIRST / THIRD PERSON · E SIT AT A STOOL · M SETTINGS · THE STREET\'S END OR LEAVE: BACK TO THE MARKET';
-  Object.assign(BOUNDS, { minX: -25.5, maxX: 26.4, minZ: -5.15, maxZ: 3.05 });
+  Object.assign(BOUNDS, { minX: W0 + 1.1, maxX: E0 - 0.2, minZ: KERB + 0.15, maxZ: NZ - 0.35 });
   // nothing on the cart is theirs to touch: its things, knobs and switch are the cook's
   for (const it of G.items) it.locked = true; G.sources.length = 0; if (G.cart) G.cart.group.traverse((o) => { o.userData.nopick = true; }); G.itemRoot.userData.nopick = true;
   G.game.toggleOpen = () => { }; G.game.callOver = () => { };

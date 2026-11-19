@@ -15,6 +15,7 @@ import { loadAvatars, makePerson } from './avatars.js';
 import { PF } from './pf.js';
 import { tenantFigure } from './tenant.js';
 import { buildLife } from './life.js';
+import { buildShade } from './shade.js';
 import { buildTalk } from './talk.js';
 import { buildGrit } from './grit.js';
 import { buildGuide } from './guide.js';
@@ -82,7 +83,7 @@ const prog = buildProgress(params), rush = buildRush();   // the run across days
 const game = buildGame(scene);
 const regs = buildRegulars(), events = buildEvents(); buildShop(); prog.on(game.restock); prog.apply();
 const input = buildInput(renderer, rig, camera, canvas);
-const life = buildLife(scene, city, cart);
+const life = buildLife(scene, city, cart), shade = buildShade(scene, city);
 const talk = buildTalk(scene);
 const grit = buildGrit(scene, city, cart);
 const guide = buildGuide(scene, cart);
@@ -126,7 +127,7 @@ function tick(dt) {
   const boil = cart.update(dt, G.t);
   game.update(dt, G.t); rush.update(); regs.update(dt); events.update(dt);
   city.update(dt, G.t);
-  life.update(dt, G.t);
+  life.update(dt, G.t); shade.update();
   talk.update(dt); tv.update(dt); tank.update(dt); story.update(dt); live.update(dt); share.update(dt); if (!guest) cook.update(dt);
   grit.update(dt, G.t);
   guide.update(dt, G.t); gameMenu.update(dt); report.update(dt);
@@ -162,7 +163,10 @@ const gameMenu = buildMenu(scene, cart, guide, talk, shadowLights, report);
 // what is written small in the world (a ticket, the menu board, a label), read sharp: on a screen, looked at from close, it is shown again beside the crosshair at the page's own resolution, whatever the picture's is
 { const rd = document.createElement('canvas'); rd.id = 'read'; rd.style.cssText = 'position:fixed;right:14px;top:50%;transform:translateY(-50%);max-width:36vw;max-height:60vh;border-radius:6px;box-shadow:0 4px 24px rgba(0,0,0,.6);pointer-events:none;z-index:4;display:none;opacity:.97'; document.body.appendChild(rd);
   const ray = new THREE.Raycaster(), mid = new THREE.Vector2(0, 0); ray.far = 3.2; let shown = null, at = 0, cand = null, labels = null; const _n = new THREE.Vector3(), _e = new THREE.Vector3();
-  const written = (o) => { const map = o && o.visible && o.material && !Array.isArray(o.material) && o.material.map, img = map && map.image; return !!(img && img.getContext && img.width >= 200 && o.geometry.type === 'PlaneGeometry' && !o.userData.noread); };
+  // (a board with nothing on it, a display that is off, is not worth showing again: an empty dark box by the crosshair)
+  const bc = document.createElement('canvas'); bc.width = bc.height = 32; const bg = bc.getContext('2d', { willReadFrequently: true }), blankOf = new WeakMap();
+  const blank = (t) => { const k = blankOf.get(t); if (k && k.v === t.version) return k.e; let e = true; try { bg.clearRect(0, 0, 32, 32); bg.drawImage(t.image, 0, 0, 32, 32); const d = bg.getImageData(0, 0, 32, 32).data; let lo = 255, hi = 0; for (let i = 0; i < d.length; i += 4) { const l = (d[i] * 3 + d[i + 1] * 6 + d[i + 2]) / 10 * (d[i + 3] / 255); if (l < lo) lo = l; if (l > hi) hi = l; } e = hi - lo < 30; } catch (err) { e = false; } blankOf.set(t, { v: t.version, e }); return e; };
+  const written = (o) => { const map = o && o.visible && o.material && !Array.isArray(o.material) && o.material.map, img = map && map.image; return !!(img && img.getContext && img.width >= 200 && o.geometry.type === 'PlaneGeometry' && !o.userData.noread && !blank(map)); };
   setInterval(() => { if (G.mode !== 'desktop' || G.ended || (G.set && G.set.reader === false)) { if (shown) { shown = null; rd.style.display = 'none'; } return; }
     if (!labels && G.t > 3) { labels = []; cart.group.traverse((o) => { if (o.isMesh && written(o)) labels.push(o); }); }
     ray.setFromCamera(mid, camera); const tickets = game.customers.map((c) => c.ticket).filter(Boolean), hit = ray.intersectObjects([cart.group, ...tickets], true).find((h) => h.object.visible && !h.object.isSprite); let ok = hit && written(hit.object) ? hit.object : null;

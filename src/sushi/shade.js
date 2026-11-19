@@ -2,7 +2,7 @@
 import * as THREE from 'three';
 import { G, clamp } from './ctx.js';
 import * as T from './tex.js';
-import { PEOPLE } from './rb.js';
+import { PEOPLE } from './pf.js';
 import { NZ, KERB, FKERB, FZ, W0, ROAD } from './plan.js';
 
 const LOT = 7.6, N = 40;

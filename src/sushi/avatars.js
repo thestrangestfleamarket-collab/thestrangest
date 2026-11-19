@@ -22,5 +22,5 @@ const stickSet = () => { stickGeo ||= new THREE.CylinderGeometry(0.0028, 0.0018,
 // a person by Polyfork's name (cast.js), or one of the passers-by in turn
 export function makePerson(seed, style) {
   if (!lib.ready) return makeFallback(seed);
-  const key = style || CUSTOMERS[lib.next++ % CUSTOMERS.length], sticks = stickSet(), P = pfPerson(key, sticks, { far: true }); P.seed = seed; P.root.add(sticks); return P;
+  const key = style || CUSTOMERS[lib.next++ % CUSTOMERS.length], sticks = stickSet(), P = pfPerson(key, sticks, { cart: true }); P.seed = seed; P.root.add(sticks); return P;
 }

@@ -1,6 +1,7 @@
 // the run's weather, after THE MARKET's (src/131-weather.js: cloud, rain, mist and wind, its rain drawn as streaks round you): here it is the run's own, a sum of the run's clock (G.clock.frac), so every page on the block sees the same sky: a clear day, cloud gathering through the dusk, a thin drizzle while the night is at its worst, then clearing to a hazy dawn; what is heard (audio.js) follows what falls
 import * as THREE from 'three';
 import { G, clamp } from './ctx.js';
+import { NZ, FZ } from './plan.js';
 
 const sm = (a, b, x) => { const t = clamp((x - a) / (b - a), 0, 1); return t * t * (3 - 2 * t); };
 const hsh = (i) => { const v = Math.sin(i * 12.9898 + 78.233) * 43758.5453; return v - Math.floor(v); };
@@ -22,7 +23,7 @@ export function buildWeather(scene, o = {}) {
   const rg = new THREE.BufferGeometry(); rg.setAttribute('position', new THREE.BufferAttribute(rp, 3).setUsage(THREE.DynamicDrawUsage));
   const rm = new THREE.LineBasicMaterial({ color: 0x9aaabb, transparent: true, opacity: 0.32, depthWrite: false, fog: true });
   const RAIN = new THREE.LineSegments(rg, rm); RAIN.frustumCulled = false; RAIN.visible = false; RAIN.userData.nopick = true; scene.add(RAIN);
-  const dry = (x, y, z) => (Math.abs(x) < 1.95 && z > -1.95 && z < 2.25 && y < 2.75) || z > 3.4 || z < -16.6;   // under the cart's roof, behind the fronts
+  const dry = (x, y, z) => (Math.abs(x) < 1.95 && z > -1.95 && z < 2.25 && y < 2.75) || z > NZ || z < FZ;   // under the cart's roof, behind the fronts
   const cam = new THREE.Vector3();
   W.update = (dt) => {
     const K = G.clock, w = W.now = weatherAt(K ? K.frac : 0); W.rainK += clamp(w.rain - W.rainK, -dt * 0.05, dt * 0.05); G.rainK = W.rainK; G.wet = W.rainK > 0.01; G.wind = w.wind;

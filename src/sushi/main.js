@@ -2,7 +2,7 @@
 import * as THREE from 'three';
 import { G, clamp, mergeStatic } from './ctx.js';
 import { buildAlley, FOG } from './alley.js';
-import { buildCart } from './cart.js';
+import { buildCart, DRINKS } from './cart.js';
 import { buildFx } from './fx.js';
 import { buildGame } from './game.js';
 import { buildClock } from './clock.js';
@@ -27,6 +27,11 @@ import { buildCook } from './cook.js';
 import { buildShare } from './share.js';
 import { buildGuest } from './guest.js';
 import { buildDawn } from './dawn.js';
+import { buildProgress } from './progress.js';
+import { buildRush } from './rush.js';
+import { buildRegulars } from './regulars.js';
+import { buildEvents } from './events.js';
+import { buildShop } from './shop.js';
 import { NET } from '../holo/net.js';
 import { PH } from './physics.js';
 import * as T from './tex.js';
@@ -73,7 +78,9 @@ const weather = buildWeather(scene, { lean });
 const cart = buildCart(scene, city);
 if (PH.ready) PH.statics(cart);
 buildClock(params);
+const prog = buildProgress(params), rush = buildRush();   // the run across days and the day's pressure (before the game: its menu and stock are theirs)
 const game = buildGame(scene);
+const regs = buildRegulars(), events = buildEvents(); buildShop(); prog.on(game.restock); prog.apply();
 const input = buildInput(renderer, rig, camera, canvas);
 const life = buildLife(scene, city, cart);
 const talk = buildTalk(scene);
@@ -104,7 +111,7 @@ async function startVR() {
     session.addEventListener('end', () => { G.mode = 'menu'; menu.style.display = 'flex'; });
   } catch (e) { vrBtn.textContent = 'VR failed: ' + e.message; console.error(e); }
 }
-NET.tok().then(() => fetch('/sushi/say', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: '{}' })).then((r) => { if (r.status === 401) $('login').style.display = 'inline-block'; else G.live?.join(); }).catch(() => { }); // the patrons' voices are a login's: say so before the headset goes on
+NET.tok().then(() => fetch('/sushi/say', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: '{}' })).then((r) => { if (r.status === 401) $('login').style.display = 'inline-block'; else G.live?.join(); }).catch(() => { }); prog.load(); // the patrons' voices are a login's: say so before the headset goes on
 vrBtn.onclick = async () => { if (await talk.needPrime()) { vrBtn.textContent = 'Allow the microphone…'; const ok = await talk.prime(); vrBtn.textContent = ok ? 'Enter VR' : 'Enter VR (no microphone)'; return; } startVR(); }; // the microphone is asked for on its own press: a prompt cannot be answered inside the headset view
 window.G_STARTED = true;
 if (navigator.xr?.isSessionSupported) navigator.xr.isSessionSupported('immersive-vr').then((ok) => { vrBtn.disabled = !ok; vrBtn.textContent = ok ? 'Enter VR' : 'No headset here'; if (!ok) { vrBtn.classList.remove('primary'); deskBtn.classList.add('primary'); } }).catch(() => { vrBtn.textContent = 'VR unavailable'; });
@@ -117,7 +124,7 @@ function tick(dt) {
   G.clock.update(dt); weather.update(dt);
   updateItems(dt);
   const boil = cart.update(dt, G.t);
-  game.update(dt, G.t);
+  game.update(dt, G.t); rush.update(); regs.update(dt); events.update(dt);
   city.update(dt, G.t);
   life.update(dt, G.t);
   talk.update(dt); tv.update(dt); tank.update(dt); story.update(dt); live.update(dt); share.update(dt); if (!guest) cook.update(dt);
@@ -177,7 +184,7 @@ function frame(now) {
 }
 renderer.setAnimationLoop(frame);
 
-G.debug = { weather, dawn, tv, Items, PH, person: makePerson, RB, tenant: tenantFigure, city, guide, menu: gameMenu, report, tick, frame, render, input, startDesktop, startVR, THREE, share, guest, tank };
+G.debug = { weather, dawn, tv, Items, DRINKS, PH, person: makePerson, RB, tenant: tenantFigure, city, guide, menu: gameMenu, report, tick, frame, render, input, startDesktop, startVR, THREE, share, guest, tank };
 if (G.guest) { menu.querySelector('h2').textContent = 'RAMEN, as yourself: walk the block up to the ramen cart, take a stool, order a bowl and pay for it. The cook, the customers and everyone passing are the same people every page on the block sees.'; $('help').innerHTML = '<div><b>Browser</b> WASD walk · mouse look · V first / third person · E sit at a stool or get up · click the menu to order · M settings</div><div><b>VR</b> left stick walk · right stick turn · trigger by a stool to sit · step away to get up · poke the menu to order</div><div><b>Back</b> walk out at the end of the street, or LEAVE, to THE MARKET</div>'; $('keys').textContent = 'WASD walk · V view · E sit / get up · click: order · M settings · Esc: free mouse'; deskBtn.textContent = 'Walk the block in this browser'; }
 window.G = G;
 { const box = $('say'); // on a screen: M the settings board, G the guide, T to type what you say if you would rather not speak it

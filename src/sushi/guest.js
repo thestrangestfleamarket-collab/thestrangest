@@ -86,7 +86,7 @@ export function buildGuest(live) {
   const place = () => { const rig = G.rig; if (G.renderer.xr.isPresenting) { rig.updateMatrixWorld(true); G.camera.getWorldPosition(_c); rig.position.x += me.at.x - _c.x; rig.position.z += me.at.z - _c.z; } else rig.position.set(me.at.x, 0, me.at.z); };
   me.start = () => { me.at.set(START[0], 0, START[1]); place(); if (G.desk) { G.desk.yaw = 2.73; G.desk.pitch = -0.12; } };
   const HINT = G.hint;
-  me.update = (dt) => { G.hint = HINT; G.guideText = ''; if (G.mode === 'menu') return; const xr = G.renderer.xr.isPresenting, cam = G.camera;
+  me.update = (dt) => { G.hint = G.dayLine ? G.dayLine + ' · ' + HINT : HINT; G.guideText = ''; if (G.mode === 'menu') return; const xr = G.renderer.xr.isPresenting, cam = G.camera;
     if (xr && ++xrF === 8) { G.rig.rotation.y = Math.PI * 0.85; me.at.set(START[0], 0, START[1]); place(); }   // (once the headset is placed at the cart, out in front of it)
     if (!xr) xrF = 0;
     const prev = _d.copy(me.at); if (me.sat) { if (xr) { G.rig.updateMatrixWorld(true); cam.getWorldPosition(_c); if (Math.hypot(_c.x - me.at.x, _c.z - me.at.z) > 0.6) me.up(true); } else { const k = G.desk && G.desk.keys; if (k && (k.KeyW || k.KeyA || k.KeyS || k.KeyD)) me.up(true); else G.rig.position.set(me.at.x, 0, me.at.z); } }

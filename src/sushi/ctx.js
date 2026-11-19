@@ -10,6 +10,7 @@ export const G = {
   t: 0,
   hint: '',
   audio: null, cart: null, game: null, fx: null,
+  mods: { baskets: 1, seats: 2, chop: 1, pot: 1, draw: 1, calm: 1, heat: 1, cool: 1 },   // what the cart's upgrades change (progress.js resolves them; every system reads them here)
 };
 
 export const V3 = THREE.Vector3;

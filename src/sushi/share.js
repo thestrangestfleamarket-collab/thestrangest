@@ -31,7 +31,7 @@ export function buildShare(live) {
   S.take = (from, w) => { if (!from || !w || typeof w !== 'object') return; S.lanes.set(String(from), { w, at: Date.now() }); };
 
   // the passers-by, when another page runs them: moved where its word says; the cart does not take them for customers (its own come from the street)
-  if (B) { const run = B.update, take = B.take; B.update = (dt, t) => (S.lead || !S.lanes.get(S.by) ? run(dt, t) : follow(dt, t)); B.take = () => (S.lead ? take() : null); }
+  if (B) { const run = B.update, take = B.take; B.update = (dt, t) => (S.lead || !S.lanes.get(S.by) ? run(dt, t) : follow(dt, t)); B.take = (w) => (S.lead ? take(w) : null); }
   const _v = new THREE.Vector3(), _l = new THREE.Vector3();
   const steer = (p, d, e, dt, t, dx, st) => { const x = (+e[0] || 0) + dx, z = +e[1] || 0, now = G.t;   // (st: the sender's own clock, for how fast they go; eased ahead by as long as their word has been here)
     if (!d.to) { d.to = new THREE.Vector3(x, 0, z); d.v = new THREE.Vector3(); d.at = now; d.st = st; p.root.position.set(x, 0, z); p.root.rotation.y = +e[2] || 0; }

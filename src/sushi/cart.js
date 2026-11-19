@@ -145,7 +145,8 @@ export function buildCart(scene, city) {
   C.lamps = (k) => { C.lampK = k; const e = G.set && G.set.easy ? 0.6 : 1, on = 0.45 + 0.55 * k; bulbM.color.setRGB(3.2, 2.5, 1.5).multiplyScalar((0.5 + 0.5 * k) * (0.5 + 0.5 * e)); for (const w of C.workLights) { if (w.l) w.l.intensity = (w.night ? k : on) * w.k; else w.h.material.opacity = (0.1 + 0.9 * k) * w.op * e; } C.glow(); };
 
   // stools
-  for (const x of SEATS) { cyl(0.16, 0.16, 0.05, mat({ color: 0x7a1814, roughness: 0.45 }), x, 0.67, -1.16, cart, 20); cyl(0.02, 0.02, 0.65, steel, x, 0.33, -1.16, cart, 8); cyl(0.17, 0.19, 0.02, steel, x, 0.01, -1.16, cart, 16); mesh(new THREE.TorusGeometry(0.13, 0.008, 6, 20), steel, x, 0.28, -1.16, cart).rotation.x = Math.PI / 2; }
+  C.stools = SEATS.map((x, i) => { const st = i < 2 ? cart : new THREE.Group(); if (st !== cart) { st.userData.keep = true; cart.add(st); }   // (the third stool is bought: progress.js; shown by C.fit)
+    cyl(0.16, 0.16, 0.05, mat({ color: 0x7a1814, roughness: 0.45 }), x, 0.67, -1.16, st, 20); cyl(0.02, 0.02, 0.65, steel, x, 0.33, -1.16, st, 8); cyl(0.17, 0.19, 0.02, steel, x, 0.01, -1.16, st, 16); mesh(new THREE.TorusGeometry(0.13, 0.008, 6, 20), steel, x, 0.28, -1.16, st).rotation.x = Math.PI / 2; return st; });
   // placemats on the ledge
   C.seatSpots = SEATS.map((x) => { const p = box(0.3, 0.004, 0.22, mat({ color: 0x2a3a2e, roughness: 0.9 }), x, 1.002, -0.71, cart); p.castShadow = false; return new V3(x, 1.0, -0.71); });
   // on a little tray at each pair of seats: a glazed cup of chopsticks, the shichimi, a soy dispenser
@@ -371,7 +372,7 @@ export function buildCart(scene, city) {
   C.restock = (P) => {
     const s = C.stock; s.noodles = P.noodles; s.drinks.soda = P.soda; s.drinks.tea = P.tea;
     for (const k in C.bins) { const b = C.bins[k], need = P.tops[k] || 0, cap = { chashu: 8, egg: 4, negi: 8, naruto: 8 }[k]; if (cap !== undefined) { b.stock = Math.min(need, cap); s.raw[k] = Math.ceil((need - b.stock) / YIELD[k]); } else b.stock = need; b.refresh(); }
-    for (const p of C.pots) if (p.type) p.level = Math.min(1, 0.035 + (P.broth[p.type] || 0) * BOWL_BROTH);
+    for (const p of C.pots) if (p.type) p.level = Math.min(1, 0.035 + (P.broth[p.type] || 0) * BOWL_BROTH / G.mods.pot);
     s.kettle = P.brothSpare * BOWL_BROTH;
     for (const v of C.tares) { v.level = Math.min(1, 0.035 + (P.tare[v.type] || 0) * BOWL_TARE); s.jar[v.type] = (P.tareSpare[v.type] || 0) * BOWL_TARE; }
     C.showStock();
@@ -380,7 +381,7 @@ export function buildCart(scene, city) {
   C.avail = () => {
     const s = C.stock, a = { noodles: s.noodles + G.items.filter((i) => i.noodle && !i.dead).length + C.baskets.filter((b) => b.noodles).length, broth: {}, tare: {}, tops: {}, drinks: { ...s.drinks } };
     const spare = Math.floor(s.kettle / BOWL_BROTH + 0.01);
-    for (const p of C.pots) if (p.type) a.broth[p.type] = Math.max(0, Math.floor((p.level - 0.03) / BOWL_BROTH + 0.01)) + spare;
+    for (const p of C.pots) if (p.type) a.broth[p.type] = Math.max(0, Math.floor((p.level - 0.03) / (BOWL_BROTH / G.mods.pot) + 0.01)) + spare;
     for (const v of C.tares) a.tare[v.type] = Math.max(0, Math.floor((v.level - 0.03) / BOWL_TARE + 0.01)) + Math.floor(s.jar[v.type] / BOWL_TARE + 0.01);
     for (const k in C.bins) a.tops[k] = C.bins[k].stock + (s.raw[k] || 0) * (YIELD[k] || 0) + G.items.filter((i) => !i.dead && ((i.kind === 'food' && i.topping === k) || (i.kind === 'raw' && i.raw === k))).reduce((n, i) => n + (i.kind === 'raw' ? i.left * (k === 'egg' ? 2 : i.def.per) : i.servings || 1), 0);
     return a;
@@ -438,6 +439,9 @@ export function buildCart(scene, city) {
   box(0.16, 0.12, 0.05, mat({ color: 0x8a8d90, metalness: 0.8, roughness: 0.4 }), 0, 0, -0.025, sw);
   const lever = cyl(0.012, 0.012, 0.07, mat({ color: 0xd02020, roughness: 0.3 }), 0, 0, 0.03, sw, 10); lever.rotation.x = Math.PI / 2 - 0.6;
   const swl = mesh(new THREE.PlaneGeometry(0.15, 0.035), new THREE.MeshBasicMaterial({ map: T.labelTex(['営業 OPEN / CLOSE'], { w: 384, h: 90, fs: 36, bg: '#111', fg: '#ffd060' }) }), 0, 0.085, 0.001, sw);
+  // the stall as its upgrades make it (G.mods, progress.js): the second basket and the third stool out or put away, how much a ladle takes from a bigger pot
+  C.fit = () => { const M = G.mods; C.baskets.forEach((b, i) => { const on = i < M.baskets; b.locked = !on; b.obj.visible = on; if (!on) b.noodles = null; }); C.stools[2].visible = M.seats > 2 || !!(G.game && G.game.seats[2].c);
+    for (const p of C.pots) if (p.type) { p.sip = 0.02 / M.pot; if (p.item) p.item.fill = 0.05 / M.pot; } };
   C.setOpen = (on) => {
     C.open = on; lever.rotation.x = Math.PI / 2 + (on ? 0.6 : -0.6);
     const e = G.set && G.set.easy ? 0.6 : 1;   // easy on the eyes: the bright points burn lower
@@ -471,7 +475,7 @@ export function buildCart(scene, city) {
     let boil = 0; T.SURF.time.value = t;
     for (const bn of C.burners) if (bn.on) bn.flames.forEach((f, i) => { f.scale.y = 0.9 + Math.sin(t * 2.2 + i * 2.1) * 0.08; });
     for (const p of C.pots) {
-      p.heat = clamp(p.heat + (p.on ? dt / 14 : -dt / 90), 0.15, 1); p.hot = p.heat > 0.9;
+      p.heat = clamp(p.heat + (p.on ? dt / 14 * G.mods.heat : -dt / 90), 0.15, 1); p.hot = p.heat > 0.9;
       const k = clamp((p.heat - 0.6) / 0.4, 0, 1); boil += k * (p.type ? 0.5 : 1);
       p.bubbles.forEach((b) => {
         b.userData.t += dt * (1.5 + k * 3) * (p.type ? 0.45 : 1);

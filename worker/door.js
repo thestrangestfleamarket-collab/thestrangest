@@ -18,6 +18,7 @@ import { CANTINA } from "./cantina.js";
 import { CRUMBS } from "./crumbs.js";
 import { DRUMS } from "./drums.js";
 import { SUSHI } from "./sushi.js";
+import { RAMEN } from "./ramen.js";
 import { SALOON } from "./saloon.js";
 import { HIDE } from "./hide.js";
 import { ZOMBIE } from "./zombie.js";
@@ -260,7 +261,7 @@ export default {
       const id = await who(env, request, dev); if (!id) return json({ why: "login" }, 401); if (!env.AI) return json({ why: "the website has no AI binding yet" }); if (tooMany("hear:" + id, 12)) return json({ why: "too much at once, wait a minute" }, 429);
       const buf = await request.arrayBuffer(); if (!buf.byteLength || buf.byteLength > 2 << 20) return json({ why: "too long, say it shorter" }, 400);
       try { const r = await env.AI.run("@cf/openai/whisper", { audio: [...new Uint8Array(buf)] }); return json({ text: String((r && r.text) || "").trim().slice(0, 400) }); } catch (e) { return json({ why: "it could not be made out" }); } }
-    if (request.method === "POST" && (p === "/post" || p === "/admin" || p === "/home" || p === "/owned" || p === "/name" || p === "/scores" || p === "/art" || p === "/orchard" || p === "/bot" || p === "/holmes" || p === "/cantina/talk" || p === "/crumbs/talk" || p === "/sushi/talk" || p === "/sushi/say" || p === "/sushi/report" || p === "/crumbs/report" || p === "/tank/report" || p === "/sushi/log" || p === "/zombie/mind" || p === "/zombie/save" || p === "/saloon/talk" || p === "/saloon/save" || p === "/drums/talk" || p === "/drums/save" || p === "/drums/load")) {
+    if (request.method === "POST" && (p === "/post" || p === "/admin" || p === "/home" || p === "/owned" || p === "/name" || p === "/scores" || p === "/art" || p === "/orchard" || p === "/bot" || p === "/holmes" || p === "/cantina/talk" || p === "/crumbs/talk" || p === "/sushi/talk" || p === "/sushi/say" || p === "/sushi/report" || p === "/crumbs/report" || p === "/tank/report" || p === "/sushi/log" || p === "/sushi/save" || p === "/sushi/load" || p === "/zombie/mind" || p === "/zombie/save" || p === "/saloon/talk" || p === "/saloon/save" || p === "/drums/talk" || p === "/drums/save" || p === "/drums/load")) {
       if (request.headers.get("Origin") !== url.origin && !(dev && !request.headers.get("Origin"))) return json({ why: "not from the game's page" }, 403);
       const id = await who(env, request, dev); if (!id) return json({ why: "login" }, 401);
       let body; try { body = await request.json(); } catch (e) { body = {}; } if (!body || typeof body !== "object") body = {};
@@ -342,6 +343,8 @@ export default {
         if (D.day === day && D.n >= max) return json({ why: "they have said all they will today" });
         const out = await SALOON.ask(env, body); if (out.say) await H.botPut(k, { day, n: D.day === day ? D.n + 1 : 1 }); return json(out); }
       if (p === "/saloon/save") { const H = homeOf(env); return json(await SALOON.save({ put: v => H.botPut("saloon-night:" + id, v) }, body)); }
+      // RAMEN across days (worker/ramen.js): a login's run, kept in Home, written at dawn and after a purchase, read when the page opens
+      if (p === "/sushi/save" || p === "/sushi/load") { if (tooMany("rsave:" + id, 30)) return json({ why: "too much at once, wait a minute" }, 429); const H = homeOf(env), st = { get: () => H.botGet("ramen-run:" + id), put: v => H.botPut("ramen-run:" + id, v) }; return json(p === "/sushi/save" ? await RAMEN.save(st, body) : await RAMEN.load(st)); }
       if (p === "/zombie/save") { const H = homeOf(env); return json(await ZOMBIE.save({ get: () => H.botGet("zombie-night:" + id), put: v => H.botPut("zombie-night:" + id, v) }, body)); }
       // Holmes has left the book (worker/holmes.js): what happens, who answers, where the story stands; the day's count is the player's, in Home
       if (p === "/holmes") { if (!env.ANTHROPIC_API_KEY) return json({ why: "the website has no ANTHROPIC_API_KEY secret yet" });

@@ -50,7 +50,7 @@ export class GameAudio {
     for (let i = 0; i < len; i++) d[i] = Math.random() * 2 - 1;
     this.noise = b;
     // the wind (made here); the rest of the bed is recorded and set going as it arrives
-    this.windGain = this.loopNoise(220, 0.5, 0.0, 'lowpass');   // (no city hum in an 1860s village, and a low breeze, not a hiss that reads as rain)
+    this.windGain = this.loopNoise(220, 0.5, 0.0, 'lowpass');   // (a low breeze, not a hiss that reads as rain)
     this.trainGain = this.loopNoise(95, 0.7, 0.0, 'lowpass');
     this.bed = c.createGain(); this.bed.gain.value = 0.2; const bl = c.createBiquadFilter(); bl.type = 'lowpass'; bl.frequency.value = 7000; this.bed.connect(bl); bl.connect(this.master);
     // the boombox: its little speaker, from where it stands

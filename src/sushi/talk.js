@@ -181,7 +181,7 @@ export function buildTalk() {
 
   async function say(c, kind, situation, facts, cookSaid) {
     if (c.guest) return; // a tenant from THE MARKET speaks for themself
-    const v = voiceOf(c), reply = kind === 'reply' || kind === 'hurt' || kind === 'police', must = reply || kind === 'order' || kind === 'more' || kind === 'gotdrink' || kind === 'taste' || kind === 'angry' || kind === 'pay' || kind === 'short' || kind === 'over' || kind === 'thanks' || kind === 'greet2';
+    const v = voiceOf(c), reply = kind === 'reply' || kind === 'hurt' || kind === 'police', must = reply || kind === 'order' || kind === 'more' || kind === 'gotdrink' || kind === 'taste' || kind === 'angry' || kind === 'pay' || kind === 'short' || kind === 'over' || kind === 'thanks' || kind === 'greet2' || kind === 'usual' || kind === 'ev';
     if (c.p.cast && c.p.cast.name) v.story = G.block.story(c.p.cast);
     if (reply) { v.gen = (v.gen || 0) + 1; c.chatT = Math.max(c.chatT || 0, 30); talk.floorT = G.t + 6; for (const o of G.game.customers) if (o !== c) o.chatT = Math.max(o.chatT || 0, 12); }
     else if (v.busy || (v.until || 0) > G.t || (!must && (D.cur || D.q.some((x) => x.prio >= 4) || cookBusy() || G.t < (talk.floorT || 0)))) return; // nobody starts small talk while you are speaking or being answered
@@ -190,7 +190,7 @@ export function buildTalk() {
     if (kind === 'reply' && cookSaid) setTimeout(() => { const a = ackFor(v); if (line === null && gen === v.gen && a && !D.cur && G.t - (v.ackT ?? -99) > 20 && Math.random() < 0.45) { v.ackT = G.t; enqueue(c, a.text, { kind: 'ack', buf: a.buf }); } }, 700); // a slow thought is bridged by a small sound, now and then
     if (talk.live !== false) {
       try {
-        const r = await fetch('/sushi/talk', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ persona: { name: v.name, age: v.age, job: v.job, mood: v.mood, quirk: v.quirk, story: v.story, style: v.style }, order: c.order ? orderText(c.order) : c.passer ? 'nothing: you are passing along the sidewalk, not at the counter' : 'not ordered yet', situation, facts: [when(), facts, talk.seenText()].filter(Boolean).join(' '), say: cookSaid, history: v.history }) });
+        const r = await fetch('/sushi/talk', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ persona: { name: v.name, age: v.age, job: v.job, mood: v.mood, quirk: v.quirk, story: v.story, style: v.style }, order: c.order ? orderText(c.order) : c.passer ? 'nothing: you are passing along the sidewalk, not at the counter' : 'not ordered yet', situation, facts: [when(), facts, G.regs?.facts(c), G.events?.facts(c), talk.seenText()].filter(Boolean).join(' '), say: cookSaid, history: v.history }) });
         const j = r.ok ? await r.json() : null; talk.diag.think = j && j.say ? 'ok' : j && j.why ? j.why.slice(0, 28) : String(r.status);
         if (j && j.say) { line = j.say; talk.live = true; live = true; } else if (!r.ok && r.status !== 429) talk.live = false;
       } catch (e) { talk.live = talk.live || false; }
@@ -225,6 +225,7 @@ export function buildTalk() {
     else if (kind === 'police') say(c, 'police', r ? `You are the patrolman who walks this beat for the Ninth Precinct. You hurried over to the ramen cart because the cook just ${r}. Speak to the cook firmly, as a New York cop of 1985 would: tell them to stop and ask what happened.` : 'You are the patrolman who walks this beat for the Ninth Precinct, and the cook at the ramen cart just attacked you. Speak to the cook firmly, as a New York cop of 1985 would.', 'You are standing at the cart, in uniform.');
     else if (kind === 'hail') say(c, 'hail', 'You are walking along the sidewalk past the ramen cart, and the cook behind its counter just waved at you. You wave back and call out something short and friendly.', 'You are not at the counter.');
     else if (kind === 'hello') say(c, 'hello', 'You are walking along the sidewalk past the ramen cart, and you know its cook. Call out a short greeting as you pass.', 'You are not at the counter.');
+    else if (kind === 'told') { CANNED[r.as] = r.lines; delete DECK[r.as]; say(c, r.as, r.prompt, r.facts || ''); }   // a line another system wrote (a regular's usual, their story, a night's event): what to get across and the words when no mind answers
     else if (kind === 'story') { CANNED.story = [r.line]; delete DECK.story; say(c, 'story', r.prompt + ' Say it in a sentence or two.', 'You are not at the counter.'); }
     else if (kind === 'snub') say(c, 'snub', 'You are walking along the sidewalk past the ramen cart. The cook is trying to get your attention, but you are angry with them after what they did to you earlier. Say something short and cold.', 'You are not at the counter.');
     else if (kind === 'angry') say(c, 'angry', 'You waited far too long, never got your food, and are getting up to leave.', `You waited about ${waited} seconds and were never served.`);
@@ -239,7 +240,7 @@ export function buildTalk() {
   const GREET = /^\W*(hi|hey|hello|evening|good (evening|night)|welcome|yo|how (are|is|'s)|what'?s up|howdy)\b|\b(everybody|everyone|folks|you guys|y'all)\b/i;
   talk.cookSays = (text, at) => {
     text = String(text || '').trim().slice(0, 240); if (!text || !G.game) return false; D.cookEnd = at ?? nowS(); talk.attend(6); const seated = G.game.customers.filter((x) => x.state === 'sitting' || x.state === 'waiting' || x.state === 'eating' || x.state === 'paying'), n = seated.length; let c = talk.target();
-    talk.last = { who: 'THE COOK', line: text, n: (talk.lastN = (talk.lastN || 0) + 1) };
+    talk.last = { who: 'THE COOK', line: text, n: (talk.lastN = (talk.lastN || 0) + 1) }; G.events?.said(c);
     note({ who: 'COOK', text, to: c ? voiceOf(c).name : n ? 'nobody (looking at no one, ' + n + ' seated)' : 'nobody (no one seated)' });
     { const cam = G.camera.getWorldPosition(new V3()), dir = G.camera.getWorldDirection(new V3()), pb = G.block?.addressed?.(cam, dir), cd = c ? new V3(SEATS[c.seat], 1.3, -1.15).sub(cam).normalize().dot(dir) : 0;
       if (pb && pb.k > Math.max(cd, 0.9)) { const h = pb.h, sp = h.spk; G.block.greet(h, { kind: 'reply', t: 5, w: Math.random() < 0.35 ? 0.4 : null }); note({ who: 'COOK', text, to: voiceOf(sp).name + ' (passing)' });

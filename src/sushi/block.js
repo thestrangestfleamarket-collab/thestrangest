@@ -104,7 +104,7 @@ export function buildBlock(root, shops, o = {}) {
     G.react?.update(dt);
   };
   // one of them comes to the cart: the game walks them from here on, and hands them back when they go
-  block.take = () => { const free = people.filter((h) => !h.taken && !abed(h) && !h.lead && !h.crew.length && !h.chat && !h.cop && !mad(h) && !(h.wary && block.told[h.def.id]) && !h.p.reeling?.()); if (!free.length) return null; const seen = free.filter((h) => !h.hidden && Math.abs(h.p.root.position.x) < 30), h = free.find((x) => x.come) || (seen.length ? seen : free)[(Math.random() * (seen.length || free.length)) | 0]; h.come = false; h.greet = null;
+  block.take = (want) => { const free = people.filter((h) => !h.taken && !abed(h) && !h.lead && !h.crew.length && !h.chat && !h.cop && !mad(h) && !(h.wary && block.told[h.def.id]) && !h.p.reeling?.()); if (!free.length) return null; const seen = free.filter((h) => !h.hidden && Math.abs(h.p.root.position.x) < 30), h = want ? free.find((x) => x === want) : free.find((x) => x.come) || (seen.length ? seen : free)[(Math.random() * (seen.length || free.length)) | 0]; if (!h) return null; h.come = false; h.greet = null;
     if (h.hidden || Math.abs(h.p.root.position.x) > 30) h.p.root.position.set((Math.random() < 0.5 ? -1 : 1) * 14, 0, NEAR + 0.25); h.taken = true; h.hidden = false; h.p.root.visible = true; h.p.cast = h.def; h.p.neighbour = h; return h; };
   block.give = (h) => { h.taken = false; h.hidden = false; root.add(h.p.root); h.p.pose = 'walk'; h.p.look = null; h.i = h.def.plan.findIndex((s) => s === 'go work'); if (h.i < 0) h.i = 0; h.i -= 1; next(h); };
   // who someone is to the rest of the street, for what they say at the counter

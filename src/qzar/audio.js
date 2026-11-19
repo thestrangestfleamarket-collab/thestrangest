@@ -43,6 +43,7 @@ const S = {
   empty: b => { rush(b, 'bandpass', 2400, 1200, .04, .22, 3); tone(b, 'square', 240, 160, .04, .1, .03); },
   shield: b => { tone(b, 'sawtooth', 170, 540, .26, .14); tone(b, 'sine', 660, 990, .32, .2); rush(b, 'bandpass', 900, 2600, .3, .12, 4); },
   block: b => { tone(b, 'triangle', 1850, 900, .12, .3); tone(b, 'sine', 2750, 2750, .22, .12); rush(b, 'bandpass', 5200, 5200, .05, .2, 4); },
+  break: b => { rush(b, 'bandpass', 4200, 600, .35, .5, 2); tone(b, 'triangle', 1500, 240, .3, .3); tone(b, 'sine', 2600, 700, .2, .15, .03); },
   hurt: b => { tone(b, 'sine', 155, 42, .32, .75); rush(b, 'lowpass', 950, 180, .2, .55); tone(b, 'square', 330, 105, .15, .14); },
   hit: b => { tone(b, 'sine', 1400, 1950, .07, .3); tone(b, 'triangle', 2100, 2100, .13, .15, .04); },
   pop: b => rush(b, 'bandpass', 2600, 750, .09, .25, 2),

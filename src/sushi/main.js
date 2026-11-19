@@ -26,6 +26,11 @@ import { buildCook } from './cook.js';
 import { buildShare } from './share.js';
 import { buildGuest } from './guest.js';
 import { buildDawn } from './dawn.js';
+import { buildProgress } from './progress.js';
+import { buildRush } from './rush.js';
+import { buildRegulars } from './regulars.js';
+import { buildEvents } from './events.js';
+import { buildShop } from './shop.js';
 import { NET } from '../holo/net.js';
 import { PH } from './physics.js';
 import * as T from './tex.js';
@@ -72,7 +77,9 @@ const weather = buildWeather(scene, { lean });
 const cart = buildCart(scene, city);
 if (PH.ready) PH.statics(cart);
 buildClock(params);
+const prog = buildProgress(params), rush = buildRush();   // the run across days and the day's pressure (before the game: its menu and stock are theirs)
 const game = buildGame(scene);
+const regs = buildRegulars(), events = buildEvents(); buildShop(); prog.on(game.restock); prog.apply();
 const input = buildInput(renderer, rig, camera, canvas);
 const life = buildLife(scene, city, cart);
 const talk = buildTalk(scene);
@@ -103,7 +110,7 @@ async function startVR() {
     session.addEventListener('end', () => { G.mode = 'menu'; menu.style.display = 'flex'; });
   } catch (e) { vrBtn.textContent = 'VR failed: ' + e.message; console.error(e); }
 }
-NET.tok().then(() => fetch('/sushi/say', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: '{}' })).then((r) => { if (r.status === 401) $('login').style.display = 'inline-block'; else G.live?.join(); }).catch(() => { }); // the patrons' voices are a login's: say so before the headset goes on
+NET.tok().then(() => fetch('/sushi/say', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: '{}' })).then((r) => { if (r.status === 401) $('login').style.display = 'inline-block'; else G.live?.join(); }).catch(() => { }); prog.load(); // the patrons' voices are a login's: say so before the headset goes on
 vrBtn.onclick = async () => { if (await talk.needPrime()) { vrBtn.textContent = 'Allow the microphone…'; const ok = await talk.prime(); vrBtn.textContent = ok ? 'Enter VR' : 'Enter VR (no microphone)'; return; } startVR(); }; // the microphone is asked for on its own press: a prompt cannot be answered inside the headset view
 window.G_STARTED = true;
 if (navigator.xr?.isSessionSupported) navigator.xr.isSessionSupported('immersive-vr').then((ok) => { vrBtn.disabled = !ok; vrBtn.textContent = ok ? 'Enter VR' : 'No headset here'; if (!ok) { vrBtn.classList.remove('primary'); deskBtn.classList.add('primary'); } }).catch(() => { vrBtn.textContent = 'VR unavailable'; });
@@ -116,7 +123,7 @@ function tick(dt) {
   G.clock.update(dt); weather.update(dt);
   updateItems(dt);
   const boil = cart.update(dt, G.t);
-  game.update(dt, G.t);
+  game.update(dt, G.t); rush.update(); regs.update(dt); events.update(dt);
   city.update(dt, G.t);
   life.update(dt, G.t);
   talk.update(dt); tank.update(dt); story.update(dt); live.update(dt); share.update(dt); if (!guest) cook.update(dt);

@@ -217,7 +217,7 @@ export class Bowl extends Item {
   makeDirty() { this.dirty = true; this.locked = false; this.eaten = 1; this.tops.clear(); this.refresh(); this.liq.visible = true; this.liq.position.y = 0.019; this.liq.scale.set(0.035, 1, 0.035); }
   update(dt) {
     if (this.settle < 1) { this.settle = Math.min(1, this.settle + dt * 1.3); this.refresh(); }
-    if (this.temp > 0) { this.temp = Math.max(0, this.temp - dt / 110); if (this.temp > 0.45 && !this.dirty && Math.random() < dt * 5) G.fx.steam(_v.copy(this.obj.position).setY(this.obj.position.y + 0.08), 0.5); }
+    if (this.temp > 0) { this.temp = Math.max(0, this.temp - dt / 110 * G.mods.cool); if (this.temp > 0.45 && !this.dirty && Math.random() < dt * 5) G.fx.steam(_v.copy(this.obj.position).setY(this.obj.position.y + 0.08), 0.5); }
     if (this.held && !this.empty && !this.dirty && this.tilt() > 1.25) this.spill();
   }
   shatter() { if (!this.empty) G.fx.splat(this.obj.position, this.liqMat.color.getHex(), 0.2); shatter(this, 0xf1ede2, 9); }
@@ -374,7 +374,7 @@ export class Basket extends Tool {
     super('basket', g, { radius: 0.07, lift: 0.2, aim: bc, name: 'noodle basket' });
     this.nest = M(s.nest, s.noodleRaw, g, bc.x, bc.y - 0.05, bc.z); this.nest.scale.set(0.62, 2.2, 0.62); this.nest.visible = false;
     this.cup = bc; this.pot = pot; this.idx = idx; this.noodles = null; this.center.set(0, 0, -0.02);
-    this.target = { getPos: () => this.point(this.cup, _v2), r: 0.1, accepts: (it) => it.kind === 'food' && it.noodle && !this.noodles, receive: (it) => { this.noodles = { cook: 0 }; this.nest.visible = true; this.nest.material = s.noodleRaw; it.remove(); G.audio.play('plop', this.point(this.cup, _v2)); } };
+    this.target = { getPos: () => this.point(this.cup, _v2), r: 0.1, accepts: (it) => it.kind === 'food' && it.noodle && !this.noodles && !this.locked, receive: (it) => { this.noodles = { cook: 0 }; this.nest.visible = true; this.nest.material = s.noodleRaw; it.remove(); G.audio.play('plop', this.point(this.cup, _v2)); } };
     G.targets.push(this.target);
   }
   inWater() { const c = this.point(this.cup, _v), p = this.pot; return Math.hypot(c.x - p.x, c.z - p.z) < p.r && c.y < p.rimY; }
@@ -417,7 +417,7 @@ export class Knife extends Tool {
     if (raw) {
       const top = b.y + raw.def.r * 2, over = Math.abs(p.x - (b.x - 0.05)) < 0.16 && Math.abs(p.z - b.z) < 0.09;
       if (!over) this.armedCut = false; else if (p.y > top + 0.045) this.armedCut = true;
-      else if ((this.armedCut && p.y < top + 0.012) || (h.xr && h.useDown && p.y < top + 0.2)) { this.armedCut = false; raw.slice(); h.pulse?.(0.6, 40); return; }
+      else if ((this.armedCut && p.y < top + 0.012) || (h.xr && h.useDown && p.y < top + 0.2)) { this.armedCut = false; raw.slice(); if (G.mods.chop > 1 && raw.left > 0 && !raw.dead) raw.slice(); h.pulse?.(0.6, 40); return; }   // (a sharper knife: two slices to the stroke)
     }
     if (this.cool > 0 || !(vy < -0.5 || h.useDown)) return; // anywhere else: whatever the edge comes down through is cut
     for (const it of G.items) { if (it === this || it.dead || it.held || it.locked || !it.cut || it === raw) continue; const c = it.worldCenter(_v2); if (Math.hypot(c.x - p.x, c.z - p.z) < Math.max(0.03, it.radius * 0.8) && Math.abs(p.y - c.y) < 0.05) { this.cool = 0.25; it.cut(p); h.pulse?.(0.5, 30); G.audio.play('chop', p); return; } }

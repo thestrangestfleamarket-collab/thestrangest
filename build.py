@@ -104,6 +104,7 @@ if 'g' in os.environ.get('SKIP', '').split(','):
 elif not os.path.exists('node_modules/three'):
     subprocess.run(['npm', 'install', '--no-audit', '--no-fund'], check=True)
 subprocess.run(['node', 'tools/asylum.cjs'], check=True)   # Hollow Pines (src/asylum/): its own page, dist/asylum.html
+subprocess.run(['node', 'tools/vr.cjs'], check=True)   # the VR games list (src/vr/): dist/vr.html and its pictures, dist/vr-assets/
 subprocess.run(['node', 'tools/holmes.cjs'], check=True)   # THE SPECKLED BAND (src/holmes/): its own page, dist/holmes.html
 subprocess.run(['node', 'tools/holo.cjs'], check=True)   # the holodeck's pages (src/holo/): dist/holo.html, dist/roam.html, dist/boarded.html
 subprocess.run(['node', 'tools/wave.cjs'], check=True)   # SHARDWAVE (src/wave/): its own page, dist/wave.html

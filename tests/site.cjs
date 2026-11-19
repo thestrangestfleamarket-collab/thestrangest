@@ -16,7 +16,11 @@ let bad=0; const ok=(c,m)=>{ console.log((c?'ok   ':'FAIL ')+m); if(!c)bad++; };
   const fs=require('fs'), gf=fs.readdirSync('dist/g').filter(f=>f!=='market.html');
   for(const p of ['/market.html','/market','/door.html','/avatar.html','/g/market.html','/g/market','/g/'+gf[0]])ok((await fetch(BASE+p)).status===404,p+' is not handed out by itself');
   ok((await fetch(BASE+'/g/'+gf[0],{headers:{cookie:'tsfm-pass=dev:site-check'}})).status===200,'/g/'+gf[0]+' with a login');
-  for(const u of ['/vr','/asylum']){ const r=await fetch(BASE+u); ok(r.status===200&&/Hollow Pines/.test(await r.text()),u+' (Hollow Pines) is handed to anyone, no login'); }
+  { const r=await fetch(BASE+'/asylum'); ok(r.status===200&&/Hollow Pines/.test(await r.text()),'/asylum (Hollow Pines) is handed to anyone, no login'); }
+  { const r=await fetch(BASE+'/vr'), t=await r.text(), links=[...t.matchAll(/<a href="([^"]+)">PLAY/g)].map(m=>m[1]), pics=[...t.matchAll(/<img src="([^"]+)"/g)].map(m=>m[1]);
+    ok(r.status===200&&links.length>=20&&pics.length===links.length,'/vr lists every game with a picture and a link, no login ('+links.length+')');
+    const bad=[]; for(const u of links){ const q=await fetch(BASE+u); if(q.status!==200)bad.push(u+' '+q.status); await q.arrayBuffer(); } ok(!bad.length,'every link on /vr opens a page'+(bad.length?': '+bad.join(', '):''));
+    const p0=await fetch(BASE+pics[0]); ok(p0.status===200&&p0.headers.get('content-type')==='image/jpeg','its pictures are handed out'); }
   for(const u of ['/holo','/roam','/boarded']){ const a=await fetch(BASE+u,{redirect:'manual'}), b=await fetch(BASE+u,{headers:{cookie:'tsfm-pass=dev:site-check'}}), c=await fetch(BASE+u+'.html');
     ok(a.status===302&&b.status===200&&/The Holodeck/.test(await b.text())&&c.status===404,u+' (a holodeck page) is handed to a login only; anyone else is sent to the door'); }
   { const r=await fetch(BASE+'/wave'); ok(r.status===200&&/Shardwave/.test(await r.text()),'/wave (SHARDWAVE) is handed to anyone, no login'); }

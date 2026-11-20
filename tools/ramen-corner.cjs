@@ -17,6 +17,7 @@ const srv = require('http').createServer((q, r) => { const f = path.join(DIST, d
 const bake = async (o) => {
   const D = __dbg, T = D.THREE, sc = D.scene, TL = D.cv().TILE, M = TL / 0.84, B = D.MAPK.BOD, cx = B.XS(o.cart.x), cz = B.ZS(o.cart.y), gy = D.ground(cx, cz), R = o.REG, MV = o.row; MV.dy = -(D.ground(cx, cz + ((MV.z0 + MV.z1) / 2) * M) - gy) / M;   // (the row stands on Market St's own level)
   for (let i = 0; i < 400 && BATCH.left(400 * M) > 0; i++) { BATCH.rush(250, 400 * M); await new Promise((r) => setTimeout(r, 60)); }   // every patch of ground in sight painted first
+  if (window.FACADES) for (const n of FACADES.near) { n.r = 1e9; n.g.visible = true; }   // every front's close work (the market shows it only from near): the turned fronts stand by the cart
   const unpainted = BATCH.left(400 * M); sc.updateMatrixWorld(true);
   const vis = (q) => { for (let p = q; p; p = p.parent) if (!p.visible) return false; return true; };
   const chain = (q) => { const c = []; for (let p = q; p; p = p.parent) if (p.name) c.push(p.name); return c.join('<'); };

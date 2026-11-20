@@ -4,7 +4,7 @@ import { G, mat, clamp } from './ctx.js';
 import * as T from './tex.js';
 import { cars } from './models.js';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
-import { KERB, FKERB, ROAD, WSX1, KEI } from './plan.js';
+import { KERB, FKERB, ROAD, KEI } from './plan.js';
 
 export function buildStreet(X) {
   const { city, addHalo, corner, ups } = X, R = X.R, S = { cars: [], lampAt: [], kei: [], fliers: [] };

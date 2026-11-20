@@ -5,8 +5,8 @@ const ROOT = path.resolve(__dirname, '..'), DIST = path.join(ROOT, 'dist'), OUT 
 const W = JSON.parse(fs.readFileSync(path.join(ROOT, 'data/world.json'), 'utf8')), CART = W.ramen || { x: -18, y: -41.3 };
 // what is read, in metres from the cart: everything in the section's reach (x0..z1), past it only what is large and plain (out); a picture is written at the size its nearest wearer is seen at (near, mid from where a player can be: walk)
 // see: where eyes can be (the cook's place, the stools, the pavement a guest walks and the camera 2.6 m behind them, from a sitter's eye to the raised camera's), how fine each look is, and how a large piece is split into parts (unit: larger than this, by squares of part metres)
-const REG = { x0: -140, x1: 250, z0: -120, z1: 210, near: 40, mid: 90, cell: 44, tex: 512, out: { x0: -230, x1: 260, z0: -170, z1: 230, size: 16, tris: 320 }, walk: { x0: -10, x1: 43, z0: -7.4, z1: 2.4 },
-  see: { px: 1024, xs: [-10, 43, 4], zs: [-7.2, -4.8, -2.4, 0, 2.3], ys: [1.15, 1.7, 3.3], cook: { xs: [-0.5, 0, 0.5], zs: [0, 0.6, 1.2], ys: [1.2, 1.6, 1.9] }, stools: { xs: [-0.8, 0, 0.8], z: -1.2, ys: [1.2, 1.6] }, cart: [-1.2, -0.6, 1.2, 1.85], unit: 8, part: 5 } };
+const REG = { x0: -190, x1: 130, z0: -120, z1: 210, near: 40, mid: 90, cell: 44, tex: 512, out: { x0: -260, x1: 230, z0: -170, z1: 230, size: 16, tris: 320 }, walk: { x0: -12, x1: 43, z0: -7.4, z1: 2.4 },
+  see: { px: 1024, xs: [-12, 43, 4], zs: [-7.2, -4.8, -2.4, 0, 2.3], ys: [1.15, 1.7, 3.3], cook: { xs: [-0.5, 0, 0.5], zs: [0, 0.6, 1.2], ys: [1.2, 1.6, 1.9] }, stools: { xs: [-0.8, 0, 0.8], z: -1.2, ys: [1.2, 1.6] }, cart: [-1.2, -0.6, 1.2, 1.85], unit: 8, part: 5 } };
 const srv = require('http').createServer((q, r) => { const f = path.join(DIST, decodeURIComponent(q.url.split('?')[0])); fs.readFile(f, (e, d) => { if (e) { r.writeHead(404); return r.end(); } r.writeHead(200, { 'content-type': f.endsWith('.html') ? 'text/html' : 'application/octet-stream' }); r.end(d); }); });
 
 // ---- in the page ----

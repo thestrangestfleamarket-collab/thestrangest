@@ -62,6 +62,6 @@ const bake = () => {
   const r = await p.evaluate(bake); await b.close(); srv.close();
   const top = (S) => Object.entries(S).sort((a, c) => c[1] - a[1]).slice(0, 40).map(([k, t]) => Math.round(t) + ' ' + k).join('\n');
   console.log('points', r.n, 'triangles', r.tris, 'lights', JSON.stringify(r.lights), 'seats', JSON.stringify(r.seats)); console.log('--- kept\n' + top(r.stat) + '\n--- left out\n' + top(r.skipped));
-  if (LIST) return; const { stat, skipped, ...out } = r; out.note = "RAMEN's cart as THE MARKET draws it at the Market St and West St corner (tools/ramen-cart.cjs): one mesh in metres, the cook's side toward +z";
+  if (LIST) return; const { stat, skipped, ...out } = r; out.note = "RAMEN's cart as THE MARKET draws it on Market St, across from the bodega (tools/ramen-cart.cjs): one mesh in metres, the cook's side toward +z";
   const s = JSON.stringify(out); fs.writeFileSync(path.join(ROOT, 'data/ramencart.json'), s); console.log('data/ramencart.json', s.length, 'bytes, of them the picture', r.atlas.length);
 })();

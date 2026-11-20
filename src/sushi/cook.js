@@ -5,7 +5,7 @@ import { avatarsReady, makePerson } from './avatars.js';
 
 const NECK = [0.1, 0.09];   // your eyes over the joint your head turns on: that far above it, that far before it (metres)
 export function buildCook() {
-  const cook = { on: false, P: null }; G.cook = cook; let yaw = null;
+  const cook = { on: false, P: null }; G.cook = cook; let yaw = null; const arm = {};
   const _c = new THREE.Vector3(), _d = new THREE.Vector3(), _u = new THREE.Vector3(), _n = new THREE.Vector3(), tL = new THREE.Vector3(), tR = new THREE.Vector3(), TINY = new THREE.Vector3(0.001, 0.001, 0.001), ONE = new THREE.Vector3(1, 1, 1);
   const make = () => { const P = makePerson(0, 'carving_chef'); if (!P.polyfork) return null; P.pose = 'stand'; P.root.traverse((o) => { o.userData.nopick = true; if (o.isMesh) o.castShadow = true; }); G.scene.add(P.root); P.hands = { L: null, R: null };
     // what of your own body is right under your eyes (the collar, the neck's stump) is not drawn, nor your own head from inside it: looking down you see your chest and arms; anyone else's eye, and a picture taken from outside, sees all of you
@@ -28,6 +28,11 @@ export function buildCook() {
     // your hands: a headset's wrists (on a screen the arms hang as a body's do)
     let n = 0; P.hands.L = P.hands.R = null;
     for (const h of G.hands || []) { if (h.models) { for (const s of ['L', 'R']) { const M = h.models[s]; if (M.root.visible) { P.hands[s] = (s === 'L' ? tL : tR).copy(M.root.position); n++; } } } }
+    // a hand held out past the arm's reach draws the shoulders after it (as a body leans into a reach), so the arm still ends at your wrist
+    if (n) { let lx = 0, lz = 0; for (const s of ['L', 'R']) { const h = P.hands[s]; if (!h) continue; const A = arm[s] ||= ['upperArm', 'forearm', 'hand'].map((b) => P.bones.findIndex((x) => x.name === b + s)), len = (P.rest[A[1]].distanceTo(P.rest[A[0]]) + P.rest[A[2]].distanceTo(P.rest[A[1]])) * k;
+        const sp = P.bones[A[0]].position, sx = P.root.position.x + (sp.x * fz + sp.z * fx) * k, sz = P.root.position.z + (-sp.x * fx + sp.z * fz) * k, dx = h.x - sx, dy = h.y - sp.y * k, dz = h.z - sz, d = Math.hypot(dx, dy, dz), over = d - len * 0.98, hd = Math.hypot(dx, dz);
+        if (over > 0 && hd > 0.05) { const m = Math.min(0.14, over * d / hd); lx += dx / hd * m; lz += dz / hd * m; } }
+      P.root.position.x += lx; P.root.position.z += lz; }
     for (const s of ['L', 'R']) P.part('hand' + s)[0].scale.copy(n && P.hands[s] ? TINY : ONE);
     P.update(dt); cook.on = true; };
   return cook;

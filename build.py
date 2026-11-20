@@ -119,6 +119,7 @@ subprocess.run(['node', 'tools/drums.cjs'], check=True)   # THE GARAGE (src/drum
 subprocess.run(['node', 'tools/sniper.cjs'], check=True)   # COLD BORE (src/sniper/): its own page, dist/sniper.html, and its skies, surfaces, models and sounds, dist/sniper-assets/
 subprocess.run(['node', 'tools/edge.cjs'], check=True)   # EDGE OF 88 (src/edge/) and HULL DOWN (src/tank/): their own pages, dist/edge.html, dist/tank.html
 subprocess.run(['node', 'tools/shoot.cjs'], check=True)   # BREACHLINE (src/shoot/): its own page, dist/shoot.html
+subprocess.run(['node', 'tools/fly.cjs'], check=True)   # SKY ACES (src/fly/): its own page, dist/fly.html, and its models, pictures and sounds, dist/fly-assets/
 subprocess.run(['node', 'tools/golf.cjs'], check=True)   # HALCYON GREENS (src/golf/): its own page, dist/golf.html, and its pictures, dist/golf-assets/
 subprocess.run(['node', 'tools/crumbs.cjs'], check=True)   # MIDNIGHT CRUMBS (src/crumbs/): its own page, dist/crumbs.html, its creatures from data/pets/
 subprocess.run(['node', 'tools/duel.cjs'], check=True)   # AR DUEL (src/duel/): its own page, dist/duel.html, and its pictures, dist/duel-assets/

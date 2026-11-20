@@ -85,7 +85,7 @@ const bake = async (o) => {
             for (const [pls, mz, my] of [[[[-1, MV.north], [1, -MV.south]], 0, 0], [[[-1, MV.z1], [1, -(MV.z0 - 0.05)]], MV.dz, MV.dy]]) { const poly = cut(src, pls); if (poly.length < 3) continue; const ids = poly.map((p) => { const q2 = p.slice(); q2[1] += my; q2[2] += mz; return push(q2); }); for (let k = 1; k + 1 < ids.length; k++) { if (flip) tri(ids[0], ids[k + 1], ids[k]); else tri(ids[0], ids[k], ids[k + 1]); } }
             continue; } } if (flip) tri(base + a, base + c2, base + b2); else tri(base + a, base + b2, base + c2); } }
     // a front of the park's side: this piece's triangles that are of one of the chosen shops, turned round and stood across the street
-    if (MV.shops.length && z1 >= MV.band[0] && z0 <= MV.band[1] && y1 > 0.06 && x1 >= MV.shops[0].x0 - 200) { const made = new Map();
+    if (MV.shops.length && z1 >= MV.band[0] && z0 <= MV.band[1] && y1 > 0.06) { const made = new Map();
       for (let i = s; i + 2 < e; i += 3) { const ii = [0, 1, 2].map((k) => (idx ? idx.getX(i + k) : i + k)), R3 = ii.map(rec), mx = (R3[0][0] + R3[1][0] + R3[2][0]) / 3, mz = (R3[0][2] + R3[1][2] + R3[2][2]) / 3;
         if (mz < MV.band[0] || mz > MV.band[1] || Math.max(R3[0][1], R3[1][1], R3[2][1]) < 0.06) continue; const pi = MV.shops.findIndex((p) => mx >= p.x0 && mx < p.x1); if (pi < 0) continue; const p = MV.shops[pi];
         if (p.S - mx > MV.clear[0] && p.S - mx < MV.clear[1] && MV.pz2 - mz < MV.north - 0.3 && Math.min(R3[0][1], R3[1][1], R3[2][1]) < 4) continue;   // (clear of the cart)

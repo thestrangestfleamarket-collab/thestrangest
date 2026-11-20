@@ -125,7 +125,7 @@ export class Item {
   onGrab() { } onRelease() { return false; } onHeld() { } update() { } onRemove() { } onLand() { }
   // a handful: other pieces come into the hand with the one taken, drawn on it where layIn puts them (till.js: a payment; Food: loose pieces)
   tuck(x) { const o = x.obj, B = (this.bundle ||= []); x.remove(); o.userData.item = null; o.traverse((q) => { q.userData.nopick = true; }); this.layIn(o, B.length + 1, x); this.obj.add(o); B.push(x, ...(x.bundle || [])); x.bundle = null; }
-  gather(match, max, r) { const p = this.obj.position, near = []; for (const x of G.items) { if (x === this || x.dead || x.held || x.locked || !match(x)) continue; const d = x.obj.position.distanceTo(p); if (d <= r) near.push([d, x]); }
+  gather(match, max, r, at) { const p = at || this.obj.position, near = []; for (const x of G.items) { if (x === this || x.dead || x.held || x.locked || !match(x)) continue; const d = x.obj.position.distanceTo(p); if (d <= r) near.push([d, x]); }
     near.sort((a, b) => a[0] - b[0]); let n = 0; for (const [, x] of near) { if (n >= max) break; this.tuck(x); n++; } return n; }
   layIn(o, n) { o.quaternion.identity(); o.position.set(0, 0.004 * n, 0); }
   pieces() { return [this, ...(this.bundle || [])]; }
@@ -236,7 +236,7 @@ export class Bowl extends Item {
 }
 
 // ------------------------------------------------------------------ food
-export const HANDFUL = 6, CUPPED = 9, PILE = 0.01, PILE_X = 0.031;   // pieces one hand holds, each of two hands cupped together, and how they lie in it (two heaps, a layer this high)
+export const HOLDS = { chashu: 4, naruto: 4, egg: 3, nori: 4, menma: 5, negi: 6, corn: 6 }, CUP = 1.5, REACH = 0.085, PILE = 0.01, PILE_X = 0.031;   // pieces a closed hand holds of each (slices, small bits), how much more each of two cupped hands, how far from the hand a piece can lie and still be closed on (metres), and how they lie in it (two heaps, a layer this high)
 export class Food extends Item {
   constructor(type, servings = 1) {
     const s = shared(); let g, o = { radius: 0.035, lift: 0.07, cy: 0.01 };
@@ -246,11 +246,11 @@ export class Food extends Item {
     if (type === 'noodle') this.noodle = true; else this.topping = type;
     this.servings = servings;
   }
-  // closing a hand on loose pieces takes those under it; a whole fist in a bin digs out a handful (o: { src, fist, cup, pinch } from the hand, input.js); both hands cupped hold more
-  onGrab(h, o = {}) { if (!this.topping || o.pinch) return; this.bin = o.src && o.src.bin ? o.src.bin : null; if (!this.bin || o.fist) this.handful(o.cup ? CUPPED : HANDFUL, o.cup ? 0.16 : 0.12); }
-  handful(max = HANDFUL, r = 0.12) { if (!this.topping) return 0; let n = max - this.pieces().length; if (n <= 0) return 0; const b = this.bin;
+  // a grab takes the one piece; the hand closed right round it (input.js: a full grip, the click held) takes with it what lies inside the hand, nearest first, as many as a hand holds, from a pile or out of a bin; the rest stays where it is
+  onGrab(h, o = {}) { if (!this.topping) return; this.bin = o.src && o.src.bin ? o.src.bin : null; this.at0 = (h && h.xr ? h.pos : this.obj.position).clone(); }
+  handful(cup) { if (!this.topping || !this.at0) return 0; let n = Math.round(HOLDS[this.topping] * (cup ? CUP : 1)) - this.pieces().length; if (n <= 0) return 0; const b = this.bin;
     if (b) { n = Math.min(n, b.stock); for (let i = 0; i < n; i++) { b.stock--; this.tuck(new Food(this.topping)); } b.refresh(); }
-    else n = this.gather((x) => x.kind === 'food' && x.topping === this.topping && !x.carrier, n, r);
+    else n = this.gather((x) => x.kind === 'food' && x.topping === this.topping && !x.carrier, n, cup ? REACH * 1.4 : REACH, this.at0);
     if (this.bundle && this.bundle.length) this.name = 'handful of ' + TOPPINGS[this.topping].label.toLowerCase(); return n; }
   layIn(o, n) { const lv = Math.ceil(n / 2); o.quaternion.identity(); o.rotation.y = (n % 4) * Math.PI / 2; o.position.set((n % 2 ? 1 : -1) * PILE_X, lv * PILE, ((lv % 2) - 0.5) * 0.01); }   // a heap either side of the piece taken
   get total() { return this.pieces().reduce((n, x) => n + (x.servings || 1), 0); }

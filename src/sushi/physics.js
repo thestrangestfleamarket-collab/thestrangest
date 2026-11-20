@@ -56,7 +56,8 @@ PH.hold = (it) => {
   PH.drop(it); PH.unhold(it);
   const p = it.obj.position, q = it.obj.quaternion, [desc, mass] = it.tool ? toolEnd(it) : shape(it);
   const b = PH.world.createRigidBody(RAPIER.RigidBodyDesc.dynamic().setTranslation(p.x, p.y, p.z).setRotation({ x: q.x, y: q.y, z: q.z, w: q.w }).setGravityScale(0).setCcdEnabled(true).setCanSleep(false));
-  const c = PH.world.createCollider(desc.setMass(mass).setFriction(0.6).setRestitution(0.02).setCollisionGroups(0), b);
+  const dish = it.kind === 'bowl' || it.kind === 'drink'; if (dish) desc.setMassProperties(mass, { x: 0, y: it.center.y, z: 0 }, { x: 4, y: 4, z: 4 }, { x: 0, y: 0, z: 0, w: 1 }); else desc.setMass(mass);   // a carried dish keeps the hand's level: what it knocks against does not tip it
+  const c = PH.world.createCollider(desc.setFriction(0.6).setRestitution(0.02).setCollisionGroups(0), b);
   const g = { b, c, tp: p.clone(), tq: q.clone(), ptp: p.clone(), sp: 0, off: new V3(), sep: 0, touch: false, bump: 0, want: it.tool ? HELD_TOOL : ITEM, ghost: 0.4 }; PH.grip.set(it, g); if (it.kind === 'bowl' || it.kind === 'drink') PH.dish.set(b.handle, g); // it meets nothing until it has come clear of what it was taken out of (no pop)
 };
 PH.unhold = (it) => { const g = PH.grip.get(it); if (g) { PH.dish.delete(g.b.handle); PH.world.removeRigidBody(g.b); PH.grip.delete(it); } };

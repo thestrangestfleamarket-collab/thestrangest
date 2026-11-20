@@ -75,7 +75,7 @@ export function buildLife(scene, city, cart) {
     let best = 0, pan = 0; const cam = G.camera.getWorldPosition(_p);
     for (const k of city.cars) { const d = k.c.position.distanceTo(cam), g = 1 / (1 + (d * d) / 60); if (g > best) { best = g; pan = clamp((k.c.position.x - cam.x) / 14, -1, 1); } }
     env.car = best; env.carPan = pan;
-    stepT -= dt; if (stepT <= 0 && G.game.customers.some((c) => (c.state === 'walk' || c.state === 'leaving') && Math.abs(c.p.root.position.x) < 4)) { G.audio.play('step'); stepT = 0.47; }
+    stepT -= dt; if (stepT <= 0) { const w = G.game.customers.find((c) => (c.state === 'walk' || c.state === 'leaving') && Math.abs(c.p.root.position.x) < 4); if (w) { G.audio.play('step', w.p.root.position.clone().setY(0.03)); stepT = 0.47; } }
     if (city.rain) { chirpT -= dt; if (!city.alley && chirpT <= 0 && (t % 30) / 30 < 0.55) { G.audio.play('chirp'); chirpT = 1.25; } if (Math.random() < dt * 14) G.audio.play('patter'); }
   });
 

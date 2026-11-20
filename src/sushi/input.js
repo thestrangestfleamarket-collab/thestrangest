@@ -82,6 +82,7 @@ function stepHand(h, dt) {
     const e = H.length >= 8 ? H.shift() : { p: new V3(), q: new Q() }; e.t = G.t; e.p.copy(h.pos); e.q.copy(h.quat); H.push(e); while (H.length > 2 && G.t - H[0].t > 0.12) H.shift(); }
   if (!h.active) { h.marker.visible = false; if (h.held) release(h); return; }
 
+  if (h.xr && G.boards && G.boards.xr(h, () => findCand(h))) { h.marker.visible = false; return; }   // carrying a board
   // ---- buttons
   if (h.xr) {
     let near = null, nd = 0.17;
@@ -165,7 +166,7 @@ export function buildInput(renderer, rig, camera, dom) {
 
   function updateDesktop(dt) {
     const h = desk.hand, k = desk.keys; h.active = true;
-    const f = (k.KeyW ? 1 : 0) - (k.KeyS ? 1 : 0), s = (k.KeyD ? 1 : 0) - (k.KeyA ? 1 : 0);
+    const f = G.menuOpen ? 0 : (k.KeyW ? 1 : 0) - (k.KeyS ? 1 : 0), s = G.menuOpen ? 0 : (k.KeyD ? 1 : 0) - (k.KeyA ? 1 : 0);   // (the settings board takes the keys while it is up)
     if (f || s) { const sp = 1.3 * dt; rig.position.x += (-Math.sin(desk.yaw) * f + Math.cos(desk.yaw) * s) * sp; rig.position.z += (-Math.cos(desk.yaw) * f - Math.sin(desk.yaw) * s) * sp; }
     if (!desk.free) { rig.position.x = clamp(rig.position.x, BOUNDS.minX, BOUNDS.maxX); rig.position.z = clamp(rig.position.z, BOUNDS.minZ, BOUNDS.maxZ); rig.position.y = 0; }
     rig.rotation.set(0, 0, 0); camera.position.set(0, k.KeyC ? 1.25 : 1.62, 0); camera.rotation.set(desk.pitch, desk.yaw, 0, 'YXZ'); rig.updateMatrixWorld(true);
@@ -186,11 +187,12 @@ export function buildInput(renderer, rig, camera, dom) {
       if (!aim.cand) for (const b of G.buttons) if (b.getPos().distanceTo(h.pos) < b.r + 0.02) { aim.button = b; break; }
     }
     if (!aim.cand && !aim.button && aim.prop) aim.cand = aim.prop;
+    if (G.boards) G.boards.desk(ray.ray, aim, h);   // a board before the crosshair comes first
     h.aim = aim; h.tip.copy(h.pos); h.quat.setFromAxisAngle(UP, desk.yaw);
     desk.focus += (aim.dist - desk.focus) * Math.min(1, dt * 5);
     stepHand(h, dt);
     const it = h.held;
-    G.hoverText = it ? `${it.name} — ${it.hint()}  [LMB release${it.tool ? ' · hold RMB/E to ' + (it.useMode === 'chop' ? 'chop' : 'pour') : ''}]` : aim.button ? `[LMB] ${aim.button.name}` : aim.cand ? `[LMB] grab ${aim.cand.name}` : '';
+    G.hoverText = it ? `${it.name} — ${it.hint()}  [LMB release${it.tool ? ' · hold RMB/E to ' + (it.useMode === 'chop' ? 'chop' : 'pour') : ''}]` : aim.board ? '' : aim.button ? `[LMB] ${aim.button.name}` : aim.cand ? `[LMB] grab ${aim.cand.name}` : '';
   }
 
   function updateXR(dt) {
@@ -250,7 +252,7 @@ export function buildInput(renderer, rig, camera, dom) {
     }
     // thumbstick locomotion
     if (session) for (const src of session.inputSources) {
-      const gp = src.gamepad; if (!gp || src.hand) continue;
+      const gp = src.gamepad; if (!gp || src.hand || G.menuOpen) continue;   // (the settings board takes the sticks while it is up)
       const ax = gp.axes.length >= 4 ? gp.axes[2] : gp.axes[0] || 0, ay = gp.axes.length >= 4 ? gp.axes[3] : gp.axes[1] || 0;
       if (src.handedness === 'left') {
         if (Math.abs(ax) > 0.15 || Math.abs(ay) > 0.15) {

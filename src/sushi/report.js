@@ -35,7 +35,7 @@ export function buildReport(scene, camera, renderer, talk) {
     if (msgT > 0) { msgT -= dt; if (msgT <= 0) G.reportMsg = ''; }
     if (rec && G.t - t0 > 15) { try { rec.stop(); } catch (e) { /* stopped */ } }
     const ses = renderer.xr.getSession?.(); let down = false; if (ses) for (const s of ses.inputSources) if (s.gamepad && s.gamepad.buttons[4] && s.gamepad.buttons[4].pressed) down = true;
-    if (down && !latch) R.press(); latch = down;
+    if (down && !latch && !G.menuOpen) R.press(); latch = down;
   };
   addEventListener('keydown', (e) => { if (e.code === 'F8') { e.preventDefault(); R.press(); } });
   return R;

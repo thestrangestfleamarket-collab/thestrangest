@@ -36,6 +36,13 @@ export class Cash extends Prop {
     this.kind = 'cash'; this.money = k; this.value = d.v; this.pick = true;
   }
   onLand() { if (!MONEY[this.money].bill) G.audio.play('clink'); }
+  // a payment is taken up whole (owner, 19 Nov 2026: "grab all the money … handful"): the rest of what that customer laid comes into the hand with the piece taken, and goes into the drawer with it
+  onGrab() { const who = this.tenderOf || this.tipOf || this.backOf; if (!who) return; this.bundle ||= [];
+    for (const x of [...G.items]) { if (x === this || x.kind !== 'cash' || x.dead || x.held || (x.tenderOf || x.tipOf || x.backOf) !== who || x.obj.position.distanceTo(this.obj.position) > 0.35) continue;
+      const o = x.obj, n = this.bundle.length + 1, bill = MONEY[x.money].bill; x.remove(); o.userData.item = null; o.traverse((q) => { q.userData.nopick = true; }); o.quaternion.identity(); o.rotation.y = bill ? 0.12 * n : n; o.position.set(bill ? 0.004 * n : 0.02 * Math.cos(n * 2.4), 0.002 * n + (bill ? 0 : 0.003), bill ? 0.003 * n : 0.02 * Math.sin(n * 2.4)); this.obj.add(o);
+      this.bundle.push(x, ...(x.bundle || [])); x.bundle = null; this.value += x.value; }
+    if (this.bundle.length) this.name = 'handful of money'; }
+  pieces() { return [this, ...(this.bundle || [])]; }
   hint() { return `${this.name} (${usd(this.value)}) → the register's drawer, or by a customer as change`; }
 }
 
@@ -79,10 +86,10 @@ export function buildTill(scene, C) {
   till.toggle = (on = !till.open) => { till.open = on; G.audio.play(on ? 'cash' : 'click'); if (on) G.talk?.seen?.('ring the register open'); till.show(); };
   till.show = (txt) => { for (const k in piles) piles[k].count = Math.min(8, till.slots[k] || 0); const s = txt || till.last || (till.open ? 'NO SALE' : ''); disp.redraw((g, w, h) => { g.fillStyle = '#121410'; g.fillRect(0, 0, w, h); g.fillStyle = '#f0e4b8'; g.font = `bold 40px ${T.MONO}`; g.textAlign = 'right'; g.fillText(s, w - 10, 46, w - 16); }); };
   till.deposit = (it) => {
-    const k = it.money; it.remove(); till.slots[k]++; G.audio.play(MONEY[k].bill ? 'grab' : 'clink');
-    const game = G.game, c = it.tenderOf;
-    if (it.tipOf) game.tips += it.value;
-    else if (c && c.pay && !c.pay.rung) { c.pay.rung = true; game.money += c.pay.due; if (c.pay.kept) game.tips += c.pay.kept; till.last = usd(c.pay.due); G.audio.play('cash'); }
+    const game = G.game, all = it.pieces(); it.remove(); G.audio.play(MONEY[it.money].bill ? 'grab' : 'clink'); if (all.some((x) => !MONEY[x.money].bill)) G.audio.play('clink');
+    for (const x of all) { const c = x.tenderOf; till.slots[x.money]++;   // every piece of a handful is counted, each as what it was
+      if (x.tipOf) game.tips += MONEY[x.money].v;
+      else if (c && c.pay && !c.pay.rung) { c.pay.rung = true; game.money += c.pay.due; if (c.pay.kept) game.tips += c.pay.kept; till.last = usd(c.pay.due); G.audio.play('cash'); } }
     till.show();
   };
   till.reset();

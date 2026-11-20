@@ -2,7 +2,7 @@
 import RAPIER from '@dimforge/rapier3d-compat';
 import { G, V3, Q } from './ctx.js';
 
-const PH = { ready: false, world: null, live: new Map(), grip: new Map(), feel: new Map(), touch: [], hooks: null };
+const PH = { ready: false, world: null, live: new Map(), grip: new Map(), feel: new Map(), touch: [], hooks: null, dish: new Map(), SERVE: 1.3 };   // SERVE: metres a second under which a bowl or a drink carried in the hand is being served, not swung
 const ITEM = 0x0004ffff, HELD_TOOL = 0x00020009; // loose things meet everything; a tool in the hand meets only the cart and people (a ladle still dips into its pot)
 PH.LIMB = 0x00080016; PH.HAND = 0x0010000c; PH.HAND_PEOPLE = 0x00100008; // a person's limbs meet loose and held things and the cook's hands; a headset hand meets loose things and people, the screen's hand only people
 const _p = new V3(), _d = new V3(), _r = new Q(), _e = new Q();
@@ -11,7 +11,7 @@ const shape = (it) => {
   if (it.tool) return [RAPIER.ColliderDesc.cuboid(0.02, 0.02, 0.15).setTranslation(0, 0, -0.14), 0.25];
   if (it.kind === 'debris') return [RAPIER.ColliderDesc.cuboid(0.013, 0.004, 0.011), 0.008];
   if (it.kind === 'bowl') return [RAPIER.ColliderDesc.cylinder(0.044, 0.1).setTranslation(0, 0.044, 0), 0.35];
-  if (it.kind === 'drink') return [RAPIER.ColliderDesc.cylinder(0.12, 0.031).setTranslation(0, 0.12, 0), 0.55];
+  if (it.kind === 'drink') return [RAPIER.ColliderDesc.cylinder(0.061, 0.033).setTranslation(0, 0.061, 0), it.mass || 0.38];   // a twelve-ounce can, as tall and as wide as it is drawn
   if (it.kind === 'raw') return [RAPIER.ColliderDesc.cuboid(it.def.len / 2, it.def.r, it.def.r).setTranslation(it.def.len / 2, 0, 0), 0.4];
   if (it.noodle) return [RAPIER.ColliderDesc.cylinder(0.014, 0.05).setTranslation(0, 0.014, 0), 0.1];
   return [RAPIER.ColliderDesc.cuboid(0.03, 0.007, 0.03).setTranslation(0, 0.007, 0), 0.03];
@@ -24,7 +24,8 @@ PH.init = async () => {
   PH.cyl = (cx, cy, cz, hh, r) => fixed(RAPIER.ColliderDesc.cylinder(hh, r).setTranslation(cx, cy, cz));
   PH.box(0, -0.5, 0, 40, 0.5, 40);
   // a person's hand or forearm lets a slow thing by (what is set down or paid by them); anything moving meets it
-  PH.hooks = { filterContactPair(c1, c2, b1, b2) { const f1 = PH.feel.get(c1), f = f1 || PH.feel.get(c2); if (!f || !f.soft) return RAPIER.SolverFlags.COMPUTE_IMPULSE; const ob = w.getRigidBody(f1 ? b2 : b1); if (!ob || !ob.isDynamic()) return RAPIER.SolverFlags.COMPUTE_IMPULSE; const v = ob.linvel(); return v.x * v.x + v.y * v.y + v.z * v.z < 0.36 ? RAPIER.SolverFlags.EMPTY : RAPIER.SolverFlags.COMPUTE_IMPULSE; }, filterIntersectionPair: () => true };
+  PH.hooks = { filterContactPair(c1, c2, b1, b2) { const f1 = PH.feel.get(c1), f = f1 || PH.feel.get(c2); if (!f || !f.soft) return RAPIER.SolverFlags.COMPUTE_IMPULSE; const ob = w.getRigidBody(f1 ? b2 : b1); if (!ob || !ob.isDynamic()) return RAPIER.SolverFlags.COMPUTE_IMPULSE; const g = PH.dish.get(ob.handle); if (g) return g.sp < PH.SERVE ? RAPIER.SolverFlags.EMPTY : RAPIER.SolverFlags.COMPUTE_IMPULSE;   // (a carried dish by how fast the hand brings it, not by how hard it is being pushed back to the hand)
+    const v = ob.linvel(); return v.x * v.x + v.y * v.y + v.z * v.z < 0.36 ? RAPIER.SolverFlags.EMPTY : RAPIER.SolverFlags.COMPUTE_IMPULSE; }, filterIntersectionPair: () => true };
   PH.ready = true;
 };
 // the cart's tops and vessels, taken from what the cart registered
@@ -56,9 +57,9 @@ PH.hold = (it) => {
   const p = it.obj.position, q = it.obj.quaternion, [desc, mass] = it.tool ? toolEnd(it) : shape(it);
   const b = PH.world.createRigidBody(RAPIER.RigidBodyDesc.dynamic().setTranslation(p.x, p.y, p.z).setRotation({ x: q.x, y: q.y, z: q.z, w: q.w }).setGravityScale(0).setCcdEnabled(true).setCanSleep(false));
   const c = PH.world.createCollider(desc.setMass(mass).setFriction(0.6).setRestitution(0.02).setCollisionGroups(0), b);
-  PH.grip.set(it, { b, c, tp: p.clone(), tq: q.clone(), off: new V3(), sep: 0, touch: false, bump: 0, want: it.tool ? HELD_TOOL : ITEM, ghost: 0.4 }); // it meets nothing until it has come clear of what it was taken out of (no pop)
+  const g = { b, c, tp: p.clone(), tq: q.clone(), ptp: p.clone(), sp: 0, off: new V3(), sep: 0, touch: false, bump: 0, want: it.tool ? HELD_TOOL : ITEM, ghost: 0.4 }; PH.grip.set(it, g); if (it.kind === 'bowl' || it.kind === 'drink') PH.dish.set(b.handle, g); // it meets nothing until it has come clear of what it was taken out of (no pop)
 };
-PH.unhold = (it) => { const g = PH.grip.get(it); if (g) { PH.world.removeRigidBody(g.b); PH.grip.delete(it); } };
+PH.unhold = (it) => { const g = PH.grip.get(it); if (g) { PH.dish.delete(g.b.handle); PH.world.removeRigidBody(g.b); PH.grip.delete(it); } };
 PH.aim = (it, p, q) => { const g = PH.grip.get(it); if (!g) return false; g.tp.copy(p); g.tq.copy(q); return true; };
 function drive(dt) {
   const h = Math.max(dt, 1 / 120);
@@ -98,6 +99,7 @@ PH.step = (dt) => {
     if (it.dead || it.held) { PH.drop(it); continue; }
     if (!it.free) { const t = e.b.translation(), p = it.obj.position; if (Math.abs(t.x - p.x) + Math.abs(t.y - p.y) + Math.abs(t.z - p.z) > 0.002) { const q = it.obj.quaternion; e.b.setTranslation({ x: p.x, y: p.y, z: p.z }, false); e.b.setRotation({ x: q.x, y: q.y, z: q.z, w: q.w }, false); } }
   }
+  for (const g of PH.dish.values()) { g.sp += (g.tp.distanceTo(g.ptp) / Math.max(dt, 1 / 120) - g.sp) * 0.5; g.ptp.copy(g.tp); }   // how fast the hand itself is carrying it
   drive(Math.min(dt, 1 / 30));
   PH.world.timestep = Math.min(dt, 1 / 30); PH.world.step(undefined, PH.feel.size ? PH.hooks : undefined);
   follow(Math.min(dt, 1 / 30));

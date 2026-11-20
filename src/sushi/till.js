@@ -37,12 +37,10 @@ export class Cash extends Prop {
   }
   onLand() { if (!MONEY[this.money].bill) G.audio.play('clink'); }
   // a payment is taken up whole (owner, 19 Nov 2026: "grab all the money … handful"): the rest of what that customer laid comes into the hand with the piece taken, and goes into the drawer with it
-  onGrab() { const who = this.tenderOf || this.tipOf || this.backOf; if (!who) return; this.bundle ||= [];
-    for (const x of [...G.items]) { if (x === this || x.kind !== 'cash' || x.dead || x.held || (x.tenderOf || x.tipOf || x.backOf) !== who || x.obj.position.distanceTo(this.obj.position) > 0.35) continue;
-      const o = x.obj, n = this.bundle.length + 1, bill = MONEY[x.money].bill; x.remove(); o.userData.item = null; o.traverse((q) => { q.userData.nopick = true; }); o.quaternion.identity(); o.rotation.y = bill ? 0.12 * n : n; o.position.set(bill ? 0.004 * n : 0.02 * Math.cos(n * 2.4), 0.002 * n + (bill ? 0 : 0.003), bill ? 0.003 * n : 0.02 * Math.sin(n * 2.4)); this.obj.add(o);
-      this.bundle.push(x, ...(x.bundle || [])); x.bundle = null; this.value += x.value; }
-    if (this.bundle.length) this.name = 'handful of money'; }
-  pieces() { return [this, ...(this.bundle || [])]; }
+  onGrab() { const who = this.tenderOf || this.tipOf || this.backOf; if (!who) return;
+    this.gather((x) => x.kind === 'cash' && (x.tenderOf || x.tipOf || x.backOf) === who, Infinity, 0.35); this.value = this.pieces().reduce((s, x) => s + MONEY[x.money].v, 0);
+    if (this.bundle && this.bundle.length) this.name = 'handful of money'; }
+  layIn(o, n, x) { const bill = MONEY[x.money].bill; o.quaternion.identity(); o.rotation.y = bill ? 0.12 * n : n; o.position.set(bill ? 0.004 * n : 0.02 * Math.cos(n * 2.4), 0.002 * n + (bill ? 0 : 0.003), bill ? 0.003 * n : 0.02 * Math.sin(n * 2.4)); }
   hint() { return `${this.name} (${usd(this.value)}) → the register's drawer, or by a customer as change`; }
 }
 

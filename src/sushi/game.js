@@ -40,24 +40,44 @@ export function buildGame(scene) {
   game.restock();
   // the morning again (a run begun over): the takings, the stock and the counter as they were before the first bowl
   game.newDay = () => { C.tub?.empty(); for (const c of [...game.customers]) { if (c.ticket) c.ticket.removeFromParent(); if (c.nb) G.block?.give(c.nb); else if (!c.guest) c.p.root.removeFromParent(); } game.customers.length = 0; game.seats.forEach((s) => { s.c = null; s.dirty = null; });
-    for (const it of [...G.items]) if (it.kind === 'cash' || ((it.kind === 'bowl' || it.kind === 'drink') && (it.dirty || it.served))) it.remove();   // (yesterday's bowls and coins are not left on the counter)
+    for (const it of [...G.items]) if (it.kind === 'cash' || ((it.kind === 'bowl' || it.kind === 'drink') && (it.dirty || it.served || it.open))) it.remove();   // (yesterday's bowls and coins are not left on the counter)
     game.money = game.tips = game.served = game.lost = game.lateServed = game.extra = game.refused = 0; game.skill = 0; game.spawnT = 4; game.scores = []; game.ticketNo = 1; if (game.summary) { game.summary.removeFromParent(); game.summary = null; } game.state = 'prep'; C.setOpen(false); game.restock(); };
   K.on('reset', game.newDay);
 
-  // seat drop targets
+  // seat drop targets: a bowl let go over or near the mat, a drink anywhere before the customer, is theirs, and is drawn the last of the way to its place (a bowl or a can that comes to rest there by itself is taken the same way: game.update)
+  const SERVE_R = 0.28, DRINK_R = 0.36, _dz = new V3(), _mouth = new V3(), _sq = new THREE.Quaternion(), _sx = new V3(1, 0, 0);
+  const wantsBowl = (c, it) => !!c && c.state === 'waiting' && !it.dirty && !it.empty && !it.served, wantsDrink = (c, it) => !!c && (c.state === 'waiting' || c.state === 'eating') && !!c.order.drink && !c.gotDrink && !it.open && !it.served;
+  const drinkSpot = (i) => { const x = SEATS[i]; for (const [dx, z] of [[0.19, -0.72], [-0.19, -0.72], [0.27, -0.65], [-0.27, -0.65]]) if (!G.items.some((o) => o.kind === 'drink' && !o.dead && !o.held && Math.hypot(o.obj.position.x - x - dx, o.obj.position.z - z) < 0.075)) return _dz.set(x + dx, 1.0, z); return _dz.set(x + 0.19, 1.0, -0.72); };   // beside the mat, within their reach, clear of a can left there
+  const giveBowl = (c, it) => { it.glideTo(C.seatSpots[c.seat]); serve(c, it); };
+  const giveDrink = (c, it) => { if (c.bottle && c.bottle !== it && !c.bottle.dead && !c.bottle.open) c.bottle.served = false; it.glideTo(drinkSpot(c.seat)); it.served = true; c.bottle = it; c.sipT = rand(1.5, 3); if (G.events?.drink(c, it.drink)) { /* the night's event took it (events.js) */ } else if (it.drink === c.order.drink) { c.gotDrink = true; G.talk?.event(c, 'gotdrink'); } else c.wrongDrink = true; G.audio.play('bottle'); drawTicket(c, true); };
   SEATS.forEach((x, i) => {
-    const spot = C.seatSpots[i];
-    G.targets.push({
-      getPos: () => spot, r: 0.21, prio: 2,
-      accepts: (it) => { const c = game.seats[i].c; if (!c) return false; if (it.kind === 'bowl') return c.state === 'waiting' && !it.dirty && !it.empty; if (it.kind === 'drink') return (c.state === 'waiting' || c.state === 'eating') && c.order.drink && !c.gotDrink; return false; },
-      receive: (it) => {
-        const c = game.seats[i].c;
-        if (it.kind === 'bowl') { it.obj.position.set(x, 1.0, -0.71); it.upright(); serve(c, it); }
-        else { it.obj.position.set(x + 0.19, 1.0, -0.66); it.upright(); it.served = true; c.bottle = it; if (G.events?.drink(c, it.drink)) { /* the night's event took it (events.js) */ } else if (it.drink === c.order.drink) { c.gotDrink = true; G.talk?.event(c, 'gotdrink'); } else c.wrongDrink = true; G.audio.play('bottle'); drawTicket(c, true); }
-      },
-    });
+    G.targets.push({ getPos: () => C.seatSpots[i], r: SERVE_R, prio: 2, accepts: (it) => it.kind === 'bowl' && wantsBowl(game.seats[i].c, it), receive: (it) => giveBowl(game.seats[i].c, it) });
+    const dp = new V3(x + 0.08, 1.0, -0.7); G.targets.push({ getPos: () => dp, r: DRINK_R, prio: 2, accepts: (it) => it.kind === 'drink' && wantsDrink(game.seats[i].c, it), receive: (it) => giveDrink(game.seats[i].c, it), drinkAt: dp });
   });
-
+  game.SERVE_R = SERVE_R; game.DRINK_R = DRINK_R;
+  // a customer's drink: the can taken up in a hand, tipped at the mouth, set back where it stood, a few times through the meal until it is empty (the hand follows the can: pf.js P.sip)
+  const SIP = { reach: 0.45, lift: 0.65, hold: 0.9, lower: 0.6, back: 0.4 }, sm = (x) => { x = clamp(x, 0, 1); return x * x * (3 - 2 * x); };
+  const canDrink = (c) => { const it = c.bottle; return !!it && c.gotDrink && !it.dead && !it.held && !it.free && !it.glide && !it.empty && it.tilt() < 0.3 && Math.abs(it.obj.position.x - SEATS[c.seat]) < 0.45 && it.obj.position.z < -0.5 && Math.abs(it.obj.position.y - 1) < 0.05; };
+  const endSip = (c, put) => { const S = c.sip, it = S && S.it; c.sip = null; c.p.sip = null; if (!it || it.dead) return; it.locked = false; if (put && !it.held) { it.obj.position.copy(S.home); it.obj.quaternion.copy(S.q0); it.onSet(); } };
+  function sipping(c, dt) {
+    const S = c.sip;
+    if (!S) { if (!canDrink(c)) return; c.sipT = (c.sipT ?? rand(1.5, 3)) - dt; const last = c.state === 'eating' && c.t >= (c.dur || 17) - 0.05; if (c.sipT > 0 && !last) return;
+      const it = c.bottle, left = Math.max(1, Math.round(((c.dur || 17) - c.t) / 4.5)), q = c.state !== 'eating' ? Math.min(0.15, it.level - 0.4) : last || left <= 1 ? it.level : it.level / left;   // waiting, a mouthful now and then, most of it kept for the meal; eating, what is left shared over the sips there is time for
+      if (q <= 0) { c.sipT = 5; return; }
+      c.sip = { it, t: 0, home: it.obj.position.clone(), q0: it.obj.quaternion.clone(), q, from: it.level, side: it.obj.position.x >= c.p.root.position.x ? 'L' : 'R', said: false };
+      c.p.sip = { at: new V3(), w: 0, side: c.sip.side }; c.sipT = c.state === 'eating' ? rand(1.2, 2.2) : rand(7, 12); return; }
+    const it = S.it; if (it.dead || it.held || it.free) return endSip(c, false);   // taken out of their hand, or knocked from it
+    S.t += dt; const t = S.t, a = SIP.reach, b = a + SIP.lift, d = b + SIP.hold, e = d + SIP.lower, f = e + SIP.back, P = c.p.sip;
+    const k = t < a ? 0 : t < b ? sm((t - a) / SIP.lift) : t < d ? 1 : t < e ? 1 - sm((t - d) / SIP.lower) : 0; P.w = t < a ? sm(t / a) : t < e ? 1 : 1 - sm((t - e) / SIP.back);
+    it.locked = t >= a && t < e;
+    if (k > 0) { const hd = (c.hb ||= c.p.bones.find((q) => q.name === 'head')).getWorldPosition(_mouth), tip = 0.55 + 0.75 * (1 - it.level); _mouth.y += 0.07; _mouth.z += 0.12;   // the rim to the lips, tipped further as it empties
+      _sq.setFromAxisAngle(_sx, -tip * k); it.obj.quaternion.copy(S.q0).premultiply(_sq); _dz.set(0, 0.115, 0).applyQuaternion(_sq); it.obj.position.copy(S.home).lerp(_mouth.sub(_dz), k); it.obj.position.y += 0.03 * Math.sin(Math.PI * k); }
+    else if (t >= e || t < a) { it.obj.position.copy(S.home); it.obj.quaternion.copy(S.q0); }
+    P.at.copy(it.obj.position).add(_dz.set(0, 0.06, 0).applyQuaternion(it.obj.quaternion));
+    if (t >= b) { if (!S.said) { S.said = true; G.audio.play('slurp', _mouth.clone(), 0.45); } const want = S.from - S.q * sm((t - b) / SIP.hold); if (it.level > want) it.sip(it.level - want); }
+    if (t >= f) endSip(c, true);
+  }
+  game.sipOf = (c) => c.sip;
   // which dish a stranger asks for: each of those on the board in turn, in a shuffled round, so the day's orders run across the whole menu (the first lesson's bowl is the first dish)
   const round = []; const next = (list) => { for (let i = 0; i < 2; i++) { const j = round.findIndex((k) => list.includes(k)); if (j >= 0) return round.splice(j, 1)[0]; round.length = 0; round.push(...list); for (let n = round.length - 1; n > 0; n--) { const m = (Math.random() * (n + 1)) | 0; [round[n], round[m]] = [round[m], round[n]]; } } return pick(list); };
   function makeOrder(want) { // want: a recipe's key (in place of one sold out), or what a tenant of THE MARKET chose from the menu ({ key, drink }, live.js)
@@ -168,7 +188,7 @@ export function buildGame(scene) {
     c.p.root.position.set(x, 0, -1.55);
     c.path = c.nb || c.guest ? [new V3(x, 0, -2.5)] : [new V3(x, 0, -2.6), ...(c.side > 0 ? [new V3(-6.2, 0, -2.8), new V3(-6.2, 0, 14)] : [new V3(x, 0, -4.4), new V3(19, 0, -4.4)])];
     if (c.ticket) c.ticket.removeFromParent();
-    if (c.bottle) c.bottle.remove();
+    endSip(c, true); if (c.bottle && !c.bottle.dead && !c.bottle.open) c.bottle.served = false;   // their can stays where it stands: an empty to clear, or one never opened
     game.seats[c.seat].c = null; G.events?.left(c, angry); if (angry) G.regs?.walked(c);
     if (c.guest) G.live?.tell({ gone: { to: c.guest, angry: !!angry } });
     if (angry) { G.talk?.event(c, 'angry'); game.lost++; game.scores.push(0); G.audio.play('bad'); G.fx.popup(new V3(x + 0.2, 1.2, -0.6), ['Left angry', 'Waited too long'], false); }
@@ -252,9 +272,15 @@ export function buildGame(scene) {
 
     game.seats.forEach((s, i) => { if (s.dirty && (s.dirty.dead || s.dirty.held || s.dirty.obj.position.distanceTo(C.seatSpots[i]) > 0.3)) s.dirty = null; });
 
+    game.restT = (game.restT || 0) - dt; if (game.restT <= 0) { game.restT = 0.25;
+      for (const it of G.items) { if ((it.kind !== 'bowl' && it.kind !== 'drink') || it.dead || it.held || it.free || it.glide || it.served || it.tilt() > 0.3 || Math.abs(it.obj.position.y - 1) > 0.06) continue; const p = it.obj.position;
+        for (let i = 0; i < SEATS.length; i++) { const c = game.seats[i].c; if (!c) continue;
+          if (it.kind === 'bowl') { if (wantsBowl(c, it) && Math.hypot(p.x - SEATS[i], p.z + 0.71) < SERVE_R) { giveBowl(c, it); break; } }
+          else if (wantsDrink(c, it) && Math.hypot(p.x - SEATS[i] - 0.08, p.z + 0.7) < DRINK_R) { giveDrink(c, it); break; } } } }
     const eye = G.camera.getWorldPosition(_eye);
     for (const c of [...game.customers]) {
       const p = c.p; c.attn = Math.max(0, (c.attn || 0) - dt); p.look = c.attn > 0 || (c.voice && c.voice.busy) ? eye : c.state === 'waiting' || c.state === 'sitting' ? (Math.sin(t * 0.45 + c.seat * 2.1) > -0.5 ? eye : null) : null; p.update(dt, t);
+      if (c.sip || ((c.state === 'waiting' || c.state === 'eating') && c.bottle)) sipping(c, dt);
       if (c.state === 'waiting' || c.state === 'eating') { c.chatT = (c.chatT ?? rand(28, 60)) - dt; if (c.chatT <= 0 && !(c.voice && c.voice.busy)) { c.chatT = rand(50, 100); G.talk?.event(c, 'chat'); } }
       if (c.state === 'walk' || c.state === 'leaving') {
         if (p.reeling?.()) continue; p.pose = 'walk'; const wp = c.path[0]; _d.copy(wp).sub(p.root.position); const d = _d.length();
@@ -276,14 +302,14 @@ export function buildGame(scene) {
         if (c.patience <= 0) leave(c, true);
       } else if (c.state === 'paying') till.tick(c, dt);
       else if (c.state === 'eating') {
-        const bw = c.bowl, away = bw.dead || bw.held || bw.obj.position.distanceTo(C.seatSpots[c.seat]) > 0.32; // their bowl is theirs only while it is in front of them: take it and they stop, and say so
+        const bw = c.bowl, away = bw.dead || bw.held || (!bw.glide && bw.obj.position.distanceTo(C.seatSpots[c.seat]) > 0.32); // their bowl is theirs only while it is in front of them: take it and they stop, and say so
         if (away) { c.p.pose = 'sit'; c.gone = (c.gone || 0) + dt; if (!c.took) { c.took = true; c.p.gesture?.('no'); G.talk?.event(c, 'react', bw.dead ? 'smash their bowl while they were still eating' : 'take their bowl away while they were still eating'); }
           if (bw.dead || c.gone > 16) { if (bw.eaten > 0.6) { game.served++; if (K.hour > 23) game.lateServed++; game.scores.push(Math.max(0, c.result.score - 30)); if (c.result.pay) till.pay(c, c.result.pay, 0); else leave(c, false); } else leave(c, true); }
           continue; }
         if (c.took) { c.took = false; c.gone = 0; c.p.pose = 'eat'; }
         c.t += dt; const dur = (c.dur ??= K.hour > 23 ? 24 : 17); c.bowl.eaten = clamp(c.t / dur, 0, 1); c.bowl.refresh();
         if (Math.random() < dt * 0.5) G.audio.play(Math.random() < 0.3 ? 'sticks' : 'slurp', c.p.root.position.clone().setY(1.22));
-        if (c.t >= dur) {
+        if (c.t >= dur && !c.sip && !(canDrink(c) && c.t < dur + 8)) {   // (the last of the drink goes down first)
           const r = c.result; let pay = r.pay, tip = r.tip;
           if (c.order.drink) { if (c.gotDrink) pay += DRINKS[c.order.drink]; else { tip = Math.round(tip / 2); G.fx.popup(new V3(SEATS[c.seat] + 0.2, 1.2, -0.6), [`Never got the ${c.order.drink}…`, 'tip halved'], false); r.score = Math.max(0, r.score - 10); } }
           game.served++; if (K.hour > 23) game.lateServed++; game.scores.push(r.score); G.regs?.served(c, r); G.events?.done(c); if (G.events) pay = G.events.pay(c, pay);

@@ -79,7 +79,6 @@ export function makeMapCanvas(world) {
     if (h <= 0) { r = 8; gg = 24 + clamp(h / 8, -14, 0); b = 46; } else if (h < 300) { r = 30 + h * 0.08; gg = 62 + h * 0.04; b = 30; } else if (h < 1500) { r = 54 + (h - 300) * 0.035; gg = 74 - (h - 300) * 0.012; b = 34; } else { r = gg = b = 110 + (h - 1500) * 0.06; }
     const o = (y * S + x) * 4; im.data[o] = r * sh; im.data[o + 1] = gg * sh; im.data[o + 2] = b * sh; im.data[o + 3] = 255; }
   g.putImageData(im, 0, 0); g.fillStyle = '#cfd3d8'; for (const b of world.bases) { const x = (b.x + HALF) / CELL / k, y = (b.z + HALF) / CELL / k; g.fillRect(x - 1, y - 4, 2, 8); }
-  g.fillStyle = '#b9a98a'; for (const t of world.towns) { const x = (t.x + HALF) / CELL / k, y = (t.z + HALF) / CELL / k; g.beginPath(); g.arc(x, y, 3, 0, TAU); g.fill(); }
   return c;
 }
 

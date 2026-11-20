@@ -15,7 +15,7 @@ const IDS = ['camel', 'dr1', 'spitfire', 'bf109', 'p51', 'zero', 'f86', 'mig15',
 
   // ---- on a screen ----
   { const t0 = Date.now(), { pg, errs, miss } = await open(), ev = (f, a) => pg.evaluate(f, a);
-    ok(await ev(() => !!window.game && game.world.bases.length === 3 && game.world.towns.length > 4), 'the island is made: three airbases and its towns (' + ((Date.now() - t0) / 1000).toFixed(0) + ' s)');
+    ok(await ev(() => !!window.game && game.world.bases.length === 3 && game.world.towns.length === 0 && !game.world.buildings), 'the island is made: three airstrips, no towns or buildings (' + ((Date.now() - t0) / 1000).toFixed(0) + ' s)');
     const each = await ev(async ids => { const out = []; game.opts.enemies = 0; for (const id of ids) { game.view = 'cockpit'; const f0 = game.renderer.info.render.frame; await game.start(id); game.simulate(2); await new Promise(r => setTimeout(r, 1500));
       const p = game.player, fm = p.fm; out.push([id, game.state === 'fly' && p.alive && fm.ias > 20 && isFinite(fm.pos.y) && game.cockpit.controls.length > 5 && game.renderer.info.render.frame > f0 && !game._err]); } return out; }, IDS);
     ok(each.every(e => e[1]), 'all sixteen aircraft start from the cockpit and fly' + (each.every(e => e[1]) ? '' : ': not ' + each.filter(e => !e[1]).map(e => e[0])));
@@ -39,8 +39,9 @@ const IDS = ['camel', 'dr1', 'spitfire', 'bf109', 'p51', 'zero', 'f86', 'mig15',
       for (let i = 0; i < 240; i++) { game.simulate(1); for (const a of game.aircraft) if (a.ai && a.alive) { n++; if (a.fm.ias < a.ai.vs * 1.05) stall++; } await new Promise(r => setTimeout(r, 0)); }
       return { stall: stall / Math.max(n, 1), foes: game.aircraft.filter(a => a.team === 1 && a.alive).length, wave: game.wave, hurt: game.aircraft.some(a => a.hp < a.hpMax) || game.wave > 1, err: !!game._err, t: game.time }; });
     ok(fight.hurt && !fight.err, 'four minutes of a jet fight: shots land'); ok(fight.stall < 0.05, 'the pilots keep their speed (' + (fight.stall * 100).toFixed(1) + '% of the time stalled)'); ok(fight.foes > 0 || fight.wave > 1, 'there is always someone to fight (wave ' + fight.wave + ')');
-    const crash = await ev(() => { const p = game.player; p.ai = null; const t = game.world.bases[0]; p.fm.pos.set(t.x + 150, t.y + 10, t.z + 330); p.fm.vel.set(0, 0, 0.1); game.simulate(0.3); return p.removed || !!p.fm.crashed; });
-    ok(crash, 'flying into the control tower is the end of you');
+    const crash = await ev(() => { const p = game.player, w = game.world; p.ai = null; let at = null; for (let x = -20000; x < 20000 && !at; x += 400) for (let z = -20000; z < 20000; z += 400) if (w.forestAt(x, z) > 0.8 && w.heightAt(x, z) > 20) { at = [x, z]; break; }
+      game.simulate(0.2); p.fm.pos.set(at[0], w.heightAt(at[0], at[1]) + 5, at[1]); p.fm.vel.set(0, 0, -40); game.simulate(0.3); return p.removed || !!p.fm.crashed; });
+    ok(crash, 'flying into the forest\'s canopy is the end of you');
     ok(errs.length === 0, 'no page errors' + (errs.length ? ': ' + errs.slice(0, 3).join(' | ') : '')); await pg.close(); }
 
   // ---- an emulated Quest 3 ----

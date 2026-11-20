@@ -1,5 +1,5 @@
-// Open world: 82 km x 82 km procedurally-shaped island (heights, forests, farmland, towns, airbases) rendered with
-// chunked LOD terrain, PBR-sourced splat texturing, shader water, instanced tree impostors and instanced buildings.
+// Open world: 82 km x 82 km procedurally-shaped wild island (mountains, dense forest, meadows, three airstrips) rendered with
+// chunked LOD terrain, PBR-sourced splat texturing, shader water and instanced tree impostors. No towns, no buildings.
 import * as THREE from 'three';
 import { atmo, ATMO_GLSL } from './sky.js';
 
@@ -46,8 +46,8 @@ export class World {
       const sx = (H[k + 1] - H[k - 1]) / (2 * CELL), sz = (H[k + N] - H[k - N]) / (2 * CELL), sl = Math.hypot(sx, sz);
       const u = i / N * 2 - 1, v = j / N * 2 - 1;
       const site = this.siteMask(i, j);
-      const fm = h < 260 && sl < 0.07 ? sstep(-0.05, 0.12, fbm(u * 9 + 31, v * 9 - 17, 3)) : 0;
-      const fo = sstep(-0.08, 0.2, fbm(u * 15 + 5, v * 15 + 51, 4)) * (1 - sstep(1300, 1750, h)) * (1 - sstep(0.45, 0.8, sl)) * sstep(2, 8, h);
+      const fm = 0;
+      const fo = (0.35 + 0.65 * sstep(-0.3, 0.02, fbm(u * 15 + 5, v * 15 + 51, 4))) * (1 - sstep(1300, 1750, h)) * (1 - sstep(0.45, 0.8, sl)) * sstep(2, 8, h);
       this.farm[k] = 255 * fm * (1 - site); this.forest[k] = 255 * fo * (1 - fm * 0.92) * (1 - site);
     }
   }
@@ -60,10 +60,10 @@ export class World {
       if (mn < 4) continue; cand.push({ i, j, rough: mx - mn, d: Math.hypot(i - N / 2, j - N / 2) });
     }
     cand.sort((a, b) => a.rough - b.rough);
-    const sites = []; for (const c of cand) { if (sites.every(s => Math.hypot(s.i - c.i, s.j - c.j) > 110)) sites.push(c); if (sites.length >= 14) break; }
+    const sites = []; for (const c of cand) { if (sites.every(s => Math.hypot(s.i - c.i, s.j - c.j) > 110)) sites.push(c); if (sites.length >= 3) break; }
     sites.sort((a, b) => a.d - b.d);
     sites.forEach((s, n) => {
-      const x = s.i * CELL - HALF, z = s.j * CELL - HALF, isBase = n % 4 === 0 && this.bases.length < 3;
+      const x = s.i * CELL - HALF, z = s.j * CELL - HALF, isBase = true;
       const rx = isBase ? 14 : 12, rz = isBase ? 30 : 12; let sum = 0, cnt = 0;
       for (let b = -rz; b <= rz; b += 3) for (let a = -rx; a <= rx; a += 3) { sum += H[(s.j + b) * N + s.i + a]; cnt++; }
       const h0 = Math.max(8, sum / cnt);
@@ -87,8 +87,7 @@ export class World {
   ground = (x, z) => Math.max(0, this.heightAt(x, z));
   // top of whatever stands at (x,z): building roof or forest canopy; -1e9 if clear
   obstacleTop(x, z) {
-    const cell = this.bgrid && this.bgrid.get(((Math.floor(x / 256) + 4096) << 13) | (Math.floor(z / 256) + 4096)); let top = -1e9;
-    if (cell) for (const b of cell) { const dx = x - b.x, dz = z - b.z, lx = dx * b.c + dz * b.s, lz = -dx * b.s + dz * b.c; if (Math.abs(lx) < b.hw && Math.abs(lz) < b.hd) top = Math.max(top, b.top); }
+    let top = -1e9;
     if (top < -1e8 && this.forestAt(x, z) > 0.55) { const h = this.heightAt(x, z); if (h > 2.5 && h < 1750) top = h + 9; }
     return top;
   }
@@ -109,11 +108,11 @@ export class World {
     this.normalTex = mk(nd); this.splatTex = mk(sp);
 
     const U = { ...atmo, uNormalTex: { value: this.normalTex }, uSplat: { value: this.splatTex },
-      tGrass: { value: tex.grass }, tRock: { value: tex.rock }, tSand: { value: tex.sand }, tSnow: { value: tex.snow }, tForest: { value: tex.forest }, tFarm: { value: tex.farm }, tDetailN: { value: tex.grassN }, tCliff: { value: tex.cliff } };
+      tGrass: { value: tex.grass }, tRock: { value: tex.rock }, tSand: { value: tex.sand }, tSnow: { value: tex.snow }, tForest: { value: tex.forest }, tDetailN: { value: tex.grassN }, tCliff: { value: tex.cliff } };
     this.terrainMat = new THREE.ShaderMaterial({ uniforms: U, fog: false,
       vertexShader: /* glsl */`varying vec3 vW; void main(){ vW = position; gl_Position = projectionMatrix * viewMatrix * vec4(position, 1.0); }`,
       fragmentShader: ATMO_GLSL + /* glsl */`
-        varying vec3 vW; uniform sampler2D uNormalTex, uSplat, tGrass, tRock, tSand, tSnow, tForest, tFarm, tDetailN, tCliff;
+        varying vec3 vW; uniform sampler2D uNormalTex, uSplat, tGrass, tRock, tSand, tSnow, tForest, tDetailN, tCliff;
         float h21(vec2 p){ return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453); }
         vec3 two(sampler2D t, vec2 p, float near, float far, float k){ return mix(texture2D(t, p / near).rgb, texture2D(t, p / far).rgb, k); }
         void main(){
@@ -137,12 +136,6 @@ export class World {
           vec3 rock = two(tRock, vW.xz, 60.0, 700.0, kf * 0.7); vec3 cliff = texture2D(tCliff, vec2(vW.x + vW.z, vW.y) / 90.0).rgb * 0.8;
           #endif
           vec3 col = grass;
-          // farmland patchwork
-          vec2 fp = vW.xz * mat2(0.94, -0.34, 0.34, 0.94); vec2 fc = fp / vec2(310.0, 190.0); vec2 fid = floor(fc); float fh = h21(fid); vec2 fe = abs(fract(fc) - 0.5);
-          vec3 crop = fh < 0.3 ? vec3(0.62, 0.55, 0.26) : fh < 0.55 ? vec3(0.3, 0.42, 0.14) : fh < 0.78 ? vec3(0.42, 0.5, 0.2) : vec3(0.4, 0.3, 0.2);
-          vec3 fur = texture2D(tFarm, (fh > 0.5 ? fp.xy : fp.yx) / mix(22.0, 160.0, kf)).rgb;
-          vec3 farm = crop * (0.35 + fur * 0.9) * (0.8 + 0.4 * mac2); farm = mix(farm, vec3(0.1, 0.16, 0.07), smoothstep(0.465, 0.49, max(fe.x, fe.y)));
-          col = mix(col, farm, sp.g);
           // forest floor / canopy tint
           vec3 fo = texture2D(tForest, vW.xz / 28.0).rgb * vec3(0.5, 0.62, 0.35); float can = texture2D(tRock, rxz / 150.0).g * 1.4 + texture2D(uNoise, vW.xz / 260.0).b * 0.8; fo = mix(fo, vec3(0.05, 0.1, 0.03) * (0.35 + can), kf * 0.9);
           col = mix(col, fo, smoothstep(0.25, 0.6, sp.r + (mac2 - 0.5) * 0.3));
@@ -153,8 +146,6 @@ export class World {
           col = mix(col, mix(rock, cliff, smoothstep(0.38, 0.6, slope)), rk);
           float sn = smoothstep(1750.0, 2150.0, h + mac.b * 300.0) * (1.0 - smoothstep(0.45, 0.75, slope));
           col = mix(col, vec3(0.86, 0.89, 0.93) * (0.82 + 0.25 * mac2) * (0.9 + 0.2 * texture2D(tSnow, vW.xz / 60.0).g), sn);
-          vec2 rg = abs(fract(vW.xz / 46.0) - 0.5); float road = smoothstep(0.42, 0.46, max(rg.x, rg.y)); float urb = smoothstep(0.35, 0.8, sp.b + (mac2 - 0.5) * 0.5) * (1.0 - sn);
-          col = mix(col, mix(col * 0.75 + vec3(0.06, 0.07, 0.04), vec3(0.11, 0.11, 0.115), road), urb * 0.8); // urban ground + street grid
           // seabed
           col = mix(col, vec3(0.2, 0.3, 0.26) * col * 3.0, smoothstep(0.0, -4.0, vW.y));
           // detail normal near the camera
@@ -221,7 +212,7 @@ export class World {
 
   // ---------- trees ----------
   buildTrees(scene, tex) {
-    const MAXT = 34000; this.maxTrees = MAXT;
+    const MAXT = 80000; this.maxTrees = MAXT;
     const g = new THREE.InstancedBufferGeometry();
     const q = [-0.5, 0, 0, 0.5, 0, 0, 0.5, 1, 0, -0.5, 1, 0, 0, 0, -0.5, 0, 0, 0.5, 0, 1, 0.5, 0, 1, -0.5];
     g.setAttribute('position', new THREE.Float32BufferAttribute(q, 3)); g.setAttribute('uv', new THREE.Float32BufferAttribute([0, 0, 1, 0, 1, 1, 0, 1, 0, 0, 1, 0, 1, 1, 0, 1], 2));
@@ -252,59 +243,26 @@ export class World {
     const TC = 240, R = this.treeMat.uniforms.uRange.value;
     if (cam.y - this.ground(cam.x, cam.z) > 5200) { this.trees.visible = false; return; } this.trees.visible = true;
     const ccx = Math.round(cam.x / TC), ccz = Math.round(cam.z / TC); if (ccx === this.treeCenter.x && ccz === this.treeCenter.y) return; this.treeCenter.set(ccx, ccz);
-    const A = this.treeData, B = this.treeData2, rc = Math.ceil(R / TC); let n = 0; const MAXT = this.maxTrees;
-    for (let dz = -rc; dz <= rc && n < MAXT; dz++) for (let dx = -rc; dx <= rc && n < MAXT; dx++) {
-      if (dx * dx + dz * dz > rc * rc) continue; const cx = ccx + dx, cz = ccz + dz; const f = this.forestAt(cx * TC, cz * TC); const near = dx * dx + dz * dz < (rc * 0.5) ** 2;
-      const cnt = f > 0.08 ? Math.floor(f * (near ? 80 : 22) * (this.lodScale || 1)) : (hash2(cx, cz) < 0.25 ? 1 : 0);
+    const A = this.treeData, B = this.treeData2, rc = Math.ceil(R / TC); let n = 0; const MAXT = Math.floor(this.maxTrees * ((this.lodScale || 1) < 1 ? 0.45 : 1));
+    if (!this.treeRing || this.treeRing.rc !== rc) { const o = []; for (let dz = -rc; dz <= rc; dz++) for (let dx = -rc; dx <= rc; dx++) if (dx * dx + dz * dz <= rc * rc) o.push([dx, dz, dx * dx + dz * dz]); o.sort((p, q) => p[2] - q[2]); this.treeRing = { rc, o }; }
+    for (const [dx, dz, d2] of this.treeRing.o) { if (n >= MAXT) break;
+      const cx = ccx + dx, cz = ccz + dz; const f = this.forestAt(cx * TC, cz * TC); const near = d2 < (rc * 0.45) ** 2;
+      const cnt = Math.floor((0.06 + f) * (near ? 150 : 46) * (this.lodScale || 1));
       for (let t = 0; t < cnt && n < MAXT; t++) {
         const x = (cx + hash2(cx * 7 + t, cz * 13 - t) - 0.5) * TC, z = (cz + hash2(cx * 3 - t * 5, cz * 11 + t) - 0.5) * TC; const y = this.heightAt(x, z); if (y < 2.5 || y > 1750) continue;
-        const r = hash2(cx * 31 + t * 17, cz * 57 + t), r2 = hash2(cx * 91 + t, cz * 23 + t * 3); const conifer = y > 650 + r * 400;
-        const type = conifer ? 0 : r2 < 0.5 ? 1 : r2 < 0.78 ? 2 : 3; const hgt = conifer ? 24 + r * 12 : type === 1 ? 15 + r * 9 : 11 + r * 7; const wid = conifer ? hgt * 0.95 : hgt * 1.25;
+        const r = hash2(cx * 31 + t * 17, cz * 57 + t), r2 = hash2(cx * 91 + t, cz * 23 + t * 3); const conifer = y > 650 + r * 400, under = near && t % 3 === 2; // every third near one is understorey
+        const type = conifer ? 0 : r2 < 0.5 ? 1 : r2 < 0.78 ? 2 : 3; let hgt = conifer ? 24 + r * 12 : type === 1 ? 15 + r * 9 : 11 + r * 7; if (under) hgt *= 0.28 + r2 * 0.2; const wid = conifer ? hgt * 0.95 : hgt * 1.25;
         A[n * 4] = x; A[n * 4 + 1] = y - 0.4; A[n * 4 + 2] = z; A[n * 4 + 3] = hgt; B[n * 4] = wid; B[n * 4 + 1] = type; B[n * 4 + 2] = r * 3.14; B[n * 4 + 3] = r2; n++;
       }
     }
     this.trees.geometry.instanceCount = n; this.treeA.needsUpdate = true; this.treeB.needsUpdate = true; this.treeCount = n;
   }
 
-  // ---------- towns & airbases ----------
+  // ---------- airstrips ----------
   buildSites(scene, tex) {
-    const std = (map, nor, rep, extra = {}) => { const m = new THREE.MeshStandardMaterial({ map, normalMap: nor, roughness: 0.9, metalness: 0, envMapIntensity: 0.2, ...extra }); return m; };
-    const house = (() => { // unit house: walls 1x1x1 (y 0..1) + gable roof (y 1..1.45); groups: 0 walls, 1 roof
-      const w = new THREE.BoxGeometry(1, 1, 1).translate(0, 0.5, 0); const uv = w.attributes.uv; for (let i = 0; i < uv.count; i++) uv.setXY(i, uv.getX(i) * 2, uv.getY(i));
-      const r = new THREE.BufferGeometry(); const P = [-0.55, 1, -0.55, 0.55, 1, -0.55, 0, 1.5, -0.55, -0.55, 1, 0.55, 0.55, 1, 0.55, 0, 1.5, 0.55];
-      const tri = (a, b, c) => [a, b, c].flatMap(i => P.slice(i * 3, i * 3 + 3)); const pos = [...tri(0, 2, 1), ...tri(3, 4, 5), ...tri(0, 3, 5), ...tri(0, 5, 2), ...tri(1, 2, 5), ...tri(1, 5, 4)];
-      r.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3)); const uvs = []; for (let i = 0; i < pos.length; i += 3) uvs.push(pos[i + 2] * 2, pos[i + 1] * 2 + pos[i]); r.setAttribute('uv', new THREE.Float32BufferAttribute(uvs, 2)); r.computeVertexNormals();
-      const wn = w.toNonIndexed(); const g = new THREE.BufferGeometry(); const cat = n => new THREE.Float32BufferAttribute([...wn.attributes[n].array, ...r.attributes[n].array], n === 'uv' ? 2 : 3);
-      g.setAttribute('position', cat('position')); g.setAttribute('normal', cat('normal')); g.setAttribute('uv', cat('uv')); g.addGroup(0, 36, 0); g.addGroup(36, 18, 1); return g; })();
-    const block = (() => { const g = new THREE.BoxGeometry(1, 1, 1).translate(0, 0.5, 0); const uv = g.attributes.uv; for (let i = 0; i < uv.count; i++) uv.setXY(i, uv.getX(i) * 3, uv.getY(i) * 3); return g; })();
-    const lists = { house: [], block: [], shed: [] }; const m4 = new THREE.Matrix4(), qq = new THREE.Quaternion(), ss = new THREE.Vector3(), pp = new THREE.Vector3(), up = new THREE.Vector3(0, 1, 0);
-    this.bgrid = new Map(); const reg = (x, z, w, h, d, rot, y0) => { const b = { x, z, hw: w / 2, hd: d / 2, c: Math.cos(rot), s: -Math.sin(rot), top: y0 + h * 1.3 }, r = Math.hypot(w, d) / 2; for (let i = Math.floor((x - r) / 256); i <= Math.floor((x + r) / 256); i++) for (let j = Math.floor((z - r) / 256); j <= Math.floor((z + r) / 256); j++) { const k = ((i + 4096) << 13) | (j + 4096); if (!this.bgrid.has(k)) this.bgrid.set(k, []); this.bgrid.get(k).push(b); } };
-    const add = (kind, x, z, w, h, d, rot, y) => { reg(x, z, w, h, d, rot, y ?? this.heightAt(x, z)); pp.set(x, y ?? this.heightAt(x, z) - 0.6, z); qq.setFromAxisAngle(up, rot); ss.set(w, h, d); lists[kind].push(m4.compose(pp, qq, ss).clone()); };
-    this.towns.forEach((t, ti) => { const R = t.rx * CELL * 0.85, grid = 46; const ang = hash2(ti, 77) * 3.14;
-      for (let gz = -R; gz < R; gz += grid) for (let gx = -R; gx < R; gx += grid) { const d = Math.hypot(gx, gz) / R; if (d > 1) continue; const hsh = hash2(Math.round(gx) + ti * 1000, Math.round(gz));
-        if (hsh > 0.97 - d * 0.4 || Math.abs((gx / grid) % 5) < 0.5 || Math.abs((gz / grid) % 6) < 0.5) continue;
-        const x = t.x + gx * Math.cos(ang) - gz * Math.sin(ang) + (hsh - 0.5) * 10, z = t.z + gx * Math.sin(ang) + gz * Math.cos(ang); const h2 = hash2(Math.round(gx) * 3, Math.round(gz) * 7 + ti);
-        if (d < 0.28 && h2 < 0.6) add('block', x, z, 22 + h2 * 16, 14 + hsh * 60 * (1 - d * 2), 22 + hsh * 14, -ang);
-        else if (h2 > 0.93) add('shed', x, z, 30, 9, 44, -ang + (h2 > 0.96 ? 1.57 : 0));
-        else add('house', x, z, 10 + h2 * 6, 5 + hsh * 4, 12 + hsh * 8, -ang + (hsh > 0.4 ? 1.57 : 0)); } });
-    // airbases
     const flat = new THREE.PlaneGeometry(1, 1).rotateX(-Math.PI / 2); this.runways = [];
     const rwMat = new THREE.MeshStandardMaterial({ map: tex.runway, roughness: 0.92, envMapIntensity: 0.2, polygonOffset: true, polygonOffsetFactor: -4, polygonOffsetUnits: -8 });
-    const apMat = std(tex.concrete, tex.concreteN, 1, { polygonOffset: true, polygonOffsetFactor: -2, polygonOffsetUnits: -4 });
-    this.bases.forEach((b, bi) => { const y = b.y + 0.02;
-      const rw = new THREE.Mesh(flat, rwMat); rw.scale.set(46, 1, 2400); rw.position.set(b.x, y + 0.04, b.z); scene.add(rw);
-      const ap = new THREE.Mesh(flat.clone(), apMat); { const uv = ap.geometry.attributes.uv; for (let i = 0; i < uv.count; i++) uv.setXY(i, uv.getX(i) * 22, uv.getY(i) * 80); }
-      ap.scale.set(220, 1, 800); ap.position.set(b.x + 190, y, b.z); scene.add(ap);
-      const tw = new THREE.Mesh(flat.clone(), apMat); tw.scale.set(22, 1, 2400); tw.position.set(b.x + 70, y + 0.02, b.z); { const uv = tw.geometry.attributes.uv; for (let i = 0; i < uv.count; i++) uv.setXY(i, uv.getX(i) * 2, uv.getY(i) * 240); } scene.add(tw);
-      for (let k = 0; k < 5; k++) add('shed', b.x + 250, b.z - 300 + k * 110, 60, 16, 70, 0, b.y - 0.3);
-      add('block', b.x + 150, b.z + 330, 14, 34, 14, 0, b.y); add('block', b.x + 150, b.z + 330, 22, 6, 22, 0, b.y + 33); add('block', b.x + 240, b.z + 380, 60, 12, 30, 0, b.y);
-      this.runways.push({ x: b.x, z: b.z, y: b.y + 0.06, len: 2400 }); });
-    const mats = { house: [std(tex.brick, tex.brickN), std(tex.roof, tex.roofN)], block: std(tex.facade, tex.facadeN), shed: [std(tex.iron, tex.ironN, 1, { metalness: 0.5, roughness: 0.6 }), std(tex.iron, tex.ironN, 1, { metalness: 0.5, roughness: 0.55 })] };
-    this.buildings = [];
-    for (const k of ['house', 'block', 'shed']) { if (!lists[k].length) continue; const im = new THREE.InstancedMesh(k === 'block' ? block : house, mats[k], lists[k].length); const c = new THREE.Color();
-      lists[k].forEach((m, i) => { im.setMatrixAt(i, m); const v = (k === 'block' ? 1.5 : 0.9) + hash2(i, 5) * 0.5; c.setRGB(v, v * (0.92 + hash2(i, 9) * 0.1), v * (0.85 + hash2(i, 3) * 0.15)); im.setColorAt(i, c); });
-      im.frustumCulled = false; scene.add(im); this.buildings.push(im); }
-    this.buildingCount = lists.house.length + lists.block.length + lists.shed.length;
+    for (const b of this.bases) { const rw = new THREE.Mesh(flat, rwMat); rw.scale.set(46, 1, 2400); rw.position.set(b.x, b.y + 0.06, b.z); scene.add(rw); this.runways.push({ x: b.x, z: b.z, y: b.y + 0.06, len: 2400 }); }
   }
 
   setQuality(q) { const low = q < 1; this.terrainMat.defines = low ? { LOWQ: 1 } : {}; this.terrainMat.needsUpdate = true; this.treeMat.uniforms.uRange.value = low ? 2600 : 3600; this.treeCenter.set(1e9, 1e9); this.lodScale = low ? 0.75 : 1; }

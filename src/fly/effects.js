@@ -152,3 +152,30 @@ export class Glows {
   lockStatic() { this.staticN = this.n; }
   end() { this.mesh.geometry.instanceCount = this.n; this.aP.needsUpdate = true; this.aC.needsUpdate = true; }
 }
+
+// ---------- birds: flocks kept near the player, each bird a pair of wings flapped in the vertex shader ----------
+export class Birds {
+  constructor(scene, world, flocks = 26, per = 18) {
+    this.world = world; this.flocks = []; this.per = per; const n = flocks * per;
+    const g = new THREE.InstancedBufferGeometry(); g.setAttribute('position', new THREE.Float32BufferAttribute([0, 0, -0.5, 0, 0, 0.45, -1, 0, 0.1, 0, 0, -0.5, 1, 0, 0.1, 0, 0, 0.45], 3)); g.setAttribute('aW', new THREE.Float32BufferAttribute([0, 0, 1, 0, 1, 0], 1));
+    this.aF = new THREE.InstancedBufferAttribute(new Float32Array(n * 4), 4); this.aO = new THREE.InstancedBufferAttribute(new Float32Array(n * 4), 4); this.aF.setUsage(THREE.DynamicDrawUsage); g.setAttribute('iF', this.aF); g.setAttribute('iO', this.aO); g.instanceCount = n;
+    for (let f = 0; f < flocks; f++) { this.flocks.push({ x: 1e9, y: 0, z: 0, r: 120 + hash(f) * 260, w: (hash(f + 9) < 0.5 ? -1 : 1) * (0.05 + hash(f + 3) * 0.06) });
+      for (let b = 0; b < per; b++) { const i = f * per + b, k = f * 31 + b; this.aO.array.set([(hash(k) - 0.5) * 46, (hash(k + 0.3) - 0.5) * 14, (hash(k + 0.6) - 0.5) * 46, hash(k + 0.9) * 6.28], i * 4); } }
+    this.mesh = new THREE.Mesh(g, new THREE.ShaderMaterial({ uniforms: { ...atmo }, side: THREE.DoubleSide, fog: false,
+      vertexShader: /* glsl */`attribute float aW; attribute vec4 iF, iO; uniform float uTime; varying vec3 vW;
+        void main(){ float a = uTime * iF.w * 6.2832 / max(abs(iF.w), 0.001) * abs(iF.w) + iO.w; float R = 140.0 + 60.0 * sin(iO.w * 3.0);
+          vec3 c = iF.xyz + vec3(cos(a) * R, sin(uTime * 0.3 + iO.w) * 8.0, sin(a) * R) + iO.xyz; float dirA = a + 1.5708 * sign(iF.w);
+          float flap = sin(uTime * (7.0 + iO.w) + iO.w * 5.0); vec3 p = position * 0.9; p.y += aW * flap * 0.55; p.x *= 1.0 - aW * 0.25 * abs(flap);
+          float cs = cos(-dirA + 1.5708), sn = sin(-dirA + 1.5708); p.xz = mat2(cs, -sn, sn, cs) * p.xz; vW = c + p; gl_Position = projectionMatrix * viewMatrix * vec4(vW, 1.0); }`,
+      fragmentShader: ATMO_GLSL + /* glsl */`varying vec3 vW; void main(){ vec3 col = vec3(0.06, 0.055, 0.05) * (sunLight(0.6) + hemi(vec3(0.0, 1.0, 0.0))) * 3.0; gl_FragColor = vec4(applyFog(col, vW, cameraPosition), 1.0);
+          #include <tonemapping_fragment>
+          #include <colorspace_fragment>
+        }` }));
+    this.mesh.frustumCulled = false; scene.add(this.mesh); this.timer = 0; this.seed = 1;
+  }
+  update(dt, cam, fwd) { this.timer -= dt; if (this.timer > 0) return; this.timer = 1.5; let dirty = false; const F = this.aF.array;
+    this.flocks.forEach((f, i) => { if (Math.hypot(f.x - cam.x, f.z - cam.z) < 7000) return; let x, z, h, tries = 0;
+      do { const a = Math.atan2(fwd.x, fwd.z) + (hash(this.seed++) - 0.5) * 3.6, d = 1200 + hash(this.seed++) * 4800; x = cam.x + Math.sin(a) * d; z = cam.z + Math.cos(a) * d; h = this.world.heightAt(x, z); } while (h < 1 && ++tries < 6);
+      f.x = x; f.z = z; f.y = Math.max(h, 0) + 40 + hash(this.seed++) * 260; for (let b = 0; b < this.per; b++) F.set([f.x, f.y, f.z, f.w], (i * this.per + b) * 4); dirty = true; });
+    if (dirty) this.aF.needsUpdate = true; }
+}

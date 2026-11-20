@@ -30,8 +30,8 @@ Each model page: `https://sketchfab.com/3d-models/<UID>`
 - HUD unit: "MiG-23ML HUD | ASP-17ML" by aeck2142 — Sketchfab Free Standard licence (fa94cb18343241dba2ed22cfa183bd74)
 
 ## Textures and trees — Poly Haven (CC0)
-aerial_grass_rock, aerial_rocks_02, aerial_beach_01, snow_02, forest_ground_04, farm_furrows, rock_face, asphalt_02,
-concrete_panels, concrete_tile_facade, clay_roof_tiles, corrugated_iron, brick_wall_09, metal_plate, brown_leather,
+aerial_grass_rock, aerial_rocks_02, aerial_beach_01, snow_02, forest_ground_04, rock_face,
+concrete_panels, metal_plate, brown_leather,
 wood_table_worn, hessian_230, rusty_metal_02. Tree billboards were rendered from the Poly Haven models fir_tree_01,
 jacaranda_tree, island_tree_01 and island_tree_02. https://polyhaven.com
 

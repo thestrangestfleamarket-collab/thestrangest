@@ -11,7 +11,7 @@
 {"id":"jam","name":"STADIUM JAM","url":"/jam","kind":"Music","text":"Guitar or drums in front of a full stadium. Up to eight in a room by a code.","tags":["HEADSET","SCREEN","1-8 PLAYERS"]},
 {"id":"drums","name":"THE GARAGE","url":"/drums","kind":"Music","text":"A real drum kit in a garage on a street that lives. Free play, fifteen lessons, neighbours who hear how you play, and a shotgun on the back wall.","tags":["HEADSET","SCREEN","1 PLAYER"]},
 {"id":"wave","name":"SHARDWAVE","url":"/wave","kind":"Rhythm","text":"Cut each shard with the matching blade the way its arrow points. Three tracks, or your own audio file.","tags":["HEADSET","1 PLAYER"]},
-{"id":"fly","name":"SKY ACES","url":"/fly","kind":"Dogfight","text":"Sixteen aircraft from a Sopwith Camel to an F-22 over an open island, each with a working cockpit. Guns, rockets, waves of bandits.","tags":["HEADSET","SCREEN","1 PLAYER"]},
+{"id":"fly","name":"SKY ACES","url":"/fly","kind":"Dogfight","text":"Sixteen aircraft from a Sopwith Camel to an F-22 over a wild island of mountains and forest, each with a working cockpit. Guns, rockets, waves of bandits.","tags":["HEADSET","SCREEN","1 PLAYER"]},
 {"id":"golf","name":"HALCYON GREENS","url":"/golf","kind":"Mini golf","text":"One hole in a misty meadow at dusk, with a stream and a waterfall.","tags":["HEADSET","SCREEN","1 PLAYER"]},
 {"id":"sniper","name":"COLD BORE","url":"/sniper","kind":"Sniper","text":"Five contracts with a bolt-action rifle and a scope you really look through. Rounds fly under drag, gravity and wind.","tags":["HEADSET","SCREEN","1 PLAYER"]},
 {"id":"edge","name":"EDGE OF 88","url":"/edge","kind":"Heights","text":"A lift to floor 88 and a plank over the city at sunset.","tags":["HEADSET","SCREEN","1 PLAYER"]},

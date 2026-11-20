@@ -3,7 +3,7 @@ import * as THREE from 'three';
 import { PLANES, PLANE_BY_ID, ERAS, opponentsFor, alliesFor } from './planes.js';
 import { World } from './world.js';
 import { Sky, atmo } from './sky.js';
-import { Clouds, Particles, Tracers, Glows } from './effects.js';
+import { Clouds, Particles, Tracers, Glows, Birds } from './effects.js';
 import { loadTextures, loadPlane } from './assets.js';
 import { Aircraft, Rocket } from './aircraft.js';
 import { AI } from './ai.js';
@@ -38,7 +38,7 @@ class Game {
     const st = $('status'); st.textContent = 'Loading textures…';
     this.tex = await loadTextures(); st.textContent = 'Generating terrain…'; await new Promise(r => setTimeout(r, 30));
     this.world = new World(); this.world.generate(); this.world.build(this.scene, this.tex);
-    this.sky = new Sky(this.scene, this.local, this.tex.noise); this.clouds = new Clouds(this.scene, 1); this.particles = new Particles(this.scene); this.tracers = new Tracers(this.scene); this.glows = new Glows(this.scene);
+    this.sky = new Sky(this.scene, this.local, this.tex.noise); this.clouds = new Clouds(this.scene, 1); this.particles = new Particles(this.scene); this.tracers = new Tracers(this.scene); this.glows = new Glows(this.scene); this.birds = new Birds(this.scene, this.world);
     this.setTime('day'); this.buildOverlay(); this.buildMarkers(); this.buildVR(); this.buildNightLights();
     this.camPos.set(this.world.bases[0].x + 900, this.world.bases[0].y + 420, this.world.bases[0].z + 1900); this.rig.position.copy(this.camPos); this.rig.lookAt(this.world.bases[0].x, this.world.bases[0].y + 60, this.world.bases[0].z);
     this.buildMenu(); st.textContent = 'Ready.'; $('fly').disabled = false;
@@ -71,7 +71,7 @@ class Game {
   buildMarkers() { const c = document.createElement('canvas'); c.width = c.height = 64; const g = c.getContext('2d'); g.strokeStyle = '#fff'; g.lineWidth = 5; for (const [x, y, dx, dy] of [[6, 6, 1, 1], [58, 6, -1, 1], [6, 58, 1, -1], [58, 58, -1, -1]]) { g.beginPath(); g.moveTo(x + dx * 16, y); g.lineTo(x, y); g.lineTo(x, y + dy * 16); g.stroke(); }
     const t = new THREE.CanvasTexture(c); this.markers = []; for (let i = 0; i < 12; i++) { const s = new THREE.Sprite(new THREE.SpriteMaterial({ map: t, depthTest: false, depthWrite: false, sizeAttenuation: false, transparent: true, fog: false, toneMapped: false })); s.scale.setScalar(0.045); s.visible = false; s.renderOrder = 30; this.scene.add(s); this.markers.push(s); } }
   buildNightLights() { const L = this.nightLights = []; for (const r of this.world.runways) for (let z = -1200; z <= 1200; z += 60) { L.push([r.x - 24, r.y + 0.6, r.z + z, 1, 0.9, 0.6], [r.x + 24, r.y + 0.6, r.z + z, 1, 0.9, 0.6]); }
-    let s = 7; const rnd = () => (s = (s * 16807) % 2147483647) / 2147483647; for (const t of this.world.towns) for (let i = 0; i < 90; i++) { const a = rnd() * 6.28, r = Math.sqrt(rnd()) * t.rx * 68, x = t.x + Math.cos(a) * r, z = t.z + Math.sin(a) * r; L.push([x, this.world.heightAt(x, z) + 7, z, 1, 0.75 + rnd() * 0.2, 0.4 + rnd() * 0.3]); } }
+}
   say(text, t = 4) { this.msgs.unshift({ text, t }); this.msgs.length = Math.min(this.msgs.length, 3); this.panelDirty = true; }
 
   // ---------- VR controllers ----------
@@ -209,7 +209,7 @@ class Game {
     this.updateCamera(dt, xr);
     if (this.cockpit && pl) this.cockpit.update(dt, this.state === 'fly');
     this.local.updateMatrixWorld(); this.camera.getWorldPosition(this.camPos);
-    this.world.update(this.camPos, dt); this.clouds.update(dt, this.camPos); this.sky.update(this.camPos, pl ? pl.fm.pos : this.camPos); this.sunDir = atmo.uSunDir.value;
+    this.world.update(this.camPos, dt); this.clouds.update(dt, this.camPos); this.birds.update(dt, this.camPos, pl ? pl.fwd : _v.set(0, 0, -1)); this.sky.update(this.camPos, pl ? pl.fm.pos : this.camPos); this.sunDir = atmo.uSunDir.value;
     if (pl) { const sc = this.sky.sun.shadow.camera, s = this.view === 'cockpit' ? 3.4 : Math.max(pl.span, pl.len) * 0.75; if (sc.right !== s) { sc.left = sc.bottom = -s; sc.right = sc.top = s; sc.updateProjectionMatrix(); } }
     this.updateMarkers(); this.updateOverlay(dt, xr);
     if (pl && this.state === 'fly') this.audio.update(dt, pl, this.view === 'cockpit', this.aircraft, this.camPos);

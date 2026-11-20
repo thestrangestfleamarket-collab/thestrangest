@@ -5,6 +5,7 @@ import { PL } from './player.js';
 import { SK } from './seeker.js';
 import { A } from './sound.js';
 import { SPOTS } from './spots.js';
+import { MIC } from './mic.js';
 import { EffectComposer } from 'three/addons/postprocessing/EffectComposer.js';
 import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
 import { BokehPass } from 'three/addons/postprocessing/BokehPass.js';
@@ -94,7 +95,7 @@ function draw(dt) { const xr = renderer.xr.isPresenting; grain.visible = xr; if 
   const h = ray(PL.head, PL.fwd, 30); focus = lerp(focus, h ? clamp(h.t, .4, 30) : 30, 1 - Math.exp(-dt * 5)); bokeh.uniforms.focus.value = focus; lens.uniforms.t.value = (lens.uniforms.t.value + dt) % 10; comp.render(dt); }
 function frame(time) { const dt = clamp((time - last) / 1000 || .016, .001, 1 / 20); last = time; if (G.mode !== 'title' && !G.paused) tick(dt); draw(dt); }
 
-function tick(dt) { G.t += dt; CLOCK.t += dt; PL.update(dt); SK.update(dt); devices(dt); WORLD.webStep(PL.pos, SK.g.visible ? SK.pos : null); for (const u of WORLD.updaters) u(dt, A); WORLD.mist(PL.head, dt, movers()); physics(dt); A.frame();
+function tick(dt) { G.t += dt; CLOCK.t += dt; PL.update(dt); MIC.step(dt, G.mode === 'seek'); SK.update(dt); devices(dt); WORLD.webStep(PL.pos, SK.g.visible ? SK.pos : null); for (const u of WORLD.updaters) u(dt, A); WORLD.mist(PL.head, dt, movers()); physics(dt); A.frame();
   // the big fixed lamps redraw their shadows in turn, one every other frame, not all on every frame
   // and only if something has moved where that lamp shines: a still alley costs no shadow work at all
   G.fr = (G.fr || 0) + 1; if (G.fr % 2 === 0) { const L = WORLD.slow[(G.fr / 2) % WORLD.slow.length], m = movers(); if (L) { const [x, z, r] = L.userData.reach; for (let i = 0; i < m.length; i += 4) if (m[i + 3] > .03 && Math.hypot(m[i] - x, m[i + 2] - z) < r) { L.shadow.needsUpdate = true; break; } } }
@@ -122,10 +123,11 @@ async function boot() { const bar = $('bar'), note = $('note'); let a = 0, b = 0
     if (!Q.has('mind') && location.protocol.startsWith('http')) try { const k = await (await fetch('/hide/keys')).json(); SK.voiced = !!k.eleven; } catch (e) {}
     { const el = $('pname'), nm = () => { SK.name = el.value.replace(/[^\p{L} '-]/gu, '').trim().slice(0, 20); keep('deadend.name', SK.name); }; if (keep('deadend.name')) el.value = keep('deadend.name'); el.addEventListener('input', nm); nm(); }
   } catch (e) { note.textContent = 'It would not load: ' + (e && e.message || e); console.error(e); return; }
-window.__hide = { draw, ray, G, PL, SK, P, WORLD, A, THREE, SPOTS, camera, rig, scene, renderer, applyNight, ready, startRound, end, reset, physics, sim: (n, dt = 1 / 60) => { for (let i = 0; i < n; i++) tick(dt); } };
+window.__hide = { MIC, draw, ray, G, PL, SK, P, WORLD, A, THREE, SPOTS, camera, rig, scene, renderer, applyNight, ready, startRound, end, reset, physics, sim: (n, dt = 1 / 60) => { for (let i = 0; i < n; i++) tick(dt); } };
   try { Object.assign(SK.habits, JSON.parse(keep('deadend.habits') || '{}')); } catch (e) {} 
   renderer.setAnimationLoop(frame);
   $('load').hidden = true; $('mind').textContent = SK.mode === 'claude' ? 'Hunted by Claude Haiku.' : 'Hunted by instinct' + (G.mindNote ? ': ' + G.mindNote + '.' : '.');
+  { const say = () => { $('mic').textContent = MIC.on ? 'It can hear your microphone. Nothing is recorded or sent.' : 'Microphone off' + (MIC.why ? ' (' + MIC.why + ')' : '') + ': it cannot hear your room. Click here to allow it.'; }; $('mic').onclick = () => MIC.open().then(say); MIC.open().then(say); }
   const go = () => { $('ui').hidden = true; A.resume(); for (const t of WORLD.tubes) A.buzz(t); A.start(); ready(); };
   $('bdesk').disabled = false; $('bdesk').onclick = () => { go(); renderer.domElement.requestPointerLock && renderer.domElement.requestPointerLock(); }; renderer.domElement.addEventListener('click', () => { if (G.mode !== 'title' && !renderer.xr.isPresenting && renderer.domElement.requestPointerLock) renderer.domElement.requestPointerLock(); });
   if (navigator.xr && await navigator.xr.isSessionSupported('immersive-vr').catch(() => false)) { $('bvr').disabled = false; $('bvr').onclick = async () => { try { const s = await navigator.xr.requestSession('immersive-vr', { optionalFeatures: ['local-floor', 'bounded-floor'] }); await renderer.xr.setSession(s); go(); s.addEventListener('end', () => { $('ui').hidden = false; G.mode = 'title'; }); } catch (e) { note.textContent = 'The headset would not start: ' + e.message; } }; }

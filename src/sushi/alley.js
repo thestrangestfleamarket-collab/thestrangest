@@ -1,4 +1,4 @@
-// the corner where the cart stands: THE MARKET's Market St and West St, park side, in 1985: the park's stone wall and railings behind the cart, the wide pavement, Market St and the art museum and the bank across it, West St's apartment houses, all read out of the market's own page (corner.js, tools/ramen-corner.cjs); what stands lit and what drives by (street.js); its sky, moon and lamps follow the run's clock (clock.js)
+// the street where the cart stands: THE MARKET's Market St, park side, across from the bodega, in 1985: the park's stone wall and railings behind the cart, its gate and stalls along the wall, the wide pavement, Market St and THE STRANGEST LANES, the bodega, the Foundry Lofts and THE BAR across it, all read out of the market's own page (corner.js, tools/ramen-corner.cjs); what stands lit and what drives by (street.js); its sky, moon and lamps follow the run's clock (clock.js)
 import * as THREE from 'three';
 import { G, mat, mesh, box, cyl, clamp } from './ctx.js';
 import * as T from './tex.js';
@@ -79,8 +79,8 @@ export function buildAlley(scene, o = {}) {
     sky.update(dt, G.renderer && G.renderer.xr.isPresenting ? 1.5 : 1);
     if ((skyT -= dt) <= 0 || Math.abs((G.clock ? G.clock.hour : 11) - lastH) > 0.05) { skyT = 0.25; paint(); } });   // (at once when the clock jumps: a guest joining, a new run)
   S.easy = !!(G.set && G.set.easy); city.setEasy = (on) => { S.easy = on; paint(); };
-  // where the corner's people stop (plan.js SPOTS): the park bench, the crossing, the railings, the museum's steps and the bank's door across Market St, the apartment house's door on West St
+  // where the street's people stop (plan.js SPOTS)
   const P = (x, z) => new THREE.Vector3(x, 0, z), shops = SPOTS.map((s) => ({ type: s.type, open: true, p: P(s.x, s.z), name: s.name })), all = shops;
   const block = buildBlock(city, shops, { near: LANES[0], far: LANES[1], split: (KERB + FKERB) / 2, end: E0, west: W0, cross: XWALK }); ups.push((dt, t) => block.update(dt, t));
-  return Object.assign(api, { group: city, jd: (h) => city.jd(h), shops: all, fronts: { shops: [] }, street, corner, glow, fill, sun, moon, lamps: lampMats, alley: true, vent: { x: 7.5, z: (KERB + FKERB) / 2 + 3.5 }, skyDome: sky, weatherAt, setEasy(on) { S.easy = on; paint(); }, update(dt, t) { for (const u of ups) u(dt, t); }, halo, rain: null, cars: street.cars, glowMap, bakeFar() { }, reflect() { } });
+  return Object.assign(api, { group: city, jd: (h) => city.jd(h), shops: all, fronts: { shops: [] }, street, corner, glow, fill, sun, moon, lamps: lampMats, alley: true, vent: { x: 12.5, z: (KERB + FKERB) / 2 + 3.5 }, skyDome: sky, weatherAt, setEasy(on) { S.easy = on; paint(); }, update(dt, t) { for (const u of ups) u(dt, t); }, halo, rain: null, cars: street.cars, glowMap, bakeFar() { }, reflect() { } });
 }

@@ -142,7 +142,7 @@ export function buildGame(scene) {
 
   function spawn(seat, guest, opt) { opt = opt || {}; // guest: a tenant of THE MARKET who sat down at the cart there (live.js): a customer like any other, but a real person
     const due = guest || opt.ev || opt.stranger ? null : G.regs?.due(), nb = due ? G.block.take(due) : opt.who ? G.block.take(G.block.by[opt.who]) : null, p = guest ? guest.p : nb ? nb.p : makePerson((Math.random() * 1e6) | 0, opt.style), x = SEATS[seat], side = nb ? (p.root.position.x < x ? -1 : 1) : Math.random() < 0.5 ? -1 : 1; // a regular whose hour it is (regulars.js), else a stranger
-    if (!nb && !guest) { if (side > 0) p.root.position.set(18, 0, -4.4); else p.root.position.set(-6.2, 0, 13); } G.peopleRoot.add(p.root);   // a stranger comes along Market St, or down West St's pavement round the park's corner
+    if (!nb && !guest) { if (side > 0) p.root.position.set(18, 0, -4.4); else p.root.position.set(-14, 0, -4.4); } G.peopleRoot.add(p.root);   // a stranger comes along Market St, from the east or from the park gate's side
     p.root.traverse((o) => { o.userData.nopick = true; if (o.isMesh) o.castShadow = true; });
     if (nb) G.regs.came(nb);
     const c = { p, seat, side, state: 'walk', path: [...(!nb && !guest && side < 0 ? [new V3(-6.2, 0, -2.6)] : []), new V3(x, 0, -2.3), new V3(x, 0, -1.55)], t: 0, order: null, maxPatience: 100, patience: 0, ev: opt.ev || null, pat: opt.pat || 1, hurry: !!opt.hurry, want: nb && !opt.ev ? G.regs.order(nb) : opt.want, line: opt.line || null, tag: '', gotDrink: false, bowl: null, bottle: null, result: null, nb, guest: guest ? guest.id : null, name: guest ? guest.name : null };

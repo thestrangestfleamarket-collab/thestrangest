@@ -6,11 +6,11 @@ import { tenantFigure } from './tenant.js';
 import { makePerson } from './avatars.js';
 import { mon as usd } from './till.js';
 import * as T from './tex.js';
-import { NZ, WALK as PAVE } from './plan.js';
+import { NZ, WALK as PAVE, BENCH } from './plan.js';
 
 const SEATZ = -1.16, STOOLZ = -1.62, START = [1.4, -2.6], MOUTH = PAVE.maxX - 0.6, WALK = 1.45;   // where a guest sits and stands to sit; where they come in; the way out, east along Market St
 // what a guest walks round, in the cart's own metres [x0, z0, x1, z1]: the cart, the park bench
-const SOLID = [[-1.95, -1.4, 1.95, NZ], [5.5, 0.3, 7.9, 1.5]];
+const SOLID = [[-1.95, -1.4, 1.95, NZ], BENCH];
 
 export function buildGuest(live) {
   const card = (() => { try { return JSON.parse(sessionStorage.getItem('holo') || 'null') || {}; } catch (e) { return {}; } })(), Y = card.yatai || {};

@@ -1,4 +1,4 @@
-// the corner of Market St and West St as THE MARKET has it, read out of the market's own page by tools/ramen-corner.cjs (data/sushi/corner.json, corner.bin): every still thing round the cart, in the cart's metres, a drawing a material and a square of ground; its lamps' places; lit windows glow at night as the market's do
+// the street round the cart (Market St by the park gate, across from the bodega) as THE MARKET has it, read out of the market's own page by tools/ramen-corner.cjs (data/sushi/corner.json, corner.bin): every still thing round the cart, in the cart's metres, a drawing a material and a square of ground; its lamps' places; lit windows glow at night as the market's do
 import * as THREE from 'three';
 import { mat } from './ctx.js';
 

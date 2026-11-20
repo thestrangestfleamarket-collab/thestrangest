@@ -6,11 +6,12 @@ const dec = (s, T) => { const b = atob(s), u = new Uint8Array(b.length); for (le
 // D: {kind 'w' | 'b', np matrices, n points, lo, hi, s scale to metres, p points, c colours, b piece or bones, i index, x held things [{n, lo, hi, p, c, i}]}; mirror: -1 when the market's alley runs the other way round
 export function tenantFigure(D, mirror = 1) {
   const n = D.n, q = dec(D.p, Uint16Array), P = new Float32Array(n * 3); for (let i = 0; i < n * 3; i++) { const a = i % 3; P[i] = D.lo[a] + (q[i] / 65535) * (D.hi[a] - D.lo[a]); }
-  const g = new THREE.BufferGeometry(); g.setAttribute('position', new THREE.BufferAttribute(P, 3)); g.setAttribute('color', new THREE.BufferAttribute(dec(D.c, Uint8Array), 3, true));
+  let g = new THREE.BufferGeometry(); g.setAttribute('position', new THREE.BufferAttribute(P, 3)); g.setAttribute('color', new THREE.BufferAttribute(dec(D.c, Uint8Array), 3, true));
   const B = dec(D.b, Uint8Array);
   if (D.kind === 'w') g.setAttribute('pidx', new THREE.BufferAttribute(Float32Array.from(B), 1));
   else { const bi = new Float32Array(n * 2), bw = new Float32Array(n); for (let i = 0; i < n; i++) { bi[i * 2] = B[i * 3]; bi[i * 2 + 1] = B[i * 3 + 1]; bw[i] = B[i * 3 + 2] / 255; } g.setAttribute('bi', new THREE.BufferAttribute(bi, 2)); g.setAttribute('bw', new THREE.BufferAttribute(bw, 1)); }
-  if (D.i) g.setIndex(new THREE.BufferAttribute(dec(D.i, Uint16Array), 1)); g.computeVertexNormals(); g.computeBoundingSphere();
+  if (D.i) g.setIndex(new THREE.BufferAttribute(dec(D.i, Uint16Array), 1)); if (D.flat && D.i) { const f = g.toNonIndexed(); g.dispose(); g = f; }   // (a flat-faced body told with shared points: parted again, so each face is lit as one)
+  g.computeVertexNormals(); g.computeBoundingSphere();
   const np = Math.max(1, D.np | 0), PM = { value: Array.from({ length: np }, () => new THREE.Matrix4()) }, cur = Array.from({ length: np }, () => new THREE.Matrix4()), want = Array.from({ length: np }, () => new THREE.Matrix4());
   const head = D.kind === 'w' ? `attribute float pidx; uniform mat4 uPM[${np}];` : `attribute vec2 bi; attribute float bw; uniform mat4 uPM[${np}];`, at = D.kind === 'w' ? 'mat4 PM=uPM[int(pidx+0.5)];' : 'mat4 PM=uPM[int(bi.x+.5)]*bw+uPM[int(bi.y+.5)]*(1.-bw);';
   const mat = new THREE.MeshLambertMaterial({ vertexColors: true, side: THREE.DoubleSide });

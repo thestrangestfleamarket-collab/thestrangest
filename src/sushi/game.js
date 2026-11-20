@@ -121,11 +121,11 @@ export function buildGame(scene) {
   }
 
   function spawn(seat, guest, opt) { opt = opt || {}; // guest: a tenant of THE MARKET who sat down at the cart there (live.js): a customer like any other, but a real person
-    const due = guest || opt.ev || opt.stranger ? null : G.regs?.due(), nb = due ? G.block.take(due) : null, p = guest ? guest.p : nb ? nb.p : makePerson((Math.random() * 1e6) | 0), x = SEATS[seat], side = nb ? (p.root.position.x < x ? -1 : 1) : Math.random() < 0.5 ? -1 : 1; // a regular whose hour it is (regulars.js), else a stranger
-    if (!nb && !guest) p.root.position.set(side * 14, 0, -2.35); G.peopleRoot.add(p.root);
+    const due = guest || opt.ev || opt.stranger ? null : G.regs?.due(), nb = due ? G.block.take(due) : opt.who ? G.block.take(G.block.by[opt.who]) : null, p = guest ? guest.p : nb ? nb.p : makePerson((Math.random() * 1e6) | 0, opt.style), x = SEATS[seat], side = nb ? (p.root.position.x < x ? -1 : 1) : Math.random() < 0.5 ? -1 : 1; // a regular whose hour it is (regulars.js), else a stranger
+    if (!nb && !guest) { if (side > 0) p.root.position.set(18, 0, -4.4); else p.root.position.set(-6.2, 0, 13); } G.peopleRoot.add(p.root);   // a stranger comes along Market St, or down West St's pavement round the park's corner
     p.root.traverse((o) => { o.userData.nopick = true; if (o.isMesh) o.castShadow = true; });
     if (nb) G.regs.came(nb);
-    const c = { p, seat, side, state: 'walk', path: [new V3(x, 0, -2.3), new V3(x, 0, -1.55)], t: 0, order: null, maxPatience: 100, patience: 0, ev: opt.ev || null, pat: opt.pat || 1, hurry: !!opt.hurry, want: nb ? G.regs.order(nb) : opt.want, line: opt.line || null, tag: '', gotDrink: false, bowl: null, bottle: null, result: null, nb, guest: guest ? guest.id : null, name: guest ? guest.name : null };
+    const c = { p, seat, side, state: 'walk', path: [...(!nb && !guest && side < 0 ? [new V3(-6.2, 0, -2.6)] : []), new V3(x, 0, -2.3), new V3(x, 0, -1.55)], t: 0, order: null, maxPatience: 100, patience: 0, ev: opt.ev || null, pat: opt.pat || 1, hurry: !!opt.hurry, want: nb && !opt.ev ? G.regs.order(nb) : opt.want, line: opt.line || null, tag: '', gotDrink: false, bowl: null, bottle: null, result: null, nb, guest: guest ? guest.id : null, name: guest ? guest.name : null };
     if (guest) delete c.want; c.maxPatience = c.patience = G.rush.patience(c, 0);
     game.seats[seat].c = c; game.customers.push(c);
     return c;
@@ -166,7 +166,7 @@ export function buildGame(scene) {
   function leave(c, angry) {
     c.state = 'leaving'; c.p.pose = 'walk'; const x = SEATS[c.seat];
     c.p.root.position.set(x, 0, -1.55);
-    c.path = c.nb || c.guest ? [new V3(x, 0, -2.5)] : [new V3(x, 0, -2.3), new V3(c.side * -15, 0, -2.4)];
+    c.path = c.nb || c.guest ? [new V3(x, 0, -2.5)] : [new V3(x, 0, -2.6), ...(c.side > 0 ? [new V3(-6.2, 0, -2.8), new V3(-6.2, 0, 14)] : [new V3(x, 0, -4.4), new V3(19, 0, -4.4)])];
     if (c.ticket) c.ticket.removeFromParent();
     if (c.bottle) c.bottle.remove();
     game.seats[c.seat].c = null; G.events?.left(c, angry); if (angry) G.regs?.walked(c);
@@ -229,7 +229,7 @@ export function buildGame(scene) {
       const inTill = till.total() - till.float, os = inTill - game.money - game.tips, a = C.avail(), left = [['noodles', a.noodles], ...Object.entries(a.tops).map(([k, n]) => [TOPPINGS[k].label.toLowerCase(), n]), ['soda', a.drinks.soda], ['iced tea', a.drinks.tea]].filter((x) => x[1] > 0).map((x) => `${x[1]} ${x[0]}`).join(', ');
       [['Bowls served', game.served], ['Walked out', game.lost], ['Sales rung up', mon(game.money)], ['Tips', mon(game.tips)], ['In the till', mon(inTill)], ['Till over / short', (os > 0 ? '+' : os < 0 ? '-' : '') + mon(Math.abs(os))], ['Rating', '★'.repeat(Math.round(game.rating())) + ` ${game.rating().toFixed(1)}`]].forEach(([k, v], i) => { g.fillText(k, 60, 168 + i * 50); g.textAlign = 'right'; g.fillText(String(v), w - 60, 168 + i * 50); g.textAlign = 'left'; });
       g.font = `bold 24px ${T.JP}`; g.fillStyle = '#5a4a3a'; g.fillText(`Left over: ${left || 'nothing'}`, 60, 510, w - 120);
-      g.fillStyle = '#12406a'; g.textAlign = 'center'; g.font = `bold 36px ${T.JP}`; g.fillText('The street lamps go out.', w / 2, h - 84, w - 40); g.fillText('Morning comes to First Avenue.', w / 2, h - 40, w - 40);
+      g.fillStyle = '#12406a'; g.textAlign = 'center'; g.font = `bold 36px ${T.JP}`; g.fillText('The street lamps go out.', w / 2, h - 84, w - 40); g.fillText('Morning comes to Market St.', w / 2, h - 40, w - 40);
     });
     const s = new THREE.Mesh(new THREE.PlaneGeometry(0.6, 0.5), new THREE.MeshBasicMaterial({ map: t, toneMapped: false, color: 0xdddddd })); s.position.set(0, 1.38, -0.5); s.rotation.x = -0.15; s.userData.nopick = true;
     scene.add(s); game.summary = s; G.audio.play('done');

@@ -9,6 +9,7 @@ const CARS = {
   sedan: ['boxy-sedan-70s-7d55f7', 'Boxy-sedan-70s', [32, 36, 42], [46, 61, 107]], wagon: ['station-wagon-70s-11d67b', 'Station-wagon-70s', [32, 36, 42], [173, 132, 102]],
   hatch: ['hatchback-80s-e95554', 'Hatchback-80s', [32, 36, 42], [85, 179, 176]], towncar: ['town-car-56eeb6', 'Town Car', [122, 138, 142], [53, 49, 48]],
   muscle: ['muscle-car-60s-524d46', 'Muscle-car-60s', [46, 49, 56], [220, 205, 175]], van: ['camper-van-8d10e2', 'Camper-van', [63, 65, 72], [111, 137, 76]],
+  kei: ['kei-van-211ed5', 'Kei Van', [0, 0, 0], [245, 246, 247]],   // THE MARKET's kei van, a fifth its size on the pavements there (src/150pb-traffic.js)
 };
 const b64 = (a) => Buffer.from(a.buffer, a.byteOffset, a.byteLength).toString('base64'), toS = (x) => Math.round(Math.max(0, Math.min(1, x <= 0.0031308 ? 12.92 * x : 1.055 * Math.pow(x, 1 / 2.4) - 0.055)) * 255), near = (a, b) => b && Math.max(Math.abs(a[0] - b[0]), Math.abs(a[1] - b[1]), Math.abs(a[2] - b[2])) <= 2;
 const mm = (a, b) => { const o = new Array(16); for (let c = 0; c < 4; c++) for (let r = 0; r < 4; r++) o[c * 4 + r] = a[r] * b[c * 4] + a[4 + r] * b[c * 4 + 1] + a[8 + r] * b[c * 4 + 2] + a[12 + r] * b[c * 4 + 3]; return o; };

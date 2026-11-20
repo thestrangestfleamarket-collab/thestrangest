@@ -32,9 +32,11 @@ function makeHand(i, xr) {
     pulse(v = 0.5, ms = 30) { try { this.source?.gamepad?.hapticActuators?.[0]?.pulse(v, ms); } catch (e) { /* no haptics */ } } };
 }
 
-// how the hand closed: on a source or on a loose thing, the whole fist (grip and trigger; a tracked hand's fist), a tracked pinch, and whether the other hand is cupped beside it (on a screen, the use key held)
-const how = (h, src) => { const tr = !!(h.xr && h.source && h.source.hand); return { src, fist: h.xr ? (tr ? h.mode === 'palm' : h.use) : false, pinch: tr && h.mode === 'pinch',
-  cup: h.xr ? (G.hands || []).some((o) => o !== h && o.xr && o.active && o.pos.distanceTo(h.pos) < 0.22 && (!o.held || o.held.kind === 'food')) : h.use }; };
+// how far the hand is closed, 0 to 1: a controller's grip as far as it is pressed, a tracked hand's fist; and whether the other hand is cupped beside it (on a screen, the use key)
+const closed = (h) => { if (!h.xr) return h.grip ? 1 : 0; if (h.source && h.source.hand) return h.fist ? 1 : 0; const b = h.source && h.source.gamepad && h.source.gamepad.buttons[1]; return b ? b.value : h.grip ? 1 : 0; };
+const cupped = (h) => (h.xr ? (G.hands || []).some((o) => o !== h && o.xr && o.active && o.pos.distanceTo(h.pos) < 0.22 && (!o.held || o.held.kind === h.held.kind)) : h.use);
+const piece = (c) => !!c && (c.kind === 'food' || c.kind === 'cash' || (c.take && (c.bin || c.till)));   // what finger and thumb (the trigger alone) can pick up
+const FULL = 0.9, CLOSE_T = 0.35;   // the grip pressed this far within this long of taking a piece is the whole hand closing: a handful
 // where a thing let go belongs: what takes it there, else it falls
 function settle(it, vel, ang) {
   const p = it.worldCenter(_v); let best = null, bd = 1e9;
@@ -50,7 +52,7 @@ function grab(h, cand) {
   if (cand.take) { it = cand.take(); fromSource = true; it.obj.position.copy(h.pos); it.obj.position.y -= it.center.y; it.obj.quaternion.identity(); }
   if (it.held) it.held.held = null;
   it.held = h; h.held = it; it.free = false; it.grounded = -1; it.vel.set(0, 0, 0); h.holdT = 0;
-  it.onGrab(h, how(h, fromSource ? cand : null));
+  it.onGrab(h, { src: fromSource ? cand : null });
   _q.copy(h.quat).invert();
   h.relQ.copy(_q).multiply(it.obj.quaternion);
   h.relPos.copy(it.obj.position).sub(h.pos).applyQuaternion(_q);
@@ -108,7 +110,8 @@ function stepHand(h, dt) {
     const cand = h.xr ? findCand(h) : h.aim?.cand; h.cand = cand || null;
     if (cand) { h.marker.visible = true; if (cand.take) h.marker.position.copy(cand.pos); else cand.worldCenter(h.marker.position); const s = (cand.take ? cand.r : cand.radius) * 3.2; h.marker.scale.set(s, s, 1); h.marker.material.opacity = 0.28 + Math.sin(G.t * 6) * 0.08; }
     else h.marker.visible = false;
-    if (h.gripDown && cand) grab(h, cand);
+    if (h.gripDown && cand) { h.pin = false; grab(h, cand); }
+    else if (h.xr && h.useDown && !h.grip && piece(cand) && !(h.source && h.source.hand) && !G.buttons.some((b) => h.tip.distanceTo(b.getPos()) < 0.17)) { grab(h, cand); h.pin = true; h.holdT = -1; }   // the trigger alone: finger and thumb take the one piece
   } else {
     h.marker.visible = false;
     const it = h.held;
@@ -127,8 +130,9 @@ function stepHand(h, dt) {
     }
     it.onHeld(dt, h);
     if (it.dead || it.held !== h) { h.held = null; return; }
-    if (!h.xr && h.grip && it.handful && h.holdT >= 0 && (h.holdT += dt) > 0.3) { h.holdT = -1; it.handful(h.use ? 12 : 6); }   // on a screen: keep the button down and the hand digs out a handful (with the use key, both hands' worth)
-    if (h.xr ? !h.grip : h.gripDown) release(h);
+    if (it.handful && h.holdT >= 0) { h.holdT += dt;   // one piece is in the fingers: the hand closing right round it takes a handful (a headset: the grip pressed home, a fist; a screen: the button kept down, with the use key both hands' worth)
+      if (h.xr ? closed(h) >= FULL : h.grip && h.holdT > 0.3) { h.holdT = -1; it.handful(cupped(h)); } else if (h.xr ? h.holdT > CLOSE_T : !h.grip) h.holdT = -1; }
+    if (h.xr ? !(h.grip || (h.pin && h.use)) : h.gripDown) release(h);
   }
 }
 

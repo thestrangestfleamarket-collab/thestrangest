@@ -36,10 +36,11 @@ export class Cash extends Prop {
     this.kind = 'cash'; this.money = k; this.value = d.v; this.pick = true;
   }
   onLand() { if (!MONEY[this.money].bill) G.audio.play('clink'); }
-  // a payment is taken up whole (owner, 19 Nov 2026: "grab all the money … handful"): the rest of what that customer laid comes into the hand with the piece taken, and goes into the drawer with it
-  onGrab() { const who = this.tenderOf || this.tipOf || this.backOf; if (!who) return;
-    this.gather((x) => x.kind === 'cash' && (x.tenderOf || x.tipOf || x.backOf) === who, Infinity, 0.35); this.value = this.pieces().reduce((s, x) => s + MONEY[x.money].v, 0);
-    if (this.bundle && this.bundle.length) this.name = 'handful of money'; }
+  // a payment is taken up whole (owner, 19 Nov 2026: "grab all the money … handful"): on a screen with the piece clicked; in a headset by the full grip, what of it lies under the hand (a light grip or a pinch takes the one piece); it goes into the drawer together
+  onGrab(h, o = {}) { this.at0 = (h && h.xr ? h.pos : this.obj.position).clone(); if (!h || !h.xr) this.handful(false, 0.35); }
+  handful(cup, r = 0.12) { const who = this.tenderOf || this.tipOf || this.backOf; if (!who || !this.at0) return 0;
+    const n = this.gather((x) => x.kind === 'cash' && (x.tenderOf || x.tipOf || x.backOf) === who, Infinity, r, this.at0); this.value = this.pieces().reduce((s, x) => s + MONEY[x.money].v, 0);
+    if (this.bundle && this.bundle.length) this.name = 'handful of money'; return n; }
   layIn(o, n, x) { const bill = MONEY[x.money].bill; o.quaternion.identity(); o.rotation.y = bill ? 0.12 * n : n; o.position.set(bill ? 0.004 * n : 0.02 * Math.cos(n * 2.4), 0.002 * n + (bill ? 0 : 0.003), bill ? 0.003 * n : 0.02 * Math.sin(n * 2.4)); }
   hint() { return `${this.name} (${usd(this.value)}) → the register's drawer, or by a customer as change`; }
 }

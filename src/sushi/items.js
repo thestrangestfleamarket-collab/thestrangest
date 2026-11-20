@@ -236,7 +236,7 @@ export class Bowl extends Item {
 }
 
 // ------------------------------------------------------------------ food
-export const HOLDS = { chashu: 4, naruto: 4, egg: 3, nori: 4, menma: 5, negi: 6, corn: 6 }, CUP = 1.5, REACH = 0.065, PILE = 0.01, PILE_X = 0.031;   // pieces a closed hand holds of each (slices, small bits), how much more each of two cupped hands, how far from the hand a piece can lie and still be closed on (metres), and how they lie in it (two heaps, a layer this high)
+export const HOLDS = { chashu: 4, naruto: 4, egg: 3, nori: 4, menma: 5, negi: 6, corn: 6 }, CUP = 1.5, REACH = 0.085, PILE = 0.01, PILE_X = 0.031;   // pieces a closed hand holds of each (slices, small bits), how much more each of two cupped hands, how far from the hand a piece can lie and still be closed on (metres), and how they lie in it (two heaps, a layer this high)
 export class Food extends Item {
   constructor(type, servings = 1) {
     const s = shared(); let g, o = { radius: 0.035, lift: 0.07, cy: 0.01 };

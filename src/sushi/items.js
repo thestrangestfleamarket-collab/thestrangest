@@ -5,7 +5,7 @@ import * as T from './tex.js';
 import { PH } from './physics.js';
 import { matOf } from './audio.js';
 
-const _v = new V3(), _v2 = new V3(), _vt = new V3(), _q2 = new V3(), _q = new Q();
+const _v = new V3(), _v2 = new V3(), _vt = new V3(), _q2 = new V3(), _q = new Q(), _zero = new V3(), _eu = new THREE.Euler();
 
 export const TOPPINGS = {
   chashu: { label: 'CHASHU', jp: 'チャーシュー' }, egg: { label: 'EGG', jp: '味玉' }, negi: { label: 'NEGI', jp: 'ネギ' },
@@ -123,6 +123,14 @@ export class Item {
   drop(vel, ang) { this.free = true; this.grounded = -1; if (vel) this.vel.copy(vel); else this.vel.set(0, 0, 0); if (PH.ready) PH.spawn(this, vel, ang); }
   upright() { const e = new THREE.Euler().setFromQuaternion(this.obj.quaternion, 'YXZ'); this.obj.quaternion.setFromEuler(new THREE.Euler(0, e.y, 0)); }
   onGrab() { } onRelease() { return false; } onHeld() { } update() { } onRemove() { } onLand() { }
+  // a handful: other pieces come into the hand with the one taken, drawn on it where layIn puts them (till.js: a payment; Food: loose pieces)
+  tuck(x) { const o = x.obj, B = (this.bundle ||= []); x.remove(); o.userData.item = null; o.traverse((q) => { q.userData.nopick = true; }); this.layIn(o, B.length + 1, x); this.obj.add(o); B.push(x, ...(x.bundle || [])); x.bundle = null; }
+  gather(match, max, r) { const p = this.obj.position, near = []; for (const x of G.items) { if (x === this || x.dead || x.held || x.locked || !match(x)) continue; const d = x.obj.position.distanceTo(p); if (d <= r) near.push([d, x]); }
+    near.sort((a, b) => a[0] - b[0]); let n = 0; for (const [, x] of near) { if (n >= max) break; this.tuck(x); n++; } return n; }
+  layIn(o, n) { o.quaternion.identity(); o.position.set(0, 0.004 * n, 0); }
+  pieces() { return [this, ...(this.bundle || [])]; }
+  // let go near where it belongs, it is drawn the last of the way there (a served bowl, a drink by a customer)
+  glideTo(p) { this.glide = p.clone(); this.free = false; this.vel.set(0, 0, 0); if (PH.ready) PH.drop(this); this.upright(); }
   onGround() { this.grounded = 0; }
   onImpact() { return false; }
   hint() { return ''; }
@@ -132,6 +140,7 @@ export function updateItems(dt) {
   for (const it of [...G.items]) {
     if (it.dead) continue;
     it.update(dt);
+    if (it.glide) { if (it.held || it.free) it.glide = null; else { it.obj.position.lerp(it.glide, Math.min(1, dt * 12)); if (it.obj.position.distanceTo(it.glide) < 0.002) { it.obj.position.copy(it.glide); it.glide = null; it.onSet?.(); } } }
     if (it.grounded >= 0 && !it.held) { it.grounded += dt; if (it.grounded > 1.6) { it.remove(); continue; } }
     if (it.held || !it.free || PH.ready) continue;
     const p = it.obj.position, prevB = p.y - it.base;
@@ -161,6 +170,7 @@ export function findBowlUnder(p, r = 0.105) {
 }
 
 // ------------------------------------------------------------------ bowl
+export const SPILL_TILT = 1.25, SPILL_HOLD = 0.25;   // a carried bowl spills past this lean (radians), held this long (seconds)
 export class Bowl extends Item {
   constructor() {
     const s = shared(), g = new THREE.Group();
@@ -217,7 +227,7 @@ export class Bowl extends Item {
   update(dt) {
     if (this.settle < 1) { this.settle = Math.min(1, this.settle + dt * 1.3); this.refresh(); }
     if (this.temp > 0) { this.temp = Math.max(0, this.temp - dt / 110 * G.mods.cool); if (this.temp > 0.45 && !this.dirty && Math.random() < dt * 5) G.fx.steam(_v.copy(this.obj.position).setY(this.obj.position.y + 0.08), 0.5); }
-    if (this.held && !this.empty && !this.dirty && this.tilt() > 1.25) this.spill();
+    this.tipT = this.held && !this.empty && !this.dirty && this.tilt() > SPILL_TILT ? (this.tipT || 0) + dt : 0; if (this.tipT > SPILL_HOLD) { this.tipT = 0; this.spill(); }   // tipped right over and held there: it pours out (a knock that rocks it for a moment does not)
   }
   shatter() { if (!this.empty) G.fx.splat(this.obj.position, this.liqMat.color.getHex(), 0.2); shatter(this, 0xf1ede2, 9); }
   onImpact(sp) { if (sp > 3.2) { this.shatter(); return true; } return false; }
@@ -226,6 +236,7 @@ export class Bowl extends Item {
 }
 
 // ------------------------------------------------------------------ food
+export const HANDFUL = 6, CUPPED = 9, PILE = 0.01, PILE_X = 0.031;   // pieces one hand holds, each of two hands cupped together, and how they lie in it (two heaps, a layer this high)
 export class Food extends Item {
   constructor(type, servings = 1) {
     const s = shared(); let g, o = { radius: 0.035, lift: 0.07, cy: 0.01 };
@@ -235,6 +246,18 @@ export class Food extends Item {
     if (type === 'noodle') this.noodle = true; else this.topping = type;
     this.servings = servings;
   }
+  // closing a hand on loose pieces takes those under it; a whole fist in a bin digs out a handful (o: { src, fist, cup, pinch } from the hand, input.js); both hands cupped hold more
+  onGrab(h, o = {}) { if (!this.topping || o.pinch) return; this.bin = o.src && o.src.bin ? o.src.bin : null; if (!this.bin || o.fist) this.handful(o.cup ? CUPPED : HANDFUL, o.cup ? 0.16 : 0.12); }
+  handful(max = HANDFUL, r = 0.12) { if (!this.topping) return 0; let n = max - this.pieces().length; if (n <= 0) return 0; const b = this.bin;
+    if (b) { n = Math.min(n, b.stock); for (let i = 0; i < n; i++) { b.stock--; this.tuck(new Food(this.topping)); } b.refresh(); }
+    else n = this.gather((x) => x.kind === 'food' && x.topping === this.topping && !x.carrier, n, r);
+    if (this.bundle && this.bundle.length) this.name = 'handful of ' + TOPPINGS[this.topping].label.toLowerCase(); return n; }
+  layIn(o, n) { const lv = Math.ceil(n / 2); o.quaternion.identity(); o.rotation.y = (n % 4) * Math.PI / 2; o.position.set((n % 2 ? 1 : -1) * PILE_X, lv * PILE, ((lv % 2) - 0.5) * 0.01); }   // a heap either side of the piece taken
+  get total() { return this.pieces().reduce((n, x) => n + (x.servings || 1), 0); }
+  // the hand opens: every piece is its own again, one over another where the hand was, none inside another
+  loose() { const B = this.bundle; if (!B || !B.length) return []; this.bundle = null; this.name = TOPPINGS[this.topping].label.toLowerCase(); const p = this.obj.position, yaw = _eu.setFromQuaternion(this.obj.quaternion, 'YXZ').y, y0 = 0.03 * Math.sin(Math.min(1.57, this.tilt())), out = [];
+    B.forEach((x, i) => { const f = new Food(x.topping, x.servings), n = i + 1, lv = Math.ceil(n / 2); f.halved = x.halved; f.obj.scale.copy(x.obj.scale); x.obj.removeFromParent();
+      f.obj.position.set((n % 2 ? 1 : -1) * (PILE_X + 0.001), y0 + lv * (0.014 + 0.0025), ((lv % 2) - 0.5) * 0.01).applyAxisAngle(UP, yaw).add(p); f.obj.rotation.y = yaw + (n % 4) * Math.PI / 2; out.push(f); }); return out; }
   update() { // a topping or a clump of cooked noodles that has come down inside a bowl belongs to it
     if (this.held || this.dead || !(this.topping || this.cooked)) return; const p = this.obj.position, b = findBowlUnder(p, 0.09); if (!b || p.y - b.obj.position.y > 0.1) return;
     if (this.cooked) { if (!b.noodles) { b.addNoodles(this.cook); this.remove(); } } else b.addTopping(this);
@@ -291,10 +314,18 @@ export class Drink extends Item { // a twelve-ounce can from the cooler: cola, o
       c.fillStyle = '#b8bcc0'; c.fillRect(0, 0, w, 12); c.fillRect(0, h - 14, w, 14); c.fillStyle = '#8a8e92'; c.fillRect(0, 10, w, 2); c.fillRect(0, h - 15, w, 2); });
     M(s.canGeo, mat({ map: label }), g);
     super('drink', g, { radius: 0.05, cy: 0.06, lift: 0.05, name: tea ? 'iced tea' : 'soda' });
-    this.drink = type; this.mat = 'metal';
+    this.drink = type; this.mat = 'metal'; this.level = 1; this.open = false; this.full = this.name;
   }
-  onImpact(sp) { if (sp > 3.4) { G.fx.splat(this.obj.position, this.drink === 'tea' ? 0x8a5a18 : 0x2a1408, 0.18); this.remove(); return true; } return false; }   // a can thrown hard bursts
-  hint() { return `${this.name} → set at the customer who ordered it`; }
+  get empty() { return this.level <= 0; }
+  get mass() { return 0.05 + 0.33 * this.level; }
+  // drunk from: opened, and lighter by what was taken
+  sip(q) { this.open = true; this.level = Math.max(0, this.level - q); if (this.level < 0.02) this.level = 0; this.name = this.empty ? 'empty can' : this.full; }
+  drop(vel, ang) { if (this.tilt() < 0.6 && (!vel || vel.length() < 1.2)) { this.upright(); ang = _zero.set(0, 0, 0); if (vel) vel.multiplyScalar(0.2); } super.drop(vel, ang); }   // set down near upright, the hand leaves it standing
+  onSet() { if (PH.ready) PH.rest(this); }   // where it stands it is solid
+  update() { if (this.open && !this.empty && !this.held && !this.free && !this.glide && !this.locked && this.tilt() > 1.2) { G.fx.splat(this.obj.position, this.colour(), 0.12); this.sip(1); } }   // an open can knocked over runs out
+  colour() { return this.drink === 'tea' ? 0x8a5a18 : 0x2a1408; }
+  onImpact(sp) { if (sp > 3.4 && !this.empty) { G.fx.splat(this.obj.position, this.colour(), 0.18); this.remove(); return true; } return false; }   // a can thrown hard bursts
+  hint() { return this.empty ? 'empty can → bus tub (right)' : this.open ? `${this.name} (a customer's)` : `${this.name} → set at the customer who ordered it`; }
 }
 
 // what is left of a broken thing: small pieces that fall and scatter, swept away after a while

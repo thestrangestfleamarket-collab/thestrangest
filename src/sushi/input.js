@@ -32,12 +32,25 @@ function makeHand(i, xr) {
     pulse(v = 0.5, ms = 30) { try { this.source?.gamepad?.hapticActuators?.[0]?.pulse(v, ms); } catch (e) { /* no haptics */ } } };
 }
 
+// how the hand closed: on a source or on a loose thing, the whole fist (grip and trigger; a tracked hand's fist), a tracked pinch, and whether the other hand is cupped beside it (on a screen, the use key held)
+const how = (h, src) => { const tr = !!(h.xr && h.source && h.source.hand); return { src, fist: h.xr ? (tr ? h.mode === 'palm' : h.use) : false, pinch: tr && h.mode === 'pinch',
+  cup: h.xr ? (G.hands || []).some((o) => o !== h && o.xr && o.active && o.pos.distanceTo(h.pos) < 0.22 && (!o.held || o.held.kind === 'food')) : h.use }; };
+// where a thing let go belongs: what takes it there, else it falls
+function settle(it, vel, ang) {
+  const p = it.worldCenter(_v); let best = null, bd = 1e9;
+  for (const t of G.targets) {
+    if (!t.accepts(it)) continue;
+    const tp = t.getPos(), d = Math.hypot(p.x - tp.x, p.z - tp.z);
+    if (d < t.r && p.y > tp.y - 0.12 && p.y < tp.y + 0.32 && d - (t.prio || 0) * 0.05 < bd) { best = t; bd = d - (t.prio || 0) * 0.05; }
+  }
+  if (best) best.receive(it); else it.drop(vel, ang);
+}
 function grab(h, cand) {
   let it = cand, fromSource = false;
   if (cand.take) { it = cand.take(); fromSource = true; it.obj.position.copy(h.pos); it.obj.position.y -= it.center.y; it.obj.quaternion.identity(); }
   if (it.held) it.held.held = null;
-  it.held = h; h.held = it; it.free = false; it.grounded = -1; it.vel.set(0, 0, 0);
-  it.onGrab(h);
+  it.held = h; h.held = it; it.free = false; it.grounded = -1; it.vel.set(0, 0, 0); h.holdT = 0;
+  it.onGrab(h, how(h, fromSource ? cand : null));
   _q.copy(h.quat).invert();
   h.relQ.copy(_q).multiply(it.obj.quaternion);
   h.relPos.copy(it.obj.position).sub(h.pos).applyQuaternion(_q);
@@ -53,14 +66,9 @@ function release(h) {
   if (PH.ready) PH.unhold(it);
   if (h.xr) { throwOf(h, _tv, _tw); _tv.add(_v.copy(_tw).cross(it.worldCenter(_v2).sub(h.pos))).clampLength(0, 12); h.vs.copy(_tv); h.pulse(0.2, 15); } // the hand's own swing and the turn of the wrist
   if (it.onRelease(h)) return;
-  const p = it.worldCenter(_v); let best = null, bd = 1e9;
-  for (const t of G.targets) {
-    if (!t.accepts(it)) continue;
-    const tp = t.getPos(), d = Math.hypot(p.x - tp.x, p.z - tp.z);
-    if (d < t.r && p.y > tp.y - 0.12 && p.y < tp.y + 0.32 && d - (t.prio || 0) * 0.05 < bd) { best = t; bd = d - (t.prio || 0) * 0.05; }
-  }
-  if (best) { best.receive(it); return; }
-  if (h.xr) it.drop(_tv.clone(), _tw.lengthSq() > 0.5 ? _tw.clone() : null); else it.drop(_v2.set(0, 0, 0));
+  const rest = it.loose ? it.loose() : [];   // a handful comes apart: each piece goes where it belongs or falls on its own
+  settle(it, h.xr ? _tv.clone() : _v2.set(0, 0, 0), h.xr && _tw.lengthSq() > 0.5 && !rest.length ? _tw.clone() : rest.length ? new V3() : null);
+  for (const x of rest) settle(x, h.xr ? _tv.clone() : new V3(), new V3());
 }
 
 function findCand(h) {
@@ -119,6 +127,7 @@ function stepHand(h, dt) {
     }
     it.onHeld(dt, h);
     if (it.dead || it.held !== h) { h.held = null; return; }
+    if (!h.xr && h.grip && it.handful && h.holdT >= 0 && (h.holdT += dt) > 0.3) { h.holdT = -1; it.handful(h.use ? 12 : 6); }   // on a screen: keep the button down and the hand digs out a handful (with the use key, both hands' worth)
     if (h.xr ? !h.grip : h.gripDown) release(h);
   }
 }
@@ -192,7 +201,7 @@ export function buildInput(renderer, rig, camera, dom) {
     desk.focus += (aim.dist - desk.focus) * Math.min(1, dt * 5);
     stepHand(h, dt);
     const it = h.held;
-    G.hoverText = it ? `${it.name} — ${it.hint()}  [LMB release${it.tool ? ' · hold RMB/E to ' + (it.useMode === 'chop' ? 'chop' : 'pour') : ''}]` : aim.board ? '' : aim.button ? `[LMB] ${aim.button.name}` : aim.cand ? `[LMB] grab ${aim.cand.name}` : '';
+    G.hoverText = it ? `${it.name}${it.bundle && it.bundle.length ? ' x' + (it.bundle.length + 1) : ''} — ${it.hint()}  [LMB release${it.handful && h.holdT >= 0 && !(it.bundle && it.bundle.length) ? ' · hold LMB for a handful' : ''}${it.tool ? ' · hold RMB/E to ' + (it.useMode === 'chop' ? 'chop' : 'pour') : ''}]` : aim.board ? '' : aim.button ? `[LMB] ${aim.button.name}` : aim.cand ? `[LMB] grab ${aim.cand.name}` : '';
   }
 
   function updateXR(dt) {

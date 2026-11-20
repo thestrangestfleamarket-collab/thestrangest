@@ -53,7 +53,7 @@ const GONE = 34, SLOW = 14, _cam = new THREE.Vector3();   // metres from the eye
 const FR = new THREE.Frustum(), _pm = new THREE.Matrix4(), _sp = new THREE.Sphere(); let frT = -1, frN = 0;
 const onScreen = (p) => { if (frT !== G.t) { frT = G.t; frN++; G.camera.updateMatrixWorld(); FR.setFromProjectionMatrix(_pm.multiplyMatrices(G.camera.projectionMatrix, G.camera.matrixWorldInverse)); } _sp.center.copy(p).y += 0.9; _sp.radius = 1.6; return FR.intersectsSphere(_sp); };
 
-// a person: P.root to place and turn; P.pose 'walk' | 'stand' | 'sit' | 'eat'; P.look a point to look at or null; P.talkT seconds of talking hands; P.gesture(name); P.waveT > 0 waves; P.push(bone, impulse, at) a blow on a limb (P.hit(dir, at, f) the same by strength); P.duck(); P.down() while knocked down; P.stain(at, color, r)
+// a person: P.root to place and turn; P.pose 'walk' | 'stand' | 'sit' | 'eat'; P.sip { at, w, side } a hand brought (by w) to a drink at at, wherever it is carried (game.js); P.look a point to look at or null; P.talkT seconds of talking hands; P.gesture(name); P.waveT > 0 waves; P.push(bone, impulse, at) a blow on a limb (P.hit(dir, at, f) the same by strength); P.duck(); P.down() while knocked down; P.stain(at, color, r)
 // opt: { cart } RAMEN's street and counter: far off or out of view it is worked less and not drawn; seated, the forearms rest on the counter and the eyes wander
 export function pfPerson(key, sticks, opt = {}) {
   if (!D.bodies[key]) key = Object.keys(D.bodies)[0];   // (a name this build has no body for: whoever is first)
@@ -134,7 +134,8 @@ export function pfPerson(key, sticks, opt = {}) {
       const D = st.duck; let de = 0; if (D) { D.t += dt; de = D.t < 0.16 ? sm(D.t / 0.16) : D.t < 0.8 ? 1 : 1 - sm((D.t - 0.8) / 0.5); if (D.t > 1.3) st.duck = null; else lean(0, 1, de * 0.7, de * 0.35); }
       const F = st.down; let fa = 0, fl = 0; if (F) { F.t += dt; const t = F.t; if (t < 0.55) fa = 1.45 * (t / 0.55) ** 2; else if (t < 2.7) fa = 1.45 - 0.07 * Math.max(0, Math.sin((t - 0.55) * 8)) * Math.max(0, 1 - (t - 0.55) * 2.5); else if (t < 4.3) fa = 1.45 * (1 - sm((t - 2.7) / 1.6)); else st.down = null; fl = Math.sin(Math.PI * Math.min(1, t / 0.9)); }
       if (st.down) { body.quaternion.setFromAxisAngle(ax.set(F.d.z, 0, -F.d.x), fa); body.position.y = Math.sin(fa) * 0.11; } else if (body.position.y || body.quaternion.w < 1) { body.quaternion.identity(); body.position.y = 0; }
-      const eatC = this.pose === 'eat' ? Math.pow((Math.sin((this.eatT + dt) * 2.4) + 1) / 2, 1.3) : 0;
+      const sp = seated && this.sip && this.sip.w > 0.001 ? this.sip : null; st.sk = (st.sk || 0) + ((sp ? 1 : 0) - (st.sk || 0)) * Math.min(1, dt * 6); const ek = 1 - st.sk;   // (drinking, the chopsticks wait over the bowl)
+      const eatC = this.pose === 'eat' ? ek * Math.pow((Math.sin((this.eatT + dt) * 2.4) + 1) / 2, 1.3) : 0;
       if (opt.cart && !st.down) { if (seated) lean(0, 1, 0.012 * Math.sin(st.bt * 1.5) + 0.045 * eatC);   // breathing (the recorded sitting already leans to the counter); down to the bowl with each mouthful
         else if (this.pose === 'stand') lean(0, 1, 0.006 * Math.sin(st.bt * 1.4)); }
       J[0].copy(hp).multiplyScalar(ks).add(O[0]); for (let i = 1; i < NB; i++) { const p = PI[i]; J[i].copy(O[i]).sub(O[p]).applyQuaternion(R[p]).add(J[p]); }
@@ -147,8 +148,9 @@ export function pfPerson(key, sticks, opt = {}) {
         S0.L.lerp(eat ? va.set(0.21, 1.045, 0.37) : S0.v === 2 ? va.set(0.02, 1.04, 0.31) : va.set(0.13, 1.035, 0.33), k); S0.R.lerp(S0.v === 2 ? va.set(-0.06, 1.052, 0.33) : va.set(-0.13, 1.035, 0.33), k);
         S0.wl += ((talk ? 0 : 1) - S0.wl) * k; S0.wr += ((eat ? 1 : talk || S0.v === 1 || this.waveT > 0 ? 0 : 1) - S0.wr) * k;
         reachW('L', lt(S0.L.x, S0.L.y, S0.L.z), S0.wl);
-        if (eat) { this.eatT += dt; const c = Math.pow((Math.sin(this.eatT * 2.4) + 1) / 2, 1.3), mouth = va.copy(J[HEAD]).add(vb.set(-0.1, -0.17, 0.2)); reachW('R', lt(-0.1, 1.14, 0.36).lerp(mouth, c), S0.wr); }   // (the hand comes up under the chin, never across the face: the chopsticks carry the noodles the rest of the way)
-        else reachW('R', lt(S0.R.x, S0.R.y, S0.R.z), S0.wr); }
+        if (eat) { this.eatT += dt * ek; const c = ek * Math.pow((Math.sin(this.eatT * 2.4) + 1) / 2, 1.3), mouth = va.copy(J[HEAD]).add(vb.set(-0.1, -0.17, 0.2)); reachW('R', lt(-0.1, 1.14, 0.36).lerp(mouth, c), S0.wr); }   // (the hand comes up under the chin, never across the face: the chopsticks carry the noodles the rest of the way)
+        else reachW('R', lt(S0.R.x, S0.R.y, S0.R.z), S0.wr);
+        if (sp) { body.updateWorldMatrix(true, false); body.worldToLocal(_t.copy(sp.at)); _t.x += sp.side === 'L' ? 0.035 : -0.035; _t.z -= 0.07; reachW(sp.side, _t, sp.w); } }   // the wrist behind the can, the fingers round it
       else if (seated && this.talkT <= 0 && !st.over) { reach('L', lt(0.17, 0.99, 0.4));
         if (this.pose === 'eat') { this.eatT += dt; const c = Math.pow((Math.sin(this.eatT * 2.4) + 1) / 2, 1.3), mouth = va.copy(J[HEAD]).add(vb.set(-0.04, 0.05, 0.19)); reach('R', lt(-0.06, 1.0, 0.42).lerp(mouth, c)); }
         else if (this.waveT <= 0) reach('R', lt(-0.17, 0.99, 0.4)); }
@@ -169,7 +171,7 @@ export function pfPerson(key, sticks, opt = {}) {
           if (l > 1e-4) { qh.setFromAxisAngle(ax.copy(c.a).normalize(), Math.min(l, c.max)); for (const i of c.set) R[i].premultiply(qh); } if (st.phys <= 0) { c.a.set(0, 0, 0); c.w.set(0, 0, 0); } }
         for (let i = 1; i < NB; i++) { const p = PI[i]; J[i].copy(O[i]).sub(O[p]).applyQuaternion(R[p]).add(J[p]); } }
       for (let i = 0; i < NB; i++) { bones[i].position.copy(J[i]); bones[i].quaternion.copy(R[i]); }
-      if (this.pose === 'eat' && seated && !st.over) { root.updateMatrixWorld(true); const c = Math.pow((Math.sin(this.eatT * 2.4) + 1) / 2, 1.3), H = bones[ARM.R[2]].getWorldPosition(_w), M = bones[HEAD].getWorldPosition(new THREE.Vector3()); M.y += 0.06; const T = new THREE.Vector3(0.05, 1.0, 0.5).applyMatrix4(root.matrixWorld).lerp(M, c);
+      if (this.pose === 'eat' && seated && !st.over && !(sp && sp.side === 'R' && sp.w > 0.2)) { root.updateMatrixWorld(true); const c = (1 - st.sk) * Math.pow((Math.sin(this.eatT * 2.4) + 1) / 2, 1.3), H = bones[ARM.R[2]].getWorldPosition(_w), M = bones[HEAD].getWorldPosition(new THREE.Vector3()); M.y += 0.06; const T = new THREE.Vector3(0.05, 1.0, 0.5).applyMatrix4(root.matrixWorld).lerp(M, c);
         sticks.visible = true; root.worldToLocal(sticks.position.copy(H).addScaledVector(va.copy(T).sub(H).normalize(), 0.05)); sticks.lookAt(T); }
       if (eyes) { st.sac -= dt; if (st.sac <= 0) { st.sac = 0.4 + Math.random() * 1.8; st.sx = (Math.random() - 0.5) * 0.09; st.sy = (Math.random() - 0.5) * 0.05; }
         const ey = Math.max(-0.5, Math.min(0.5, ty - st.yaw)) + st.sx, ep = Math.max(-0.35, Math.min(0.35, tp - st.pitch)) + st.sy, ke = Math.min(1, dt * 14); st.ey += (ey - st.ey) * ke; st.ep += (ep - st.ep) * ke;

@@ -1,8 +1,8 @@
 // bakes RAMEN's street from THE MARKET: node tools/ramen-corner.cjs [--list]  (after SKIP=g python3 build.py; PWCHROME the browser)
-// opens dist/market.html at the cart's corner (data/world.json things, k 'ramencart'), reads every still thing drawn round it out of the page (its points, colours, pictures, where its lamps are) into the cart's own metres, and writes data/sushi/corner.json and corner.bin (the points and the pictures, gzipped); run it again when the map there changes
+// opens dist/market.html at the cart's corner (data/world.json ramen), reads every still thing drawn round it out of the page (its points, colours, pictures, where its lamps are) into the cart's own metres, and writes data/sushi/corner.json and corner.bin (the points and the pictures, gzipped); run it again when the map there changes
 const { chromium } = require('playwright'), path = require('path'), fs = require('fs');
 const ROOT = path.resolve(__dirname, '..'), DIST = path.join(ROOT, 'dist'), OUT = path.join(ROOT, 'data/sushi'), LIST = process.argv.includes('--list');
-const W = JSON.parse(fs.readFileSync(path.join(ROOT, 'data/world.json'), 'utf8')), CART = (W.things || []).find((t) => t.k === 'ramencart') || { x: -18, y: -41.3 };
+const W = JSON.parse(fs.readFileSync(path.join(ROOT, 'data/world.json'), 'utf8')), CART = W.ramen || { x: -18, y: -41.3 };
 // what is kept, in metres from the cart: everything close, only larger things farther off, only buildings and ground at the edge of sight
 const REG = { x0: -100, x1: 120, z0: -80, z1: 100, near: 34, mid: 70, midSize: 1.6, farSize: 5, farTris: 12, cell: 44, tex: 512, dense: [50, 150], out: { x0: -230, x1: 260, z0: -170, z1: 230, size: 16, tris: 320 }, park: { x: -4.6, z: 3.1, low: 1.35 } };
 const srv = require('http').createServer((q, r) => { const f = path.join(DIST, decodeURIComponent(q.url.split('?')[0])); fs.readFile(f, (e, d) => { if (e) { r.writeHead(404); return r.end(); } r.writeHead(200, { 'content-type': f.endsWith('.html') ? 'text/html' : 'application/octet-stream' }); r.end(d); }); });

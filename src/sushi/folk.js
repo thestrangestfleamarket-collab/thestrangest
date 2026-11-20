@@ -1,4 +1,4 @@
-// THE MARKET's own people at the corner (the octopus busker, the mushroom seller, the badger from THE BAR, the vegetable seller, THE BIG CAT): each the market's own body, made and posed by the market itself (tools/ramen-folk.cjs, data/sushi/folk.json) and drawn as a visiting tenant's figure is (tenant.js): standing, walking, sitting at a stool, and for the octopus playing his guitar; what they wear apart from the body (a skull, hair, the guitar) rides its bone
+// THE MARKET's own people at the corner (the octopus busker, the mushroom seller, the badger from THE BAR, THE BIG CAT): each the market's own body, made and posed by the market itself (tools/ramen-folk.cjs, data/sushi/folk.json) and drawn as a visiting tenant's figure is (tenant.js): standing, walking, sitting at a stool, and for the octopus playing his guitar; what they wear apart from the body (a skull, hair, the guitar) rides its bone
 import * as THREE from 'three';
 import { G } from './ctx.js';
 import { tenantFigure } from './tenant.js';

@@ -1,4 +1,4 @@
-// RAMEN: the ramen cart at the Market St and West St corner, park side (data/world.json things, k 'ramencart'; a baked copy of RAMEN's own cart, data/ramencart.json, tools/ramen-cart.cjs), and RAMEN's door: double-click it (or GO TO it from the map) and you leave THE MARKET for RAMEN's own page as a guest (/holo?g=ramen&as=guest, src/sushi/guest.js), where that same corner is the street; the cart, its cook, the customers and everyone passing are the same on every page; you are there as your own figure (sent with you: its mesh, and its standing, walking and sitting posed here by your rig), and come back here beside the cart, what you paid for your bowls taken from your money
+// RAMEN: the ramen cart at the Market St and West St corner, park side (data/world.json ramen; a baked copy of RAMEN's own cart, data/ramencart.json, tools/ramen-cart.cjs), and RAMEN's door: double-click it (or GO TO it from the map) and you leave THE MARKET for RAMEN's own page as a guest (/holo?g=ramen&as=guest, src/sushi/guest.js), where that same corner is the street; the cart, its cook, the customers and everyone passing are the same on every page; you are there as your own figure (sent with you: its mesh, and its standing, walking and sitting posed here by your rig), and come back here beside the cart, what you paid for your bowls taken from your money
 import {SHARED, THREE} from './003-shx.js';
 import {INV, LITE, ONLINE, pos, UI, WHERE} from './003b-systems.js';
 import {SAY} from './003d-say.js';
@@ -8,7 +8,7 @@ import {FACADES} from './038zc-facades.js';
 import {BODIES} from './111a-bodies.js';
 { const MW=TILE/.84, START=[1.4,-3.2], CART=SYS.far(__LAZY__("data/ramencart.json"));
   // where the cart stands (the level file), and its frame in THE MARKET's world: the cart's own metres, x east and z north as the section's, so a place in RAMEN is the same place here
-  const spot=()=>{ const t=(LEVEL.things||[]).find(o=>o.k==='ramencart')||{x:-18,y:-41.3}; return [SHARED.BOD.XS(t.x),SHARED.BOD.ZS(t.y)]; };
+  const spot=()=>{ const t=LEVEL.ramen||{x:-18,y:-41.3}; return [SHARED.BOD.XS(t.x),SHARED.BOD.ZS(t.y)]; };
   const frame=()=>{ const o=spot(); return [+o[0].toFixed(2),+o[1].toFixed(2),+MW.toFixed(4),0,0,+MW.toFixed(4)]; };
   const b64=a=>{ const u=new Uint8Array(a.buffer,a.byteOffset,a.byteLength); let s=''; for(let i=0;i<u.length;i+=0x8000)s+=String.fromCharCode.apply(null,u.subarray(i,i+0x8000)); return btoa(s); };
   const r4=v=>Math.round(v*1e4)/1e4, r1=v=>Math.round(v*10)/10, m12=e=>[r4(e[0]),r4(e[1]),r4(e[2]),r4(e[4]),r4(e[5]),r4(e[6]),r4(e[8]),r4(e[9]),r4(e[10]),r1(e[12]),r1(e[13]),r1(e[14])];

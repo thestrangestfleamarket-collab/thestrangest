@@ -4,6 +4,7 @@ import { PH } from './physics.js';
 import { buildLimbs } from './limbs.js';
 
 const TAP_J = 0.9, LIGHT_J = 0.35, FALL_J = 4; // N s: below TAP a touch, below LIGHT a thrown thing only brushes them, FALL floors someone standing
+const KNOCK = 2.2; // metres a second: a bowl or a drink carried slower than PH.SERVE brushes past unnoticed; from there to KNOCK it is a bump that spills it; past KNOCK a blow like any other
 export function buildReact(block) {
   const R = { log: [], limbs: null }, _h = new V3(), _t = new V3(), _c = new V3();
   // everyone who can be touched, with their head and trunk where they are this frame
@@ -32,7 +33,7 @@ export function buildReact(block) {
   const blow = (b, kind, part, dir, at, J, it, thrown, bone) => {
     const p = b.p; if (G.t - (p.hitT || -9) < 0.35) return; p.hitT = G.t; const f = J / FALL_J;
     p.push(bone || (part === 'head' ? 'head' : 'torso'), dir.clone().setLength(J), at);
-    if (it && (kind === 'food' || (it.liq && it.liq.visible))) { p.stain(at, colourOf(it), kind === 'food' ? 0.045 : 0.07); if (it.kind === 'bowl' && !it.empty) it.spill?.(); }
+    if (it && kind !== 'tap' && (kind === 'food' || (it.liq && it.liq.visible))) { p.stain(at, colourOf(it), kind === 'food' ? 0.045 : 0.07); if (it.kind === 'bowl' && !it.empty) it.spill?.(); }
     const down = p.down(), level = kind === 'tap' ? 0 : kind === 'food' || kind === 'splash' ? 1 : kind === 'cut' || down || f >= 1 ? 3 : f >= 0.4 || kind === 'scald' ? 2 : 1;
     const name = nameOf(b), you = words(kind, part, it, thrown, down), they = them(you, name);
     R.log.push({ t: +G.t.toFixed(2), who: name, kind, part, bone: bone || part, level, J: +J.toFixed(2), down, seated: !!(b.c && (b.c.state === 'waiting' || b.c.state === 'eating' || b.c.state === 'sitting')) }); if (R.log.length > 20) R.log.shift();
@@ -58,7 +59,8 @@ export function buildReact(block) {
     // what really met them, and how hard
     for (const s of hits) { const b = s.rec.x, it = s.it, head = s.seg.name === 'head' || (s.seg.mid && s.at.y > b.neck.y), part = head ? 'head' : 'body', bone = s.seg.mid ? (head ? 'head' : 'torso') : s.seg.name;
       if (s.src === 'thrown' && !(G.t - (it.letT ?? -99) < 4)) continue;   // a thing the cook did not just let go of (a cup a customer's elbow knocked) is no blow from the cook
-      let kind;
+      let kind; const dish = s.src === 'held' && (it.kind === 'bowl' || it.kind === 'drink');
+      if (dish) { if (s.sp < PH.SERVE) continue; if (s.sp < KNOCK) s.J = Math.min(s.J, 0.39 * FALL_J); }
       if (s.src === 'hand') kind = s.J < TAP_J ? 'tap' : 'punch';
       else if (s.src === 'held') kind = it.useMode === 'chop' && s.sp >= 0.5 ? 'cut' : s.J < TAP_J ? 'tap' : 'thing';
       else if (it.kind === 'debris') continue;

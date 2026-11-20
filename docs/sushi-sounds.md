@@ -18,4 +18,22 @@ Every file in `data/sushi/snd/` is a real recording from OpenGameArt, each page 
 | `ignite`, `knob` | a burner lit, a knob turned | turn_stove_on_01, switch_strength_stove_01, https://opengameart.org/content/stove-switch | TinyWorlds |
 | `traffic` | the street at the alley's open end | gatve Varniu_2.ogg, https://opengameart.org/content/high-traffic-road-sounds | IgnasD |
 
-Made in the page (`src/sushi/audio.js`): the city's low hum, the wind, a passing car's tyres on the wet, the register's bell, the boombox's cassette, and the alley's echo (its two brick backs' short slap and a small tail).
+## ElevenLabs sound effects (19 Nov 2026)
+
+Fifteen more files are ElevenLabs sound effects (its Sound Effects v2 model, made on the owner's ElevenLabs account, whose plan licenses what it makes for use in the game). They are generated sounds, not field recordings. The originals and the words each was made from are in `data/full/sushi/snd-eleven/` and `tools/sushi-sfx.py`, which cuts them (`python3 tools/sushi-sfx.py`): about 360 KB in all, fetched after the first sounds are in. Pixabay could not be used: its site answers a program with a challenge page.
+
+| Ours | What | Where it plays from |
+|---|---|---|
+| `roofrain` | gentle rain on the sheet roof | the roof overhead |
+| `rainst` | gentle rain on the pavement | four places on the ground round the cart |
+| `citynight` | the city late at night, far traffic | everywhere, low |
+| `burner` | a gas ring's flame | under each lit pot |
+| `neon` | the neon's hum | the sign on the roof, while the cart is open |
+| `carwet` | a car going by on the wet | the car as it passes |
+| `step1`–`step4` | footsteps on wet pavement (one walk, cut into steps) | the feet of whoever comes or goes |
+| `stool` | a stool dragged | the stool sat on |
+| `register` | the register's key, bell and drawer | the register |
+| `sticks`, `slurp` | chopsticks on a bowl, a slurp | whoever is eating |
+| `bell` | the counter bell at an order or a rush | the ticket rail |
+
+Made in the page (`src/sushi/audio.js`): the wind, a little of a passing car's tyres, the boombox's cassette, and the alley's echo (its two brick backs' short slap and a small tail).

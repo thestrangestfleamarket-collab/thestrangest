@@ -1,6 +1,7 @@
 // SHARDWAVE: a VR rhythm game on its own page (/wave); shares no code with THE MARKET
 import * as THREE from 'three';
 import rockMp3 from '../../data/wave/rock.mp3';
+import shugaMp3 from '../../data/wave/shuga.mp3';
 
 // ───────────────────────── constants ─────────────────────────
 const qs = new URLSearchParams(location.search);
@@ -558,7 +559,8 @@ const BUNDLED = [{ id: 'rock', name: 'We Will Rock You', bytes: rockMp3, duratio
   [45, "Wavin' your banner all over the place"], [47.5, 'We will we will rock you!'], [52.5, "Singin' We will we will rock you!"],
   [60, "Buddy you're an old man poor man\nPleadin' with your eyes gonna make you some peace some day"], [65, 'You got mud on your face\nYou big disgrace!'],
   [67.5, 'Somebody better put you back into your place!'], [72.5, 'We will we will rock you!'], [75, "Singin'"], [77.5, 'We will we will rock you!'],
-  [82.5, 'Everybody! We will we will rock you!'], [90, 'We will we will rock you!'], [93, ''], [95, '* ROCK OUT!!! *'], [121, ''] ] }];
+  [82.5, 'Everybody! We will we will rock you!'], [90, 'We will we will rock you!'], [93, ''], [95, '* ROCK OUT!!! *'], [121, ''] ] },
+  { id: 'shuga', name: 'Cane Shuga', bytes: shugaMp3, duration: 194.8 }];
 async function loadCustom(file) {
   ensureAudio();
   const buffer = await ctx.decodeAudioData(await file.arrayBuffer());
@@ -1005,7 +1007,7 @@ function buildMenu() {
   list.forEach((tr, i) => {
     const mins = Math.floor(tr.duration / 60) + ':' + String(Math.floor(tr.duration % 60)).padStart(2, '0');
     const b = new Btn(menuGroup, -0.72, 1.92 - i * 0.31, 1.35, 0.27, tr.name, () => { sel.track = tr; buildMenu(); },
-      { sub: (tr.synth ? tr.bpm + ' BPM · ' : tr.karaoke ? 'Karaoke · ' : 'Your song · ') + mins });
+      { sub: (tr.synth ? tr.bpm + ' BPM · ' : tr.karaoke ? 'Karaoke · ' : tr.bytes ? 'Song · ' : 'Your song · ') + mins });
     b.selected = sel.track === tr; b.draw();
   });
   Object.entries(DIFFS).forEach(([k, d], i) => {

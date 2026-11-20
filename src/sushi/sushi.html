@@ -32,7 +32,7 @@
 <canvas id="c"></canvas>
 <div id="menu">
   <h1>RAMEN</h1>
-  <h2>A ramen cart on East 1st Street, downtown New York, Friday 4 October 1985: one day of service and the night after it. Light the burners, flip the OPEN switch, and cook every bowl by hand — tare, broth, noodles, toppings — exactly as each ticket says. Cash only.</h2>
+  <h2>A ramen cart on Market St, by the park gate and across from the bodega, New York, Friday 4 October 1985: one day of service and the night after it. Light the burners, flip the OPEN switch, and cook every bowl by hand — tare, broth, noodles, toppings — exactly as each ticket says. Cash only.</h2>
   <div class="row"><button id="vr" class="primary" disabled>Checking for VR…</button><a id="login" href="/?back=/ramen" style="display:none;color:#ffd9a0;font-weight:700;font-size:18px;padding:14px 8px">Log in for voices →</a><button id="desk">Play in this browser</button></div>
   <div id="help">
     <div><b>VR · Grip</b> grab &amp; hold (release to drop / tools fly home)</div>
@@ -40,14 +40,16 @@
     <div><b>VR · Tilt</b> a ladle or noodle basket over a bowl to pour</div>
     <div><b>VR · Chop</b> bring the knife down on the board</div>
     <div><b>VR · Left stick</b> step along the cart · <b>Right stick</b> snap-turn, ↑↓ height</div>
-    <div><b>VR · Hand-tracking</b> pinch to grab, poke switches</div>
+    <div><b>VR · Hand-tracking</b> pinch to grab one, then a fist for a handful, poke switches</div>
+    <div><b>Handfuls</b> a light grip or the trigger alone takes one piece · the grip pressed home takes what is inside the hand, both hands cupped a little more · browser: a click takes one, the click held a handful</div>
+    <div><b>VR · Volume</b> press the right stick in and push it up or down · or the VOL buttons on the right post</div>
     <div><b>Browser</b> WASD move · mouse look · left click grab / let go · right click or E pour, chop, press · C crouch</div>
-    <div><b>Browser</b> M settings board · G guide on/off · T type what you say · H show the keys · F8 report a bug</div>
+    <div><b>Browser</b> M settings board · − and = volume · G guide on/off · T type what you say · H show the keys · F8 report a bug</div>
     <div><b>Browser</b> look closely at a ticket, the menu or a label and it is shown sharp beside the crosshair</div>
     <div><b>Talk</b> your microphone is always on: speak to the customer you are looking at, and they answer aloud</div>
   </div>
 </div>
-<div id="hud"><div id="cross"></div><div id="hover"></div><div id="stat"></div><input id="say" maxlength="240" placeholder="Say something to the customer you are looking at… (Enter to send, Esc to cancel)" autocomplete="off"><div id="keys">WASD move · click: grab / let go · right click or E: pour · chop · M: settings · G: guide · T: type what you say · H: hide / show these · Esc: free mouse</div></div>
+<div id="hud"><div id="cross"></div><div id="hover"></div><div id="stat"></div><input id="say" maxlength="240" placeholder="Say something to the customer you are looking at… (Enter to send, Esc to cancel)" autocomplete="off"><div id="keys">WASD move · click: grab / let go · right click or E: pour · chop · M: settings · − =: volume · G: guide · T: type what you say · H: hide / show these · Esc: free mouse</div></div>
 <script>addEventListener('error',function(e){var b=document.getElementById('vr');if(b&&!window.G_STARTED){b.disabled=true;b.textContent='Could not start — reload the page';console.error(e.error||e.message);}});addEventListener('unhandledrejection',function(e){var b=document.getElementById('vr');if(b&&!window.G_STARTED){b.disabled=true;b.textContent='Could not start — reload the page';}});</script>
 <script type="module">__SUSHI__</script>
 </body>

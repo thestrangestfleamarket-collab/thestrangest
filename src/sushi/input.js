@@ -32,12 +32,27 @@ function makeHand(i, xr) {
     pulse(v = 0.5, ms = 30) { try { this.source?.gamepad?.hapticActuators?.[0]?.pulse(v, ms); } catch (e) { /* no haptics */ } } };
 }
 
+// how far the hand is closed, 0 to 1: a controller's grip as far as it is pressed, a tracked hand's fist; and whether the other hand is cupped beside it (on a screen, the use key)
+const closed = (h) => { if (!h.xr) return h.grip ? 1 : 0; if (h.source && h.source.hand) return h.fist ? 1 : 0; const b = h.source && h.source.gamepad && h.source.gamepad.buttons[1]; return b ? b.value : h.grip ? 1 : 0; };
+const cupped = (h) => (h.xr ? (G.hands || []).some((o) => o !== h && o.xr && o.active && o.pos.distanceTo(h.pos) < 0.22 && (!o.held || o.held.kind === h.held.kind)) : h.use);
+const piece = (c) => !!c && (c.kind === 'food' || c.kind === 'cash' || (c.take && (c.bin || c.till)));   // what finger and thumb (the trigger alone) can pick up
+const FULL = 0.9, CLOSE_T = 0.35;   // the grip pressed this far within this long of taking a piece is the whole hand closing: a handful
+// where a thing let go belongs: what takes it there, else it falls
+function settle(it, vel, ang) {
+  const p = it.worldCenter(_v); let best = null, bd = 1e9;
+  for (const t of G.targets) {
+    if (!t.accepts(it)) continue;
+    const tp = t.getPos(), d = Math.hypot(p.x - tp.x, p.z - tp.z);
+    if (d < t.r && p.y > tp.y - 0.12 && p.y < tp.y + 0.32 && d - (t.prio || 0) * 0.05 < bd) { best = t; bd = d - (t.prio || 0) * 0.05; }
+  }
+  if (best) best.receive(it); else it.drop(vel, ang);
+}
 function grab(h, cand) {
   let it = cand, fromSource = false;
   if (cand.take) { it = cand.take(); fromSource = true; it.obj.position.copy(h.pos); it.obj.position.y -= it.center.y; it.obj.quaternion.identity(); }
   if (it.held) it.held.held = null;
-  it.held = h; h.held = it; it.free = false; it.grounded = -1; it.vel.set(0, 0, 0);
-  it.onGrab(h);
+  it.held = h; h.held = it; it.free = false; it.grounded = -1; it.vel.set(0, 0, 0); h.holdT = 0;
+  it.onGrab(h, { src: fromSource ? cand : null });
   _q.copy(h.quat).invert();
   h.relQ.copy(_q).multiply(it.obj.quaternion);
   h.relPos.copy(it.obj.position).sub(h.pos).applyQuaternion(_q);
@@ -53,14 +68,9 @@ function release(h) {
   if (PH.ready) PH.unhold(it);
   if (h.xr) { throwOf(h, _tv, _tw); _tv.add(_v.copy(_tw).cross(it.worldCenter(_v2).sub(h.pos))).clampLength(0, 12); h.vs.copy(_tv); h.pulse(0.2, 15); } // the hand's own swing and the turn of the wrist
   if (it.onRelease(h)) return;
-  const p = it.worldCenter(_v); let best = null, bd = 1e9;
-  for (const t of G.targets) {
-    if (!t.accepts(it)) continue;
-    const tp = t.getPos(), d = Math.hypot(p.x - tp.x, p.z - tp.z);
-    if (d < t.r && p.y > tp.y - 0.12 && p.y < tp.y + 0.32 && d - (t.prio || 0) * 0.05 < bd) { best = t; bd = d - (t.prio || 0) * 0.05; }
-  }
-  if (best) { best.receive(it); return; }
-  if (h.xr) it.drop(_tv.clone(), _tw.lengthSq() > 0.5 ? _tw.clone() : null); else it.drop(_v2.set(0, 0, 0));
+  const rest = it.loose ? it.loose() : [];   // a handful comes apart: each piece goes where it belongs or falls on its own
+  settle(it, h.xr ? _tv.clone() : _v2.set(0, 0, 0), h.xr && _tw.lengthSq() > 0.5 && !rest.length ? _tw.clone() : rest.length ? new V3() : null);
+  for (const x of rest) settle(x, h.xr ? _tv.clone() : new V3(), new V3());
 }
 
 function findCand(h) {
@@ -82,6 +92,7 @@ function stepHand(h, dt) {
     const e = H.length >= 8 ? H.shift() : { p: new V3(), q: new Q() }; e.t = G.t; e.p.copy(h.pos); e.q.copy(h.quat); H.push(e); while (H.length > 2 && G.t - H[0].t > 0.12) H.shift(); }
   if (!h.active) { h.marker.visible = false; if (h.held) release(h); return; }
 
+  if (h.xr && G.boards && G.boards.xr(h, () => findCand(h))) { h.marker.visible = false; return; }   // carrying a board
   // ---- buttons
   if (h.xr) {
     let near = null, nd = 0.17;
@@ -99,7 +110,8 @@ function stepHand(h, dt) {
     const cand = h.xr ? findCand(h) : h.aim?.cand; h.cand = cand || null;
     if (cand) { h.marker.visible = true; if (cand.take) h.marker.position.copy(cand.pos); else cand.worldCenter(h.marker.position); const s = (cand.take ? cand.r : cand.radius) * 3.2; h.marker.scale.set(s, s, 1); h.marker.material.opacity = 0.28 + Math.sin(G.t * 6) * 0.08; }
     else h.marker.visible = false;
-    if (h.gripDown && cand) grab(h, cand);
+    if (h.gripDown && cand) { h.pin = false; grab(h, cand); }
+    else if (h.xr && h.useDown && !h.grip && piece(cand) && !(h.source && h.source.hand) && !G.buttons.some((b) => h.tip.distanceTo(b.getPos()) < 0.17)) { grab(h, cand); h.pin = true; h.holdT = -1; }   // the trigger alone: finger and thumb take the one piece
   } else {
     h.marker.visible = false;
     const it = h.held;
@@ -118,7 +130,9 @@ function stepHand(h, dt) {
     }
     it.onHeld(dt, h);
     if (it.dead || it.held !== h) { h.held = null; return; }
-    if (h.xr ? !h.grip : h.gripDown) release(h);
+    if (it.handful && h.holdT >= 0) { h.holdT += dt;   // one piece is in the fingers: the hand closing right round it takes a handful (a headset: the grip pressed home, a fist; a screen: the button kept down, with the use key both hands' worth)
+      if (h.xr ? closed(h) >= FULL : h.grip && h.holdT > 0.3) { h.holdT = -1; it.handful(cupped(h)); } else if (h.xr ? h.holdT > CLOSE_T : !h.grip) h.holdT = -1; }
+    if (h.xr ? !(h.grip || (h.pin && h.use)) : h.gripDown) release(h);
   }
 }
 
@@ -165,7 +179,7 @@ export function buildInput(renderer, rig, camera, dom) {
 
   function updateDesktop(dt) {
     const h = desk.hand, k = desk.keys; h.active = true;
-    const f = (k.KeyW ? 1 : 0) - (k.KeyS ? 1 : 0), s = (k.KeyD ? 1 : 0) - (k.KeyA ? 1 : 0);
+    const f = G.menuOpen ? 0 : (k.KeyW ? 1 : 0) - (k.KeyS ? 1 : 0), s = G.menuOpen ? 0 : (k.KeyD ? 1 : 0) - (k.KeyA ? 1 : 0);   // (the settings board takes the keys while it is up)
     if (f || s) { const sp = 1.3 * dt; rig.position.x += (-Math.sin(desk.yaw) * f + Math.cos(desk.yaw) * s) * sp; rig.position.z += (-Math.cos(desk.yaw) * f - Math.sin(desk.yaw) * s) * sp; }
     if (!desk.free) { rig.position.x = clamp(rig.position.x, BOUNDS.minX, BOUNDS.maxX); rig.position.z = clamp(rig.position.z, BOUNDS.minZ, BOUNDS.maxZ); rig.position.y = 0; }
     rig.rotation.set(0, 0, 0); camera.position.set(0, k.KeyC ? 1.25 : 1.62, 0); camera.rotation.set(desk.pitch, desk.yaw, 0, 'YXZ'); rig.updateMatrixWorld(true);
@@ -186,11 +200,12 @@ export function buildInput(renderer, rig, camera, dom) {
       if (!aim.cand) for (const b of G.buttons) if (b.getPos().distanceTo(h.pos) < b.r + 0.02) { aim.button = b; break; }
     }
     if (!aim.cand && !aim.button && aim.prop) aim.cand = aim.prop;
+    if (G.boards) G.boards.desk(ray.ray, aim, h);   // a board before the crosshair comes first
     h.aim = aim; h.tip.copy(h.pos); h.quat.setFromAxisAngle(UP, desk.yaw);
     desk.focus += (aim.dist - desk.focus) * Math.min(1, dt * 5);
     stepHand(h, dt);
     const it = h.held;
-    G.hoverText = it ? `${it.name} — ${it.hint()}  [LMB release${it.tool ? ' · hold RMB/E to ' + (it.useMode === 'chop' ? 'chop' : 'pour') : ''}]` : aim.button ? `[LMB] ${aim.button.name}` : aim.cand ? `[LMB] grab ${aim.cand.name}` : '';
+    G.hoverText = it ? `${it.name}${it.bundle && it.bundle.length ? ' x' + (it.bundle.length + 1) : ''} — ${it.hint()}  [LMB release${it.handful && h.holdT >= 0 && !(it.bundle && it.bundle.length) ? ' · hold LMB for a handful' : ''}${it.tool ? ' · hold RMB/E to ' + (it.useMode === 'chop' ? 'chop' : 'pour') : ''}]` : aim.board ? '' : aim.button ? `[LMB] ${aim.button.name}` : aim.cand ? `[LMB] grab ${aim.cand.name}` : '';
   }
 
   function updateXR(dt) {
@@ -250,7 +265,7 @@ export function buildInput(renderer, rig, camera, dom) {
     }
     // thumbstick locomotion
     if (session) for (const src of session.inputSources) {
-      const gp = src.gamepad; if (!gp || src.hand) continue;
+      const gp = src.gamepad; if (!gp || src.hand || G.menuOpen) continue;   // (the settings board takes the sticks while it is up)
       const ax = gp.axes.length >= 4 ? gp.axes[2] : gp.axes[0] || 0, ay = gp.axes.length >= 4 ? gp.axes[3] : gp.axes[1] || 0;
       if (src.handedness === 'left') {
         if (Math.abs(ax) > 0.15 || Math.abs(ay) > 0.15) {
@@ -261,7 +276,7 @@ export function buildInput(renderer, rig, camera, dom) {
         }
       } else {
         if (Math.abs(ax) > 0.6) { if (!snapLatch) { snapLatch = true; const a = -Math.sign(ax) * ((G.set ? G.set.turn : 30) * Math.PI / 180); camera.getWorldPosition(_v); rig.position.sub(_v).applyAxisAngle(UP, a).add(_v); rig.rotation.y += a; } } else if (Math.abs(ax) < 0.3) snapLatch = false;
-        if (Math.abs(ay) > 0.5 && Math.abs(ax) < 0.4) rig.position.y = clamp(rig.position.y - ay * dt * 0.35, -0.45, 0.45);
+        if (Math.abs(ay) > 0.5 && Math.abs(ax) < 0.4 && !(gp.buttons[3] && gp.buttons[3].pressed)) rig.position.y = clamp(rig.position.y - ay * dt * 0.35, -0.45, 0.45);   // (pressed in, the stick is the volume: menu.js)
       }
     }
     G.hoverText = '';

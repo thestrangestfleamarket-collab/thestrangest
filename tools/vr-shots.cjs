@@ -1,0 +1,45 @@
+// THE VR LIST'S PICTURES (data/vr/<id>.jpg, 960x540): each game started on a screen in the built page and pictured once.
+// After a build: PWCHROME=/opt/pw-browsers/chromium node tools/vr-shots.cjs [out dir] [only, as asylum,golf]; slow under software rendering. Re-shoot a game when its look changes.
+const { chromium } = require('playwright'), path = require('path'), fs = require('fs'), ROOT = path.resolve('dist');
+const OUT = path.resolve(process.argv[2] || 'data/vr'), ONLY = process.argv[3] && process.argv[3].split(',');
+const till = (pg, f, ms = 420000) => pg.waitForFunction(f, null, { timeout: ms }).catch(() => {}), bdesk = async pg => { await till(pg, () => !document.getElementById('bdesk').disabled); await pg.evaluate(() => document.querySelector('#bdesk').click()); };
+// LASER TAG's and SENSOR TAG's need two linked pages: theirs are their tests' own pictures (node tests/laser.cjs dist/laser.html <folder>), cut to 16:9.
+// id: [page and query, how to start it, seconds to wait before the picture]
+const G = {
+  asylum: ['asylum.html', async pg => { await till(pg, () => window.ASY); await pg.evaluate(() => document.querySelector('#play').click()); await pg.waitForTimeout(3000); await pg.evaluate(() => { ASY.G.lightOn = true; }); }, 6],
+  scare: ['scare.html', async pg => { await till(pg, () => !document.getElementById('bdesk').disabled); await pg.evaluate(() => { document.getElementById('bdesk').click(); __scare.G.crT = 999; __scare.G.envT = 999; }); await till(pg, () => __scare.G.mode === 'play' && __scare.G.t > .5); await pg.waitForTimeout(4000);
+    await pg.evaluate(() => { const g = __scare; g.rig.position.set(4.5, 0, 4.5); g.rig.rotation.y = Math.PI; g.camera.rotation.x = 0; g.takePick(g.picks.find(p => p.type === 'pistol' && p.kind === 'weapon')); g.showCr(new g.THREE.Vector3(4.5, 0, 8), 'hunt', 'girl'); g.cr.stun = 99; }); }, 2],
+  hide: ['hide.html', async pg => { await bdesk(pg); await till(pg, () => __hide.G.mode === 'ready'); await pg.waitForTimeout(1500); await pg.evaluate(() => __hide.startRound()); }, 4],
+  zombie: ['zombie.html', async pg => { await bdesk(pg); await pg.waitForTimeout(2000); await pg.evaluate(() => { const z = __zombie, C = z.THEM.list[0]; z.renderer.setAnimationLoop(null); z.A.voice = false; z.startNight(1); C.active = true; z.setSpot(C, 'tvcorner'); C.dwell = 999; C.testAt = 999; z.PL.place(2.6, 3.0, 0); z.sim(300, 1 / 30);
+    const e = C.eyes[0].getWorldPosition(new z.THREE.Vector3()); e.y -= .3; e.x += .8; z.look(e); z.sim(2, 1 / 60); z.draw(1 / 60); }); }, .5],
+  holmes: ['holmes.html', async pg => { await pg.evaluate(() => document.querySelector('#play').click()); }, 12],
+  sushi: ['ramen.html?desktop&nopost', async pg => { await till(pg, 'window.G && G.debug'); await till(pg, 'G.till && G.till.ready', 180000); }, 8],
+  saloon: ['saloon.html?desktop&nopost&nomic', async pg => { await till(pg, 'window.G && G.debug'); await pg.waitForTimeout(3000); await pg.evaluate(() => { G.cardT = 0.01; }); await pg.waitForTimeout(1500); await pg.evaluate(() => G.story.bell()); }, 45],
+  crumbs: ['crumbs.html?nolock&fresh', async pg => { await till(pg, () => window.MC && MC.booted); await pg.evaluate(() => MC.startNight(MC.cfgCareer(2))); }, 20],
+  cantina: ['cantina.html?hour=19', async pg => { await till(pg, () => window.__game); await pg.evaluate(() => document.querySelector('#play').click()); }, 10],
+  jam: ['jam.html', async pg => { await till(pg, () => !!window.__jam); await pg.evaluate(() => document.getElementById('play-desktop').click()); await till(pg, () => __jam.myBody.ready && __jam.me.samples); }, 6],
+  drums: ['drums.html', async pg => { await till(pg, () => window.__drums && __drums.ready); await pg.evaluate(() => document.querySelector('#screen').click()); await till(pg, () => __drums.mode === 'screen', 60000); }, 8],
+  wave: ['wave.html?autoplay', async pg => { await till(pg, () => window.__sw); await pg.evaluate(() => __sw.start(0, 'easy')); await till(pg, () => __sw.state === 'playing' && __sw.songT > 4.5, 120000); await pg.evaluate(() => { for (const e of document.body.children) if (e.tagName !== 'CANVAS' && e.tagName !== 'SCRIPT') e.style.display = 'none'; }); }, 0],
+  golf: ['golf.html', async pg => { await till(pg, () => window.__game); await pg.evaluate(() => __game.startCourse(0)); await till(pg, () => __game.ball.atRest, 120000); }, 5],
+  sniper: ['sniper.html', async pg => { await till(pg, () => window.game && game.time > 0.05 && game.mission && game.up, 900000); await pg.evaluate(() => document.querySelector('#desktop').click()); await pg.waitForTimeout(2000); await pg.evaluate(async () => { await game.setup(0); game.begin(); game.steady = true; game.I.ads = true; }); await pg.waitForTimeout(3000); await pg.evaluate(() => game.aimAt(game.world.site.plates.find(p => p.d === 300 || p.d).pos)); }, 3],
+  edge: ['edge.html', async pg => { await till(pg, () => window.game); await pg.evaluate(() => document.querySelector('#flatBtn').click()); await pg.waitForTimeout(1500); await pg.evaluate(() => game.pressFloor(game.FLOORS[0])); await till(pg, () => !game.ride && game.H > 300 && game.doorOpen > .98, 300000); await pg.evaluate(() => { game.rig.position.x = 0; game.rig.position.z = -2.2; }); }, 3],
+  tank: ['tank.html', async pg => { await till(pg, () => window.game && game.time > .2); await pg.evaluate(() => document.querySelector('#flatBtn').click()); await pg.waitForTimeout(2000); await pg.keyboard.press('KeyH'); await till(pg, () => game.P.hatch >= 1, 60000); }, 4],
+  turret: ['turret.html', async pg => { await till(pg, () => !document.getElementById('screen').disabled, 180000); await pg.evaluate(() => document.querySelector('#screen').click()); await pg.waitForTimeout(1000); await pg.mouse.click(480, 300); await till(pg, () => __turret.sim.state === 'play', 20000);
+    await pg.evaluate(() => { const T = __turret, S = T.sim; S.rest = 1e9; for (const y of [60, 20, 90]) S.spawn('fighter', { p: [120 - y, y, -220], d: [-1, 0, 0], st: 'break', bt: 9, side: [0, 1, 0], rout: 1e9 }); setInterval(() => { const s = S.ships[0]; if (!s) return; const tt = Math.hypot(...s.p) / 700, p = s.p.map((v, i) => v + s.v[i] * tt), l = Math.hypot(...p); T.look(Math.atan2(-p[0], -p[2]), Math.asin(p[1] / l)); T.held = true; }, 16); }); await till(pg, () => __turret.sim.kills >= 1, 60000); }, 0],
+  fleet: ['space.html?sim&fx&watch&fast=3', async pg => { await till(pg, () => window.__space && __space.G.view.units.size >= 10, 180000); await pg.waitForTimeout(40000);
+    await pg.evaluate(() => { const S = __space, u = [...S.G.view.units.values()], m = u.filter(q => q.side === 0).sort((a, b) => b.type - a.type)[0] || u[0]; for (const k of ["g", "mesh", "obj", "root"]) if (S.panel[k] && S.panel[k].isObject3D) S.panel[k].visible = false; S.camera.position.set(m.pos.x + .28, m.pos.y + .14, m.pos.z + .34); S.camera.lookAt(m.pos.x, m.pos.y, m.pos.z); }); }, 1],
+  shoot: ['shoot.html', async pg => { await till(pg, () => window.game && game.world); await pg.evaluate(() => document.querySelector('#practice').click()); await pg.evaluate(() => document.querySelector('#desktop').click()); }, 8],
+  duel: ['duel.html?bot&auto&nolock', async pg => { await till(pg, () => window.__duel && __duel.game.phase === 'fight', 120000); await pg.mouse.click(480, 270); }, 3],
+};
+const TYPE = { html: 'text/html', js: 'text/javascript', json: 'application/json', jpg: 'image/jpeg', png: 'image/png', mp3: 'audio/mpeg', mp4: 'video/mp4' };
+const srv = require('http').createServer((q, r) => { let u = decodeURIComponent(q.url.split('?')[0]); if (/^\/[a-z]+$/.test(u)) u += '.html'; const f = path.join(ROOT, u); if (!f.startsWith(ROOT) || q.method !== 'GET') { r.writeHead(404); return r.end(); }
+  fs.readFile(f, (e, d) => { if (e) { r.writeHead(404); return r.end(); } r.writeHead(200, { 'content-type': TYPE[f.split('.').pop()] || 'application/octet-stream' }); r.end(d); }); });
+(async () => {
+  await new Promise(res => srv.listen(0, '127.0.0.1', res)); fs.mkdirSync(OUT, { recursive: true });
+  const b = await chromium.launch({ ...(process.env.PWCHROME ? { executablePath: process.env.PWCHROME } : {}), args: ['--use-gl=angle', '--use-angle=swiftshader', '--enable-unsafe-swiftshader', '--ignore-gpu-blocklist', '--autoplay-policy=no-user-gesture-required'] });
+  for (const id of ONLY || Object.keys(G)) { const [q, start, wait] = G[id], pg = await b.newPage({ viewport: { width: 960, height: 540 } }), t0 = Date.now(); pg.on('pageerror', e => console.log(id, 'page error:', e.message.slice(0, 200)));
+    try { await pg.goto('http://127.0.0.1:' + srv.address().port + '/' + q, { waitUntil: 'commit', timeout: 180000 }); await start(pg); await pg.waitForTimeout(wait * 1000); if (process.env.SET) await pg.evaluate(process.env.SET).then(() => pg.waitForTimeout(1500));
+      await pg.screenshot({ path: path.join(OUT, id + '.jpg'), type: 'jpeg', quality: 80, timeout: 180000 }); console.log(id, ((Date.now() - t0) / 1000).toFixed(0) + ' s'); } catch (e) { console.log(id, 'FAILED:', e.message.split('\n')[0]); }
+    await pg.close(); }
+  await b.close(); srv.close();
+})();

@@ -16,7 +16,11 @@ let bad=0; const ok=(c,m)=>{ console.log((c?'ok   ':'FAIL ')+m); if(!c)bad++; };
   const fs=require('fs'), gf=fs.readdirSync('dist/g').filter(f=>f!=='market.html');
   for(const p of ['/market.html','/market','/door.html','/avatar.html','/g/market.html','/g/market','/g/'+gf[0]])ok((await fetch(BASE+p)).status===404,p+' is not handed out by itself');
   ok((await fetch(BASE+'/g/'+gf[0],{headers:{cookie:'tsfm-pass=dev:site-check'}})).status===200,'/g/'+gf[0]+' with a login');
-  for(const u of ['/vr','/asylum']){ const r=await fetch(BASE+u); ok(r.status===200&&/Hollow Pines/.test(await r.text()),u+' (Hollow Pines) is handed to anyone, no login'); }
+  { const r=await fetch(BASE+'/asylum'); ok(r.status===200&&/Hollow Pines/.test(await r.text()),'/asylum (Hollow Pines) is handed to anyone, no login'); }
+  { const r=await fetch(BASE+'/vr'), t=await r.text(), links=[...t.matchAll(/<a href="([^"]+)">PLAY/g)].map(m=>m[1]), pics=[...t.matchAll(/<img src="([^"]+)"/g)].map(m=>m[1]);
+    ok(r.status===200&&links.length>=20&&pics.length===links.length,'/vr lists every game with a picture and a link, no login ('+links.length+')');
+    const bad=[]; for(const u of links){ const q=await fetch(BASE+u); if(q.status!==200)bad.push(u+' '+q.status); await q.arrayBuffer(); } ok(!bad.length,'every link on /vr opens a page'+(bad.length?': '+bad.join(', '):''));
+    const p0=await fetch(BASE+pics[0]); ok(p0.status===200&&p0.headers.get('content-type')==='image/jpeg','its pictures are handed out'); }
   for(const u of ['/holo','/roam','/boarded']){ const a=await fetch(BASE+u,{redirect:'manual'}), b=await fetch(BASE+u,{headers:{cookie:'tsfm-pass=dev:site-check'}}), c=await fetch(BASE+u+'.html');
     ok(a.status===302&&b.status===200&&/The Holodeck/.test(await b.text())&&c.status===404,u+' (a holodeck page) is handed to a login only; anyone else is sent to the door'); }
   { const r=await fetch(BASE+'/wave'); ok(r.status===200&&/Shardwave/.test(await r.text()),'/wave (SHARDWAVE) is handed to anyone, no login'); }
@@ -40,6 +44,8 @@ let bad=0; const ok=(c,m)=>{ console.log((c?'ok   ':'FAIL ')+m); if(!c)bad++; };
     const a=await fetch(BASE+'/golf-assets/sky/dusk_4k.jpg'), h=await fetch(BASE+'/golf-assets/sky/dusk_1k.hdr.txt'), m=await fetch(BASE+'/golf-assets/models/fern_02/fern_02.json'), x=await fetch(BASE+'/golf-assets/../g/market.html');
     ok(a.status===200&&/image\/jpeg/.test(a.headers.get('content-type')||'')&&h.status===200&&m.status===200&&x.status!==200,'and its sky, light and models under /golf-assets/ (nothing outside it)'); }
   { const r=await fetch(BASE+'/duel'), a=await fetch(BASE+'/duel-assets/gunmetal_color.jpg'); ok(r.status===200&&/AR Duel/.test(await r.text())&&a.status===200&&/image\/jpeg/.test(a.headers.get('content-type')||''),'/duel (AR DUEL) and its pictures are handed to anyone, no login'); }
+  { const r=await fetch(BASE+'/ramen'), j=await fetch(BASE+'/sushi-assets/corner.json'), b=await fetch(BASE+'/sushi-assets/corner.bin'); ok(r.status===200&&j.status===200&&b.status===200&&(await b.arrayBuffer()).byteLength>1e5,'/ramen (RAMEN) and its corner, drawing and data, are handed to anyone, no login');
+    const kinds=['films.json','folk.json','cast.json','film/notld-1.mp4','snd/bell.mp3','m/boombox.glb','tex/asphalt.jpg'], st=[]; for(const f of kinds){ const q=await fetch(BASE+'/sushi-assets/'+f,{method:'HEAD'}); st.push(q.status); } ok(st.every(x=>x===200),'every kind of file RAMEN fetches is handed out: '+kinds.map((f,i)=>f+' '+st[i]).join(', ')); }
   { const r=await fetch(BASE+'/qzar',{redirect:'manual'}); ok(r.status===302&&r.headers.get('location')==='https://claude.ai/artifact/9inZsDMyTHoZaQ9J1v2BQL','/qzar leads to the owner\'s artifact'); }
   { const m=await fetch(BASE+'/app.webmanifest'), j=m.ok?await m.json().catch(()=>null):null, ic=j&&j.icons?await Promise.all(j.icons.map(i=>fetch(BASE+i.src).then(r=>r.ok&&/image\/png/.test(r.headers.get('content-type')||'')))):[];
     ok(!!j&&/manifest\+json/.test(m.headers.get('content-type')||'')&&j.start_url==='/'&&ic.length>=2&&ic.every(Boolean),'the installable app: its manifest and icons are handed to anyone'); }

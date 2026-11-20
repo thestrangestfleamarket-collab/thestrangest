@@ -4,7 +4,7 @@ import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.j
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { MeshoptDecoder } from 'three/addons/libs/meshopt_decoder.module.js';
-import { G, V3, Q, mat, mesh, box, cyl, quatLook, clamp, mergeStatic } from './ctx.js';
+import { G, V3, Q, mat, mesh, box, cyl, quatLook, clamp, mergeStatic, ROOFUP as U } from './ctx.js';
 import * as T from './tex.js';
 import { makeWater } from './ripple.js';
 import { glb } from './models.js';
@@ -31,9 +31,11 @@ export const RECIPES = {
 export const DAYDISH = Object.keys(RECIPES).filter((k) => !RECIPES[k].night);
 
 const usd = (c) => '$' + (c / 100).toFixed(2);
+export const TUB = { x: 0.935, z: 0.885, cap: 6 }, COOLZ = 0.63;   // the bus tub on the prep wing (how many bowls it holds) and the cooler before it
 export const DRINKS = { soda: 75, tea: 75 };   // a can from the cooler: cola, iced tea
 export const BOWL_BROTH = 0.044, BOWL_TARE = 0.05; // a pot's or crock's level that one bowl takes (two ladles of broth, one of tare)
 export const YIELD = { chashu: 8, naruto: 10, negi: 12, egg: 2 }; // servings in one roll, log, stalk or egg
+const _bb = new THREE.Box3();
 export function buildCart(scene, city) {
   const cart = new THREE.Group(); scene.add(cart); G.pickRoot.add(cart);
   const C = { group: cart, pots: [], bins: {}, board: null, open: false, ups: [], knobs: [], shown: { noodles: [], raw: {}, drinks: {} }, stock: { noodles: 0, kettle: 0, jar: { shoyu: 0, shio: 0, miso: 0 }, drinks: { soda: 0, tea: 0 }, raw: { chashu: 0, naruto: 0, negi: 0, egg: 0 } } };
@@ -62,22 +64,25 @@ export function buildCart(scene, city) {
   box(0.45, 0.88, 1.15, wood, 0.925, 0.44, 0.425, cart); rbox(0.47, 0.02, 1.149, woodTop, 0.925, 0.89, 0.4355, cart, 0.006); surf(0.7, 1.15, -0.15, 1.0, 0.9); // prep wing, meeting the steel top edge to edge
   box(1.4, 0.03, 1.95, mat({ color: 0x1a1a1c, roughness: 0.8 }), 0, 0.015, 0.75, cart).castShadow = false; // rubber floor mat
   // posts, roof
-  for (const [x, z] of [[-1.16, -0.56], [1.16, -0.56], [-1.16, 1.78], [1.16, 1.78]]) box(0.08, 2.62, 0.08, woodDark, x, 1.31, z, cart);
-  for (const z of [-0.56, 1.78, -1.5, 0.6]) box(3.1, 0.08, 0.08, woodDark, 0, 2.58, z, cart);
-  for (const x of [-1.16, 1.16]) { const br = box(0.05, 0.05, 1.2, woodDark, x, 2.3, -1.02, cart); br.rotation.x = 0.5; }
-  for (const x of [-1.5, -0.75, 0, 0.75, 1.5]) for (const [zc, rx] of [[-0.8, -0.32], [1.1, 0.32]]) { const r = box(0.05, 0.06, 2.0, woodDark, x, 2.9, zc, cart); r.rotation.x = rx; }
-  box(3.3, 0.09, 0.09, woodDark, 0, 3.2, 0.15, cart);
+  // (the roof stands U higher than the cart was built, on longer posts: owner, 19 Nov 2026, "25% taller", "roof only"; the rail the noren and lanterns hang from, the boards and the lamps stay at their working height)
+  for (const [x, z] of [[-1.16, -0.56], [1.16, -0.56], [-1.16, 1.78], [1.16, 1.78]]) box(0.08, 2.62 + U, 0.08, woodDark, x, 1.31 + U / 2, z, cart);
+  for (const z of [-0.56, 1.78, -1.5, 0.6]) box(3.1, 0.08, 0.08, woodDark, 0, 2.58 + U, z, cart);
+  box(3.1, 0.06, 0.06, woodDark, 0, 2.58, -1.5, cart);   // the noren's rail, on its own brackets
+  for (const x of [-1.16, 1.16]) for (const up of [0, U]) { const br = box(0.05, 0.05, 1.2, woodDark, x, 2.3 + up, -1.02, cart); br.rotation.x = 0.5; }
+  for (const x of [-0.95, 0.95]) cyl(0.006, 0.006, U + 0.3, black, x, 2.58 + U / 2 - 0.1, -0.56, cart, 5);   // the boards hang from the beam on two rods
+  for (const x of [-1.5, -0.75, 0, 0.75, 1.5]) for (const [zc, rx] of [[-0.8, -0.32], [1.1, 0.32]]) { const r = box(0.05, 0.06, 2.0, woodDark, x, 2.9 + U, zc, cart); r.rotation.x = rx; }
+  box(3.3, 0.09, 0.09, woodDark, 0, 3.2 + U, 0.15, cart);
   const roofT = T.canvasTex(256, 256, (g, w, h) => { for (let i = 0; i < 8; i++) { g.fillStyle = i % 2 ? '#8a1c16' : '#d8cfb8'; g.fillRect(i * 32, 0, 32, h); } const R = T.rng(2); for (let i = 0; i < 900; i++) { g.globalAlpha = 0.08; g.fillStyle = '#000'; g.fillRect(R() * w, R() * h, 3, 3 + R() * 20); } });
   T.dirty(roofT, 6, { stains: 30, drips: 24, patch: 3, fade: 1 });
   // a pitched roof of weathered sheet in two tiers, high enough to stand tall under
   const tileT = T.canvasTex(256, 256, (g, w, h) => { for (let x = 0; x < w; x += 16) { const gr = g.createLinearGradient(x, 0, x + 16, 0); gr.addColorStop(0, '#4a4d52'); gr.addColorStop(0.5, '#8a8e94'); gr.addColorStop(1, '#3a3d42'); g.fillStyle = gr; g.fillRect(x, 0, 16, h); } }, { repeat: [3, 1] });
   T.dirty(tileT, 12, { rust: 26, drips: 30, stains: 24, patch: 3 });
   tileT.repeat.set(1, 1); const tileM = T.surface(mat({ map: tileT, color: 0xa8acb0, side: THREE.DoubleSide, userData: { metres: 1.5 } }), { bomb: 0, grime: 0.4, vary: 0.3 });   // (the sheet's ridges drawn bold enough to read from a window above)
-  for (const [zc, rx] of [[-0.82, -0.32], [1.12, 0.32]]) { const r = box(3.5, 0.03, 2.12, tileM, 0, 2.97, zc, cart); r.rotation.x = rx; }
-  for (const [zc, rx] of [[-0.42, -0.36], [0.72, 0.36]]) { const r = box(2.7, 0.03, 1.25, tileM, 0, 3.42, zc, cart); r.rotation.x = rx; }
-  box(2.8, 0.06, 0.1, woodDark, 0, 3.64, 0.15, cart);
-  { const tarp = mesh(new THREE.PlaneGeometry(1.25, 0.9, 5, 4), mat({ color: 0x2c4a7c, side: THREE.DoubleSide }), 0.85, 3.02, 1.02, cart); const tp = tarp.geometry.attributes.position; for (let i = 0; i < tp.count; i++) tp.setZ(i, Math.sin(tp.getX(i) * 9) * 0.012 + Math.cos(tp.getY(i) * 11) * 0.01); tarp.geometry.computeVertexNormals(); tarp.rotation.set(-Math.PI / 2 + 0.32, 0, 0.12); tarp.castShadow = false; for (const [bx, bz] of [[0.35, 0.72], [1.36, 1.3]]) { const br = box(0.2, 0.065, 0.095, mat({ color: 0x8a3a2a }), bx, 3.05 - (bz - 1.02) * 0.33 + 0.06, bz, cart); br.rotation.set(0.32, 0.4, 0); } }   // a tarpaulin over the leak, two bricks holding it down
-  for (const sx of [-1.5, 1.5]) { const tri = new THREE.Shape(); tri.moveTo(-1.9, 0); tri.lineTo(1.9, 0); tri.lineTo(0, 0.62); tri.closePath(); const gm = mesh(new THREE.ShapeGeometry(tri), T.surface(mat({ map: woodLight.map, side: THREE.DoubleSide }), { worn: 0.3 }), sx, 2.62, 0.15, cart); gm.rotation.y = Math.PI / 2; }
+  for (const [zc, rx] of [[-0.82, -0.32], [1.12, 0.32]]) { const r = box(3.5, 0.03, 2.12, tileM, 0, 2.97 + U, zc, cart); r.rotation.x = rx; }
+  for (const [zc, rx] of [[-0.42, -0.36], [0.72, 0.36]]) { const r = box(2.7, 0.03, 1.25, tileM, 0, 3.42 + U, zc, cart); r.rotation.x = rx; }
+  box(2.8, 0.06, 0.1, woodDark, 0, 3.64 + U, 0.15, cart);
+  { const tarp = mesh(new THREE.PlaneGeometry(1.25, 0.9, 5, 4), mat({ color: 0x2c4a7c, side: THREE.DoubleSide }), 0.85, 3.02 + U, 1.02, cart); const tp = tarp.geometry.attributes.position; for (let i = 0; i < tp.count; i++) tp.setZ(i, Math.sin(tp.getX(i) * 9) * 0.012 + Math.cos(tp.getY(i) * 11) * 0.01); tarp.geometry.computeVertexNormals(); tarp.rotation.set(-Math.PI / 2 + 0.32, 0, 0.12); tarp.castShadow = false; for (const [bx, bz] of [[0.35, 0.72], [1.36, 1.3]]) { const br = box(0.2, 0.065, 0.095, mat({ color: 0x8a3a2a }), bx, 3.05 + U - (bz - 1.02) * 0.33 + 0.06, bz, cart); br.rotation.set(0.32, 0.4, 0); } }   // a tarpaulin over the leak, two bricks holding it down
+  for (const sx of [-1.5, 1.5]) { const tri = new THREE.Shape(); tri.moveTo(-1.9, 0); tri.lineTo(1.9, 0); tri.lineTo(0, 0.62); tri.closePath(); const gm = mesh(new THREE.ShapeGeometry(tri), T.surface(mat({ map: woodLight.map, side: THREE.DoubleSide }), { worn: 0.3 }), sx, 2.62 + U, 0.15, cart); gm.rotation.y = Math.PI / 2; }
   T.dirty(roofT, 6, { stains: 8 }); const roof = { rotation: {} };
   // wheels + pull handles
   for (const s of [-1, 1]) {
@@ -122,16 +127,16 @@ export function buildCart(scene, city) {
   const signT = T.neonTex('ラーメン', '#ff3d2a', { sub: 'RAMEN  夜鳴きそば', fs: 110, panel: '#1a0a08' });
   C.signM = new THREE.MeshBasicMaterial({ map: signT, toneMapped: false, color: new THREE.Color(0.25, 0.25, 0.25) });
   T.dirty(signT, 10, { stains: 26, drips: 8 });
-  const sign = new THREE.Mesh(new THREE.PlaneGeometry(1.7, 1.7 * signT.image.height / signT.image.width), C.signM); sign.position.set(0, 3.9, -0.2); sign.rotation.y = Math.PI; cart.add(sign);
-  box(1.76, 0.62, 0.06, black, 0, 3.9, -0.16, cart); for (const sx of [-0.7, 0.7]) box(0.05, 0.5, 0.05, woodDark, sx, 3.5, -0.16, cart);
-  C.signHalo = halo(0xff3d2a, 3.4, 0, 3.9, -0.5, cart, 0);
+  const sign = new THREE.Mesh(new THREE.PlaneGeometry(1.7, 1.7 * signT.image.height / signT.image.width), C.signM); sign.position.set(0, 3.9 + U, -0.2); sign.rotation.y = Math.PI; cart.add(sign);
+  box(1.76, 0.62, 0.06, black, 0, 3.9 + U, -0.16, cart); for (const sx of [-0.7, 0.7]) box(0.05, 0.5, 0.05, woodDark, sx, 3.5 + U, -0.16, cart);
+  C.signHalo = halo(0xff3d2a, 3.4, 0, 3.9 + U, -0.5, cart, 0);
 
   // the work lights: bare bulbs in enamel shades under the roof (Poly Haven's), low by day and full from dusk with the street's lamps (alley.js); the one over the pots casts shadows at night
   const bulbM = new THREE.MeshBasicMaterial({ color: new THREE.Color(3.2, 2.5, 1.5), toneMapped: false });
   C.bulbs = []; C.workLights = [];
   const shade = model('hanging_industrial_lamp', 0x8a8070);
   [[-0.55, -0.25, true], [0.6, 0.1, false], [0, -1.05, false]].forEach(([x, z, sh], i) => {
-    const pv = new THREE.Group(); pv.position.set(x, 2.62, z); pv.userData.dyn = true; cart.add(pv); C.bulbs.push(pv);
+    const pv = new THREE.Group(); pv.position.set(x, 2.62, z); pv.userData.dyn = true; cart.add(pv); C.bulbs.push(pv); cyl(0.003, 0.003, U, black, x, 2.62 + U / 2, z, cart, 4);   // (a longer flex from the higher roof)
     cyl(0.003, 0.003, 0.2, black, 0, -0.11, 0, pv, 4); cyl(0.016, 0.02, 0.04, black, 0, -0.21, 0, pv, 8);
     const b = new THREE.Mesh(new THREE.SphereGeometry(0.03, 12, 10), bulbM); b.position.set(0, -0.255, 0); pv.add(b); b.userData.nopick = true;
     const hl = halo(0xffc070, 0.26, 0, -0.255, 0, pv, 0); C.workLights.push({ h: hl, op: 0.3 });
@@ -139,7 +144,7 @@ export function buildCart(scene, city) {
     // over the pots a bare bulb; over the prep side a lamp turned down onto the bins and the board; the third lights the customers' faces from the cook's side of the beam (a lamp straight over a head leaves the face in its own shade)
     const l = sh ? new THREE.PointLight(0xffb070, 0, 6, 1.8) : i === 1 ? new THREE.SpotLight(0xffb878, 0, 6, 0.86, 0.9, 1.5) : new THREE.SpotLight(0xffc088, 0, 5, 1.12, 0.75, 1.3);
     if (sh) { l.position.set(0, -0.28, 0); pv.add(l); } else if (i === 1) { l.position.set(0.55, 2.34, 0.05); l.target.position.set(0.22, 0.9, -0.36); cart.add(l, l.target); } else { l.position.set(0, 2.04, -0.36); l.target.position.set(0, 1.22, -1.5); cart.add(l, l.target); }
-    C.workLights.push({ l, k: sh ? 0.6 : i === 2 ? 7.5 : 7 });
+    C.workLights.push({ l, k: sh ? 0.6 : i === 2 ? 5 : 6 });
     if (sh) { const sl = new THREE.SpotLight(0xffb070, 0, 5, 0.9, 0.85, 1.7); sl.position.set(x, 2.3, z); sl.target.position.set(x + 0.15, 0, z + 0.05); cart.add(sl, sl.target); sl.castShadow = true; sl.shadow.mapSize.set(512, 512); sl.shadow.bias = -0.002; sl.shadow.camera.near = 0.1; sl.shadow.camera.far = 5; C.workLights.push({ l: sl, k: 12, night: true }); }
   });
   // the sign and the lanterns: lit while the cart is open, brighter as the street darkens (steadily: nothing flickers)
@@ -299,7 +304,7 @@ export function buildCart(scene, city) {
   const binStart = { chashu: 8, egg: 4, negi: 8, nori: 20, menma: 14, naruto: 8, corn: 14 };
   Object.keys(TOPPINGS).forEach((k, i) => {
     const x = -0.15 + i * 0.128, z = -0.45, b = { type: k, stock: binStart[k], x, z, pieces: [] };
-    cyl(0.074, 0.062, 0.07, steelDS, x, 0.937, z, cart, 4, true).rotation.y = Math.PI / 4;
+    cyl(0.084, 0.077, 0.07, steelDS, x, 0.937, z, cart, 4, true).rotation.y = Math.PI / 4;
     box(0.086, 0.004, 0.086, steel, x, 0.905, z, cart);
     const lt = T.panelTex(256, 96, () => { });
     b.label = lt;
@@ -308,6 +313,10 @@ export function buildCart(scene, city) {
       const f = new Food(k); const o = f.obj; f.remove(); // borrow the mesh only
       o.userData.item = null; o.position.set(x + ((n % 2) - 0.5) * 0.04 + (k === 'nori' ? 0 : 0), 0.912 + Math.floor(n / 2) * 0.012 + (k === 'egg' ? 0 : 0), z + ((n % 3) - 1) * 0.028);
       o.rotation.y = n * 1.3; if (k === 'nori') { o.position.set(x, 0.912 + n * 0.0025, z); o.rotation.y = 0.1 * n; }
+      { // nothing in a bin reaches through its walls: a piece too wide for it is made to fit, one too near a wall is moved in
+        const IN = 0.05, bx = _bb.setFromObject(o), cx = (bx.min.x + bx.max.x) / 2, cz = (bx.min.z + bx.max.z) / 2, hx = (bx.max.x - bx.min.x) / 2, hz = (bx.max.z - bx.min.z) / 2, sc = Math.min(1, IN / Math.max(hx, hz, 1e-4));
+        if (sc < 1) { o.scale.multiplyScalar(sc); o.position.x = x + (o.position.x - x) * sc; o.position.z = z + (o.position.z - z) * sc; }
+        const ox = (cx - x) * sc, oz = (cz - z) * sc; o.position.x += clamp(ox, -(IN - hx * sc), IN - hx * sc) - ox; o.position.z += clamp(oz, -(IN - hz * sc), IN - hz * sc) - oz; }
       o.userData.dyn = true; cart.add(o); b.pieces.push(o);
     }
     b.refresh = () => {
@@ -353,7 +362,7 @@ export function buildCart(scene, city) {
     G.sources.push(src); srcMesh(g, src); C.shown.noodles = shelf(C.shown.noodles, src);
   }
   Object.keys(RAW).forEach((k, i) => {
-    const z = -0.02 + i * 0.165, g = new THREE.Group(); g.position.set(0.925, 0.9, z); cart.add(g);
+    const z = -0.02 + i * 0.15, g = new THREE.Group(); g.position.set(0.925, 0.9, z); cart.add(g);
     box(0.34, 0.012, 0.14, steel, 0, 0.006, 0, g); for (const zz of [-0.07, 0.07]) box(0.34, 0.03, 0.006, steel, 0, 0.018, zz, g);
     const cnt = k === 'egg' ? 5 : k === 'negi' ? 3 : 2;
     C.shown.raw[k] = []; for (let n = 0; n < cnt; n++) { const r = new Raw(k); const o = r.obj; r.remove(); o.userData.item = null; o.userData.dyn = true; C.shown.raw[k].push(o); if (k === 'egg') o.position.set(-0.15 + n * 0.062, 0.036, 0); else o.position.set(-RAW[k].len / 2, 0.012 + RAW[k].r, (n - (cnt - 1) / 2) * (k === 'negi' ? 0.035 : RAW[k].r * 2.1)); g.add(o); }
@@ -362,14 +371,14 @@ export function buildCart(scene, city) {
     G.sources.push(src); srcMesh(g, src); C.shown.raw[k] = shelf(C.shown.raw[k], src);
   });
   { // ice cooler with drinks
-    const g = new THREE.Group(); g.position.set(0.935, 0.9, 0.68); cart.add(g);
+    const g = new THREE.Group(); g.position.set(0.935, 0.9, COOLZ); cart.add(g);
     const cm = mat({ color: 0x1c4a8a, roughness: 0.4 });
     box(0.36, 0.012, 0.24, cm, 0, 0.006, 0, g); for (const [x, z, w, d] of [[0, 0.115, 0.36, 0.014], [0, -0.115, 0.36, 0.014], [0.173, 0, 0.014, 0.24], [-0.173, 0, 0.014, 0.24]]) box(w, 0.16, d, cm, x, 0.08, z, g);
     const ice = mesh(new THREE.BoxGeometry(0.33, 0.1, 0.21), mat({ color: 0xdff2ff, roughness: 0.25, transparent: true, opacity: 0.86 }), 0, 0.065, 0, g);
     ['soda', 'tea'].forEach((d, j) => {
       const grp = new THREE.Group(); g.add(grp);
       C.shown.drinks[d] = []; for (let n = 0; n < 3; n++) { const b = new Drink(d); const o = b.obj; b.remove(); o.userData.item = null; o.userData.dyn = true; C.shown.drinks[d].push(o); o.position.set(-0.11 + n * 0.11, 0.06, (j - 0.5) * 0.11); o.rotation.z = (n - 1) * 0.08; grp.add(o); }
-      const src = { pos: new V3(0.935, 1.14, 0.68 + (j - 0.5) * 0.11), r: 0.075, name: d, can: () => C.stock.drinks[d] > 0, take: () => { C.stock.drinks[d]--; C.showStock(); G.audio.play('bottle', _bp4.set(0.935, 1.0, 0.68)); return new Drink(d); } };
+      const src = { pos: new V3(0.935, 1.14, COOLZ + (j - 0.5) * 0.11), r: 0.075, name: d, can: () => C.stock.drinks[d] > 0, take: () => { C.stock.drinks[d]--; C.showStock(); G.audio.play('bottle', _bp4.set(0.935, 1.0, COOLZ)); return new Drink(d); } };
       G.sources.push(src); srcMesh(grp, src); C.shown.drinks[d] = shelf(C.shown.drinks[d], src);
     });
   }
@@ -390,22 +399,32 @@ export function buildCart(scene, city) {
     const spare = Math.floor(s.kettle / BOWL_BROTH + 0.01);
     for (const p of C.pots) if (p.type) a.broth[p.type] = Math.max(0, Math.floor((p.level - 0.03) / (BOWL_BROTH / G.mods.pot) + 0.01)) + spare;
     for (const v of C.tares) a.tare[v.type] = Math.max(0, Math.floor((v.level - 0.03) / BOWL_TARE + 0.01)) + Math.floor(s.jar[v.type] / BOWL_TARE + 0.01);
-    for (const k in C.bins) a.tops[k] = C.bins[k].stock + (s.raw[k] || 0) * (YIELD[k] || 0) + G.items.filter((i) => !i.dead && ((i.kind === 'food' && i.topping === k) || (i.kind === 'raw' && i.raw === k))).reduce((n, i) => n + (i.kind === 'raw' ? i.left * (k === 'egg' ? 2 : i.def.per) : i.servings || 1), 0);
+    for (const k in C.bins) a.tops[k] = C.bins[k].stock + (s.raw[k] || 0) * (YIELD[k] || 0) + G.items.filter((i) => !i.dead && ((i.kind === 'food' && i.topping === k) || (i.kind === 'raw' && i.raw === k))).reduce((n, i) => n + (i.kind === 'raw' ? i.left * (k === 'egg' ? 2 : i.def.per) : i.total || 1), 0);
     return a;
   };
   C.canMake = (key, a = C.avail()) => { const r = RECIPES[key]; return a.noodles > 0 && a.broth[r.broth] > 0 && a.tare[r.tare] > 0; };
-  { // bus tub
-    const g = new THREE.Group(); g.position.set(0.935, 0.9, 0.91); cart.add(g);
-    const tm = mat({ color: 0x55585c, roughness: 0.6 });
-    box(0.36, 0.01, 0.15, tm, 0, 0.005, 0, g); for (const [x, z, w, d] of [[0, 0.075, 0.36, 0.01], [0, -0.075, 0.36, 0.01], [0.175, 0, 0.01, 0.15], [-0.175, 0, 0.01, 0.15]]) box(w, 0.12, d, tm, x, 0.06, z, g);
-    const lm = mesh(new THREE.PlaneGeometry(0.13, 0.04), new THREE.MeshBasicMaterial({ map: T.labelTex(['DIRTY BOWLS'], { w: 320, h: 96, fs: 38 }), color: 0xcccccc }), -0.181, 0.07, 0, g); lm.rotation.y = -Math.PI / 2;
-    const pos = new V3(0.935, 0.98, 0.91);
-    G.targets.push({ getPos: () => pos, r: 0.2, prio: 1, accepts: (it) => it.kind === 'bowl' || it.kind === 'drink', receive: (it) => { G.audio.play('set', it, 0.7); it.remove(); G.game?.onBus?.(); } });
+  { // the bus tub: a dirty bowl put in is seen in it, stacked on the last (owner, 19 Nov 2026: "should fill up … not just vanish"); when it is full its WASH UP button sends the lot to the wash crate under the wing
+    const g = new THREE.Group(); g.position.set(TUB.x, 0.9, TUB.z); cart.add(g);
+    const tm = mat({ color: 0x55585c, roughness: 0.6 }), W = 0.38, D = 0.26, HT = 0.12;
+    box(W, 0.01, D, tm, 0, 0.005, 0, g); for (const [x, z, w, d] of [[0, D / 2 - 0.005, W, 0.01], [0, -D / 2 + 0.005, W, 0.01], [W / 2 - 0.005, 0, 0.01, D], [-W / 2 + 0.005, 0, 0.01, D]]) box(w, HT, d, tm, x, HT / 2, z, g);
+    const lt = T.panelTex(320, 96, () => { }), lm = mesh(new THREE.PlaneGeometry(0.15, 0.045), new THREE.MeshBasicMaterial({ map: lt, color: 0xcccccc }), -W / 2 - 0.001, 0.07, 0, g); lm.rotation.y = -Math.PI / 2; lm.userData.keep = true;
+    const tub = (C.tub = { cap: TUB.cap, bowls: [], drinks: [], group: g }), pos = new V3(TUB.x, 0.98, TUB.z), inside = new THREE.Group(); inside.userData.dyn = true; g.add(inside);
+    const label = () => lt.redraw((c, w, h) => { const full = tub.bowls.length >= tub.cap; c.fillStyle = full ? '#7a1c14' : '#e8e2d0'; c.fillRect(0, 0, w, h); c.fillStyle = full ? '#fff' : '#1c1a16'; c.textAlign = 'center'; c.font = `bold 34px ${T.MONO}`; c.fillText(full ? 'FULL: WASH UP' : 'DIRTY BOWLS', w / 2, 40); c.font = `bold 30px ${T.MONO}`; c.fillText(`${tub.bowls.length}/${tub.cap}`, w / 2, 80); });
+    tub.full = () => tub.bowls.length >= tub.cap;
+    tub.put = (it) => { const o = it.obj, bowl = it.kind === 'bowl'; it.remove(); o.userData.item = null; o.userData.dyn = true; o.traverse((x) => { x.userData.nopick = true; }); o.quaternion.identity();
+      if (bowl) { o.position.set(-0.07, 0.012 + tub.bowls.length * 0.024, 0); o.rotation.y = tub.bowls.length * 1.1; tub.bowls.push(o); }
+      else { const n = tub.drinks.length; if (n < 2) o.position.set(0.135, 0.012, (n - 0.5) * 0.11); else { o.position.set(0.135, 0.17 + (n - 2) * 0.07, 0); o.rotation.x = Math.PI / 2; } tub.drinks.push(o); }
+      inside.add(o); label(); G.game?.onBus?.(); };
+    tub.empty = () => { const n = tub.bowls.length + tub.drinks.length; for (const o of [...tub.bowls, ...tub.drinks]) { o.removeFromParent(); o.traverse((x) => { if (x.isMesh && x.material && x.material.userData && x.material.userData.own) x.material.dispose(); }); } tub.bowls.length = tub.drinks.length = 0; label(); return n; };
+    G.targets.push({ getPos: () => pos, r: 0.2, prio: 1, accepts: (it) => (it.kind === 'bowl' && !tub.full()) || (it.kind === 'drink' && tub.drinks.length < 4), receive: (it) => { G.audio.play('set', it, 0.7); tub.put(it); } });
+    const bpos = new V3(TUB.x - W / 2 - 0.03, 0.925, TUB.z + 0.085), bm = cyl(0.022, 0.026, 0.03, new THREE.MeshBasicMaterial({ color: 0x2a6cc0 }), bpos.x, bpos.y - 0.01, bpos.z, cart, 12); bm.userData.keep = true;
+    const btn = { getPos: () => bpos, r: 0.04, name: 'WASH UP (empty the bus tub)', press: () => { if (!tub.empty()) return; G.audio.play('drain', pos); G.audio.play('clink', pos); } }; bm.userData.button = btn; G.buttons.push(btn); tub.button = btn;
+    label();
   }
 
   // ---------------- beam: ticket rail, recipe board ----------------
   box(2.3, 0.012, 0.012, steel, 0, 1.99, -0.53, cart);
-  for (const x of [-1.1, 1.1]) cyl(0.003, 0.003, 0.58, black, x, 2.28, -0.53, cart, 4);
+  for (const x of [-1.1, 1.1]) cyl(0.003, 0.003, 0.58 + U, black, x, 2.28 + U / 2, -0.53, cart, 4);
   const rb = T.canvasTex(2048, 512, (g, w, h) => {
     g.fillStyle = '#efe6cc'; g.fillRect(0, 0, w, h); g.strokeStyle = '#7a1612'; g.lineWidth = 10; g.strokeRect(8, 8, w - 16, h - 16);
     const keys = DAYDISH, cw = (w - 40) / 5;
@@ -469,6 +488,7 @@ export function buildCart(scene, city) {
   };
   mkBtn(0.13, 0xc82020, 'radio power', () => G.audio.setRadio(!G.audio.radioOn));
   mkBtn(0.18, 0x2a2a2e, 'radio tune', () => G.audio.tune());
+  mkBtn(0.23, 0x8a8e96, 'radio volume', () => { const v = G.audio.level('music'); G.audio.setLevel('music', v >= 1.5 ? 0.25 : v + 0.25); });   // the boombox's own loudness: a quarter louder a press, round to quiet again
 
   { // the work lights' switch, on the right post
     C.lights = []; C.bulbs.forEach((pv) => pv.traverse((o) => { if (o.isLight || o.isSprite || (o.isMesh && o.material === bulbM)) C.lights.push(o); })); cart.traverse((o) => { if (o.isSpotLight) C.lights.push(o); });

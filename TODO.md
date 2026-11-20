@@ -28,8 +28,9 @@ Risk is noted only when it isn't low.
 
 ## For the owner
 - [x] **The real clock and sky back** (owner, 14 Nov 2026: "lets remoev the 8 times ot day, do a real click go back to the blue, clouds, real nigth") · P1 · S · code + look. [done: worktree-agent-a3dd808517cecfa90, 14 Nov]
-- **P2 · pick** THE CANTINA (13 Nov 2026): its name (THE CANTINA is a working name); whether the old lounge (still reached by GO TO) goes to the archive now that THE BAR's door opens THE CANTINA; which octopus (THE MARKET's drummer is in; Polyfork's is the other); anyone to cut from or add to the regulars.
+- **P2 · pick** THE CANTINA (13 Nov 2026): its name (THE CANTINA is a working name); whether the old lounge (still reached by GO TO) goes to the archive now that THE BAR's door opens THE CANTINA; anyone to cut from or add to the regulars.
 - **P2 · look** THE CANTINA in a headset on the live site: how the hands sit on the controllers, how dark each look is, the frame rate with every regular in the room.
+- **P2 · look** MIDNIGHT CRUMBS (/crumbs, a holodeck program, 16 Nov 2026) in a headset on the live site: the frame rate on a Quest with the cat in, tracked hands, how the regulars' talk and voices land.
 
 **To try on the live site** (one sitting; each line is in its area below):
 HOLLOW PINES at `/asylum` (12 Nov: play it through on the screen and in the Quest 3; it has only been run in an emulated headset) · everything merged since 7 Nov that "waits for his look and yes" (the new layout and fronts, the bar, the gym, the pets and pet shops, the
@@ -47,6 +48,7 @@ headset · NPC voices.
 
 - **P2 · look** COLD BORE at `/sniper` (14 Nov 2026; live without a check, as asked): play it on the screen and in the Quest 3 (it has only been run in software rendering and an emulated headset: the frame rate, how the rifle sits in the hands, the eye behind the scope); its name (COLD BORE is a working name); boats still made in code; every car is the one model (a VW Corrado) in five paints and the helicopter is a gunship, until better free ones are found; a hit person falls by being tipped over (the library has no falling motion); `tests/sniper.cjs` was last run in full before the real assets went in.
 - **P2 · look** EDGE OF 88 at `/edge` and HULL DOWN at `/tank` (14 Nov 2026): play both on the screen and in the Quest 3 (run only in software rendering and an emulated headset: the frame rate, the seat's height in the turret, the turret turning you in the headset); Hull Down is new, built on his kit: its look, its four waves, its name's addresses (`/tank`, `/hull`); whether either goes in the holodeck's list.
+- **P2 · look** HULL DOWN's changing world, missions, lobby of four and kit on your body (16 Nov 2026): his look and yes in the Quest 3 (only run here in software rendering): the frame rate with the grass and debris, the body kit's places and the throw, the screens' glass, the vibration's strength, the picture styles. Left to do: the market's sky and clouds (its photographed sky is kept), a running stream, wooden fences (no model yet), crews on foot in a shared mission, a late joiner sees an unbroken world.
 - **P2 · look** HULL DOWN rebuilt (14 Nov 2026): his look and yes in the Quest 3: the frame rate with the town and trees, the dark turret, the sound mix (the tank recordings are 1940s film ones, nothing modern is free), the enemy's tank (a made-up one: no free real T-72 with pictures), no coaxial gun or foot soldiers yet.
 
 ## CI, checks and tools
@@ -381,3 +383,12 @@ Last (owner, 7 Nov 2026: "we will do VR checks last"): every check and look line
 - **P2 · L · code** Cards with other players at THE CANTINA's tables: a room on the website (a Durable Object as the `Block` is), seats, the deck and who holds which card decided there (13 Nov 2026; one player's for now).
 - **P2 · M · code** Talking to the regulars in the headset: speak, and the answer on a panel by their head (13 Nov 2026; the keyboard panel is built).
 - **P3 · M · code** The other regulars' lives (about twenty more bodies in the room have none yet), and the regulars moving: the waiter's rounds, the dealer's hands (13 Nov 2026).
+
+## The Last Chance
+
+- [ ] **P1 · S (him) · look** Try `/saloon` in the Quest 3: only run on a screen and in software rendering so far (16 Nov 2026).
+- [ ] **P2 · pick** The people are Polyfork's low-poly frontier bodies, as he chose for YATAI '86; no free realistic bodies in western dress were found. His call whether that stands here.
+- [ ] **P2 · L · code** The next pieces, one at a time: the piano (playable), the poker and faro table (cards dealt and played), the stove and lamps (lit and trimmed by hand), the cellar, your own body and arms.
+- [ ] **P2 · M · find** Recorded sound in place of the made ones (shots, glass, the room, a real piano), and voices pre-recorded with ElevenLabs for the written lines.
+- [ ] **P3 · M · code** A check of whole nights at speed, and of the hands in an emulated Quest 3.
+

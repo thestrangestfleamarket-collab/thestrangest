@@ -1379,7 +1379,7 @@
   ]
  },
  "racks": {"note": "the brochure racks on the street (159k-brochures): map tiles, rot the way one faces in radians", "at": [{"x": 108.5, "y": -40.5}, {"x": 127, "y": -71.8}, {"x": 171.5, "y": -110.2}]},
- "things": [
+ "ramen": {"note": "the ramen cart at the Market St and West St corner, park side: RAMEN's door (146bg-yatai); map tiles; tools/ramen-corner.cjs bakes RAMEN's street round it", "x": -18, "y": -41.3}, "things": [
   {
    "k": "meter",
    "x": 156,

@@ -1,0 +1,119 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex">
+<link rel="icon" href="data:,">
+<title>The Garage</title>
+<style>
+  * { box-sizing: border-box; }
+  html, body { margin: 0; height: 100%; overflow: hidden; background: #0b0b0c; color: #f2efe6; font-family: system-ui, -apple-system, "Segoe UI", sans-serif; }
+  #view { position: fixed; inset: 0; width: 100%; height: 100%; display: block; touch-action: none; }
+  [hidden] { display: none !important; }
+  #start { position: fixed; inset: 0; display: flex; overflow: auto; padding: 16px; background: rgba(8,8,10,.55); }
+  .card { margin: auto; width: min(680px, 100%); padding: 26px 28px; background: rgba(8,8,10,.86); border: 1px solid rgba(255,255,255,.14); }
+  h1 { margin: 0; font-size: 30px; letter-spacing: .14em; font-weight: 800; }
+  .sub { margin: 6px 0 20px; color: #a8a498; font-size: 15px; }
+  #load { height: 3px; background: rgba(255,255,255,.12); }
+  #bar { height: 100%; width: 0; background: #ffb347; transition: width .2s; }
+  .row { display: flex; gap: 10px; }
+  button { flex: 1; padding: 14px; border: 1px solid rgba(255,255,255,.3); background: none; color: inherit; font: inherit; font-size: 16px; font-weight: 700; letter-spacing: .08em; cursor: pointer; }
+  button:hover:not(:disabled) { background: rgba(255,255,255,.1); }
+  button:disabled { opacity: .35; cursor: not-allowed; }
+  #vr { background: #ffb347; border-color: #ffb347; color: #111; }
+  .tip { margin: 6px 0 0; font-size: 13px; color: #a8a498; }
+  #vrnote { min-height: 16px; margin: 8px 0 0; font-size: 13px; color: #a8a498; }
+  .cols { display: grid; grid-template-columns: 1fr 1fr; gap: 6px 28px; margin-top: 20px; }
+  @media (max-width: 560px) { .cols { grid-template-columns: 1fr; } }
+  h2 { margin: 0 0 6px; font-size: 12px; letter-spacing: .16em; color: #a8a498; font-weight: 700; }
+  dl { margin: 0; display: grid; grid-template-columns: auto 1fr; gap: 5px 12px; font-size: 14px; }
+  dt { color: #ffb347; font-weight: 700; white-space: nowrap; }
+  dd { margin: 0; }
+  #help { position: fixed; left: 50%; bottom: 10px; transform: translateX(-50%); max-width: calc(100% - 20px); padding: 7px 12px; background: rgba(8,8,10,.7); font-size: 12px; letter-spacing: .04em; text-align: center; pointer-events: none; }
+  #help b { color: #ffb347; }
+  #say { position: fixed; left: 50%; bottom: 64px; transform: translateX(-50%); width: min(520px, calc(100% - 24px)); padding: 10px 12px; background: rgba(8,8,10,.88); border: 1px solid #ffb347; color: inherit; font: inherit; font-size: 15px; }
+  #sub { position: fixed; left: 50%; bottom: 108px; transform: translateX(-50%); max-width: min(640px, calc(100% - 24px)); padding: 8px 14px; background: rgba(8,8,10,.8); font-size: 15px; text-align: center; pointer-events: none; }
+  #aim { position: fixed; left: 50%; top: 50%; width: 6px; height: 6px; margin: -3px 0 0 -3px; border-radius: 50%; background: rgba(255,255,255,.85); box-shadow: 0 0 0 1px rgba(0,0,0,.6); pointer-events: none; }
+  #readout { position: fixed; left: 50%; top: 14px; transform: translateX(-50%); padding: 8px 16px; background: rgba(8,8,10,.8); font-weight: 700; letter-spacing: .08em; }
+</style>
+</head>
+<body>
+<canvas id="view"></canvas>
+<div id="start">
+  <div class="card">
+    <h1>THE GARAGE</h1>
+    <p class="sub">A real drum kit. Sit down and play.</p>
+    <div id="load"><div id="bar"></div></div>
+    <div id="go" hidden>
+      <div class="row">
+        <button id="vr" disabled>ENTER VR</button>
+        <button id="screen">PLAY ON SCREEN</button>
+      </div>
+      <p id="vrnote"></p>
+      <p class="tip">Use the headset's own speakers or wired headphones: Bluetooth adds a delay to every hit.</p>
+      <div class="cols">
+        <div>
+          <h2>IN A HEADSET</h2>
+          <dl>
+            <dt>Controllers</dt><dd>are your sticks: hit what you see</dd>
+            <dt>Right trigger</dt><dd>kick drum</dd>
+            <dt>Left trigger</dt><dd>open the hi-hat</dd>
+            <dt>Grip on a cymbal</dt><dd>choke it</dd>
+            <dt>Right stick ↕</dt><dd>stick angle</dd>
+            <dt>Right grip + stick ↕</dt><dd>body forward or back</dd>
+            <dt>Left stick ↕</dt><dd>seat height</dd>
+            <dt>Left stick ↔</dt><dd>timing, earlier or later</dd>
+            <dt>Left stick click</dt><dd>garage door up or down</dd>
+            <dt>Hold A</dt><dd>talk to a neighbour</dd>
+            <dt>X</dt><dd>stand up; sit down at the stool</dd>
+            <dt>On your feet</dt><dd>left stick walks, right stick turns</dd>
+            <dt>The shotgun</dt><dd>back wall: grip it; its steps are on the wall</dd>
+            <dt>Feet, or a foot pedal</dt><dd>the kick, where your headset reports your feet; a USB or Bluetooth pedal that sends Space works too</dd>
+            <dt>Both triggers, 3 s</dt><dd>send a picture of what you see</dd>
+            <dt>Y</dt><dd>lessons: a first course at the kit (left stick ↔ picks one)</dd>
+            <dt>Right grip + stick ↔</dt><dd>the television's volume; off at nothing</dd>
+            <dt>B</dt><dd>hide the guide</dd>
+          </dl>
+        </div>
+        <div>
+          <h2>ON A SCREEN</h2>
+          <dl>
+            <dt>Click</dt><dd>hit the kit exactly there</dd>
+            <dt>Space</dt><dd>kick drum</dd>
+            <dt>S · X · C</dt><dd>snare · cross-stick · rimshot</dd>
+            <dt>A · Q</dt><dd>hi-hat · hold to open it</dd>
+            <dt>D · F · G</dt><dd>toms</dd>
+            <dt>W · T</dt><dd>crashes</dd>
+            <dt>E · R</dt><dd>ride · its bell</dd>
+            <dt>Shift · V</dt><dd>harder · softer</dd>
+            <dt>M · [ ]</dt><dd>metronome · tempo</dd>
+            <dt>L · , .</dt><dd>lessons · the one before, the next</dd>
+            <dt>K · - =</dt><dd>the television on or off · its volume</dd>
+            <dt>O · N</dt><dd>garage door · an hour on</dd>
+            <dt>Enter</dt><dd>type to a neighbour</dd>
+            <dt>P</dt><dd>send a picture of what you see</dd>
+            <dt>Tab</dt><dd>stand up and walk (W A S D); sit at the stool</dd>
+            <dt>E · R · F · click</dt><dd>take the shotgun or shells · load · pump · fire</dd>
+            <dt>Drag · H</dt><dd>look around · hide the guide</dd>
+          </dl>
+        </div>
+      </div>
+      <div class="cols">
+        <div>
+          <h2>THE STREET</h2>
+          <dl id="folk"></dl>
+          <p class="tip" id="lognote"></p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<div id="help" hidden><b>CLICK</b> the kit · <b>SPACE</b> kick · <b>S</b> snare · <b>A</b> hi-hat (<b>Q</b> open) · <b>D F G</b> toms · <b>W T</b> crashes · <b>E R</b> ride, bell · <b>SHIFT</b> harder · <b>O</b> door · <b>ENTER</b> talk · <b>N</b> hour on · <b>M</b> metronome · <b>H</b> guide · <b>TAB</b> stand up</div>
+<input id="say" maxlength="240" placeholder="Say something to your neighbour, then Enter" autocomplete="off" hidden>
+<div id="sub" hidden></div>
+<div id="aim" hidden></div>
+<div id="readout" hidden></div>
+<script type="module">__DRUMS__</script>
+</body>
+</html>

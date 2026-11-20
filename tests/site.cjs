@@ -6,7 +6,9 @@ const {chromium}=require('playwright'), {spawn}=require('child_process');
 const PORT=8799, BASE='http://127.0.0.1:'+PORT;
 let bad=0; const ok=(c,m)=>{ console.log((c?'ok   ':'FAIL ')+m); if(!c)bad++; };
 (async()=>{
-  const w=spawn('npx',['wrangler','dev','--port',String(PORT),'--ip','127.0.0.1','--var','DEV_AUTH:1','--show-interactive-dev-session=false','--persist-to',require('fs').mkdtempSync(require('path').join(require('os').tmpdir(),'site-'))],{stdio:['ignore','pipe','pipe'],detached:true,env:{...process.env,WRANGLER_SEND_METRICS:'false'}});
+  // the AI binding is always remote under wrangler dev and needs a Cloudflare token the check does not have: the worker starts from a copy of the config without it (nothing here uses it)
+  const CFG=require('path').join(__dirname,'..','.site-wrangler.jsonc'); require('fs').writeFileSync(CFG,require('fs').readFileSync(require('path').join(__dirname,'..','wrangler.jsonc'),'utf8').replace(/^\s*"ai"\s*:\s*\{[^}]*\},?\s*$/m,'')); process.on('exit',()=>{ try{ require('fs').unlinkSync(CFG); }catch(e){} });
+  const w=spawn('npx',['wrangler','dev','-c',CFG,'--port',String(PORT),'--ip','127.0.0.1','--var','DEV_AUTH:1','--show-interactive-dev-session=false','--persist-to',require('fs').mkdtempSync(require('path').join(require('os').tmpdir(),'site-'))],{stdio:['ignore','pipe','pipe'],detached:true,env:{...process.env,WRANGLER_SEND_METRICS:'false'}});
   const stop=()=>{ try{ process.kill(-w.pid,'SIGKILL'); }catch(e){ try{ w.kill('SIGKILL'); }catch(_){} } };   // the worker's whole group: wrangler leaves workerd on the port otherwise, and the next test on it talks to this one
   let log=''; w.stdout.on('data',d=>log+=d); w.stderr.on('data',d=>log+=d);
   let up=false; for(let i=0;i<120&&!up;i++){ await new Promise(r=>setTimeout(r,1000)); up=await fetch(BASE+'/').then(r=>r.ok).catch(()=>false); }
@@ -14,12 +16,17 @@ let bad=0; const ok=(c,m)=>{ console.log((c?'ok   ':'FAIL ')+m); if(!c)bad++; };
   const fs=require('fs'), gf=fs.readdirSync('dist/g').filter(f=>f!=='market.html');
   for(const p of ['/market.html','/market','/door.html','/avatar.html','/g/market.html','/g/market','/g/'+gf[0]])ok((await fetch(BASE+p)).status===404,p+' is not handed out by itself');
   ok((await fetch(BASE+'/g/'+gf[0],{headers:{cookie:'tsfm-pass=dev:site-check'}})).status===200,'/g/'+gf[0]+' with a login');
-  for(const u of ['/vr','/asylum']){ const r=await fetch(BASE+u); ok(r.status===200&&/Hollow Pines/.test(await r.text()),u+' (Hollow Pines) is handed to anyone, no login'); }
+  { const r=await fetch(BASE+'/asylum'); ok(r.status===200&&/Hollow Pines/.test(await r.text()),'/asylum (Hollow Pines) is handed to anyone, no login'); }
+  { const r=await fetch(BASE+'/vr'), t=await r.text(), links=[...t.matchAll(/<a href="([^"]+)">PLAY/g)].map(m=>m[1]), pics=[...t.matchAll(/<img src="([^"]+)"/g)].map(m=>m[1]);
+    ok(r.status===200&&links.length>=20&&pics.length===links.length,'/vr lists every game with a picture and a link, no login ('+links.length+')');
+    const bad=[]; for(const u of links){ const q=await fetch(BASE+u); if(q.status!==200)bad.push(u+' '+q.status); await q.arrayBuffer(); } ok(!bad.length,'every link on /vr opens a page'+(bad.length?': '+bad.join(', '):''));
+    const p0=await fetch(BASE+pics[0]); ok(p0.status===200&&p0.headers.get('content-type')==='image/jpeg','its pictures are handed out'); }
   for(const u of ['/holo','/roam','/boarded']){ const a=await fetch(BASE+u,{redirect:'manual'}), b=await fetch(BASE+u,{headers:{cookie:'tsfm-pass=dev:site-check'}}), c=await fetch(BASE+u+'.html');
     ok(a.status===302&&b.status===200&&/The Holodeck/.test(await b.text())&&c.status===404,u+' (a holodeck page) is handed to a login only; anyone else is sent to the door'); }
   { const r=await fetch(BASE+'/wave'); ok(r.status===200&&/Shardwave/.test(await r.text()),'/wave (SHARDWAVE) is handed to anyone, no login'); }
   { const r=await fetch(BASE+'/holmes'); ok(r.status===200&&/The Speckled Band/.test(await r.text()),'/holmes (THE SPECKLED BAND) is handed to anyone, no login');
     const t=await fetch(BASE+'/holmes',{method:'POST',headers:{'content-type':'application/json',origin:BASE},body:'{}'}); ok(t.status===401,'but the others answer only a login ('+t.status+')'); }
+  { const r=await fetch(BASE+'/drums'), k=await fetch(BASE+'/drums-assets/kit.json'), m=await fetch(BASE+'/drums-assets/m/boombox.glb'), pp=await fetch(BASE+'/drums-assets/p/Male_Adult_05.glb'), t=await fetch(BASE+'/drums/talk',{method:'POST',headers:{'content-type':'application/json',origin:BASE},body:'{}'}); ok(r.status===200&&/The Garage/.test(await r.text())&&k.status===200&&m.status===200&&pp.status===200&&/gltf/.test(m.headers.get('content-type')||'')&&t.status===401,'/drums (THE GARAGE) is handed to anyone, no login, with its kit, models and people under /drums-assets/; its neighbours talk only to a login'); }
   for(const u of ['/jam','/rock']){ const r=await fetch(BASE+u); ok(r.status===200&&/Stadium Jam/.test(await r.text()),u+' (STADIUM JAM) is handed to anyone, no login'); }
   {
     const a=await fetch(BASE+'/jam-assets/left.glb'), d=await fetch(BASE+'/jam-assets/drums.json'); ok(a.status===200&&/gltf/.test(a.headers.get('content-type')||'')&&d.status===200,'and its hands and samples under /jam-assets/'); }
@@ -37,6 +44,9 @@ let bad=0; const ok=(c,m)=>{ console.log((c?'ok   ':'FAIL ')+m); if(!c)bad++; };
     const a=await fetch(BASE+'/golf-assets/sky/dusk_4k.jpg'), h=await fetch(BASE+'/golf-assets/sky/dusk_1k.hdr.txt'), m=await fetch(BASE+'/golf-assets/models/fern_02/fern_02.json'), x=await fetch(BASE+'/golf-assets/../g/market.html');
     ok(a.status===200&&/image\/jpeg/.test(a.headers.get('content-type')||'')&&h.status===200&&m.status===200&&x.status!==200,'and its sky, light and models under /golf-assets/ (nothing outside it)'); }
   { const r=await fetch(BASE+'/duel'), a=await fetch(BASE+'/duel-assets/gunmetal_color.jpg'); ok(r.status===200&&/AR Duel/.test(await r.text())&&a.status===200&&/image\/jpeg/.test(a.headers.get('content-type')||''),'/duel (AR DUEL) and its pictures are handed to anyone, no login'); }
+  { const r=await fetch(BASE+'/ramen'), j=await fetch(BASE+'/sushi-assets/corner.json'), b=await fetch(BASE+'/sushi-assets/corner.bin'); ok(r.status===200&&j.status===200&&b.status===200&&(await b.arrayBuffer()).byteLength>1e5,'/ramen (RAMEN) and its corner, drawing and data, are handed to anyone, no login');
+    const kinds=['films.json','folk.json','cast.json','film/notld-1.mp4','snd/bell.mp3','m/boombox.glb','tex/asphalt.jpg'], st=[]; for(const f of kinds){ const q=await fetch(BASE+'/sushi-assets/'+f,{method:'HEAD'}); st.push(q.status); } ok(st.every(x=>x===200),'every kind of file RAMEN fetches is handed out: '+kinds.map((f,i)=>f+' '+st[i]).join(', ')); }
+  { const r=await fetch(BASE+'/qzar',{redirect:'manual'}); ok(r.status===302&&r.headers.get('location')==='https://claude.ai/artifact/9inZsDMyTHoZaQ9J1v2BQL','/qzar leads to the owner\'s artifact'); }
   { const m=await fetch(BASE+'/app.webmanifest'), j=m.ok?await m.json().catch(()=>null):null, ic=j&&j.icons?await Promise.all(j.icons.map(i=>fetch(BASE+i.src).then(r=>r.ok&&/image\/png/.test(r.headers.get('content-type')||'')))):[];
     ok(!!j&&/manifest\+json/.test(m.headers.get('content-type')||'')&&j.start_url==='/'&&ic.length>=2&&ic.every(Boolean),'the installable app: its manifest and icons are handed to anyone'); }
   { const home=body=>fetch(BASE+'/home',{method:'POST',headers:{cookie:'tsfm-pass=dev:site-check',origin:BASE,'content-type':'application/json'},body:JSON.stringify(body)}).then(r=>r.json()).catch(e=>({why:String(e)}));

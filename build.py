@@ -104,21 +104,29 @@ if 'g' in os.environ.get('SKIP', '').split(','):
 elif not os.path.exists('node_modules/three'):
     subprocess.run(['npm', 'install', '--no-audit', '--no-fund'], check=True)
 subprocess.run(['node', 'tools/asylum.cjs'], check=True)   # Hollow Pines (src/asylum/): its own page, dist/asylum.html
+subprocess.run(['node', 'tools/vr.cjs'], check=True)   # the VR games list (src/vr/): dist/vr.html and its pictures, dist/vr-assets/
 subprocess.run(['node', 'tools/holmes.cjs'], check=True)   # THE SPECKLED BAND (src/holmes/): its own page, dist/holmes.html
 subprocess.run(['node', 'tools/holo.cjs'], check=True)   # the holodeck's pages (src/holo/): dist/holo.html, dist/roam.html, dist/boarded.html
 subprocess.run(['node', 'tools/wave.cjs'], check=True)   # SHARDWAVE (src/wave/): its own page, dist/wave.html
 subprocess.run(['node', 'tools/cantina.cjs'], check=True)   # THE CANTINA (src/cantina/): its own page, dist/cantina.html, and its models and pictures, dist/cantina-assets/
-subprocess.run(['node', 'tools/sushi.cjs'], check=True)   # YATAI '86 (src/sushi/): its own page, dist/sushi.html, and its people, dist/sushi-assets/
+subprocess.run(['node', 'tools/sushi.cjs'], check=True)   # RAMEN (src/sushi/): its own page, dist/ramen.html, and its people, dist/sushi-assets/
+subprocess.run(['node', 'tools/saloon.cjs'], check=True)   # THE LAST CHANCE (src/saloon/): its own page, dist/saloon.html, and its surfaces, models and people, dist/saloon-assets/
 subprocess.run(['node', 'tools/scare.cjs'], check=True)   # VESPER WARD (src/scare/): its own page, dist/scare.html, and its models, dist/scare-assets/
 subprocess.run(['node', 'tools/hide.cjs'], check=True)   # DEAD END (src/hide/): its own page, dist/hide.html, and its pictures, models and sounds, dist/hide-assets/
 subprocess.run(['node', 'tools/zombie.cjs'], check=True)   # EYES DOWN (src/zombie/): its own page, dist/zombie.html, and its pictures and models, dist/zombie-assets/
 subprocess.run(['node', 'tools/jam.cjs'], check=True)   # STADIUM JAM (src/jam/): its own page, dist/jam.html, and its avatars, hands and samples, dist/jam-assets/
+subprocess.run(['node', 'tools/drums.cjs'], check=True)   # THE GARAGE (src/drums/): its own page, dist/drums.html, and its recorded kit, models and surfaces, dist/drums-assets/
 subprocess.run(['node', 'tools/sniper.cjs'], check=True)   # COLD BORE (src/sniper/): its own page, dist/sniper.html, and its skies, surfaces, models and sounds, dist/sniper-assets/
 subprocess.run(['node', 'tools/edge.cjs'], check=True)   # EDGE OF 88 (src/edge/) and HULL DOWN (src/tank/): their own pages, dist/edge.html, dist/tank.html
 subprocess.run(['node', 'tools/shoot.cjs'], check=True)   # BREACHLINE (src/shoot/): its own page, dist/shoot.html
 subprocess.run(['node', 'tools/golf.cjs'], check=True)   # HALCYON GREENS (src/golf/): its own page, dist/golf.html, and its pictures, dist/golf-assets/
+subprocess.run(['node', 'tools/crumbs.cjs'], check=True)   # MIDNIGHT CRUMBS (src/crumbs/): its own page, dist/crumbs.html, its creatures from data/pets/
 subprocess.run(['node', 'tools/duel.cjs'], check=True)   # AR DUEL (src/duel/): its own page, dist/duel.html, and its pictures, dist/duel-assets/
+subprocess.run(['node', 'tools/qzar.cjs'], check=True)   # SLOWFIRE DUEL (src/qzar/): its own page, dist/qzar.html
 subprocess.run(['node', 'tools/laser.cjs'], check=True)   # LASER TAG (src/laser/): its own page, dist/laser.html
+subprocess.run(['node', 'tools/tag.cjs'], check=True)   # SENSOR TAG (src/tag/): its own page, dist/tag.html
+subprocess.run(['node', 'tools/turret.cjs'], check=True)  # SWIVEL (src/turret/): its own page, dist/turret.html, and the models and sounds it uses of SPACE FLEET's, dist/turret-assets/
+subprocess.run(['node', 'tools/space.cjs'], check=True)   # SPACE FLEET (src/space/): its own page, dist/space.html, and its models, sky and sounds, dist/space-assets/
 for f in sorted(set(re.findall(r'__FILE__\("([^"]+)"\)', body))):
     o = 'dist/g/' + os.path.basename(f); shutil.copy(f, o); names[f] = json.dumps('/g/' + hashed(o))
 body = re.sub(r'__FILE__\("([^"]+)"\)', lambda m: names[m.group(1)], body)

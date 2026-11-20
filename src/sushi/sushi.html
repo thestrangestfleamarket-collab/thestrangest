@@ -3,10 +3,11 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
-<title>YATAI '86</title>
+<title>RAMEN</title>
 <meta name="robots" content="noindex">
 <style>
-  html,body{margin:0;height:100%;background:#05040a;overflow:hidden;font-family:"Helvetica Neue",Arial,"Noto Sans JP",sans-serif;color:#f4ead2}
+  :root{--ui:"Helvetica Neue",Helvetica,Arial,"Noto Sans JP",sans-serif}
+  html,body{margin:0;height:100%;background:#05040a;overflow:hidden;font-family:var(--ui);color:#f4ead2}
   canvas#c{position:fixed;inset:0;width:100%;height:100%;display:block}
   #menu{position:fixed;inset:0;display:flex;flex-direction:column;justify-content:flex-end;padding:5vh 5vw;box-sizing:border-box;background:linear-gradient(180deg,rgba(5,4,10,0) 35%,rgba(5,4,10,.86) 78%)}
   #menu h1{margin:0;font-size:clamp(34px,6vw,76px);letter-spacing:.04em;color:#ff4a2a;text-shadow:0 0 18px #ff3d2a,0 0 50px rgba(255,61,42,.6)}
@@ -21,7 +22,8 @@
   #cross{position:absolute;left:50%;top:50%;width:6px;height:6px;margin:-4px;border:1.5px solid rgba(255,255,255,.85);border-radius:50%}
   #hover{position:absolute;left:50%;top:56%;transform:translateX(-50%);background:rgba(8,6,10,.72);padding:6px 12px;border-radius:4px;font-size:14px;white-space:nowrap}
   #hover:empty{display:none}
-  #stat{position:absolute;left:14px;top:12px;background:rgba(8,6,10,.6);padding:6px 10px;border-radius:4px;font:700 13px/1.4 "Courier New",monospace;color:#ffb020}
+  #stat{position:absolute;left:14px;top:12px;background:rgba(8,6,10,.6);padding:6px 10px;border-radius:4px;font:700 14px/1.4 var(--ui);color:#ffb020}
+  #stat:empty{display:none}
   #say{position:absolute;left:50%;bottom:16%;transform:translateX(-50%);width:min(560px,80vw);padding:10px 14px;font:600 16px inherit;border-radius:6px;border:2px solid #ff4a2a;background:rgba(10,6,8,.92);color:#fff;display:none;pointer-events:auto;outline:none}
   #keys{position:absolute;right:14px;bottom:12px;background:rgba(8,6,10,.6);padding:6px 10px;border-radius:4px;font-size:12px;color:#c8b8a0;text-align:right}
 </style>
@@ -29,9 +31,9 @@
 <body>
 <canvas id="c"></canvas>
 <div id="menu">
-  <h1>YATAI ’86</h1>
-  <h2>Midnight ramen cart · a dark alley off Columbus Circle, New York, 1985. Light the burners, flip the sign, and cook every bowl by hand — tare, broth, noodles, toppings — exactly as each ticket says.</h2>
-  <div class="row"><button id="vr" class="primary" disabled>Checking for VR…</button><a id="login" href="/" style="display:none;color:#ffd9a0;font-weight:700;font-size:18px;padding:14px 8px">Log in for voices →</a><button id="desk">Play in this browser</button></div>
+  <h1>RAMEN</h1>
+  <h2>A ramen cart at the corner of Market St and West St, by the park, New York, Friday 4 October 1985: one day of service and the night after it. Light the burners, flip the OPEN switch, and cook every bowl by hand — tare, broth, noodles, toppings — exactly as each ticket says. Cash only.</h2>
+  <div class="row"><button id="vr" class="primary" disabled>Checking for VR…</button><a id="login" href="/?back=/ramen" style="display:none;color:#ffd9a0;font-weight:700;font-size:18px;padding:14px 8px">Log in for voices →</a><button id="desk">Play in this browser</button></div>
   <div id="help">
     <div><b>VR · Grip</b> grab &amp; hold (release to drop / tools fly home)</div>
     <div><b>VR · Trigger</b> press switches, pour / chop assist</div>
@@ -39,12 +41,15 @@
     <div><b>VR · Chop</b> bring the knife down on the board</div>
     <div><b>VR · Left stick</b> step along the cart · <b>Right stick</b> snap-turn, ↑↓ height</div>
     <div><b>VR · Hand-tracking</b> pinch to grab, poke switches</div>
+    <div><b>VR · Volume</b> press the right stick in and push it up or down · or the VOL buttons on the right post</div>
     <div><b>Browser</b> WASD move · mouse look · left click grab / let go · right click or E pour, chop, press · C crouch</div>
-    <div><b>Browser</b> M settings board · G guide on/off · T type what you say · F8 report a bug</div>
+    <div><b>Browser</b> M settings board · − and = volume · G guide on/off · T type what you say · H show the keys · F8 report a bug</div>
+    <div><b>Browser</b> look closely at a ticket, the menu or a label and it is shown sharp beside the crosshair</div>
     <div><b>Talk</b> your microphone is always on: speak to the customer you are looking at, and they answer aloud</div>
   </div>
 </div>
-<div id="hud"><div id="cross"></div><div id="hover"></div><div id="stat"></div><input id="say" maxlength="240" placeholder="Say something to the customer you are looking at… (Enter to send, Esc to cancel)" autocomplete="off"><div id="keys">WASD move · LMB grab / release · RMB or E: pour · chop · T: talk to a customer · V: hold to speak · Esc: free mouse</div></div>
+<div id="hud"><div id="cross"></div><div id="hover"></div><div id="stat"></div><input id="say" maxlength="240" placeholder="Say something to the customer you are looking at… (Enter to send, Esc to cancel)" autocomplete="off"><div id="keys">WASD move · click: grab / let go · right click or E: pour · chop · M: settings · − =: volume · G: guide · T: type what you say · H: hide / show these · Esc: free mouse</div></div>
+<script>addEventListener('error',function(e){var b=document.getElementById('vr');if(b&&!window.G_STARTED){b.disabled=true;b.textContent='Could not start — reload the page';console.error(e.error||e.message);}});addEventListener('unhandledrejection',function(e){var b=document.getElementById('vr');if(b&&!window.G_STARTED){b.disabled=true;b.textContent='Could not start — reload the page';}});</script>
 <script type="module">__SUSHI__</script>
 </body>
 </html>

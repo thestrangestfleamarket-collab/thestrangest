@@ -174,7 +174,7 @@ export class Avatar {
     [[R.hipL, B.thighL, -1], [R.hipR, B.thighR, 1]].forEach(([hip, bi, side], k) => {
       root.copy(hip).applyQuaternion(qYaw).add(p[B.hips]);
       const foot = this.feet[k];
-      if (seat) foot.set(seat.x + side * 0.24, 0.09, seat.z - 0.46);
+      if (seat) { if (seat.feet) foot.copy(seat.feet[k]); else foot.set(seat.x + side * 0.24, 0.09, seat.z - 0.46); }
       else {
         v3.set(side * 0.02, 0, 0).applyQuaternion(qYaw).add(root).setY(0.09);
         if (!this.feetSet || foot.distanceTo(v3) > 0.28) foot.copy(v3);

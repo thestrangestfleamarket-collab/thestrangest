@@ -1,60 +1,86 @@
-// the alley: a dark service alley off a New York street in 1985, where the cart stands: two tall brick backs with fire escapes, back doors under caged bulbs, dumpsters and trash, a bar's red sign, steam, rain, a fence at the dead end and the lit street at the other
+// the corner where the cart stands: THE MARKET's Market St and West St, park side, in 1985: the park's stone wall and railings behind the cart, the wide pavement, Market St and the art museum and the bank across it, West St's apartment houses, all read out of the market's own page (corner.js, tools/ramen-corner.cjs); what stands lit and what drives by (street.js); its sky, moon and lamps follow the run's clock (clock.js)
 import * as THREE from 'three';
 import { G, mat, mesh, box, cyl, clamp } from './ctx.js';
 import * as T from './tex.js';
 import { buildBlock } from './block.js';
-import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
-import { MeshoptDecoder } from 'three/addons/libs/meshopt_decoder.module.js';
+import { buildSky } from './sky.js';
+import * as E from './ephem.js';
+import { AIR } from './air.js';
+import { weatherAt } from './weather.js';
+import { buildCorner, NIGHT } from './corner.js';
+import { buildStreet } from './street.js';
+import { NZ, KERB, FKERB, FZ, W0, E0, ROAD, LANES, XWALK, SPOTS } from './plan.js';
+export { NZ, KERB, FKERB, FZ, W0, E0, ROAD } from './plan.js';
 
-export const FOG = 0x0a0c16;
-export function buildAlley(scene) {
+export const FOG = 0xb8c4cc;
+export function buildAlley(scene, o = {}) {
+  const rich = !!o.rich;   // a screen: the richer path (a wider, softer sun shadow); a headset: the lean one
+  E.site(40.7243, -73.9878);   // (New York's sky, as THE MARKET's)
   const city = new THREE.Group(); scene.add(city); const glow = new THREE.Group(); city.add(glow); const ups = [], R = T.rng(1985);
-  const glowMap = T.glowTex();
+  const glowMap = T.glowTex(), S = { easy: true };
   const halo = (color, size, x, y, z, parent = glow, op = 0.5) => { const s = new THREE.Sprite(new THREE.SpriteMaterial({ map: glowMap, color, blending: THREE.AdditiveBlending, depthWrite: false, transparent: true, opacity: op, fog: true })); s.scale.set(size, size, 1); s.position.set(x, y, z); parent.add(s); s.userData.nopick = true; return s; };
-  const real = (n, size, color = 0xffffff) => T.worldUV(mat({ map: T.photo(n), color }), size), flat = (c) => mat({ color: c });
-  const L = 60, NZ = 3.4, FZ = -5.6, H = 17, W0 = -26, E0 = 26; // the alley runs east-west: the near wall behind the cart, the far wall across from the counter
-  const ground = real('asphalt', 3, 0x6a6a70), brickA = real('brick_dark', 1.9, 0x8a8480), brickB = real('brick_brown', 1.2, 0x7a6a5e), conc = real('concrete_dirty', 3, 0x8a8a84), rust = real('rust', 1.4, 0x7a7068), iron = flat(0x15171a), shutM = real('shutter', 2, 0x7a7e84), dump = real('corrugated', 1.2, 0x2a5a40);
-  box(L + 30, 0.4, NZ - FZ + 0.6, ground, 0, -0.2, (NZ + FZ) / 2, city); box(L + 30, 0.02, 0.5, flat(0x1c1c20), 0, 0.004, (NZ + FZ) / 2 - 1.2, city).castShadow = false; // the gutter down the middle
-  box(L, H, 0.5, brickA, 0, H / 2, NZ + 0.25, city); box(L, H, 0.5, brickB, 0, H / 2, FZ - 0.25, city); box(L, 0.5, 0.7, conc, 0, 0.25, FZ - 0.1, city); box(L, 0.4, 0.6, conc, 0, 0.2, NZ + 0.1, city);
-  // windows up both backs: most dark, a few lit behind blinds; sills, a drain pipe or two
-  const dimWin = new THREE.MeshBasicMaterial({ color: 0x06070a }), litWin = [0xd8a860, 0x9ab8d8, 0xe8c890].map((c) => new THREE.MeshBasicMaterial({ color: new THREE.Color(c).multiplyScalar(0.5) }));
-  for (const [z, s] of [[NZ - 0.01, -1], [FZ + 0.01, 1]]) for (let f = 0; f < 4; f++) for (let x = -24; x <= 24; x += 3.2) { if (R() < 0.18) continue; const y = 4.6 + f * 3.1, lit = R() < 0.14, m = box(1.1, 1.5, 0.04, lit ? litWin[(R() * 3) | 0] : dimWin, x + R() * 0.3, y, z, city); m.castShadow = false; box(1.3, 0.08, 0.16, conc, m.position.x, y - 0.8, z + s * 0.06, city).castShadow = false; if (lit) halo(0xffc880, 1.6, m.position.x, y, z + s * 0.2, glow, 0.07); }
-  for (const [x, z] of [[-13.5, NZ - 0.12], [9.5, FZ + 0.12], [-3.5, FZ + 0.12]]) cyl(0.07, 0.07, H, rust, x, H / 2, z, city, 8).castShadow = false;
-  // fire escapes: landings, rails and ladders zig-zagging up
-  const escape = (x, z, s) => { for (let f = 0; f < 4; f++) { const y = 3.5 + f * 3.1; box(3.4, 0.06, 1.0, iron, x, y, z + s * 0.55, city); box(3.4, 0.04, 0.04, iron, x, y + 0.95, z + s * 1.03, city).castShadow = false; for (let k = 0; k <= 6; k++) box(0.03, 0.95, 0.03, iron, x - 1.68 + k * 0.56, y + 0.47, z + s * 1.03, city).castShadow = false; if (f < 3) { const st = box(0.5, 0.05, 3.5, iron, x + (f % 2 ? -1 : 1) * 1.0, y + 1.55, z + s * 0.55, city); st.rotation.z = 0; st.rotation.x = 0; st.scale.set(1, 1, 0.28); st.rotation.y = 0; const lad = box(0.5, 3.3, 0.05, iron, x + (f % 2 ? -1 : 1) * 1.0, y + 1.55, z + s * 0.5, city); lad.rotation.z = (f % 2 ? -1 : 1) * 0.45; st.visible = false; } } box(0.44, 2.6, 0.04, iron, x - 1.2, 2.2, z + s * 0.9, city).castShadow = false; };
-  escape(-9, NZ, -1); escape(7.5, FZ, 1); escape(-17, FZ, 1);
-  // back doors, each under its caged bulb; the bar's has a red sign and is the brightest thing in the alley
-  const doorM = flat(0x2a2c30), bulbM = new THREE.MeshBasicMaterial({ color: new THREE.Color(2.6, 2.0, 1.2), toneMapped: false });
-  const door = (x, z, s, col, lightK, name) => { box(1.0, 2.1, 0.08, flat(col), x, 1.05, z + s * 0.04, city); box(1.2, 0.12, 0.2, conc, x, 2.2, z + s * 0.06, city).castShadow = false; box(1.3, 0.16, 0.7, conc, x, 0.08, z + s * 0.35, city); const b = mesh(new THREE.SphereGeometry(0.06, 8, 6), bulbM, x, 2.55, z + s * 0.3, city); b.castShadow = false; box(0.04, 0.04, 0.3, iron, x, 2.62, z + s * 0.15, city).castShadow = false; halo(0xffc070, 1.1, x, 2.55, z + s * 0.32, glow, 0.28);
-    if (lightK) { const p = new THREE.PointLight(0xffb060, lightK, 11, 1.6); p.position.set(x, 2.45, z + s * 0.5); scene.add(p); if (name === 'flicker') ups.push((dt, t) => { p.intensity = lightK * (Math.sin(t * 31) > 0.86 || Math.sin(t * 2.3) > 0.93 ? 0.15 : 1); }); } };
-  door(-6.5, FZ, 1, 0x3a2a22, 6, 'bar'); door(11, FZ, 1, 0x2a3440, 5, 'flicker'); door(-15, NZ, -1, 0x30362e, 0); door(13.5, NZ, -1, 0x3a3a3e, 4.5, 'kitchen');
-  const neon = T.neonTex ? T.neonTex('BAR', '#ff3a2a', { w: 256, h: 128 }) : null; if (neon) { const nm = mesh(new THREE.PlaneGeometry(1.3, 0.65), new THREE.MeshBasicMaterial({ map: neon.map || neon, transparent: true, toneMapped: false, color: new THREE.Color(1.5, 1.5, 1.5) }), -6.5, 3.3, FZ + 0.12, city); nm.castShadow = false; } halo(0xff3a2a, 3.2, -6.5, 3.3, FZ + 0.5, glow, 0.3);
-  { const p = new THREE.PointLight(0xff3020, 4, 11, 1.6); p.position.set(-6.5, 3.2, FZ + 0.9); scene.add(p); ups.push((dt, t) => { p.intensity = 4 * (Math.sin(t * 47) > 0.97 ? 0.5 : 1); }); }
-  box(3.2, 2.7, 0.08, shutM, 4, 1.4, NZ - 0.04, city); box(3.2, 2.7, 0.08, shutM, -20, 1.4, FZ + 0.04, city); // loading doors, rolled down
-  // dumpsters, pallets, the dead end's fence and the wall behind it
-  const dumpster = (x, z, ry) => { const g = new THREE.Group(); g.position.set(x, 0, z); g.rotation.y = ry; city.add(g); box(1.9, 1.05, 1.0, dump, 0, 0.65, 0, g); box(1.96, 0.06, 1.06, flat(0x15171a), 0, 1.2, 0, g).rotation.x = -0.12; for (const sx of [-0.8, 0.8]) box(0.12, 0.12, 0.9, iron, sx, 0.06, 0, g); box(0.5, 0.06, 0.06, iron, 0, 0.9, 0.53, g); };
-  dumpster(-11.5, FZ + 0.95, 0); dumpster(17, NZ - 0.95, Math.PI); dumpster(19.2, NZ - 0.95, Math.PI + 0.06);
-  for (let k = 0; k < 3; k++) box(1.2, 0.13, 1.0, real('wood', 1, 0x6a5a48), 7.6, 0.07 + k * 0.14, NZ - 0.75, city).rotation.y = k * 0.07;
-  box(0.3, H, NZ - FZ, brickA, W0 - 0.15, H / 2, (NZ + FZ) / 2, city); { const fm = mat({ map: T.canvasTex(64, 64, (g) => { g.clearRect(0, 0, 64, 64); g.strokeStyle = '#7a7e84'; g.lineWidth = 3; for (let i = -64; i < 128; i += 16) { g.beginPath(); g.moveTo(i, 0); g.lineTo(i + 64, 64); g.moveTo(i + 64, 0); g.lineTo(i, 64); g.stroke(); } }, { repeat: [22, 8] }), alphaTest: 0.4, side: THREE.DoubleSide, color: 0xb0b0b0 }); const f = mesh(new THREE.PlaneGeometry(NZ - FZ, 3.0), fm, W0 + 4, 1.5, (NZ + FZ) / 2, city); f.rotation.y = Math.PI / 2; f.castShadow = false; for (const z of [FZ + 0.1, (NZ + FZ) / 2, NZ - 0.1]) cyl(0.04, 0.04, 3.1, iron, W0 + 4, 1.55, z, city, 6); }
-  // the street at the open end: the kerb, a lamp's sodium light, the far side of the avenue, headlights going by
-  box(14, 0.16, 26, real('paving', 2, 0x7a7a74), E0 + 7, 0.02, (NZ + FZ) / 2, city); box(0.5, 16, 40, flat(0x0c0d12), E0 + 22, 8, (NZ + FZ) / 2, city).castShadow = false;
-  for (let k = 0; k < 26; k++) { const m = box(0.06, 1.3, 1.0, new THREE.MeshBasicMaterial({ color: new THREE.Color([0xd8a860, 0x9ab8d8, 0x1a1c22, 0x1a1c22][(R() * 4) | 0]).multiplyScalar(0.55) }), E0 + 21.7, 3 + ((k / 6) | 0) * 3, -13 + (k % 6) * 4.6 + R(), city); m.castShadow = false; }
-  cyl(0.07, 0.09, 7, iron, E0 + 1.5, 3.5, FZ + 1.2, city, 8); box(1.4, 0.08, 0.1, iron, E0 + 0.9, 6.9, FZ + 1.2, city); { const b = mesh(new THREE.SphereGeometry(0.14, 8, 6), new THREE.MeshBasicMaterial({ color: new THREE.Color(3, 2, 0.8), toneMapped: false }), E0 + 0.3, 6.8, FZ + 1.2, city); b.castShadow = false; halo(0xffb040, 6, E0 + 0.3, 6.6, FZ + 1.2, glow, 0.4); const p = new THREE.PointLight(0xffa030, 5, 22, 1.5); p.position.set(E0 + 0.3, 6.4, FZ + 1.4); scene.add(p); }
-  const lights = [0, 1].map((i) => { const g = new THREE.Group(); city.add(g); g.userData.dyn = true; for (const dz of [-0.6, 0.6]) { const s = halo(i ? 0xff2a1a : 0xfff0c0, i ? 0.7 : 1.6, 0, 0.7, dz, g, 0.9); } g.position.set(E0 + 9, 0, i ? 30 : -30); return g; }); let carT = 4;
-  ups.push((dt) => { carT -= dt; if (carT <= 0) { carT = 5 + Math.random() * 11; lights[0].position.z = -34; lights[1].position.z = -34 - 4.2; lights[0].userData.v = lights[1].userData.v = 11 + Math.random() * 5; } for (const g of lights) { if (g.userData.v) { g.position.z += g.userData.v * dt; if (g.position.z > 40) g.userData.v = 0; } } });
-  // the sky between the roofs, and the moon's cold light down the brick
-  scene.add(new THREE.HemisphereLight(0x55649a, 0x221e26, 1.15)); { const d = new THREE.DirectionalLight(0x8aa4e8, 0.75); d.position.set(-6, 22, 5); d.target.position.set(0, 0, -1); scene.add(d, d.target); }
-  // rain down the slot of sky
-  const nR = 420, rp = new Float32Array(nR * 6), rs = new Float32Array(nR); for (let i = 0; i < nR; i++) { let x, z; do { x = (R() - 0.5) * 34; z = FZ + 0.2 + R() * (NZ - FZ - 0.4); } while (Math.abs(x) < 1.85 && z > -1.9 && z < 2.25); const y = R() * 12; rs[i] = 9 + R() * 5; rp.set([x, y, z, x + 0.02, y - 0.28, z], i * 6); }
-  const rg = new THREE.BufferGeometry(); rg.setAttribute('position', new THREE.BufferAttribute(rp, 3)); const rain = new THREE.LineSegments(rg, new THREE.LineBasicMaterial({ color: 0xaab8e0, transparent: true, opacity: 0.12, depthWrite: false })); rain.frustumCulled = false; rain.userData.nopick = true; rain.userData.dyn = true; city.add(rain);
-  ups.push((dt) => { for (let i = 0; i < nR; i++) { let y = rp[i * 6 + 1] - rs[i] * dt; if (y < 0) y += 12; rp[i * 6 + 1] = y; rp[i * 6 + 4] = y - 0.28; } rg.attributes.position.needsUpdate = true; });
-  // what is left out for the morning: real cans, bags, boxes and crates (CC0 models), placed where the doors are
-  const gl = new GLTFLoader(); gl.setMeshoptDecoder(MeshoptDecoder); const A = '/sushi-assets/m/';
-  const put = (file, spots) => gl.loadAsync(A + file + '.glb').then((g) => { g.scene.traverse((o) => { if (o.isMesh) { o.material = mat({ map: o.material.map, color: 0x9a9a9a }); o.userData.nopick = true; o.castShadow = false; } }); for (const [x, z, ry, s] of spots) { const c = g.scene.clone(); c.position.set(x, 0, z); c.rotation.y = ry || 0; c.scale.setScalar(s || 1); city.add(c); } }).catch(() => { });
-  put('metal_trash_can', [[-5.3, FZ + 0.6, 0], [-4.6, FZ + 0.65, 1], [12.3, FZ + 0.6, 2], [-13.8, NZ - 0.6, 0.4], [14.9, NZ - 0.55, 3]]); put('trashbag', [[-10, FZ + 0.9, 0], [-9.5, FZ + 1.4, 2, 0.9], [-12.8, FZ + 1.5, 4], [16, NZ - 1.7, 1], [18.3, NZ - 1.9, 3, 1.1], [9.6, FZ + 0.7, 5], [-21.5, FZ + 0.9, 1]]);
-  put('cardboard_box_01', [[5.2, NZ - 0.6, 0.2], [5.9, NZ - 0.7, 1.1], [5.5, NZ - 0.62, 0.6, 0.8], [-18.6, FZ + 0.7, 0.3], [12.6, NZ - 0.6, 2]]); put('plastic_crate_02', [[-7.9, FZ + 0.55, 0], [-7.9, FZ + 0.55, 0.2], [12.2, NZ - 0.55, 1.2], [-16.4, NZ - 0.55, 0]]); put('exterior_aircon_unit', [[-2.5, FZ + 0.3, 0], [15.8, FZ + 0.3, 0], [-19, NZ - 0.3, Math.PI]]); put('utility_box_01', [[1.2, FZ + 0.2, 0], [-22.5, NZ - 0.2, Math.PI]]);
-  // where the block's people stop: the bar's back door, the kitchen door, the stage door, the corner by the street, the stoop, the fence
-  const P = (x, z) => new THREE.Vector3(x, 0, z), shops = [{ type: 'bar', open: true, p: P(-6.5, FZ + 1.2) }, { type: 'kitchen', open: true, p: P(13.5, NZ - 1.2) }, { type: 'stage', open: true, p: P(11, FZ + 1.2) }, { type: 'corner', open: true, p: P(E0 - 2.5, -3.6) }, { type: 'stoop', open: true, p: P(-15, NZ - 1.3) }, { type: 'fence', open: true, p: P(W0 + 6, -2.8) }];
-  const block = buildBlock(city, shops, { near: -2.6, far: -4.2, split: -3.4, end: E0 + 4, dead: true }); ups.push((dt, t) => block.update(dt, t));
-  return { group: city, shops, glow, alley: true, vent: new THREE.Vector3(3.2, -0.05, FZ + 0.9), update(dt, t) { for (const u of ups) u(dt, t); }, halo, rain, cars: [], glowMap, bakeFar() { }, reflect() { } };
+  const real = (n, size, color = 0xffffff, o = {}) => T.surface(T.worldUV(mat({ map: T.photo(n), color, side: o.side }), size), { bomb: o.bomb ?? 1, grime: o.grime ?? 0.3, band: o.band ?? 0.8, scale: 0.6, worn: o.worn ?? 0 }), flat = (c, o = {}) => mat({ color: c, ...o });
+  // ---- the lamps: everything that shines at night shares a few materials and one drawing of glows, all coming up together at dusk and going at dawn (steadily: nothing flickers)
+  const HU = { map: { value: glowMap }, opacity: { value: 0 }, grow: { value: 1 }, fogD: { value: 0.006 } };
+  const haloM = new THREE.ShaderMaterial({ uniforms: HU, transparent: true, depthWrite: false, blending: THREE.AdditiveBlending, fog: false,
+    vertexShader: 'uniform float grow; attribute vec3 hue; varying vec2 vUv; varying float vD; varying vec3 vC; void main(){ vec4 c = modelViewMatrix * instanceMatrix * vec4(0.0, 0.0, 0.0, 1.0); float s = length(instanceMatrix[0].xyz) * grow; c.xy += position.xy * s; vUv = uv; vD = -c.z; vC = hue; gl_Position = projectionMatrix * c; }',
+    fragmentShader: 'uniform sampler2D map; uniform float opacity, fogD; varying vec2 vUv; varying float vD; varying vec3 vC; void main(){ vec4 t = texture2D(map, vUv); float f = exp(-fogD * vD * 0.8); gl_FragColor = vec4(vC * t.rgb * t.a * opacity * f, 1.0); }' });
+  const NH = 96, hue = new Float32Array(NH * 3), haloG = new THREE.PlaneGeometry(1, 1); haloG.setAttribute('hue', new THREE.InstancedBufferAttribute(hue, 3));
+  const haloIM = new THREE.InstancedMesh(haloG, haloM, NH); haloIM.count = 0; haloIM.frustumCulled = false; haloIM.userData.nopick = true; haloIM.castShadow = haloIM.receiveShadow = false; city.add(haloIM);
+  const _hm = new THREE.Matrix4(), _hc = new THREE.Color(), haloSet = (i, x, y, z, size) => { _hm.makeScale(size, size, size).setPosition(x, y, z); haloIM.setMatrixAt(i, _hm); haloIM.instanceMatrix.needsUpdate = true; };
+  const addHalo = (x, y, z, size, color = 0xffa860) => { if (haloIM.count >= NH) return -1; const i = haloIM.count++; _hc.set(color); hue.set([_hc.r, _hc.g, _hc.b], i * 3); haloG.attributes.hue.needsUpdate = true; haloSet(i, x, y, z, size); return i; };
+  const lampMats = [];   // each: emissiveIntensity = lit * (userData.k or 1.6)
+  // ---- the corner itself (corner.js), and what stands lit and drives by on it (street.js)
+  const corner = buildCorner(city);
+  const street = buildStreet({ city, scene, R, flat, halo, addHalo, haloSet, lampMats, ups, corner, glowMap, api: () => lit });
+  // ---- the light, after THE MARKET's: the real sun and moon over New York on the run's clock (sky.js, ephem.js), the light from whichever is up and its shadows, the hemisphere's fill by the sky's colour, the air's haze and mist (air.js) by the hour and the weather (weather.js)
+  const fill = new THREE.HemisphereLight(0xbcd0ec, 0x5a5a5e, 1.05); scene.add(fill);
+  const sun = new THREE.DirectionalLight(0xfff2dc, 2.4); sun.castShadow = true; const SH = rich ? 14 : 10; sun.shadow.mapSize.set(1024, 1024); Object.assign(sun.shadow.camera, { left: -SH, right: SH, top: SH, bottom: -SH, near: 1, far: 90 }); sun.shadow.bias = -0.0012; sun.shadow.normalBias = 0.02; sun.shadow.radius = rich ? 2 : 1.2; scene.add(sun, sun.target);
+  sun.shadow.camera.layers.set(2); sun.shadow.autoUpdate = false; sun.shadow.needsUpdate = true; let shT = 0; ups.push((dt) => { if ((shT -= dt) <= 0) { shT = 3; sun.shadow.needsUpdate = true; } });   // the sun's (and the moon's) shadows are the still street's (layer 2, only its larger things), laid again every three seconds as the light creeps; what moves takes its shadows from the lamp over the cart
+  const moon = sun, sky = buildSky(scene);
+  // the day the run is set on: Friday 4 October 1985, by New York's clocks (daylight time, four hours behind Greenwich); the clock's hours run true through the day and the dusk, and the night is drawn so the sun comes up as the dawn's light does (clock.js: dawn 29 to 30.5)
+  const BASE = Date.UTC(1985, 9, 4, 4), R0 = (() => { for (let h = 3; h < 9; h += 0.01) if (E.seen('sun', E.jdOf(BASE + (24 + h) * 3600e3)).alt > -0.83) return 24 + h; return 31; })();
+  const realH = (h) => (h <= 19.5 ? h : h <= 29 ? 19.5 + ((h - 19.5) * (R0 - 1.15 - 19.5)) / 9.5 : R0 - 1.15 + (h - 29));
+  city.jd = (h) => E.jdOf(BASE + realH(h) * 3600e3);
+  // the sodium lamps' own light on the pavement (three, as many as the frame can afford); the rest of the night's light is drawn, not cast
+  const lampLights = street.lampAt.slice(0, 3).map(([x, y, z]) => { const p = new THREE.PointLight(0xffa04a, 0, 22, 1.5); p.position.set(x, y - 0.3, z); scene.add(p); return p; });
+  const fogC = new THREE.Color(), tmp = new THREE.Color(), tmp2 = new THREE.Color(), _mp = new THREE.Vector3(), MOONC = new THREE.Color(0x9ab0e8), NIGHTF = new THREE.Color(0x6a6480), DAYF = new THREE.Color(0xbcd0ec), EARTH = new THREE.Color(0x5a5a5e), CITYGLOW = new THREE.Color(0x4a3428);
+  let lit = 0, litSet = false, skyT = 0, wet = 0, lastH = -1, envAt = [-1, -1]; const api = {};
+  const sm = (a, b, x) => { const t = clamp((x - a) / (b - a), 0, 1); return t * t * (3 - 2 * t); };
+  const paint = () => { const K = G.clock, h = K ? K.hour : 11, w = G.weather ? G.weather.now : weatherAt(K ? K.frac : 0), jd = city.jd(h);
+    const Sk = sky.set(jd, w, null), e = Sk.e, day = sm(-10, 8, e);   // (the twilight counts: the dawn brightens the street before the sun is up)
+    // the air's colour: the horizon's, greyed (more under cloud and in the mist), as THE MARKET's haze; at night the city's own glow is in it
+    const l = Sk.horizon.r * 0.3 + Sk.horizon.g * 0.59 + Sk.horizon.b * 0.11; fogC.copy(Sk.horizon).lerp(tmp.setRGB(l, l, l), 0.3 + 0.35 * w.cloud + 0.2 * w.mist); fogC.lerp(tmp.copy(Sk.zen).lerp(Sk.horizon, 0.55), 0.22 * day * (1 - w.cloud)); fogC.lerp(CITYGLOW, 0.35 * (1 - day));
+    if (scene.fog) { scene.fog.color.copy(fogC); scene.fog.density = 0.0058 + 0.003 * (1 - day) + 0.014 * (G.rainK || 0) + 0.006 * w.mist; } scene.background = fogC;
+    AIR.mist[0] = 0.002 + 0.02 * w.mist + 0.006 * (1 - day) + 0.01 * (G.rainK || 0); AIR.mist[1] = 1 / (2.4 + 2.4 * w.mist); AIR.mist[2] = -0.1;
+    HU.fogD.value = scene.fog ? scene.fog.density : 0.006; HU.grow.value = 1 + 0.8 * w.mist + 1.5 * (G.rainK || 0);   // the lamps' glow spreads in damp air
+    sky.U.uFogC.value.copy(fogC); sky.U.uFogK.value = 0.5 + 0.4 * w.mist;
+    // the light: the sun's while it is up, the moon's after (the same light, so one shadow map), passing between them through the twilight
+    const f = sm(1, -5, e), sunK = sm(-1, 9, e) * 2.7 * (1 - 0.6 * clamp((w.cloud - 0.25) / 0.7, 0, 1)), mk = (1 - sm(-4, 2, e)) * clamp((Sk.moonAlt + 2) / 12, 0, 1) * (0.25 + 0.75 * Sk.moonLit) * (1 - 0.55 * clamp((w.cloud - 0.3) / 0.6, 0, 1));
+    _mp.copy(Sk.sunDir).lerp(Sk.moonDir, f); _mp.y = Math.max(0.12, _mp.y); _mp.normalize(); sun.position.copy(_mp).multiplyScalar(40); sun.target.position.set(0, 0, 0);
+    sun.color.copy(Sk.sunC).lerp(MOONC, f); sun.intensity = sunK * (1 - f) + 0.9 * mk * f;
+    AIR.sun[0] = _mp.x; AIR.sun[1] = _mp.y; AIR.sun[2] = _mp.z; const gl = sm(-3, 3, e) * (0.35 + 0.65 * (1 - clamp((e - 5) / 25, 0, 1))) * 0.22 * (1 - 0.7 * w.cloud);
+    tmp.copy(Sk.sunC).multiplyScalar(gl).lerp(tmp2.copy(MOONC).multiplyScalar(0.03 * mk), f); AIR.sunC[0] = tmp.r; AIR.sunC[1] = tmp.g; AIR.sunC[2] = tmp.b;
+    fill.color.copy(NIGHTF).lerp(DAYF, day).lerp(Sk.sunC, 0.22 * day * (1 - clamp(e / 20, 0, 1))).lerp(tmp2.setRGB(0.6, 0.62, 0.66), 0.3 * w.cloud * day); fill.groundColor.copy(EARTH).multiplyScalar(0.3 + 0.7 * day);
+    fill.intensity = (0.95 + 0.5 * day + 0.25 * mk) * (S.easy ? 1.2 : 1);   // (by day the pavement, the walls and the cart's roof throw the sky's light back up under it: the counter is bright)
+    if (G.renderer) G.renderer.toneMappingExposure = 1.15 + 0.7 * (1 - day);   // the eye opens in the dark: night dark but readable
+    if (G.weather) G.weather.rain.material.color.setHex(0x8a98a8).multiplyScalar(0.16 + 0.84 * day + 0.25 * lit);
+    street.paint && street.paint({ day, fogC, Sk, lit });
+    if (Math.abs(day - envAt[0]) > 0.07 || Math.abs(lit - envAt[1]) > 0.12) { envAt = [day, lit]; T.envPaint(Sk.zen, fogC, day, lit); }   // what glass, paint and puddles mirror follows the light, a step at a time
+    api.sky = { e: +e.toFixed(2), day: +day.toFixed(3), moon: +mk.toFixed(3), sun: +sun.intensity.toFixed(3), hour: +h.toFixed(2) }; lastH = h; };
+  paint();
+  ups.push((dt, t) => {
+    const K = G.clock, hr = K ? K.hour : 11, want = hr >= 17.9 && hr < 29.4 ? 1 : hr >= 29.4 && hr < 30.3 ? clamp((30.3 - hr) / 0.9, 0, 1) : 0;   // the street's lamps and signs come on as the sun goes and go off through the dawn
+    if (!litSet) { litSet = true; lit = want; } lit += clamp(want - lit, -dt / 4, dt / 4); const e = S.easy ? 0.6 : 1; api.lit = lit;
+    for (const m of lampMats) m.emissiveIntensity = lit * (m.userData.k || 1.6) * e + (m.userData.day || 0); HU.opacity.value = lit * 0.3 * e; NIGHT.value = lit * e;
+    lampLights.forEach((l) => { l.intensity = lit * 9; });
+    wet += clamp(clamp((G.rainK || 0) / 0.2, 0, 1) - wet, -dt / 300, dt / 60); T.SURF.wet.value = wet;   // the ground darkens as it rains and dries slowly after
+    if (G.cart && G.cart.lamps) G.cart.lamps(lit);
+    sky.update(dt, G.renderer && G.renderer.xr.isPresenting ? 1.5 : 1);
+    if ((skyT -= dt) <= 0 || Math.abs((G.clock ? G.clock.hour : 11) - lastH) > 0.05) { skyT = 0.25; paint(); } });   // (at once when the clock jumps: a guest joining, a new run)
+  S.easy = !!(G.set && G.set.easy); city.setEasy = (on) => { S.easy = on; paint(); };
+  // where the corner's people stop (plan.js SPOTS): the park bench, the crossing, the railings, the museum's steps and the bank's door across Market St, the apartment house's door on West St
+  const P = (x, z) => new THREE.Vector3(x, 0, z), shops = SPOTS.map((s) => ({ type: s.type, open: true, p: P(s.x, s.z), name: s.name })), all = shops;
+  const block = buildBlock(city, shops, { near: LANES[0], far: LANES[1], split: (KERB + FKERB) / 2, end: E0, west: W0, cross: XWALK }); ups.push((dt, t) => block.update(dt, t));
+  return Object.assign(api, { group: city, jd: (h) => city.jd(h), shops: all, fronts: { shops: [] }, street, corner, glow, fill, sun, moon, lamps: lampMats, alley: true, vent: { x: 7.5, z: (KERB + FKERB) / 2 + 3.5 }, skyDome: sky, weatherAt, setEasy(on) { S.easy = on; paint(); }, update(dt, t) { for (const u of ups) u(dt, t); }, halo, rain: null, cars: street.cars, glowMap, bakeFar() { }, reflect() { } });
 }

@@ -1,6 +1,6 @@
 // VOICE: push-to-talk voice between players near each other (WebRTC browser to browser, the Block hands over the handshake, Cloudflare TURN relays when a network needs it); heard from where they stand, fading out by 20 m.
 import {SHARED, THREE} from './003-shx.js';
-import {ONLINE, pos, UI} from './003b-systems.js';
+import {ONLINE, pos, SFX, UI} from './003b-systems.js';
 import {SAY} from './003d-say.js';
 import {SAVE} from './005-save.js';
 import {SYS, TILE} from './006-map-pre.js';
@@ -24,7 +24,12 @@ import {SYS, TILE} from './006-map-pre.js';
     pc.onconnectionstatechange=()=>{ if(pc.connectionState==='failed'){ const o=ONLINE.others.get(id); if(o)o.vno=performance.now(); cut(id,true); } };   // (no way through: tried again in ten seconds)
     if(offer){ const o=await pc.createOffer(); await pc.setLocalDescription(o); rtc(id,{sdp:pc.localDescription.toJSON()}); }
     return P; };
-  const mine=(P,tr)=>{ if(!tr)return; tr.direction='sendrecv'; P.tx=tr.sender; if(V.mic)P.tx.replaceTrack(V.mic.getAudioTracks()[0]).catch(()=>{}); };
+  // the ramen cart's cook (an id ending ~cart, 146bg) hears all your game's sound with your voice: your guitar, your steps, what you set going
+  const cartPeer=P=>String(P.id).endsWith('~cart');
+  const mix=()=>{ const C=SFX.ctx&&SFX.ctx(); if(!C)return null; if(!V.mixD||V.mixD.context!==C){ V.mixD=C.createMediaStreamDestination(); SFX.out(C); SFX.pre.connect(V.mixD); V.mixMic=null; }
+    if(V.mic&&V.mixMic!==V.mic){ C.createMediaStreamSource(V.mic).connect(V.mixD); V.mixMic=V.mic; } return V.mixD.stream.getAudioTracks()[0]; };
+  const sendOf=P=>cartPeer(P)?mix()||(V.mic&&V.mic.getAudioTracks()[0]):V.mic&&V.mic.getAudioTracks()[0];
+  const mine=(P,tr)=>{ if(!tr)return; tr.direction='sendrecv'; P.tx=tr.sender; const t=sendOf(P); if(t)P.tx.replaceTrack(t).catch(()=>{}); };
   const cut=(id,tell)=>{ const P=V.peers.get(id); if(!P)return; V.peers.delete(id); try{ P.pc.close(); }catch(e){} for(const n of [P.src,P.g,P.pan,P.an])try{ n&&n.disconnect(); }catch(e){} if(P.el){ P.el.srcObject=null; P.el.remove(); } if(tell)rtc(id,{bye:1}); const o=ONLINE.others.get(id); if(o)o.vt=0; };
   // their voice through the speakers: placed where they stand (the browser's 3D sound), loud close, gone by RANGE
   const hear=(P,ms)=>{ const C=actx(); if(!C||P.src)return;
@@ -46,7 +51,7 @@ import {SYS, TILE} from './006-map-pre.js';
   const mic=()=>micAsk||(micAsk=(async()=>{ if(!navigator.mediaDevices||!navigator.mediaDevices.getUserMedia){ SAY('THIS BROWSER HAS NO MICROPHONE FOR VOICE.','#c8a090'); return null; }
     try{ V.mic=await navigator.mediaDevices.getUserMedia({audio:{echoCancellation:true,noiseSuppression:true,autoGainControl:true}}); }
     catch(e){ micAsk=null; SAY('NO MICROPHONE: ALLOW IT IN THE BROWSER TO TALK.','#c8a090'); return null; }
-    const t=V.mic.getAudioTracks()[0]; t.enabled=V.talking; for(const P of V.peers.values())if(P.tx)P.tx.replaceTrack(t).catch(()=>{}); return V.mic; })());
+    const t=V.mic.getAudioTracks()[0]; t.enabled=V.talking; for(const P of V.peers.values())if(P.tx)P.tx.replaceTrack(sendOf(P)||t).catch(()=>{}); return V.mic; })());
   ONLINE.talk=on=>{ on=!!on&&V.on&&ONLINE.on; if(on===V.talking)return; V.talking=on; actx(); hud();
     if(on&&!V.mic)mic().then(s=>{ if(s)s.getAudioTracks()[0].enabled=V.talking; }); else if(V.mic)V.mic.getAudioTracks()[0].enabled=on; };
   addEventListener('blur',()=>ONLINE.talk(false));

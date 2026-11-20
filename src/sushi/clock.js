@@ -1,0 +1,38 @@
+// the run's one clock: one night, from the last of the dusk to the dawn (owner, 19 Nov 2026: "night only"; G.clock = { phase, t, frac }) and the calendar (G.clock.date()); frac runs 0 to 1 over the whole run, the light's phases and the story's beats (story.js) follow it; G.clock.on(name, fn) hangs a system on a phase's beginning ('night' 'dawn'); ?fast=1 runs it quick, G.clock.skip() goes on to the next phase
+import { G, clamp } from './ctx.js';
+
+export const RUN = 38 * 60;   // seconds of play, the whole run
+// the light over the run: the night's service, dawn
+export const PHASES = [['night', 0, 0.92], ['dawn', 0.92, 1]];
+export const ORDER = PHASES.map((p) => p[0]);
+const DAY0 = Date.UTC(1985, 9, 4), DOW = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'], MON = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+// the calendar: day one of a run is Friday 4 October 1985, and each day after is the next date
+export const dateOf = (day) => { const d = new Date(DAY0 + (Math.max(1, day | 0) - 1) * 864e5); return { n: Math.max(1, day | 0), dow: DOW[d.getUTCDay()], d: d.getUTCDate(), month: MON[d.getUTCMonth()], text: `${DOW[d.getUTCDay()]} ${d.getUTCDate()} ${MON[d.getUTCMonth()]} ${d.getUTCFullYear()}`, short: `${DOW[d.getUTCDay()].slice(0, 3)} ${d.getUTCDate()} ${MON[d.getUTCMonth()].slice(0, 3)} ${d.getUTCFullYear()}` }; };
+const HOURS = { night: [19, 29], dawn: [29, 30.5] };   // the street's hour over each (29 is five in the morning)
+
+export function buildClock(params) {
+  const f = params && params.get('fast'), hooks = {};
+  const c = { phase: 'night', t: 0, frac: 0, pfrac: 0, speed: f != null ? (+f > 1 ? +f : 40) : 1, running: false, over: false, hour: 19, light: 0, run: RUN };
+  const emit = (k, ...a) => { for (const fn of hooks[k] || []) { try { fn(...a); } catch (e) { console.error('clock ' + k, e); } } };
+  c.on = (k, fn) => { (hooks[k] ||= []).push(fn); return () => { hooks[k] = hooks[k].filter((x) => x !== fn); }; };   // k: a phase, 'end' (the run is over: dawn), 'reset' (back to the evening), 'tick' (fn(dt) every frame it runs)
+  const where = () => { const ph = PHASES.find((p) => c.frac < p[2]) || PHASES[PHASES.length - 1];
+    return { ph: ph[0], pf: clamp((c.frac - ph[1]) / (ph[2] - ph[1]), 0, 1) }; };
+  const sky = () => { const [a, b] = HOURS[c.phase]; c.hour = a + (b - a) * c.pfrac; const h = c.hour;
+    c.light = h < 16.5 ? 1 : h < 19.5 ? clamp(1 - (h - 16.5) / 3, 0, 1) ** 1.4 : h < 29 ? 0 : clamp((h - 29) / 1.5, 0, 1) * 0.75; };
+  const set = (frac, quiet) => { c.frac = clamp(frac, 0, 1); c.t = c.frac * RUN; const w = where(), was = c.phase; c.phase = w.ph; c.pfrac = w.pf; sky();
+    if (quiet) return; if (c.phase !== was) emit(c.phase, c.phase); };
+  c.time = (h = c.hour) => { const m = Math.floor((((h % 24) + 24) % 24) * 60), hh = Math.floor(m / 60); return `${((hh + 11) % 12) + 1}:${String(m % 60).padStart(2, '0')}${hh >= 12 ? 'PM' : 'AM'}`; };   // the hour as a clock shows it
+  c.daypart = (h = c.hour) => { const x = ((h % 24) + 24) % 24; return x < 5 ? 'night' : x < 12 ? 'morning' : x < 17 ? 'afternoon' : x < 22 ? 'evening' : 'night'; };   // what to call the hour (a greeting follows it: talk.js)
+  c.day = () => (G.prog ? (G.prog.result ? G.prog.result.day : G.prog.P.day) : 1);   // the run's day being played (the card at dawn has already turned the page)
+  c.date = (h = c.hour) => dateOf(c.day() + (h >= 24 ? 1 : 0));   // today's date by the street's hour (after midnight it is tomorrow's)
+  c.at = (phase) => PHASES.find((p) => p[0] === phase)?.[1];   // where a phase begins, as a share of the run
+  c.start = () => { if (c.running || c.over) return; c.running = true; emit('night', 'night'); };   // the cart opens: the night begins to pass
+  c.go = (name) => { const at = c.at(name); if (at == null) return; c.running = true; c.over = false; set(at + 1e-6); };   // to a phase's beginning (a test, or a debug key)
+  c.skip = () => { const i = ORDER.indexOf(c.phase); if (i < ORDER.length - 1) c.go(ORDER[i + 1]); else c.finish(); };
+  c.finish = () => { if (c.over) return; set(1); c.over = true; c.running = false; emit('end'); };
+  c.reset = () => { c.running = false; c.over = false; set(0, true); emit('reset'); };
+  c.update = (dt) => { if (!c.running || c.over || G.guest) return; const k = dt * c.speed; set(c.frac + k / RUN); emit('tick', k); if (c.frac >= 1) c.finish(); };
+  c.follow = (frac) => { if (!(frac >= 0)) return; c.running = true; set(frac); };   // a guest's clock is the cook's (live.js)
+  set(0, true);
+  G.clock = c; return c;
+}

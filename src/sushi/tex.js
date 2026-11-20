@@ -1,8 +1,95 @@
-// the cart's and the street's pictures: photographed surfaces (photo, data/sushi/tex) laid by the metre (worldUV, metreUV), the rest drawn on canvases; ageing those (dirty)
+// the cart's and the street's pictures: photographed surfaces (photo, data/sushi/tex) laid by the metre (worldUV, metreUV) and worn without repeating (surface), liquids with a sheen (liquid), the rest drawn on canvases; ageing those (dirty)
 import * as THREE from 'three';
 
-export const JP = "'Noto Sans JP','Noto Sans CJK JP','Hiragino Sans','Hiragino Kaku Gothic ProN','Yu Gothic','Meiryo','IPAGothic','IPAPGothic',sans-serif";
-export const MONO = "'Courier New',Courier,monospace";
+// one clock for every surface that moves (broth); cart.js moves it
+export const SURF = { time: { value: 0 }, lamp: { value: new THREE.Vector3(0, 2.36, -0.3) }, wet: { value: 0 } };
+// the wind in what hangs and grows (noren, the trees' crowns, the young rice), moved in the vertex shader so it costs nothing to draw: WIND.t the time, WIND.k how hard it blows (life.js)
+export const WIND = { t: { value: 0 }, k: { value: 0.3 } };
+const SWAY = {
+  cloth: 'float sw = clamp(1.0 - uv.y, 0.0, 1.0); sw *= sw * 0.16;',
+  tree: 'float sw = pow(clamp((swp.y - 1.6) / 12.0, 0.0, 1.0), 1.4) * 0.5;',
+  grass: 'float sw = clamp(position.y / 0.42, 0.0, 1.0); sw *= sw * 0.07;',
+};
+export function sway(m, kind) {
+  const prev = m.onBeforeCompile, key = prev && m.customProgramCacheKey ? m.customProgramCacheKey() : '';
+  m.onBeforeCompile = (s, r) => {
+    if (prev) prev.call(m, s, r);
+    Object.assign(s.uniforms, { uWindT: WIND.t, uWindK: WIND.k });
+    s.vertexShader = s.vertexShader.replace('#include <common>', '#include <common>\nuniform float uWindT, uWindK;').replace('#include <begin_vertex>', `#include <begin_vertex>
+  { vec4 swp = vec4(transformed, 1.0);
+  #ifdef USE_INSTANCING
+    swp = instanceMatrix * swp;
+  #endif
+    swp = modelMatrix * swp; ${SWAY[kind]}
+    float ph = uWindT * 1.3 + swp.x * 0.31 + swp.z * 0.23, gust = 0.65 + 0.35 * sin(uWindT * 0.37 + swp.x * 0.05);
+    vec3 off = vec3(1.0, 0.0, 0.35) * sw * uWindK * (gust + 0.35 * sin(ph)) + vec3(0.2, 0.0, 1.0) * sw * uWindK * 0.3 * sin(ph * 1.9 + 1.3);
+  #ifdef USE_INSTANCING
+    off = inverse(mat3(instanceMatrix)) * off;
+  #endif
+    transformed += off; }`);
+  };
+  const k = key + 'sway' + kind; m.customProgramCacheKey = () => k; m.needsUpdate = true; return m;
+}
+const NOISE = `varying vec3 vSurfW;
+float sH(vec2 p) { return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453); }
+float sN(vec2 p) { vec2 i = floor(p), f = fract(p); f = f * f * (3.0 - 2.0 * f); return mix(mix(sH(i), sH(i + vec2(1.0, 0.0)), f.x), mix(sH(i + vec2(0.0, 1.0)), sH(i + vec2(1.0, 1.0)), f.x), f.y); }`;
+const WPOS = `#include <project_vertex>
+{ vec4 sw = vec4(transformed, 1.0);
+#ifdef USE_INSTANCING
+  sw = instanceMatrix * sw;
+#endif
+  vSurfW = (modelMatrix * sw).xyz; }`;
+// the shared material for every big surface (owner, 16 Nov 2026: "not just repeat patterns"): its picture is read twice, each patch shifted by its own random amount and the two blended by a smooth noise, so no tile repeats; a second, broad scale of light and dark; grime that gathers low down and in patches; on a counter, a polish where hands go (worn). Two reads of the picture and a few sums a pixel: cheap enough for the headset
+export function surface(m, o = {}) {
+  const P = { bomb: o.bomb ?? (m.map && m.map.wrapS === THREE.RepeatWrapping ? 1 : 0), vary: o.vary ?? 0.22, grime: o.grime ?? 0.3, low: o.low ?? 0, band: o.band ?? 0.5, worn: o.worn ?? 0, scale: o.scale ?? 1 }, f = (v) => (+v).toFixed(3);
+  const prev = m.onBeforeCompile, key = prev && m.customProgramCacheKey ? m.customProgramCacheKey() : '';
+  m.onBeforeCompile = (s, r) => {
+    if (prev) prev.call(m, s, r);
+    s.vertexShader = s.vertexShader.replace('#include <common>', '#include <common>\nvarying vec3 vSurfW;').replace('#include <project_vertex>', WPOS);
+    s.fragmentShader = s.fragmentShader.replace('#include <common>', '#include <common>\n' + NOISE + `
+vec4 sBomb(sampler2D t, vec2 uv) {
+  vec2 dx = dFdx(uv), dy = dFdy(uv); float k = sN(uv * 0.43 + 3.1) * 5.0, i = floor(k), fr = fract(k);
+  vec2 oa = vec2(sH(vec2(i, 1.7)), sH(vec2(i, 9.1))), ob = vec2(sH(vec2(i + 1.0, 1.7)), sH(vec2(i + 1.0, 9.1)));
+  vec4 a = textureGrad(t, uv + oa, dx, dy), b = textureGrad(t, uv + ob, dx, dy);
+  return mix(a, b, smoothstep(0.35, 0.65, fr + 0.15 * dot(a.rgb - b.rgb, vec3(1.0))));
+}`).replace('#include <map_fragment>', `#ifdef USE_MAP
+  diffuseColor *= ${P.bomb ? 'sBomb(map, vMapUv)' : 'texture2D(map, vMapUv)'};
+#endif
+  { vec3 w = vSurfW * ${f(P.scale)}; float v = sN(w.xz * 0.9 + w.y * 0.7) * 0.6 + sN(w.xz * 3.7 + w.yx * 2.9) * 0.4;
+    diffuseColor.rgb *= 1.0 + ${f(P.vary)} * (v - 0.5) * 2.0;
+    float g = smoothstep(0.55, 0.85, sN(w.xz * 1.6 + w.zy * 1.3 + 11.0)) * 0.7 + (1.0 - smoothstep(${f(P.low)}, ${f(P.low + P.band)}, vSurfW.y)) * 0.8;
+    diffuseColor.rgb = mix(diffuseColor.rgb, diffuseColor.rgb * vec3(0.46, 0.4, 0.33), clamp(g, 0.0, 1.0) * ${f(P.grime)});
+    ${P.worn ? `float p = smoothstep(0.35, 0.8, sN(w.xz * 2.3 + 5.0)); diffuseColor.rgb = mix(diffuseColor.rgb, diffuseColor.rgb * vec3(1.18, 1.1, 0.95) + vec3(0.025, 0.016, 0.0), p * ${f(P.worn)});` : ''} }`)
+      .replace('#include <normal_fragment_maps>', `#include <normal_fragment_maps>
+  if (uWet > 0.0) { float up = smoothstep(0.5, 0.9, dot(normal, (viewMatrix * vec4(0.0, 1.0, 0.0, 0.0)).xyz)), roof = step(abs(vSurfW.x), 1.95) * step(-1.95, vSurfW.z) * step(vSurfW.z, 2.25) * step(vSurfW.y, 2.7);
+    diffuseColor.rgb *= 1.0 - uWet * up * (1.0 - roof) * (0.3 + 0.12 * sN(vSurfW.xz * 1.3)); }`);   // in the rain what faces the sky darkens, as wet earth and wood do; under the stall's roof it stays dry
+    s.uniforms.uWet = SURF.wet; s.fragmentShader = s.fragmentShader.replace('#include <common>', '#include <common>\nuniform float uWet;');
+  };
+  const k = key + 'surf' + Object.values(P).map(f).join(',');
+  m.customProgramCacheKey = () => k; m.userData.surface = P; m.needsUpdate = true; return m;
+}
+// a liquid's top: the fat on it drifting in two layers, and the lamp's sheen on it, gently moving (stir: how hard it boils)
+export function liquid(m, o = {}) {
+  const U = { stir: { value: o.stir ?? 0.2 }, sheen: { value: o.sheen ?? 0.5 } };
+  m.onBeforeCompile = (s) => {
+    Object.assign(s.uniforms, { uTime: SURF.time, uLamp: SURF.lamp, uStir: U.stir, uSheen: U.sheen });
+    s.vertexShader = s.vertexShader.replace('#include <common>', '#include <common>\nvarying vec3 vSurfW;').replace('#include <project_vertex>', WPOS);
+    s.fragmentShader = s.fragmentShader.replace('#include <common>', '#include <common>\n' + NOISE + '\nuniform float uTime, uStir, uSheen; uniform vec3 uLamp;')
+      .replace('#include <map_fragment>', `#ifdef USE_MAP
+  { float t = uTime * (0.4 + uStir); vec4 a = texture2D(map, vMapUv + vec2(t * 0.011, t * 0.007)), b = texture2D(map, vMapUv * 1.63 + vec2(-t * 0.008, t * 0.012)); diffuseColor *= mix(a, b, 0.5); }
+#endif`)
+      .replace('#include <opaque_fragment>', `{ vec2 q = vSurfW.xz * 38.0; float t = uTime * (0.6 + 2.2 * uStir), a = 0.03 + 0.09 * uStir;
+    vec3 N = normalize(vec3(sin(q.x + t) * a + sin(q.y * 1.3 - t * 0.8) * a * 0.7, 1.0, cos(q.y + t * 1.1) * a + sin(q.x * 0.7 + t * 0.6) * a * 0.6));
+    vec3 V = normalize(cameraPosition - vSurfW), L = normalize(uLamp - vSurfW); float sp = pow(max(dot(reflect(-L, N), V), 0.0), 48.0);
+    float fat = 0.6 + 0.4 * sN(vSurfW.xz * 90.0 + t * 0.2);
+    outgoingLight += uSheen * sp * fat * vec3(1.0, 0.84, 0.6) + uSheen * 0.05 * pow(1.0 - max(V.y, 0.0), 3.0) * vec3(0.9, 0.8, 0.65); }
+#include <opaque_fragment>`);
+  };
+  m.customProgramCacheKey = () => 'liquid'; m.userData.liquid = U; return m;
+}
+
+export const JP = "'Helvetica Neue',Helvetica,Arial,'Noto Sans JP','Noto Sans CJK JP','Hiragino Sans','Hiragino Kaku Gothic ProN','Yu Gothic','Meiryo','IPAGothic','IPAPGothic',sans-serif";   // the one family everything written is set in: the page's own (sushi.html --ui), with Japanese behind it
+export const MONO = JP;
 
 export function rng(seed) {
   let a = seed >>> 0;
@@ -15,10 +102,10 @@ export function rng(seed) {
 }
 
 export function canvasTex(w, h, draw, o = {}) {
-  // o.lo: a surface is drawn large and kept small (the PlayStation 2's texel size); writing is kept whole
+  // (o.lo once kept a surface small, the PlayStation 2's texel size; every picture is drawn at its full size now: THE MARKET's look, 17 Nov 2026)
   const c = document.createElement('canvas'); c.width = w; c.height = h;
   const g = c.getContext('2d'); draw(g, w, h);
-  const k = o.lo || 1, sc = document.createElement('canvas'); sc.width = Math.max(8, Math.round(w * k)); sc.height = Math.max(8, Math.round(h * k));
+  const k = 1, sc = document.createElement('canvas'); sc.width = Math.max(8, Math.round(w * k)); sc.height = Math.max(8, Math.round(h * k));
   const sg = sc.getContext('2d'), t = new THREE.CanvasTexture(sc);
   t.colorSpace = o.linear ? THREE.NoColorSpace : THREE.SRGBColorSpace; t.anisotropy = 4;
   if (o.repeat) { t.wrapS = t.wrapT = THREE.RepeatWrapping; t.repeat.set(o.repeat[0], o.repeat[1]); }
@@ -29,17 +116,17 @@ export function canvasTex(w, h, draw, o = {}) {
 const loTex = (lo, w, h, draw, o = {}) => canvasTex(w, h, draw, { ...o, lo });
 
 // photographed surfaces (CC0, tools/sushi-assets.py), asked for before the street is built; a drawn picture stands in for one that has not come
-const PHOTOS = ['brick_red', 'brick_orange', 'brick_brown', 'brick_dark', 'brick_painted', 'plaster', 'plaster_worn', 'concrete', 'concrete_dirty', 'asphalt', 'paving', 'shutter', 'shutter_rust', 'corrugated', 'rust', 'wood', 'wood_dark', 'wood_light', 'tile_brown', 'tile_white'];
+const PHOTOS = ['brick_red', 'brick_orange', 'brick_brown', 'brick_dark', 'brick_painted', 'concrete', 'concrete_dirty', 'asphalt', 'paving', 'shutter', 'shutter_rust', 'corrugated', 'wood', 'wood_dark', 'wood_light', 'tile_white', 'wood_counter', 'cloth', 'bark', 'asphalt_road', 'asphalt_old'];
 const PIMG = {}, PTEX = {};
 export function loadPhotos(base = '/sushi-assets/tex/', ms = 9000) {
   return Promise.all(PHOTOS.map((n) => new Promise((res) => { const im = new Image(); im.onload = () => { PIMG[n] = im; const t = PTEX[n]; if (t) { t.dispose(); t.image = small(im); t.needsUpdate = true; } res(); }; im.onerror = res; im.src = base + n + '.jpg'; setTimeout(res, ms); })));
 }
-const small = (im, n = 128) => { const c = document.createElement('canvas'); c.width = c.height = n; c.getContext('2d').drawImage(im, 0, 0, n, n); return c; }; // a photograph at the PlayStation 2's size
+const small = (im, n = 512) => { const c = document.createElement('canvas'); c.width = c.height = n; c.getContext('2d').drawImage(im, 0, 0, n, n); return c; }; // a photograph at its own size (512), mipmapped and filtered at a slant
 export const photoImg = (name) => PIMG[name];
 export function photo(name, fallback) { // one texture a file, shared by every material that wears it
   if (PTEX[name]) return PTEX[name];
   const t = new THREE.Texture(PIMG[name] ? small(PIMG[name]) : (fallback ? fallback().image : canvasTex(8, 8, (g) => { g.fillStyle = '#666'; g.fillRect(0, 0, 8, 8); }).image));
-  t.colorSpace = THREE.SRGBColorSpace; t.wrapS = t.wrapT = THREE.RepeatWrapping; t.anisotropy = 4; t.needsUpdate = true; return (PTEX[name] = t);
+  t.colorSpace = THREE.SRGBColorSpace; t.wrapS = t.wrapT = THREE.RepeatWrapping; t.anisotropy = 8; t.needsUpdate = true; t.userData.photo = name; return (PTEX[name] = t);
 }
 // the picture laid by the metre from where a thing stands (size = metres a tile), so scaled and instanced boxes all wear it at its true size
 export function worldUV(m, size = 1) {
@@ -61,7 +148,7 @@ export function metreUV(root) {
   root.updateWorldMatrix(true, true);
   root.traverse((m) => {
     const s = m.isMesh && !m.isInstancedMesh && !Array.isArray(m.material) && m.material.userData.metres, g = m.geometry;
-    if (!s || g.userData.muv || !/^(Box|Plane)Geometry$/.test(g.type)) return; g.userData.muv = 1;
+    if (!s || g.userData.muv || !/^(Box|Plane|RoundedBox)Geometry$/.test(g.type)) return; g.userData.muv = 1;
     sc.setFromMatrixScale(m.matrixWorld); g.computeBoundingBox(); g.boundingBox.getSize(e).multiply(sc);
     const p = g.attributes.position, n = g.attributes.normal, uv = g.attributes.uv, h = (m.id * 0.37) % 1;
     for (let i = 0; i < p.count; i++) {
@@ -280,6 +367,39 @@ export function smokeTex() {
   });
 }
 
+// steam: a soft, torn wisp, taller than wide, fading at every edge
+export function wispTex() {
+  return canvasTex(64, 128, (g, w, h) => {
+    const R = rng(91);
+    for (let i = 0; i < 22; i++) {
+      const t = i / 21, x = w / 2 + Math.sin(t * 5.2 + 0.6) * 9 + (R() - 0.5) * 8, y = h * (0.88 - t * 0.76), r = 9 + Math.sin(t * Math.PI) * 13 + R() * 5;
+      const gr = g.createRadialGradient(x, y, 0, x, y, r); gr.addColorStop(0, `rgba(255,255,255,${0.16 * Math.sin(t * Math.PI + 0.2)})`); gr.addColorStop(1, 'rgba(255,255,255,0)');
+      g.fillStyle = gr; g.fillRect(0, 0, w, h);
+    }
+  });
+}
+// toppings' own grain: nori's pressed fibres, menma's long fibres
+export function noriTex() {
+  return canvasTex(64, 64, (g, w, h) => {
+    const R = rng(17); g.fillStyle = '#16231a'; g.fillRect(0, 0, w, h);
+    for (let i = 0; i < 500; i++) { g.globalAlpha = 0.25; g.fillStyle = ['#0a120c', '#24382a', '#2c3a22', '#060a08'][(R() * 4) | 0]; g.fillRect(R() * w, R() * h, 1 + R() * 5, 1); }
+    g.globalAlpha = 0.18; g.fillStyle = '#3a4c3a'; for (let x = 0; x < w; x += 8) g.fillRect(x, 0, 1, h); g.globalAlpha = 1;
+  });
+}
+export function menmaTex() {
+  return canvasTex(64, 32, (g, w, h) => {
+    const R = rng(23); g.fillStyle = '#b8894a'; g.fillRect(0, 0, w, h);
+    for (let i = 0; i < 60; i++) { g.globalAlpha = 0.2 + R() * 0.2; g.fillStyle = R() > 0.5 ? '#7a5426' : '#d8b070'; g.fillRect(0, R() * h, w, 0.6 + R() * 1.2); }
+    g.globalAlpha = 1;
+  });
+}
+export function chashuSideTex() {
+  return canvasTex(64, 16, (g, w, h) => {
+    const R = rng(29); const gr = g.createLinearGradient(0, 0, 0, h); gr.addColorStop(0, '#5a2e18'); gr.addColorStop(0.5, '#8a5434'); gr.addColorStop(1, '#4a2412'); g.fillStyle = gr; g.fillRect(0, 0, w, h);
+    for (let i = 0; i < 30; i++) { g.globalAlpha = 0.35; g.fillStyle = '#e8d4b8'; g.fillRect(R() * w, R() * h, 3 + R() * 10, 1 + R()); } g.globalAlpha = 1;
+  });
+}
+
 export function skyTex() {
   return canvasTex(64, 512, (g, w, h) => {
     const gr = g.createLinearGradient(0, 0, 0, h);
@@ -333,12 +453,13 @@ export function swirlTex(kind) {
       g.shadowBlur = 0; g.globalAlpha = 1;
       const gr = g.createRadialGradient(64, 64, 46, 64, 64, 64); gr.addColorStop(0, 'rgba(70,36,20,0)'); gr.addColorStop(0.75, 'rgba(70,36,20,0.85)'); gr.addColorStop(1, '#3a1d10'); g.fillStyle = gr; g.fillRect(0, 0, w, h);
     } else if (kind === 'egg') {
-      g.fillStyle = '#f6efe2'; g.fillRect(0, 0, w, h);
-      const gr = g.createRadialGradient(64, 64, 4, 64, 64, 34);
-      gr.addColorStop(0, '#f08a1a'); gr.addColorStop(0.75, '#f6a52a'); gr.addColorStop(1, '#f4c56b');
-      g.fillStyle = gr; g.beginPath(); g.arc(64, 64, 33, 0, 7); g.fill();
-      g.fillStyle = 'rgba(255,255,255,0.5)'; g.beginPath(); g.ellipse(54, 54, 9, 5, -0.6, 0, 7); g.fill();
-      g.strokeStyle = '#b98850'; g.lineWidth = 8; g.beginPath(); g.arc(64, 64, 61, 0, 7); g.stroke();
+      // a marinated egg cut in half: the soy's brown soaked a little way into the white, a firm rim of yolk and a jammy middle, a little off centre as real ones sit
+      const ring = g.createRadialGradient(64, 64, 40, 64, 64, 64); ring.addColorStop(0, '#f4ecdc'); ring.addColorStop(0.62, '#e8d2ac'); ring.addColorStop(1, '#a8743c'); g.fillStyle = ring; g.fillRect(0, 0, w, h);
+      for (let i = 0; i < 160; i++) { g.globalAlpha = 0.06; g.fillStyle = R() > 0.5 ? '#fff' : '#c8a878'; g.beginPath(); g.arc(R() * w, R() * h, 1 + R() * 3, 0, 7); g.fill(); } g.globalAlpha = 1;
+      const cx = 61, cy = 66, gr = g.createRadialGradient(cx, cy, 2, cx, cy, 33);
+      gr.addColorStop(0, '#c8500c'); gr.addColorStop(0.45, '#e4741a'); gr.addColorStop(0.8, '#f2a234'); gr.addColorStop(1, '#f6c766');
+      g.fillStyle = gr; g.beginPath(); g.ellipse(cx, cy, 33, 31, 0.3, 0, 7); g.fill();
+      g.fillStyle = 'rgba(255,240,200,0.35)'; g.beginPath(); g.ellipse(cx - 9, cy - 10, 10, 4, -0.6, 0, 7); g.fill();
     }
   });
 }
@@ -400,7 +521,7 @@ export function normalOf(tex, strength = 2) {
 export function posterTex(kind) {
   return canvasTex(256, 384, (g, w, h) => {
     const R = rng(kind * 31 + 7);
-    const P = [['#d8c8a0', '#a01c1c', '生ビール', 'ICE COLD BEER', '#1c1c1c'], ['#1c2c5a', '#ffd21f', 'ディスコ', "SATURDAY NIGHT '86", '#ff5ab0'], ['#e8e0d0', '#1c5a3a', '火の用心', 'FIRE SAFETY WEEK', '#a01c1c'], ['#2a1a2e', '#ff7a2a', '映画祭', 'MIDNIGHT CINEMA', '#22d8ff'], ['#c8d8e0', '#12406a', '歌謡ショー', 'LIVE · 8PM', '#c8201c']][kind % 5];
+    const P = [['#d8c8a0', '#a01c1c', '生ビール', 'ICE COLD BEER', '#1c1c1c'], ['#1c2c5a', '#ffd21f', 'ディスコ', "SATURDAY NIGHT '85", '#ff5ab0'], ['#e8e0d0', '#1c5a3a', '火の用心', 'FIRE SAFETY WEEK', '#a01c1c'], ['#2a1a2e', '#ff7a2a', '映画祭', 'MIDNIGHT CINEMA', '#22d8ff'], ['#c8d8e0', '#12406a', '歌謡ショー', 'LIVE · 8PM', '#c8201c']][kind % 5];
     g.fillStyle = P[0]; g.fillRect(0, 0, w, h);
     g.fillStyle = P[4]; g.beginPath(); g.arc(w / 2, 150, 70, 0, 7); g.fill(); g.fillStyle = P[1]; g.fillRect(0, 250, w, 60);
     g.textAlign = 'center'; g.fillStyle = P[1]; g.font = `bold 62px ${JP}`; g.fillText(P[2], w / 2, 76, w - 16);
@@ -439,4 +560,24 @@ export function smudgeTex(repeat = [1, 1], seed = 4) {
     for (let i = 0; i < 90; i++) { g.globalAlpha = 0.25 + R() * 0.4; g.strokeStyle = R() > 0.5 ? '#3c3c3c' : '#e6e6e6'; g.lineWidth = 8 + R() * 40; g.lineCap = 'round'; g.beginPath(); const x = R() * w, y = R() * h; g.arc(x, y, 30 + R() * 160, R() * 6, R() * 6 + 0.4 + R() * 1.2); g.stroke(); }
     for (let i = 0; i < 400; i++) { g.globalAlpha = 0.3; g.fillStyle = R() > 0.5 ? '#222' : '#fff'; g.beginPath(); g.ellipse(R() * w, R() * h, 2 + R() * 7, 2 + R() * 5, R() * 3, 0, 7); g.fill(); }
   }, { repeat, linear: true });
+}
+
+// what shiny things mirror (shop glass, a car's paint, a puddle): a small picture of the street all round (the sky over a line of housefronts, lamps and lit windows after dark), painted again as the light changes (alley.js)
+let ENVT = null;
+export const env = () => { if (!ENVT) { const c = document.createElement('canvas'); c.width = 256; c.height = 128; ENVT = new THREE.CanvasTexture(c); ENVT.mapping = THREE.EquirectangularReflectionMapping; ENVT.colorSpace = THREE.SRGBColorSpace; envPaint(new THREE.Color(0x4a78c0), new THREE.Color(0xb8c4cc), 1, 0); } return ENVT; };
+export function envPaint(zen, hor, day, lit) {
+  const t = env(), c = t.image, g = c.getContext('2d'), w = c.width, h = c.height, R = rng(19), hx = (k) => '#' + k.getHexString();
+  const sky = g.createLinearGradient(0, 0, 0, h / 2); sky.addColorStop(0, hx(zen)); sky.addColorStop(1, hx(hor)); g.fillStyle = sky; g.fillRect(0, 0, w, h / 2);
+  const d = 0.1 + 0.9 * day, gr = Math.round(70 * d); g.fillStyle = `rgb(${gr},${gr},${Math.round(gr * 1.05)})`; g.fillRect(0, h / 2, w, h / 2);
+  for (let x = 0; x < w; x += 6 + R() * 10) { const bh = 10 + R() * 22, bw = 8 + R() * 12, k = (0.5 + R() * 0.5) * d; g.fillStyle = `rgb(${Math.round(150 * k)},${Math.round(105 * k)},${Math.round(88 * k)})`; g.fillRect(x, h / 2 - bh, bw, bh + 6);
+    for (let y = h / 2 - bh + 3; y < h / 2 - 2; y += 5) for (let xx = x + 2; xx < x + bw - 2; xx += 4) { const on = R() < 0.3; g.fillStyle = on && lit > 0.2 ? `rgba(255,${200 + ((R() * 40) | 0)},130,${lit})` : `rgba(20,26,36,${0.5 + 0.3 * day})`; g.fillRect(xx, y, 2, 3); } }
+  if (lit > 0.05) for (let i = 0; i < 9; i++) { const x = (i + 0.5) * w / 9 + (R() - 0.5) * 8, y = h / 2 - 24 - R() * 8, rg = g.createRadialGradient(x, y, 0, x, y, 14); rg.addColorStop(0, `rgba(255,214,150,${lit})`); rg.addColorStop(0.3, `rgba(255,170,90,${lit * 0.7})`); rg.addColorStop(1, 'rgba(255,150,60,0)'); g.fillStyle = rg; g.fillRect(x - 14, y - 14, 28, 28); }
+  t.dispose(); t.needsUpdate = true;
+}
+// brushed steel, for the cart's sheet metal and pots: fine strokes all one way, a few soft bands, nothing scribbled
+export function brushedTex(repeat = [1, 1], base = '#b4b8bc') {
+  return canvasTex(256, 256, (g, w, h) => { const R = rng(31); g.fillStyle = base; g.fillRect(0, 0, w, h);
+    for (let i = 0; i < 2600; i++) { g.globalAlpha = 0.03 + R() * 0.07; g.fillStyle = R() > 0.5 ? '#fff' : '#3c4046'; const y = R() * h, x = R() * w, l = 30 + R() * 200; g.fillRect(x, y, l, 1); if (x + l > w) g.fillRect(0, y, x + l - w, 1); }
+    for (let i = 0; i < 5; i++) { const y = R() * h, b = 10 + R() * 26, gd = g.createLinearGradient(0, y - b, 0, y + b); gd.addColorStop(0, 'rgba(255,255,255,0)'); gd.addColorStop(0.5, `rgba(${R() > 0.5 ? '255,255,255' : '40,44,50'},0.07)`); gd.addColorStop(1, 'rgba(255,255,255,0)'); g.globalAlpha = 1; g.fillStyle = gd; g.fillRect(0, y - b, w, 2 * b); g.fillRect(0, y - b - h, w, 2 * b); g.fillRect(0, y - b + h, w, 2 * b); }
+    g.globalAlpha = 1; }, { repeat });
 }

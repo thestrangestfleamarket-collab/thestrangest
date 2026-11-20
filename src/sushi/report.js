@@ -17,7 +17,7 @@ export function buildReport(scene, camera, renderer, talk) {
   const b64 = (blob) => new Promise((res) => { const fr = new FileReader(); fr.onload = () => res(String(fr.result).split(',')[1] || ''); fr.readAsDataURL(blob); });
   async function send(blob) {
     say('REPORT: SENDING…', 20);
-    const ctx = { t: Math.round(G.t), mode: G.mode, state: G.game.state, night: G.game.night, served: G.game.served, frameMs: Math.round(G.emaMs || 0), shadows: G.quality < 1, mic: talk.mic, voice: talk.diag, guide: G.guideText || '', hint: G.hint, holding: G.hands.map((h) => (h.held ? h.held.name : '')).filter(Boolean), patrons: G.game.customers.map((c) => (c.p.cast || c.p.style) + ':' + c.state), items: G.items.length, ua: navigator.userAgent.slice(0, 160) };
+    const ctx = { t: Math.round(G.t), mode: G.mode, state: G.game.state, phase: G.clock.phase, clock: +G.clock.frac.toFixed(3), served: G.game.served, frameMs: Math.round(G.emaMs || 0), shadows: G.quality < 1, mic: talk.mic, voice: talk.diag, guide: G.guideText || '', hint: G.hint, holding: G.hands.map((h) => (h.held ? h.held.name : '')).filter(Boolean), patrons: G.game.customers.map((c) => String(c.name || (c.voice && c.voice.name) || (typeof c.p.cast === 'string' ? c.p.cast : c.p.cast && c.p.cast.key) || c.p.style || '?') + ':' + c.state), rec: blob ? { bytes: blob.size, type: blob.type } : null, items: G.items.length, ua: navigator.userAgent.slice(0, 160) };
     try { const r = await fetch('/sushi/report', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ jpg: shot, audio: blob && blob.size > 1500 ? await b64(blob) : '', mime: blob ? blob.type.split(';')[0] : '', context: ctx }) }), j = r.ok ? await r.json() : null;
       if (j && j.ok) { say('REPORT SENT' + (j.said ? ': "' + j.said.slice(0, 40) + '"' : ''), 6); G.audio.play('done'); } else say(r.status === 401 ? 'REPORT NEEDS A LOGIN' : 'REPORT NOT SENT', 6); } catch (e) { say('REPORT NOT SENT', 6); }
     R.busy = false; talk.hold = false;
@@ -28,14 +28,14 @@ export function buildReport(scene, camera, renderer, talk) {
     try { shot = snap(); } catch (e) { shot = ''; }
     const st = talk.micStream && talk.micStream(); talk.hold = true;
     if (!st || !window.MediaRecorder) return send(null);
-    parts = []; const m = (rec = new MediaRecorder(st)); t0 = G.t; m.ondataavailable = (e) => parts.push(e.data); m.onstop = () => { rec = null; send(new Blob(parts, { type: m.mimeType })); }; m.start();
+    parts = []; const m = (rec = new MediaRecorder(st)); t0 = G.t; m.ondataavailable = (e) => { if (e.data && e.data.size) parts.push(e.data); }; m.onstop = () => { rec = null; setTimeout(() => send(new Blob(parts, { type: m.mimeType })), 50); }; m.start(500);   // in pieces: a headset's recorder can hand back nothing at the stop
     say('REPORT: PICTURE TAKEN. SAY WHAT IS WRONG, THEN PRESS X OR A', 20);
   };
   R.update = (dt) => {
     if (msgT > 0) { msgT -= dt; if (msgT <= 0) G.reportMsg = ''; }
     if (rec && G.t - t0 > 15) { try { rec.stop(); } catch (e) { /* stopped */ } }
     const ses = renderer.xr.getSession?.(); let down = false; if (ses) for (const s of ses.inputSources) if (s.gamepad && s.gamepad.buttons[4] && s.gamepad.buttons[4].pressed) down = true;
-    if (down && !latch) R.press(); latch = down;
+    if (down && !latch && !G.menuOpen) R.press(); latch = down;
   };
   addEventListener('keydown', (e) => { if (e.code === 'F8') { e.preventDefault(); R.press(); } });
   return R;

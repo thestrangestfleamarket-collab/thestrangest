@@ -12,7 +12,7 @@ const fails = [], ok = (c, m) => { if (!c) { fails.push(m); console.log((process
     const until = async (f, a, ms = 60000) => { for (let t = 0; t < ms; t += 500) { if (await pg.evaluate(f, a).catch(() => false)) return true; await pg.waitForTimeout(500); } return false; };
     await pg.waitForTimeout(8000);
     // every street picture a stow could take, with a sum of its pixels
-    await pg.evaluate(() => { const L = new Map(); for (const g of __scene.children) g.traverse(o => { for (const m of [].concat(o.material || [])) for (const k in m) { const t = m[k], c = t && t.isTexture && t.image; if (c instanceof HTMLCanvasElement && c.width * c.height >= 4096 && !L.has(c)) L.set(c, null); } });
+    await pg.evaluate(() => { const L = new Map(); for (const g of __scene.children) g.traverse(o => { for (const m of [].concat(o.material || [])) for (const k in m) { const t = m[k], c = t && t.isTexture && t.image; if (c instanceof HTMLCanvasElement && c.width * c.height >= 4096 && !L.has(c)) { L.set(c, null); (window.__tx || (window.__tx = new Map())).set(c, t); } } });
       const sum = c => { const d = c.getContext('2d').getImageData(0, 0, c.width, c.height).data; let s = 0; for (let i = 0; i < d.length; i += 4) if (d[i + 3] === 255) s = (s + d[i] * 3 + d[i + 1] * 5 + d[i + 2] * 7 + i) % 1e9; return s; };
       for (const c of L.keys()) L.set(c, [c.width, c.height, sum(c)]); window.__pics = L; window.__sum = sum; });
     await pg.evaluate(() => ROOMS.enter('arcade'));
@@ -26,7 +26,10 @@ const fails = [], ok = (c, m) => { if (!c) { fails.push(m); console.log((process
     ok(await pg.evaluate(() => BATCH.at() === null), 'the painted ground is dropped there');
     await pg.evaluate(() => ROOMS.exit('arcade'));
     const back = await until(() => !ROOMS.offIn() && !FADE.busy && ROOMS.stowed().length === 0);
-    const diff = await pg.evaluate(() => { const bad = []; for (const c of __out) { const [w, h, s] = __pics.get(c); if (c.width !== w || c.height !== h || __sum(c) !== s) bad.push(w + 'x' + h); } return bad; });
+    // a painted atlas the card already has is kept as a PNG only (BATCH.dropPic): it is back when that PNG is the picture it was
+    const diff = await pg.evaluate(async () => { const bad = []; for (const c of __out) { const [w, h, s] = __pics.get(c), u = __tx.get(c).userData; let k = c;
+      if (c.width === 1 && u.png) { const bm = await createImageBitmap(u.png); k = document.createElement('canvas'); k.width = bm.width; k.height = bm.height; k.getContext('2d').drawImage(bm, 0, 0); bm.close(); }
+      if (k.width !== w || k.height !== h || __sum(k) !== s) bad.push(w + 'x' + h); } return bad; });
     ok(back && diff.length === 0, 'out again, every picture is back as it was (' + (diff.length ? diff.length + ' differ: ' + diff.slice(0, 6).join(' ') : 'all same') + ')');
     ok(await pg.evaluate(() => { let n = 0; __scene.traverse(o => { if (VIS.hidden(o, 'stow')) n++; }); return n === 0; }), 'nothing is left hidden');
     await pg.evaluate(() => ROOMS.enter('bodega'));

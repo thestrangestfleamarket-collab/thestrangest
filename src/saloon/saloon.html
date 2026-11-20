@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+<title>THE LAST CHANCE</title>
+<meta name="robots" content="noindex">
+<style>
+  html,body{margin:0;height:100%;background:#070504;overflow:hidden;font-family:Georgia,"Times New Roman",serif;color:#f1e2c4}
+  canvas#c{position:fixed;inset:0;width:100%;height:100%;display:block}
+  #menu{position:fixed;inset:0;display:flex;flex-direction:column;justify-content:flex-end;padding:5vh 5vw;box-sizing:border-box;background:linear-gradient(180deg,rgba(7,5,4,0) 30%,rgba(7,5,4,.9) 76%)}
+  #menu h1{margin:0;font-size:clamp(34px,6vw,78px);letter-spacing:.08em;color:#e9b660;text-shadow:0 2px 0 #3a1c08,0 0 34px rgba(233,150,60,.45)}
+  #menu h2{margin:.3em 0 1em;font-weight:400;font-style:italic;font-size:clamp(14px,1.7vw,20px);color:#e6d2ac;max-width:58em}
+  .row{display:flex;gap:14px;flex-wrap:wrap;align-items:center}
+  button{font:inherit;font-weight:700;font-size:18px;padding:14px 26px;border-radius:3px;border:2px solid #c98a3a;background:#1a0f08;color:#f6e7c8;cursor:pointer}
+  button.primary{background:#c98a3a;color:#1a0d04}
+  button:disabled{opacity:.45;cursor:not-allowed}
+  #login{display:none;color:#e9b660;font-weight:700;font-size:18px;padding:14px 8px}
+  #help{margin-top:16px;font:13px/1.55 "Helvetica Neue",Arial,sans-serif;color:#c4b294;display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:4px 28px;max-width:1100px}
+  #help b{color:#e9b660}
+  #hud{position:fixed;inset:0;pointer-events:none;display:none;font-family:"Helvetica Neue",Arial,sans-serif}
+  #cross{position:absolute;left:50%;top:50%;width:6px;height:6px;margin:-4px;border:1.5px solid rgba(255,255,255,.85);border-radius:50%}
+  #hover{position:absolute;left:50%;top:56%;transform:translateX(-50%);background:rgba(8,6,4,.72);padding:6px 12px;border-radius:4px;font-size:14px;white-space:nowrap}
+  #hover:empty{display:none}
+  #stat{position:absolute;left:14px;top:12px;background:rgba(8,6,4,.6);padding:6px 10px;border-radius:4px;font:700 13px/1.4 "Courier New",monospace;color:#e9b660;white-space:pre}
+  #say{position:absolute;left:50%;bottom:16%;transform:translateX(-50%);width:min(560px,80vw);padding:10px 14px;font:600 16px inherit;border-radius:4px;border:2px solid #c98a3a;background:rgba(10,6,4,.92);color:#fff;display:none;pointer-events:auto;outline:none}
+  #keys{position:absolute;right:14px;bottom:12px;background:rgba(8,6,4,.6);padding:6px 10px;border-radius:4px;font-size:12px;color:#c4b294;text-align:right}
+  #fade{position:fixed;inset:0;background:#000;opacity:0;pointer-events:none;transition:opacity 1.2s;display:flex;align-items:center;justify-content:center;text-align:center;font-size:clamp(18px,2.4vw,30px);font-style:italic;color:#e6d2ac;padding:0 12vw;white-space:pre-line}
+</style>
+</head>
+<body>
+<canvas id="c"></canvas>
+<div id="menu">
+  <h1>THE LAST CHANCE</h1>
+  <h2>Perdition, Arizona Territory, 1881. Your uncle was shot in the alley a month ago and left you his saloon. Seven nights behind the bar: pour for them, listen to them, and decide what to do with what you hear.</h2>
+  <div class="row"><button id="vr" class="primary" disabled>Checking for VR…</button><a id="login" href="/?back=/wild">Log in for voices →</a><button id="desk">Play in this browser</button></div>
+  <div id="help">
+    <div><b>VR · Grip</b> take hold of a bottle, a glass, a gun, a cue, a dart; let go to set down or throw</div>
+    <div><b>VR · Tilt</b> a bottle over a glass to pour · <b>Trigger</b> fire what you hold, pull a tap, press</div>
+    <div><b>VR · Left stick</b> walk · <b>Right stick</b> turn · <b>Hand-tracking</b> pinch or close your hand</div>
+    <div><b>Browser</b> WASD walk · mouse look · click take / let go · right click or E pour, fire, use · C crouch</div>
+    <div><b>Talk</b> your microphone is on: speak to whoever you look at and they answer aloud · <b>T</b> type it instead</div>
+    <div><b>The night</b> ring the bell on the back bar to open, and again for last call</div>
+  </div>
+</div>
+<div id="hud"><div id="cross"></div><div id="hover"></div><div id="stat"></div><input id="say" maxlength="240" placeholder="Say something to whoever you are looking at… (Enter to say it, Esc to cancel)" autocomplete="off"><div id="keys">WASD walk · click: take / let go · right click or E: pour · fire · use · T: type what you say · I: render inspector · Esc: free mouse</div></div>
+<div id="fade"></div>
+<script type="module">__SALOON__</script>
+</body>
+</html>

@@ -27,19 +27,27 @@ const P = { R: RAPIER, world: null, eq: null, anchor: null, things: [], byCol: n
 async function initPhysics() { await RAPIER.init({}); P.world = new RAPIER.World({ x: 0, y: -9.81, z: 0 }); P.eq = new RAPIER.EventQueue(true); P.anchor = P.world.createRigidBody(RAPIER.RigidBodyDesc.fixed()); }
 
 const TEX = {}, MODELS = {}, texL = new THREE.TextureLoader();
-const TEXN = ['beige_wall_001', 'ceiling_interior', 'herringbone_parquet', 'wood_floor_worn', 'floor_tiles_06', 'concrete_floor_02', 'concrete_block_wall', 'oak_veneer_01', 'velour_velvet', 'long_white_tiles', 'dirty_carpet', 'hessian_230', 'dark_brick_wall', 'asphalt_02', 'rusty_metal_02', 'metal_grate_rusty'];
-const MODN = ['painted_wooden_chair_01', 'steel_frame_shelves_01', 'wooden_bookshelf_worn', 'drawer_cabinet', 'television_01', 'wooden_broom', 'metal_trash_can', 'trashbag', 'cardboard_box_01', 'sofa_02', 'wooden_crate_02', 'power_box_01', 'ceiling_fan', 'vintage_suitcase', 'armchair_01', 'coffeetable_01', 'classicconsole_01', 'classicnightstand_01', 'gothiccommode_01', 'dining_table', 'dining_chair_02', 'vintage_grandfather_clock_01', 'modern_ceiling_lamp_01', 'desk_lamp_arm_01', 'electric_stove', 'boombox', 'standing_picture_frame_01', 'ornate_mirror_01', 'rubber_duck_toy', 'metal_tool_chest', 'rockingchair_01', 'pull_chain_light_socket', 'vintage_flashlight', 'pale'];
+const TEXN = ['beige_wall_001', 'ceiling_interior', 'herringbone_parquet', 'wood_floor_worn', 'floor_tiles_06', 'concrete_floor_02', 'concrete_block_wall', 'oak_veneer_01', 'velour_velvet', 'long_white_tiles', 'dirty_carpet', 'hessian_230', 'dark_brick_wall', 'asphalt_02', 'rusty_metal_02', 'metal_grate_rusty', 'leafy_grass'];
+const MODN = ['painted_wooden_chair_01', 'steel_frame_shelves_01', 'wooden_bookshelf_worn', 'drawer_cabinet', 'television_01', 'wooden_broom', 'metal_trash_can', 'trashbag', 'cardboard_box_01', 'sofa_02', 'wooden_crate_02', 'power_box_01', 'ceiling_fan', 'vintage_suitcase', 'armchair_01', 'coffeetable_01', 'classicconsole_01', 'classicnightstand_01', 'gothiccommode_01', 'dining_table', 'dining_chair_02', 'vintage_grandfather_clock_01', 'modern_ceiling_lamp_01', 'desk_lamp_arm_01', 'electric_stove', 'boombox', 'standing_picture_frame_01', 'ornate_mirror_01', 'rubber_duck_toy', 'metal_tool_chest', 'rockingchair_01', 'pull_chain_light_socket', 'vintage_flashlight', 'pale', 'out_cottage', 'out_villa', 'out_h6', 'out_white', 'out_stonewall', 'out_lamp', 'out_lada', 'out_trabant', 'out_deadtree'];
 const ARTN = 24, ART = [];
 // what shiny things reflect is the alley itself, pictured once from its middle with its own lamps lit
 function reflect() { const pm = new THREE.PMREMGenerator(renderer); scene.environment = pm.fromScene(scene, 0, .1, 70, { position: new THREE.Vector3(0, 1.6, -11) }).texture; scene.environmentIntensity = .28; pm.dispose(); }
 async function loadAssets(onp) {
-  let done = 0; const total = TEXN.length * 3 + MODN.length + 1 + ARTN, tick = v => { onp(++done / total); return v; }, L = new GLTFLoader(), aniso = Math.min(2, renderer.capabilities.getMaxAnisotropy());
+  let done = 0; const total = TEXN.length * 3 + MODN.length + 2 + ARTN, tick = v => { onp(++done / total); return v; }, L = new GLTFLoader(), aniso = Math.min(2, renderer.capabilities.getMaxAnisotropy());
   const jobs = [];
   for (const n of TEXN) for (const k of 'dna') jobs.push(texL.loadAsync(ASSET + 'tex/' + n + '_' + k + '.jpg').then(t => { t.wrapS = t.wrapT = THREE.RepeatWrapping; t.anisotropy = aniso; if (k === 'd') t.colorSpace = THREE.SRGBColorSpace; (TEX[n] = TEX[n] || {})[k] = t; tick(); }));
   for (let i = 0; i < ARTN; i++) jobs.push(new THREE.ImageLoader().loadAsync(ASSET + 'art/p' + String(i).padStart(2, '0') + '.jpg').then(im => { ART[i] = im; tick(); }));
+  for (const n of ['island_tree_01', 'tree_small_02', 'jacaranda_tree', 'shrub_02']) jobs.push(texL.loadAsync(ASSET + 'tex/card_' + n + '.webp').then(t => { t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = aniso; (TEX.cards = TEX.cards || {})[n] = t; }));
   for (const n of MODN) jobs.push(L.loadAsync(ASSET + 'm/' + n + '.glb').then(g => { MODELS[n] = g; tick(); }));
   // the sky is a photograph of a real moonlit night (Poly Haven), turned so its moon stands where the moonlight comes from
   jobs.push(texL.loadAsync(ASSET + 'sky.jpg').then(t => { t.mapping = THREE.EquirectangularReflectionMapping; t.colorSpace = THREE.SRGBColorSpace; scene.background = t; scene.backgroundIntensity = .16; scene.backgroundRotation.y = SKYTURN; tick(); }));
+  // THE MARKET's own models (baked points and colours) and paintings, made into ordinary models and pictures
+  jobs.push(fetch(ASSET + 'market.json').then(r => r.json()).then(async j => { const b64 = s => Uint8Array.from(atob(s), c => c.charCodeAt(0)), M = new THREE.MeshStandardMaterial({ vertexColors: true, roughness: .85 }), col = new THREE.Color();
+    // faceted by its own normals: a flat-shaded material's normals break the reflection map
+    const mk = (n, P, c8, idx) => { const C = new Float32Array(c8.length); for (let i = 0; i < c8.length; i += 3) { col.setRGB(c8[i] / 255, c8[i + 1] / 255, c8[i + 2] / 255, THREE.SRGBColorSpace); C[i] = col.r; C[i + 1] = col.g; C[i + 2] = col.b; } const g = new THREE.BufferGeometry(); g.setAttribute('position', new THREE.BufferAttribute(P, 3)); g.setAttribute('color', new THREE.BufferAttribute(C, 3)); if (idx) g.setIndex(new THREE.BufferAttribute(idx, 1)); const f = idx ? g.toNonIndexed() : g; f.computeVertexNormals(); const s = new THREE.Group(); s.add(new THREE.Mesh(f, M)); MODELS[n] = { scene: s }; };
+    for (const n in j.kit) { const K = j.kit[n], q = new Int16Array(b64(K.p).buffer), P = new Float32Array(q.length); for (let i = 0; i < q.length; i++) P[i] = (q[i] + 32500) * K.sc + K.lo[i % 3]; mk(n, P, b64(K.c), K.i32 ? new Uint32Array(b64(K.i).buffer) : new Uint16Array(b64(K.i).buffer)); }
+    for (const n in j.pf) { const K = j.pf[n], q = new Int16Array(b64(K.p).buffer), P = new Float32Array(q.length), b = K.b; for (let i = 0; i < q.length; i++) { const a = i % 3; P[i] = b[a] + (q[i] + 32768) / 65535 * (b[a + 3] - b[a]); } mk(n, P, b64(K.c)); }
+    await Promise.all(j.art.map((a, i) => new THREE.ImageLoader().loadAsync(a.i).then(im => { ART[ARTN + i] = im; }))); tick(); }));
   await Promise.all(jobs);
 }
 // a surface from Poly Haven's three pictures; rep is metres a tile covers
@@ -48,9 +56,9 @@ function mat(name, o = {}) {
   m.userData.tile = o.tile || 2; if (o.env !== undefined) m.envMapIntensity = o.env; return m;
 }
 // a box whose pictures keep their real size whatever the box's
-function wbox(w, h, d, tile = 2) {
-  const g = new THREE.BoxGeometry(w, h, d), uv = g.attributes.uv, S = [[d, h], [d, h], [w, d], [w, d], [w, h], [w, h]];
-  for (let f = 0; f < 6; f++) for (let i = 0; i < 4; i++) { const k = f * 4 + i; uv.setXY(k, uv.getX(k) * S[f][0] / tile, uv.getY(k) * S[f][1] / tile); }
+function wbox(w, h, d, tile = 2, at) {
+  const g = new THREE.BoxGeometry(w, h, d), uv = g.attributes.uv, S = [[d, h], [d, h], [w, d], [w, d], [w, h], [w, h]], O = at ? [[at[2] - d / 2, at[1] - h / 2], [at[2] - d / 2, at[1] - h / 2], [at[0] - w / 2, at[2] - d / 2], [at[0] - w / 2, at[2] - d / 2], [at[0] - w / 2, at[1] - h / 2], [at[0] - w / 2, at[1] - h / 2]] : null;
+  for (let f = 0; f < 6; f++) for (let i = 0; i < 4; i++) { const k = f * 4 + i; uv.setXY(k, (uv.getX(k) * S[f][0] + (O ? O[f][0] : 0)) / tile, (uv.getY(k) * S[f][1] + (O ? O[f][1] : 0)) / tile); }
   return g;
 }
 const boxMesh = (w, h, d, m) => { const o = new THREE.Mesh(wbox(w, h, d, m.userData.tile || 2), m); o.castShadow = o.receiveShadow = true; return o; };
@@ -59,7 +67,7 @@ const quat = (ry = 0, rx = 0, rz = 0) => new THREE.Quaternion().setFromEuler(new
 // something fixed: a box you see and cannot pass
 function stat(w, h, d, x, y, z, m, o = {}) {
   const q = quat(o.ry, o.rx, o.rz); let mesh = null;
-  if (m) { mesh = boxMesh(w, h, d, m); mesh.position.set(x, y, z); mesh.quaternion.copy(q); if (o.noShadow) mesh.castShadow = false; (o.parent || scene).add(mesh); if (!o.parent && !o.keep) STATICS.push(mesh); }
+  if (m) { mesh = boxMesh(w, h, d, m); if (m.userData.world && !o.ry && !o.rx && !o.rz) { mesh.geometry.dispose(); mesh.geometry = wbox(w, h, d, m.userData.tile || 2, [x, y, z]); } mesh.position.set(x, y, z); mesh.quaternion.copy(q); if (o.noShadow) mesh.castShadow = false; (o.parent || scene).add(mesh); if (!o.parent && !o.keep) STATICS.push(mesh); }
   if (!o.ghost) { const c = P.world.createCollider(RAPIER.ColliderDesc.cuboid(w / 2, h / 2, d / 2).setTranslation(x, y, z).setRotation(q).setFriction(.9).setCollisionGroups(grp(o.see ? G.SEE : o.veil ? G.VEIL : G.SOLID, o.veil ? 0x8000 : ALL)));
     P.byCol.set(c.handle, { kind: o.kind || 'stone', fixed: true }); }
   return mesh;

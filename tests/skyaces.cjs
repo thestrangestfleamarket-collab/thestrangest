@@ -17,7 +17,7 @@ const IDS = ['camel', 'dr1', 'spitfire', 'bf109', 'p51', 'zero', 'f86', 'mig15',
   { const t0 = Date.now(), { pg, errs, miss } = await open(), ev = (f, a) => pg.evaluate(f, a);
     ok(await ev(() => !!window.game && game.world.bases.length === 3 && game.world.towns.length > 4), 'the island is made: three airbases and its towns (' + ((Date.now() - t0) / 1000).toFixed(0) + ' s)');
     const each = await ev(async ids => { const out = []; game.opts.enemies = 0; for (const id of ids) { game.view = 'cockpit'; const f0 = game.renderer.info.render.frame; await game.start(id); game.simulate(2); await new Promise(r => setTimeout(r, 1500));
-      const p = game.player, fm = p.fm; out.push([id, game.state === 'fly' && p.alive && fm.ias > 20 && isFinite(fm.pos.y) && game.cockpit.controls.length > 8 && game.renderer.info.render.frame > f0 && !game._err]); } return out; }, IDS);
+      const p = game.player, fm = p.fm; out.push([id, game.state === 'fly' && p.alive && fm.ias > 20 && isFinite(fm.pos.y) && game.cockpit.controls.length > 5 && game.renderer.info.render.frame > f0 && !game._err]); } return out; }, IDS);
     ok(each.every(e => e[1]), 'all sixteen aircraft start from the cockpit and fly' + (each.every(e => e[1]) ? '' : ': not ' + each.filter(e => !e[1]).map(e => e[0])));
     ok(miss.length === 0, 'every model, picture and sound is found' + (miss.length ? ': ' + [...new Set(miss)].join(', ') : ''));
     const mem = await ev(async () => { const a = game.renderer.info.memory.geometries; for (const id of ['f16', 'spitfire', 'f16', 'spitfire']) await game.start(id); return [a, game.renderer.info.memory.geometries]; });

@@ -13,5 +13,5 @@ export const BENCH = [13.1, 0.3, 15.5, 1.5];   // the park bench by the wall (x0
 export const SPOTS = [{ type: 'bench', x: 14.3, z: NZ - 1.1, name: 'the park bench' }, { type: 'kerb', x: -5.6, z: KERB + 1.6, name: 'the kerb by the cart' }, { type: 'rail', x: -4.2, z: NZ - 0.9, name: 'the park railings' }, { type: 'lamp', x: -23.4, z: KERB + 1.8, name: 'the signal post at the gate crossing' },
   { type: 'gate', x: -26.5, z: -2.2, name: 'the park gate' }, { type: 'stall', x: -21.4, z: 0.3, name: 'the mushroom stall at the park wall' },
   { type: 'bodega', x: 3.4, z: FZ + 2.6, name: 'the bodega' }, { type: 'lanes', x: -5, z: FZ + 2.6, name: 'THE STRANGEST LANES' }, { type: 'apts', x: 19.6, z: FZ + 2.6, name: 'the Foundry Lofts' }, { type: 'bar', x: 33, z: FZ + 2.6, name: 'THE BAR' },
-  { type: 'busk', x: 1.2, z: FKERB - 2.6, name: 'the octopus\'s pitch across Market St, before the bodega' }];
-export const CAT = { x: -13.5, z: -27.6 };   // where THE BIG CAT stands: by a telephone pole on Market St's far pavement, peeking round it
+  { type: 'busk', x: -2.4, z: FKERB - 2.6, name: 'the octopus\'s pitch across Market St, beside the bodega' }];
+export const CAT = { x: -13.5, z: -27.6 };   // where THE BIG CAT stands: on Market St's far pavement before THE STRANGEST LANES, west of the octopus

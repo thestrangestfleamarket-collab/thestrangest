@@ -22,7 +22,7 @@ export const rand = (a = 1, b) => (b === undefined ? Math.random() * a : a + Mat
 export const pick = (arr) => arr[(Math.random() * arr.length) | 0];
 
 // Player walkable area behind the counter (head position clamp).
-export const ROOFUP = 0.92;   // how far the cart's roof was raised (owner, 19 Nov 2026: "25% taller", "roof only")
+export const ROOFUP = 0.4;   // how far the cart's roof stands over where it was first built (owner, 19 Nov 2026: "25% taller", "roof only"; 20 Nov 2026: "lower the roof")
 export const BOUNDS = { minX: -0.52, maxX: 0.52, minZ: -0.02, maxZ: 1.22 };
 
 const DROP = new Set(['roughness', 'metalness', 'envMapIntensity', 'normalMap', 'clearcoat', 'clearcoatRoughness', 'sheen', 'sheenRoughness', 'sheenColor', 'transmission', 'thickness', 'roughnessMap']);

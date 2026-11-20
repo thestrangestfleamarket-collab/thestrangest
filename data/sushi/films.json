@@ -1,5 +1,5 @@
 {
- "note": "the cart TV's late movie: for now only Night of the Living Dead (1968, public domain; the Internet Archive's night_of_the_living_dead_dvd), our own 160x120 copy in two parts (tools/sushi-film.sh)",
+ "note": "the cart TV's channels. channels: our own (CREATURE FEATURE: Night of the Living Dead, 1968, public domain; the Internet Archive's night_of_the_living_dead_dvd, our own 160x120 copy in two parts, tools/sushi-film.sh). market.take: which of THE MARKET's channels (data/tv.json: public-domain cartoons, television and films from before 1985, streamed from the Internet Archive) the set also gets; credits in docs/sushi-credits.md",
  "channels": [
   {
    "ch": 14,
@@ -19,5 +19,17 @@
     }
    ]
   }
- ]
+ ],
+ "market": {
+  "from": "data/tv.json",
+  "take": [
+   2,
+   4,
+   6,
+   7,
+   9,
+   11,
+   13
+  ]
+ }
 }

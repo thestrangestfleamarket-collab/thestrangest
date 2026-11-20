@@ -86,7 +86,7 @@ export function buildTalk() {
   talk.D = D; talk.clockS = nowS;
   let room = null;
   const wet = () => { if (room) return room; const ac = G.audio.ctx, n = (ac.sampleRate * 0.5) | 0, ir = ac.createBuffer(2, n, ac.sampleRate); for (let ch = 0; ch < 2; ch++) { const d = ir.getChannelData(ch); let lp = 0; for (let i = 0; i < n; i++) { lp += ((Math.random() * 2 - 1) - lp) * 0.35; d[i] = lp * Math.pow(1 - i / n, 3.2) * (i < 260 ? i / 260 : 1); } } const cv = ac.createConvolver(), g = ac.createGain(); cv.buffer = ir; g.gain.value = 0.5; cv.connect(g); g.connect(G.audio.master); return (room = cv); };
-  const bus = () => { if (D.bus) return D.bus; const ac = G.audio.ctx, b = ac.createGain(), send = ac.createGain(), an = ac.createAnalyser(); an.fftSize = 512; send.gain.value = 0.16; b.connect(G.audio.master); b.connect(send); send.connect(wet()); b.connect(an); D.outAn = an; D.outBuf = new Float32Array(512); return (D.bus = b); };
+  const bus = () => { if (D.bus) return D.bus; const ac = G.audio.ctx, b = ac.createGain(), send = ac.createGain(), an = ac.createAnalyser(); an.fftSize = 512; send.gain.value = 0.16; const lv = G.audio.follow('voices', ac.createGain()); b.connect(lv); lv.connect(G.audio.master); lv.connect(send); send.connect(wet()); lv.connect(an); D.outAn = an; D.outBuf = new Float32Array(512); return (D.bus = b); };
   talk.outLevel = () => { if (!D.outAn || !D.cur) return 0; D.outAn.getFloatTimeDomainData(D.outBuf); let s = 0; for (let i = 0; i < 512; i++) s += D.outBuf[i] * D.outBuf[i]; return Math.sqrt(s / 512); };
   const mouth = (c, out) => { let b = c.voice.head; if (b === undefined) { b = null; c.p.root.traverse((o) => { if (!b && o.isBone && /head/i.test(o.name)) b = o; }); c.voice.head = b; } return b ? b.getWorldPosition(out) : out.set(c.p.root.position.x, 1.3, c.p.root.position.z); };
   const _m = new V3();
@@ -145,7 +145,7 @@ export function buildTalk() {
     const base = { who: v.name, kind: it.kind, text: it.text, live: !!it.live, thinkMs: it.think, voiceMs: it.voiceMs, firstMs: it.firstMs, waitMs: Math.round((it.t0 - it.born) * 1000), ...(it.prio >= 4 && D.cookEnd > D.lastEnd ? { gapMs: Math.round((it.t0 - D.cookEnd) * 1000) } : {}) };
     if (it.tts || !it.chunks.length) {
       if (!window.speechSynthesis || !speechSynthesis.getVoices().length) { talk.voiceless = true; G.audio.play?.('voice', mouth(c, new V3())); note({ ...base, voice: 'none' }); return end(it); }
-      try { const u = new SpeechSynthesisUtterance(it.text), vs = speechSynthesis.getVoices().filter((x) => /^en/i.test(x.lang)), want = v.g === 'f' ? /female|woman|samantha|victoria|karen|zira|susan|aria|jenny/i : /\bmale|\bman\b|daniel|alex|david|mark|fred|guy|james/i; u.voice = vs.find((x) => want.test(x.name)) || null; u.pitch = v.g === 'f' ? 1.15 : 0.7; u.rate = 1.02; u.lang = 'en-US';
+      try { const u = new SpeechSynthesisUtterance(it.text), vs = speechSynthesis.getVoices().filter((x) => /^en/i.test(x.lang)), want = v.g === 'f' ? /female|woman|samantha|victoria|karen|zira|susan|aria|jenny/i : /\bmale|\bman\b|daniel|alex|david|mark|fred|guy|james/i; u.voice = vs.find((x) => want.test(x.name)) || null; u.pitch = v.g === 'f' ? 1.15 : 0.7; u.rate = 1.02; u.lang = 'en-US'; u.volume = Math.min(1, G.audio.level('master') * G.audio.level('voices'));
         const est = 0.5 + it.text.length * 0.06; c.p.talkT = est; it.estEnd = nowS() + est; it.utt = u; note({ ...base, voice: 'browser' }); u.onend = u.onerror = () => end(it); speechSynthesis.speak(u); } catch (e) { end(it); }
       return;
     }

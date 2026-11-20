@@ -36,8 +36,8 @@ const IDS = ['camel', 'dr1', 'spitfire', 'bf109', 'p51', 'zero', 'f86', 'mig15',
     ok(sys.arm && sys.dead === 0 && sys.n > 25, 'the cockpit\'s ' + sys.n + ' switches, buttons and levers all work');
     // a fight flown by the game itself
     const fight = await ev(async () => { game.opts.enemies = 2; game.opts.wing = 1; await game.start('f4'); game.demo(true); let stall = 0, n = 0, shots = 0; const a0 = game.aircraft.reduce((s, a) => s + a.ammo, 0);
-      for (let i = 0; i < 240; i++) { game.simulate(1); for (const a of game.aircraft) if (a.ai && a.alive) { n++; if (a.fm.ias < a.ai.vs * 1.05) stall++; } await new Promise(r => setTimeout(r, 0)); }
-      return { stall: stall / Math.max(n, 1), foes: game.aircraft.filter(a => a.team === 1 && a.alive).length, wave: game.wave, hurt: game.aircraft.some(a => a.hp < a.hpMax) || game.wave > 1, err: !!game._err, t: game.time }; });
+      for (let i = 0; i < 240; i++) { game.simulate(1); for (const a of game.aircraft) { if (a.hp < a.hpMax || !a.alive) shots++; if (a.ai && a.alive) { n++; if (a.fm.ias < a.ai.vs * 1.05) stall++; } } await new Promise(r => setTimeout(r, 0)); }
+      return { stall: stall / Math.max(n, 1), foes: game.aircraft.filter(a => a.team === 1 && a.alive).length, wave: game.wave, hurt: shots > 0 || game.wave > 1, err: !!game._err, t: game.time }; });
     ok(fight.hurt && !fight.err, 'four minutes of a jet fight: shots land'); ok(fight.stall < 0.05, 'the pilots keep their speed (' + (fight.stall * 100).toFixed(1) + '% of the time stalled)'); ok(fight.foes > 0 || fight.wave > 1, 'there is always someone to fight (wave ' + fight.wave + ')');
     const crash = await ev(() => { const p = game.player, w = game.world; p.ai = null; let at = null; for (let x = -20000; x < 20000 && !at; x += 400) for (let z = -20000; z < 20000; z += 400) if (w.forestAt(x, z) > 0.8 && w.heightAt(x, z) > 20) { at = [x, z]; break; }
       game.simulate(0.2); p.fm.pos.set(at[0], w.heightAt(at[0], at[1]) + 5, at[1]); p.fm.vel.set(0, 0, -40); game.simulate(0.3); return p.removed || !!p.fm.crashed; });
@@ -64,6 +64,10 @@ const IDS = ['camel', 'dr1', 'spitfire', 'bf109', 'p51', 'zero', 'f86', 'mig15',
     if (OUT) await pg.screenshot({ path: path.join(OUT, '02-headset.png') });
     await tap('left', 'x-button'); ok(await ev(() => game.view === 'chase'), 'X steps outside the aircraft'); await tap('left', 'x-button');
     ok(await ev(() => game.view === 'cockpit' && !game._err), 'and back in');
+    await ev(() => { game.setView('chase'); }); await frames(4); const snap = await ev(() => game.rig.rotation.y / (Math.PI / 6)); ok(Math.abs(snap - Math.round(snap)) < 0.01, 'outside, the view turns in steps of thirty degrees');
+    await ev(() => { game.setView('cockpit', true); game.player.fm.autopilot = false; xrDevice.controllers.right.updateAxes('thumbstick', 1, 0); }); await frames(6); const vg = await ev(() => game.vignette.material.uniforms.uA.value); await ev(() => xrDevice.controllers.right.updateAxes('thumbstick', 0, 0));
+    ok(vg > 0.1, 'a hard roll narrows the view (' + vg.toFixed(2) + ')');
+    await ev(() => { game.opts.comfort = 2; }); await tap('left', 'x-button'); ok(await ev(() => game.view === 'cockpit'), 'MOST COMFORTABLE keeps you in the cockpit');
     ok(errs.length === 0, 'no page errors in the headset' + (errs.length ? ': ' + errs.slice(0, 3).join(' | ') : '')); await pg.close(); }
 
   await b.close(); srv.close(); console.log(fails.length ? fails.length + ' FAILED' : 'the fly check passed'); process.exit(fails.length ? 1 : 0);

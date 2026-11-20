@@ -1,4 +1,4 @@
-// the in-game menu: every setting on one board of big rows, eight shown at a time; a thumbstick (arrow keys, the wheel) moves a highlight up and down it and scrolls, left and right change a value, the trigger or A/X (Enter) selects, or point at a row and pull the trigger, or poke it; the Y or B button (or the MENU button on the right wing, or saying "menu") brings it up in front of you and puts it away; it can be gripped and moved (boards.js)
+// the in-game menu and the volume: every setting on one board of big rows, eight shown at a time; a thumbstick (arrow keys, the wheel) moves a highlight up and down it and scrolls, left and right change a value, the trigger or A/X (Enter) selects, or point at a row and pull the trigger, or poke it; the Y or B button (or the MENU button on the right wing, or saying "menu") brings it up in front of you and puts it away; it can be gripped and moved (boards.js); the volume is to hand without it: the - and = keys on a screen, the right stick pressed in and pushed up or down in the headset, the two VOL buttons on the front right post, each showing the level for a moment; the board has a level each for the music, the television, the voices, the rain and the street (audio.js keeps them)
 import * as THREE from 'three';
 import { G, V3 } from './ctx.js';
 import * as T from './tex.js';
@@ -6,13 +6,15 @@ import * as T from './tex.js';
 export function buildMenu(scene, cart, guide, talk, shadowLights, report) {
   const m = { open: false }, W = 0.7, H = 0.62, PW = 700, PH = 620, VIS = 8, RH = 62, tex = T.panelTex(PW, PH, () => { });
   const board = new THREE.Mesh(new THREE.PlaneGeometry(W, H), new THREE.MeshBasicMaterial({ map: tex, color: 0xd8d8d8, side: THREE.DoubleSide })); board.visible = false; board.userData.nopick = true; scene.add(board);
-  const S = (G.set = { volume: 1, tts: true, mic: true, shadows: true, turn: 30, easy: (() => { try { return localStorage.getItem('yatai-easy') !== '0'; } catch (e) { return true; } })() });
+  const A = G.audio, pct = (k) => Math.round(A.level(k) * 100) + '%', turn = (k) => A.setLevel(k, A.level(k) >= 1.5 ? 0 : A.level(k) + 0.25), LEVELS = [['MUSIC (RADIO)', 'music'], ['TELEVISION SOUND', 'tv'], ['VOICES', 'voices'], ['RAIN', 'rain'], ['STREET', 'street']];
+  const S = (G.set = { volume: A.level('master'), tts: true, mic: true, shadows: true, turn: 30, easy: (() => { try { return localStorage.getItem('yatai-easy') !== '0'; } catch (e) { return true; } })() });
   const rows = [
     ['EASY ON THE EYES', () => (S.easy ? 'ON' : 'OFF'), () => { S.easy = !S.easy; try { localStorage.setItem('yatai-easy', S.easy ? '1' : '0'); } catch (e) { /* not kept */ } G.eyes?.(S.easy); }],
     ['THE MARKET', () => (G.live ? G.live.status() : 'NOT LINKED'), () => { }],
     ['GUIDE MODE', () => (guide.on ? 'ON' : 'OFF'), () => guide.set(!guide.on)],
     ...(G.guest ? [] : [['EASY DAYS', () => (G.prog.P.easy ? 'ON' : 'OFF') + ' · DAY ' + G.prog.P.day, () => G.prog.setEasy(!G.prog.P.easy)]]),
-    ['VOLUME', () => Math.round(S.volume * 100) + '%', () => { S.volume = S.volume >= 1.5 ? 0.25 : S.volume + 0.25; if (G.audio.master) G.audio.master.gain.value = S.volume; }],
+    ['VOLUME', () => pct('master'), () => A.setLevel('master', A.level('master') >= 1.5 ? 0.25 : A.level('master') + 0.25)],
+    ...LEVELS.map(([name, k]) => [name, () => (A.level(k) ? pct(k) : 'OFF'), () => turn(k)]),
     ['SPOKEN VOICES', () => (S.tts ? 'ON' : 'OFF'), () => { S.tts = !S.tts; G.muteVoices = !S.tts; if (!S.tts) window.speechSynthesis?.cancel(); }],
     ['MICROPHONE', () => (S.mic ? (talk.mic || 'ON').toUpperCase() : 'OFF'), () => { S.mic = !S.mic; talk.listen(S.mic); }],
     ['VOICE CHECK', () => `ear ${talk.diag.hear} · mind ${talk.diag.think} · voice ${talk.diag.say}`, () => { }],
@@ -28,7 +30,7 @@ export function buildMenu(scene, cart, guide, talk, shadowLights, report) {
     ...(G.guest ? [['LEAVE THE BLOCK', () => 'TO THE MARKET', () => G.guestRole?.leave()]] : []),
   ];
   // which rows have a value that goes down and up (the stick's left and right; the others are switched either way)
-  const STEP = { VOLUME: (d) => { S.volume = Math.max(0, Math.min(1.5, S.volume + d * 0.25)); if (G.audio.master) G.audio.master.gain.value = S.volume; }, 'SNAP TURN': (d) => { const a = [30, 45, 90]; S.turn = a[(a.indexOf(S.turn) + d + 3) % 3]; }, 'MY HEIGHT': (d) => { G.rig.position.y = Math.max(-0.3, Math.min(0.3, Math.round((G.rig.position.y + d * 0.1) * 10) / 10)); } };
+  const STEP = { VOLUME: (d) => A.setLevel('master', A.level('master') + d * 0.25), ...Object.fromEntries(LEVELS.map(([name, k]) => [name, (d) => A.nudge(k, d * 0.1)])), 'SNAP TURN': (d) => { const a = [30, 45, 90]; S.turn = a[(a.indexOf(S.turn) + d + 3) % 3]; }, 'MY HEIGHT': (d) => { G.rig.position.y = Math.max(-0.3, Math.min(0.3, Math.round((G.rig.position.y + d * 0.1) * 10) / 10)); } };
   rows.push(['BOARDS', () => 'RESET PLACES', () => { G.boards?.reset(); place(); }]);
   const far = new V3(0, -99, 0), tmp = new V3(), ROWY = 78, y0 = (i) => ROWY + i * RH;
   let sel = 0, top = 0, lastAct = -1;
@@ -60,10 +62,28 @@ export function buildMenu(scene, cart, guide, talk, shadowLights, report) {
   const mpos = new V3(0.9, 0.93, -0.07), mb = new THREE.Mesh(new THREE.CylinderGeometry(0.03, 0.034, 0.03, 12), new THREE.MeshBasicMaterial({ color: 0xd09020 })); mb.position.copy(mpos); mb.userData.keep = true; cart.group.add(mb);
   const lb = new THREE.Mesh(new THREE.PlaneGeometry(0.11, 0.03), new THREE.MeshBasicMaterial({ map: T.labelTex(['MENU'], { w: 256, h: 70, fs: 44 }), color: 0xbbbbbb })); lb.rotation.x = -Math.PI / 2; lb.position.set(0.9, 0.906, 0.0); lb.userData.keep = true; cart.group.add(lb);
   const btn = { getPos: () => mpos, r: 0.045, press: () => m.toggle(), name: 'MENU' }; mb.userData.button = btn; G.buttons.push(btn);
+  // ---- the volume to hand: a step up or down, and the level shown for a moment (on a screen sharp, at the page's own size; in the headset a small card under the eyes)
+  const vd = document.createElement('div'); vd.id = 'vol'; vd.style.cssText = 'position:fixed;left:50%;top:12%;transform:translateX(-50%);font:700 15px var(--ui);letter-spacing:.06em;color:#ffd9a0;background:rgba(10,10,14,.82);padding:8px 14px;border-radius:6px;pointer-events:none;z-index:7;display:none;white-space:pre'; document.body.appendChild(vd);
+  const vtex = T.panelTex(512, 96, () => { }), vcard = new THREE.Mesh(new THREE.PlaneGeometry(0.3, 0.056), new THREE.MeshBasicMaterial({ map: vtex, transparent: true, depthTest: false })); vcard.renderOrder = 9; vcard.visible = false; vcard.userData.nopick = true; vcard.position.set(0, -0.16, -0.7); G.camera.add(vcard);
+  const vbt = T.panelTex(256, 70, () => { }), bars = (v) => { const n = Math.round(v * 10); return '▮'.repeat(Math.min(15, n)) + '▯'.repeat(Math.max(0, 10 - n)); };
+  const vshow = () => { const v = A.level('master'), t = 'VOLUME  ' + bars(v) + '  ' + Math.round(v * 100) + '%'; vd.textContent = t; vd.style.display = G.mode === 'desktop' ? 'block' : 'none'; volT = 1.8;
+    vtex.redraw((g, w, h) => { g.clearRect(0, 0, w, h); g.fillStyle = 'rgba(10,10,14,0.85)'; g.fillRect(0, 0, w, h); g.fillStyle = '#ffd9a0'; g.font = `bold 34px ${T.MONO}`; g.textAlign = 'left'; g.fillText('VOLUME', 18, 60); g.textAlign = 'right'; g.fillText(Math.round(v * 100) + '%', w - 18, 60); g.fillStyle = '#3a3428'; g.fillRect(180, 34, 210, 30); g.fillStyle = '#ffb040'; g.fillRect(180, 34, 210 * Math.min(1, v / 1.5), 30); }); vcard.visible = G.mode === 'vr';
+    vbt.redraw((g, w, h) => { g.fillStyle = '#16181c'; g.fillRect(0, 0, w, h); g.fillStyle = '#e8e4d8'; g.font = `bold 40px ${T.MONO}`; g.textAlign = 'center'; g.fillText('VOL ' + Math.round(v * 100), w / 2, 50); }); };
+  let volT = 0, vrep = 0; m.vol = (d) => { const v = A.nudge('master', d * 0.1); G.audio.play('click'); vshow(); if (m.open) draw(); return v; }; A.onLevel.push(() => { if (m.open) draw(); });
+  addEventListener('keydown', (e) => { if (G.mode !== 'desktop' || (e.target && e.target.tagName === 'INPUT')) return; const k = e.code; if (k === 'Minus' || k === 'NumpadSubtract') m.vol(-1); else if (k === 'Equal' || k === 'NumpadAdd') m.vol(1); else return; e.preventDefault(); });
+  // the two VOL buttons on the front right post, facing the cook, the level written over them
+  { const PX = 1.16, PZ = -0.52, back = new THREE.Mesh(new THREE.BoxGeometry(0.1, 0.17, 0.012), new THREE.MeshBasicMaterial({ color: 0x1c1e22 })); back.position.set(PX, 1.075, PZ + 0.006); back.userData.keep = true; cart.group.add(back);
+    for (const [y, d, name] of [[1.025, -1, 'VOLUME DOWN'], [1.08, 1, 'VOLUME UP']]) { const vp = new V3(PX, y, PZ + 0.02), vb = new THREE.Mesh(new THREE.CylinderGeometry(0.02, 0.022, 0.016, 14), new THREE.MeshBasicMaterial({ color: d < 0 ? 0x6a7078 : 0xb8bcc4 })); vb.position.copy(vp); vb.rotation.x = Math.PI / 2; vb.userData.keep = true; cart.group.add(vb);
+      const sg = new THREE.Mesh(new THREE.PlaneGeometry(0.024, 0.024), new THREE.MeshBasicMaterial({ map: T.labelTex([d < 0 ? '−' : '+'], { w: 64, h: 64, fs: 56, bg: d < 0 ? '#6a7078' : '#b8bcc4', fg: '#101014' }) })); sg.position.set(PX, y, PZ + 0.0285); sg.userData.keep = true; sg.userData.noread = true; cart.group.add(sg);
+      const b = { getPos: () => vp, r: 0.027, press: () => m.vol(d), name }; vb.userData.button = sg.userData.button = b; G.buttons.push(b); }
+    const vl = new THREE.Mesh(new THREE.PlaneGeometry(0.09, 0.0246), new THREE.MeshBasicMaterial({ map: vbt, color: 0xcccccc })); vl.position.set(PX, 1.135, PZ + 0.0125); vl.userData.keep = true; vl.userData.noread = true; cart.group.add(vl); vbt.redraw((g, w, h) => { g.fillStyle = '#16181c'; g.fillRect(0, 0, w, h); g.fillStyle = '#e8e4d8'; g.font = `bold 40px ${T.MONO}`; g.textAlign = 'center'; g.fillText('VOL ' + Math.round(A.level('master') * 100), w / 2, 50); }); }
   let latch = false, acc = 0, rep = 0, xl = false, al = false;
-  m.update = (dt) => { const ses = G.renderer.xr.getSession?.(); let down = false, ax = 0, ay = 0, a = false;
-    if (ses) for (const s of ses.inputSources) { const gp = s.gamepad; if (!gp || s.hand) continue; if (gp.buttons[5] && gp.buttons[5].pressed) down = true; if (gp.buttons[4] && gp.buttons[4].pressed) a = true; const x = gp.axes.length >= 4 ? gp.axes[2] : gp.axes[0] || 0, y = gp.axes.length >= 4 ? gp.axes[3] : gp.axes[1] || 0; if (Math.abs(x) > Math.abs(ax)) ax = x; if (Math.abs(y) > Math.abs(ay)) ay = y; }
-    if (down && !latch) m.toggle(); latch = down; if (!m.open) { al = a; return; }
+  m.update = (dt) => { const ses = G.renderer.xr.getSession?.(); let down = false, ax = 0, ay = 0, a = false, vy = 0;
+    if (volT > 0 && (volT -= dt) <= 0) { vd.style.display = 'none'; vcard.visible = false; }
+    if (ses) for (const s of ses.inputSources) { const gp = s.gamepad; if (!gp || s.hand) continue; if (gp.buttons[5] && gp.buttons[5].pressed) down = true; if (gp.buttons[4] && gp.buttons[4].pressed) a = true; if (s.handedness === 'right' && gp.buttons[3] && gp.buttons[3].pressed) vy = gp.axes.length >= 4 ? gp.axes[3] : gp.axes[1] || 0; const x = gp.axes.length >= 4 ? gp.axes[2] : gp.axes[0] || 0, y = gp.axes.length >= 4 ? gp.axes[3] : gp.axes[1] || 0; if (Math.abs(x) > Math.abs(ax)) ax = x; if (Math.abs(y) > Math.abs(ay)) ay = y; }
+    if (down && !latch) m.toggle(); latch = down;
+    if (Math.abs(vy) > 0.5) { vrep -= dt; if (vrep <= 0) { m.vol(vy < 0 ? 1 : -1); vrep = 0.22; } } else vrep = 0;   // the right stick pressed in: up louder, down quieter
+    if (!m.open) { al = a; return; }
     // the stick: one row a push, then on steadily while it is held; left and right once a push
     if (Math.abs(ay) > 0.55 && Math.abs(ay) > Math.abs(ax)) { rep -= dt; if (rep <= 0) { m.move(ay > 0 ? 1 : -1); rep = rep < -1 ? 0.4 : 0.16; } } else rep = -9;
     if (Math.abs(ax) > 0.6 && Math.abs(ax) > Math.abs(ay)) { if (!xl) { xl = true; m.step(ax > 0 ? 1 : -1); } } else if (Math.abs(ax) < 0.3) xl = false;

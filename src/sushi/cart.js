@@ -488,6 +488,7 @@ export function buildCart(scene, city) {
   };
   mkBtn(0.13, 0xc82020, 'radio power', () => G.audio.setRadio(!G.audio.radioOn));
   mkBtn(0.18, 0x2a2a2e, 'radio tune', () => G.audio.tune());
+  mkBtn(0.23, 0x8a8e96, 'radio volume', () => { const v = G.audio.level('music'); G.audio.setLevel('music', v >= 1.5 ? 0.25 : v + 0.25); });   // the boombox's own loudness: a quarter louder a press, round to quiet again
 
   { // the work lights' switch, on the right post
     C.lights = []; C.bulbs.forEach((pv) => pv.traverse((o) => { if (o.isLight || o.isSprite || (o.isMesh && o.material === bulbM)) C.lights.push(o); })); cart.traverse((o) => { if (o.isSpotLight) C.lights.push(o); });

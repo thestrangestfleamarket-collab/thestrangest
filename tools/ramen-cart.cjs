@@ -20,7 +20,7 @@ const bake = () => {
   const P = [], N = [], C = [], U = [], I = [], stat = {}, skipped = {}, all = [], meshes = [], BUDGET = 16000; let nv = 0;
   const one = (o, mw, tag) => { const g = o.geometry, A = g.attributes, Pp = A.position; if (!Pp) return; const mm = [].concat(o.material), m = mm[0]; if (!m || m.visible === false) return;
     B.makeEmpty(); for (let i = 0; i < Pp.count; i++) B.expandByPoint(v.fromBufferAttribute(Pp, i).applyMatrix4(mw));
-    if (!(B.min.x > -2.4 && B.max.x < 2.4 && B.min.z > -2.3 && B.max.z < 2.62 && B.min.y > -0.06 && B.max.y < 4.4)) return;
+    if (!(B.min.x > -2.4 && B.max.x < 2.4 && B.min.z > -2.3 && B.max.z < 2.62 && B.min.y > -0.06 && B.max.y < 5.6)) return;
     const diag = B.min.distanceTo(B.max), nt = (g.index ? g.index.count : Pp.count) / 3;
     if (m.blending === T.AdditiveBlending || (m.transparent && m.opacity < 0.5) || m.isShaderMaterial || m.isSpriteMaterial) { skipped['clear ' + tag] = (skipped['clear ' + tag] || 0) + nt; return; }
     if (diag < 0.06 || nt > 6000) { skipped['fine ' + tag] = (skipped['fine ' + tag] || 0) + nt; return; }

@@ -11,7 +11,7 @@ const shot = (j, name) => { if (out && j) fs.writeFileSync(path.join(out, name),
   const until = (p, f, ms, arg) => p.waitForFunction(f, arg, { timeout: ms, polling: 500 }).then(() => true, () => false);
   try {
     { const r1 = await fetch(BASE + '/sushi?x=1', { redirect: 'manual' }), r2 = await fetch(BASE + '/ramen'); ok(r1.status === 301 && /\/ramen\?x=1$/.test(r1.headers.get('location') || '') && r2.status === 200 && /<title>RAMEN<\/title>/.test(await r2.text()), '/ramen serves the game and /sushi, its old name, leads there: ' + r1.status + ' ' + r1.headers.get('location') + ' ' + r2.status); }
-    const a = await cx.newPage(); a.on('pageerror', (e) => errs.push('cook: ' + e.message.slice(0, 200))); await a.goto(BASE + '/ramen?desktop'); await a.waitForFunction('window.G && G.live && G.mirror && G.items && G.items.length > 10', null, { timeout: 300000 });
+    const a = await cx.newPage(); a.on('pageerror', (e) => errs.push('cook: ' + e.message.slice(0, 200))); await a.goto(BASE + '/ramen?desktop&link'); await a.waitForFunction('window.G && G.live && G.mirror && G.items && G.items.length > 10', null, { timeout: 300000 });
     await a.evaluate(() => { G.muteVoices = true; G.cart.pots.forEach((p) => p.setOn(true)); if (G.game.state !== 'open') G.game.toggleOpen(); G.clock.follow(0.05); });
     // THE MARKET: GO TO RAMEN leaves it for the alley as a guest
     const m = await cx.newPage(); m.on('pageerror', (e) => errs.push('market: ' + e.message.slice(0, 200))); await m.goto(BASE + '/?fresh=1&hour=21'); await m.waitForFunction(() => window.__started, null, { timeout: 600000 }); await m.waitForTimeout(3000);
@@ -54,7 +54,7 @@ const shot = (j, name) => { if (out && j) fs.writeFileSync(path.join(out, name),
     ok(freed, 'getting up frees the stool at the cart');
     // a second cook: a cart of their own beside the first, seen by the guest too
     const cx2 = await b.newContext({ viewport: { width: 700, height: 450 } }); await cx2.addCookies([{ name: 'tsfm-pass', value: 'dev:wire-check-two', url: BASE }]);
-    const a2 = await cx2.newPage(); a2.on('pageerror', (e) => errs.push('cook 2: ' + e.message.slice(0, 200))); await a2.goto(BASE + '/ramen?desktop', { timeout: 300000 }); await a2.waitForFunction('window.G && G.live && G.mirror && G.items && G.items.length > 10', null, { timeout: 300000 });
+    const a2 = await cx2.newPage(); a2.on('pageerror', (e) => errs.push('cook 2: ' + e.message.slice(0, 200))); await a2.goto(BASE + '/ramen?desktop&link', { timeout: 300000 }); await a2.waitForFunction('window.G && G.live && G.mirror && G.items && G.items.length > 10', null, { timeout: 300000 });
     const sl = await until(a2, () => G.live.net().slot >= 1, 120000);
     ok(sl, 'the second cook takes the next cart along');
     const two = await until(g, () => { const L = [...G.live.cooks.values()]; return L.length === 2 && L.some((N) => N.x !== 0 && N.copy && N.things.size > 20); }, 180000);

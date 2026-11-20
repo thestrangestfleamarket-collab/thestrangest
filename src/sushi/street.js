@@ -1,4 +1,4 @@
-// what stands lit and what moves on the corner, as in THE MARKET (src/150pb-traffic.js): its lamps' glow where the market has lamps (corner.js lights), Polyfork's cars both ways along Market St (data/sushi/cars.json), yellow cabs flying over them, and the kei vans, a fifth their size, roaming the pavement by the kerb
+// what stands lit and what moves on the corner, as in THE MARKET (src/150pb-traffic.js): its lamps' glow where the market has lamps (corner.js lights), Polyfork's cars both ways along Market St (data/sushi/cars.json), every one on the road, and the kei vans, a fifth their size, roaming the pavement by the kerb
 import * as THREE from 'three';
 import { G, mat, clamp } from './ctx.js';
 import * as T from './tex.js';
@@ -7,7 +7,7 @@ import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import { KERB, FKERB, ROAD, KEI } from './plan.js';
 
 export function buildStreet(X) {
-  const { city, addHalo, corner, ups } = X, R = X.R, S = { cars: [], lampAt: [], kei: [], fliers: [] };
+  const { city, addHalo, corner, ups } = X, R = X.R, S = { cars: [], lampAt: [], kei: [] };
   // ---- the lamps: the nearest first (alley.js gives the first three a light of their own)
   const lamps = corner.lights.filter((l) => l.p[1] > 2.2 && l.p[1] < 12 && Math.hypot(l.p[0], l.p[2]) < 90).sort((a, b) => Math.hypot(a.p[0], a.p[2] + 4) - Math.hypot(b.p[0], b.p[2] + 4));
   for (const l of lamps) { S.lampAt.push([l.p[0], l.p[1], l.p[2]]); addHalo(l.p[0], l.p[1], l.p[2], 3.2, new THREE.Color().setRGB(l.c[0], l.c[1] * 0.86, l.c[2] * 0.6).getHex()); }
@@ -25,14 +25,13 @@ export function buildStreet(X) {
       if (beam) { const pl = new THREE.Mesh(new THREE.PlaneGeometry(9, 3.4), beamM); pl.rotation.x = -Math.PI / 2; pl.position.set(hl + 3.6, 0.02, 0); L.add(pl); } L.visible = false; lampsOf.push(L);
       c.traverse((o) => { o.userData.nopick = true; o.userData.keep = true; }); city.add(c); return c; };
     // Market St, both ways: eastbound on the park's side, westbound on the shops'; each lane a loop far longer than what is seen, its cars a steady way apart
-    const MID = (KERB + FKERB) / 2, SPAN = 150, LANES = [{ dir: 1, z: (KERB + MID) / 2, y: ROAD, v: 7.5, list: [['cab'], ['sedan', PAINT[3]], ['wagon', PAINT[6]]] }, { dir: -1, z: (FKERB + MID) / 2, y: ROAD, v: 7.5, list: [['hatch', PAINT[8]], ['cab'], ['towncar']] },
-      { dir: 1, z: (KERB + MID) / 2, y: 10.5, v: 10.5, fly: 1, list: [['cab']] }, { dir: -1, z: (FKERB + MID) / 2, y: 10.5, v: 10.5, fly: 1, list: [['cab']] }];
-    for (const L of LANES) L.list.forEach(([k, paint], i) => { const c = mkCar(k, paint, !L.fly); c.rotation.y = L.dir > 0 ? 0 : Math.PI; c.position.set(L.dir * (-SPAN + (i + 0.3 + R() * 0.4) * (2 * SPAN / L.list.length)), L.y, L.z); c.userData.L = L; c.userData.v = L.v * (0.9 + R() * 0.2); (L.fly ? S.fliers : G.passing).push(c); S.cars.push({ c }); });
+    const MID = (KERB + FKERB) / 2, SPAN = 150, LANES = [{ dir: 1, z: (KERB + MID) / 2, y: ROAD, v: 7.5, list: [['cab'], ['sedan', PAINT[3]], ['wagon', PAINT[6]]] }, { dir: -1, z: (FKERB + MID) / 2, y: ROAD, v: 7.5, list: [['hatch', PAINT[8]], ['cab'], ['towncar']] }];
+    for (const L of LANES) L.list.forEach(([k, paint], i) => { const c = mkCar(k, paint); c.rotation.y = L.dir > 0 ? 0 : Math.PI; c.position.set(L.dir * (-SPAN + (i + 0.3 + R() * 0.4) * (2 * SPAN / L.list.length)), L.y, L.z); c.userData.L = L; c.userData.v = L.v * (0.9 + R() * 0.2); G.passing.push(c); S.cars.push({ c }); });
     // the kei vans: three, toy-sized, each its own paint and pace, up and down the pavement by the kerb, turning round at the ends of their stretch, stopping a while now and then
     KPAINT.slice(0, 3).forEach((paint, i) => { const c = mkCar('kei', KPAINT[(i * 2 + 1) % KPAINT.length], false); c.scale.setScalar(0.2); c.position.set(KEI.x0 + (i + 0.5) * (KEI.x1 - KEI.x0) / 3, 0, KEI.z0 + (i % 2) * (KEI.z1 - KEI.z0)); c.userData = { ...c.userData, kei: 1, dir: i % 2 ? 1 : -1, v: [1.3, 2.2, 3.4][i], stop: 2 + i * 5, z: c.position.z, keep: true, nopick: true }; S.kei.push(c); });
     ups.push((dt) => { const lit = X.api ? X.api() : 0;
       const walkers = G.block ? G.block.people.filter((h) => !h.hidden && h.p.root.visible && h.p.root.position.z < KERB && h.p.root.position.z > FKERB).map((h) => h.p.root.position) : [];   // whoever is crossing: the cars wait for them
-      for (const { c } of S.cars) { const u = c.userData, L = u.L, held = !L.fly && walkers.some((w) => Math.abs(w.z - L.z) < 3.4 && (w.x - c.position.x) * L.dir > 1.5 && (w.x - c.position.x) * L.dir < 11); u.s = (u.s ?? u.v) + clamp((held ? 0 : u.v) - (u.s ?? u.v), -dt * 9, dt * 3.5); c.position.x += L.dir * u.s * dt; if (L.dir * c.position.x > SPAN) c.position.x -= L.dir * 2 * SPAN; c.visible = Math.abs(c.position.x) < 120; }
+      for (const { c } of S.cars) { const u = c.userData, L = u.L, held = walkers.some((w) => Math.abs(w.z - L.z) < 3.4 && (w.x - c.position.x) * L.dir > 1.5 && (w.x - c.position.x) * L.dir < 11); u.s = (u.s ?? u.v) + clamp((held ? 0 : u.v) - (u.s ?? u.v), -dt * 9, dt * 3.5); c.position.x += L.dir * u.s * dt; if (L.dir * c.position.x > SPAN) c.position.x -= L.dir * 2 * SPAN; c.visible = Math.abs(c.position.x) < 120; }
       for (const c of S.kei) { const u = c.userData; if (u.stop > 0) { u.stop -= dt; continue; } c.position.x += u.dir * u.v * dt; c.rotation.y = u.dir > 0 ? 0 : Math.PI;
         if ((u.dir > 0 && c.position.x > KEI.x1) || (u.dir < 0 && c.position.x < KEI.x0)) { u.dir = -u.dir; u.stop = 1 + Math.random() * 6; u.z = KEI.z0 + Math.random() * (KEI.z1 - KEI.z0); } else if (Math.random() < dt * 0.03) u.stop = 2 + Math.random() * 5;
         c.position.z += clamp(u.z - c.position.z, -dt * 0.5, dt * 0.5); }

@@ -7,8 +7,11 @@ export const SNDS = ['boil', 'simmer', 'steam', 'rain', 'eaves', 'drip', 'traffi
 // the later ones (tools/sushi-sfx.py: ElevenLabs' sound effects), fetched once the first are in: the rain on the roof and on the pavement, the city's night, a burner's flame, the neon's hum, a car on the wet, footsteps, a stool, the register, chopsticks, a slurp, the counter bell
 export const SNDS2 = ['roofrain', 'rainst', 'citynight', 'burner', 'neon', 'carwet', 'step1', 'step2', 'step3', 'step4', 'stool', 'register', 'sticks', 'slurp', 'bell'];
 // how each kind of source carries: the distance at which it is at full level (ref) and how fast it falls after (roll); far is where it stops
-const KIND = { item: { ref: 0.35, roll: 1.4, far: 30 }, pot: { ref: 0.45, roll: 1.3, far: 30 }, voice: { ref: 1, roll: 1.2, far: 40 }, radio: { ref: 0.8, roll: 1.1, far: 40 }, tv: { ref: 0.7, roll: 1.2, far: 40 },
-  car: { ref: 3, roll: 1, far: 90 }, street: { ref: 7, roll: 0.9, far: 140 }, eaves: { ref: 0.6, roll: 1.5, far: 25, flat: true }, roof: { ref: 1.6, roll: 1.2, far: 25, flat: true }, ground: { ref: 2, roll: 1, far: 30 }, sign: { ref: 1.5, roll: 1.2, far: 30 } };
+const KIND = { item: { ref: 0.35, roll: 1.4, far: 30 }, pot: { ref: 0.45, roll: 1.3, far: 30 }, voice: { ref: 1, roll: 1.2, far: 40, bus: 'voices' }, radio: { ref: 0.8, roll: 1.1, far: 40, bus: 'music' }, tv: { ref: 0.7, roll: 1.2, far: 40, bus: 'tv' },
+  car: { ref: 3, roll: 1, far: 90, bus: 'street' }, street: { ref: 7, roll: 0.9, far: 140, bus: 'street' }, eaves: { ref: 0.6, roll: 1.5, far: 25, flat: true, bus: 'rain' }, roof: { ref: 1.6, roll: 1.2, far: 25, flat: true, bus: 'rain' }, ground: { ref: 2, roll: 1, far: 30, bus: 'rain' }, sign: { ref: 1.5, roll: 1.2, far: 30 } };
+// the levels: one for everything and one each for the music (the boombox), the television, the voices, the rain and the street (a kind's bus, above); set on the settings board, by the - and = keys, by the cart's volume buttons and the sets' own knobs; kept in the browser
+const VKEY = 'ramen-vol';
+export const VOL = (() => { const v = { master: 1, music: 1, tv: 1, voices: 1, rain: 1, street: 1 }; try { const o = JSON.parse(localStorage.getItem(VKEY) || '{}') || {}; for (const k in v) if (Number.isFinite(o[k])) v[k] = Math.max(0, Math.min(1.5, o[k])); } catch (e) { /* as made */ } return v; })();
 // what each thing is made of, for how it sounds when it is taken, set down or knocked
 const MAT = { ceramic: ['ceramic1', 'ceramic2', 0.85, 1.05], metal: ['metal1', 'metal2', 0.9, 1.1], glass: ['glass1', 'glass2', 0.95, 1.1], wood: ['wood1', 'wood2', 0.9, 1.15], cloth: ['cloth1', 'cloth2', 0.9, 1.1], soft: ['cloth1', 'cloth2', 1.3, 1.6], paper: ['cloth2', 'cloth1', 1.5, 1.8], plastic: ['wood1', 'wood2', 1.5, 1.8], coin: ['coin1', 'coin2', 0.95, 1.08] };
 export const matOf = (it) => it.mat || (it.kind === 'bowl' ? 'ceramic' : it.kind === 'drink' ? 'glass' : it.tool ? 'metal' : it.kind === 'sticks' ? 'wood' : it.kind === 'rag' ? 'cloth' : it.kind === 'cash' ? (it.value >= 100 ? 'paper' : 'coin') : it.kind === 'food' || it.kind === 'raw' ? 'soft' : 'wood');
@@ -41,23 +44,31 @@ function blocked(a, b) { // does the straight line from a to b pass through one 
 }
 
 export class GameAudio {
-  constructor() { this.ctx = null; this.ready = false; this.radioOn = false; this.station = 0; this.tape = false; this.bad = new Set(); this.step = 0; this.nextT = 0; this.buf = {}; this.loaded = 0; this.emit = new Set(); this.hitT = new WeakMap(); this.flows = []; this.shots = 0; }
+  constructor() { this.ctx = null; this.ready = false; this.radioOn = false; this.station = 0; this.tape = false; this.bad = new Set(); this.step = 0; this.nextT = 0; this.buf = {}; this.loaded = 0; this.emit = new Set(); this.hitT = new WeakMap(); this.flows = []; this.shots = 0; this.busK = {}; this.busN = {}; this.onLevel = []; }
+
+  level(k = 'master') { return VOL[k]; }
+  setLevel(k, v) { if (!(k in VOL)) return 0; VOL[k] = Math.round(Math.max(0, Math.min(1.5, v)) * 100) / 100; try { localStorage.setItem(VKEY, JSON.stringify(VOL)); } catch (e) { /* not kept */ } if (G.set && k === 'master') G.set.volume = VOL.master;
+    if (this.ready) { const t = this.ctx.currentTime; this.master.gain.setTargetAtTime(VOL.master, t, 0.03); for (const n of this.busN[k] || []) n.gain.setTargetAtTime(VOL[k], t, 0.03); } for (const f of this.onLevel) f(k, VOL[k]); return VOL[k]; }
+  nudge(k, d) { return this.setLevel(k, Math.round((VOL[k] + d) * 20) / 20); }
+  // a level's node: what is placed in the street goes through it to the dry chain, what is everywhere (flat) straight to the master; follow() has any other gain keep a level
+  bus(k, flat) { const key = k + (flat ? '|f' : ''); let n = this.busK[key]; if (!n) { n = this.busK[key] = this.follow(k, this.ctx.createGain()); n.connect(flat ? this.master : this.dry); } return n; }
+  follow(k, n) { n.gain.value = VOL[k]; (this.busN[k] ||= []).push(n); return n; }
 
   init() {
     if (this.ready) return;
     const AC = window.AudioContext || window.webkitAudioContext;
     if (!AC) return;
     const c = (this.ctx = new AC());
-    this.master = c.createGain(); this.master.gain.value = (G.set && G.set.volume) || 1.0; this.master.connect(c.destination);
+    this.master = c.createGain(); this.master.gain.value = VOL.master; this.master.connect(c.destination);
     this.dry = c.createGain(); this.dry.gain.value = 0.9; this.dry.connect(this.master);
     this.verb = c.createConvolver(); this.verb.buffer = alleyIR(c); this.verbIn = c.createGain(); this.verbIn.connect(this.verb); const vr = c.createGain(); vr.gain.value = 0.55; this.verb.connect(vr); vr.connect(this.master);
     const len = c.sampleRate * 2, b = c.createBuffer(1, len, c.sampleRate), d = b.getChannelData(0);
     for (let i = 0; i < len; i++) d[i] = Math.random() * 2 - 1;
     this.noise = b;
     // the wind (made here); the rest of the bed is recorded and set going as it arrives
-    this.windGain = this.loopNoise(220, 0.5, 0.0, 'lowpass');   // (a low breeze, not a hiss that reads as rain)
-    this.trainGain = this.loopNoise(95, 0.7, 0.0, 'lowpass');
-    this.bed = c.createGain(); this.bed.gain.value = 0.2; const bl = c.createBiquadFilter(); bl.type = 'lowpass'; bl.frequency.value = 7000; this.bed.connect(bl); bl.connect(this.master);
+    this.windGain = this.loopNoise(220, 0.5, 0.0, 'lowpass', this.bus('street', true));   // (a low breeze, not a hiss that reads as rain)
+    this.trainGain = this.loopNoise(95, 0.7, 0.0, 'lowpass', this.bus('street', true));
+    this.bed = c.createGain(); this.bed.gain.value = 0.2; const bl = c.createBiquadFilter(); bl.type = 'lowpass'; bl.frequency.value = 7000; this.bed.connect(bl); bl.connect(this.bus('rain', true));
     // the boombox: its little speaker, from where it stands
     this.radioGain = c.createGain(); this.radioGain.gain.value = 0;
     const bp = c.createBiquadFilter(); bp.type = 'bandpass'; bp.frequency.value = 1200; bp.Q.value = 0.25;
@@ -78,7 +89,7 @@ export class GameAudio {
     const c = this.ctx, K = KIND[kind] || KIND.item, e = { kind, K, at, o, input: c.createGain(), dist: c.createGain(), air: c.createBiquadFilter(), pan: c.createPanner(), send: c.createGain(), d: 0, alive: o.alive, glass: o.glass || 0 };
     e.air.type = 'lowpass'; e.air.Q.value = 0.5; e.air.frequency.value = 18000;
     e.pan.panningModel = K.flat ? 'equalpower' : 'HRTF'; e.pan.distanceModel = 'linear'; e.pan.rolloffFactor = 0; e.pan.refDistance = 1; e.pan.maxDistance = 10000;
-    e.input.connect(e.dist); e.dist.connect(e.air); e.air.connect(e.pan); e.pan.connect(o.out || this.dry); e.air.connect(e.send); e.send.connect(this.verbIn);
+    e.input.connect(e.dist); e.dist.connect(e.air); e.air.connect(e.pan); e.pan.connect(o.out || (K.bus ? this.bus(K.bus) : this.dry)); e.air.connect(e.send); e.send.connect(this.verbIn);
     e.free = () => { if (e.dead) return; e.dead = true; this.emit.delete(e); try { e.pan.disconnect(); e.send.disconnect(); } catch (x) { /* gone */ } };
     this.emit.add(e); this.place(e); return e;
   }
@@ -89,7 +100,7 @@ export class GameAudio {
     const d = (e.d = L.distanceTo(p)), K = e.K, g = d >= K.far ? 0 : K.ref / (K.ref + K.roll * Math.max(0, d - K.ref)) * (d > K.far * 0.7 ? (K.far - d) / (K.far * 0.3) : 1);
     let f = Math.max(700, Math.min(19000, 22000 / (1 + 0.25 * d)));
     if (e.glass) f = Math.min(f, 900); else if (d > 0.6 && blocked(L, p)) f = Math.min(f, 1400);
-    e.dist.gain.value = g; e.air.frequency.value = f; e.send.gain.value = 0.16 * (0.4 + 0.6 * Math.min(1, d / 9)) * (e.o.wet ?? 1);
+    e.dist.gain.value = g; e.air.frequency.value = f; e.send.gain.value = 0.16 * (0.4 + 0.6 * Math.min(1, d / 9)) * (e.o.wet ?? 1) * (K.bus && !e.o.out ? VOL[K.bus] : 1);
     return e;
   }
   ear() { return this.earAt || (G.camera ? G.camera.getWorldPosition(_l) : _l.set(0, 1.6, 0.3)); }
@@ -238,7 +249,7 @@ export class GameAudio {
       l.forwardX.value = f.x; l.forwardY.value = f.y; l.forwardZ.value = f.z;
       l.upX.value = 0; l.upY.value = 1; l.upZ.value = 0;
     }
-    if (this.el && !this.elGain && !this.el.paused) { const d = Math.hypot(_p.x + 1.0, _p.z + 0.46); this.el.volume = Math.max(0.05, Math.min(1, 0.55 / Math.max(0.6, d))) * Math.min(1, this.master.gain.value); }
+    if (this.el && !this.elGain && !this.el.paused) { const d = Math.hypot(_p.x + 1.0, _p.z + 0.46); this.el.volume = Math.min(1, Math.max(0.05, Math.min(1, 0.55 / Math.max(0.6, d))) * VOL.master * VOL.music); }
     // out from under the cart's roof the open sky's rain grows
     const e0 = this.ear(), out = Math.max(0, Math.abs(e0.x) - 1.75, -1.86 - e0.z, e0.z - 2.14); this.bed.gain.setTargetAtTime(0.1 + 0.22 * Math.min(1, out / 1.5), now, 0.3);
     this.rainLevel(now);
@@ -252,7 +263,7 @@ export class GameAudio {
     }
     // the neon's hum up at the sign while the cart is open, and the city's night under everything, low
     if (G.cart && this.buf.neon) { this.neon ||= this.loop('neon', 'sign', new THREE.Vector3(0, 3.9 + ROOFUP, -0.3)); this.neon.level(G.cart.open ? 0.22 : 0); }
-    if (this.buf.citynight && !this.city) { const s = c.createBufferSource(), g = (this.city = c.createGain()); s.buffer = this.buf.citynight; s.loop = true; s.loopStart = 0.05; s.loopEnd = s.buffer.duration - 0.05; g.gain.value = 0.16; s.connect(g); g.connect(this.master); s.start(); }
+    if (this.buf.citynight && !this.city) { const s = c.createBufferSource(), g = (this.city = c.createGain()); s.buffer = this.buf.citynight; s.loop = true; s.loopStart = 0.05; s.loopEnd = s.buffer.duration - 0.05; g.gain.value = 0.16; s.connect(g); g.connect(this.bus('street', true)); s.start(); }
     // a car going by the street's end: its tyres on the wet
     for (const g of G.passing || []) { if (!g.userData.lead) continue; if (!g.userData.snd) { const e = (g.userData.snd = this.spatial('car', () => g.position)), n = this.loopNoise(420, 0.4, 1, 'bandpass', e.input); e.n = n; n.gain.value = 0; } const s = g.userData.snd, v = g.userData.v || 0; s.n.gain.setTargetAtTime(v ? (this.buf.carwet ? 0.2 : 0.5) : 0, now, 0.2); s.n.filter.frequency.value = 300 + v * 30;
       if (v && !s.was && this.buf.carwet && g.visible) this.shot('carwet', () => g.position, 0.45, 0.95 + Math.random() * 0.1, 'car'); s.was = !!v; }   // (the recording of one going by on the wet, from where the car is)

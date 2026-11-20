@@ -41,13 +41,14 @@
     <div><b>VR · Chop</b> bring the knife down on the board</div>
     <div><b>VR · Left stick</b> step along the cart · <b>Right stick</b> snap-turn, ↑↓ height</div>
     <div><b>VR · Hand-tracking</b> pinch to grab, poke switches</div>
+    <div><b>VR · Volume</b> press the right stick in and push it up or down · or the VOL buttons on the right post</div>
     <div><b>Browser</b> WASD move · mouse look · left click grab / let go · right click or E pour, chop, press · C crouch</div>
-    <div><b>Browser</b> M settings board · G guide on/off · T type what you say · H show the keys · F8 report a bug</div>
+    <div><b>Browser</b> M settings board · − and = volume · G guide on/off · T type what you say · H show the keys · F8 report a bug</div>
     <div><b>Browser</b> look closely at a ticket, the menu or a label and it is shown sharp beside the crosshair</div>
     <div><b>Talk</b> your microphone is always on: speak to the customer you are looking at, and they answer aloud</div>
   </div>
 </div>
-<div id="hud"><div id="cross"></div><div id="hover"></div><div id="stat"></div><input id="say" maxlength="240" placeholder="Say something to the customer you are looking at… (Enter to send, Esc to cancel)" autocomplete="off"><div id="keys">WASD move · click: grab / let go · right click or E: pour · chop · M: settings · G: guide · T: type what you say · H: hide / show these · Esc: free mouse</div></div>
+<div id="hud"><div id="cross"></div><div id="hover"></div><div id="stat"></div><input id="say" maxlength="240" placeholder="Say something to the customer you are looking at… (Enter to send, Esc to cancel)" autocomplete="off"><div id="keys">WASD move · click: grab / let go · right click or E: pour · chop · M: settings · − =: volume · G: guide · T: type what you say · H: hide / show these · Esc: free mouse</div></div>
 <script>addEventListener('error',function(e){var b=document.getElementById('vr');if(b&&!window.G_STARTED){b.disabled=true;b.textContent='Could not start — reload the page';console.error(e.error||e.message);}});addEventListener('unhandledrejection',function(e){var b=document.getElementById('vr');if(b&&!window.G_STARTED){b.disabled=true;b.textContent='Could not start — reload the page';}});</script>
 <script type="module">__SUSHI__</script>
 </body>

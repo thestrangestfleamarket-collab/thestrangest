@@ -263,7 +263,7 @@ export function buildInput(renderer, rig, camera, dom) {
         }
       } else {
         if (Math.abs(ax) > 0.6) { if (!snapLatch) { snapLatch = true; const a = -Math.sign(ax) * ((G.set ? G.set.turn : 30) * Math.PI / 180); camera.getWorldPosition(_v); rig.position.sub(_v).applyAxisAngle(UP, a).add(_v); rig.rotation.y += a; } } else if (Math.abs(ax) < 0.3) snapLatch = false;
-        if (Math.abs(ay) > 0.5 && Math.abs(ax) < 0.4) rig.position.y = clamp(rig.position.y - ay * dt * 0.35, -0.45, 0.45);
+        if (Math.abs(ay) > 0.5 && Math.abs(ax) < 0.4 && !(gp.buttons[3] && gp.buttons[3].pressed)) rig.position.y = clamp(rig.position.y - ay * dt * 0.35, -0.45, 0.45);   // (pressed in, the stick is the volume: menu.js)
       }
     }
     G.hoverText = '';

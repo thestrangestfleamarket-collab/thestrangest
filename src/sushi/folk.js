@@ -12,6 +12,7 @@ const figs = {};
 export function makeFolk(key, seed = 0) {
   const F = D.folk[key], fig = (figs[key] ||= (() => { const f = JSON.parse(F.fig.D); if (F.x && F.x.length) f.x = F.x; return f; })()), av = tenantFigure(fig, 1), C = F.clips, n12 = fig.np * 12;
   // how it stands and sits, worked from its own points under each pose's bones (once): a body given a height (one the market only has indoors) is brought to it; seated, its hips come to the stool
+  av.root.traverse((o) => { if (o.isMesh) o.castShadow = false; });   // (their shadow on the pavement is shade.js's, as everyone's)
   const inner = av.root.children[0], gp = inner.children[0].geometry.attributes, SEAT = 0.8;
   const measure = (m) => { let lo = 1e9, hi = -1e9, hs = 0, hn = 0; const P = gp.position, bi = gp.bi, bw = gp.bw, Y = (k, x, y, z) => m[k * 12 + 1] * x + m[k * 12 + 4] * y + m[k * 12 + 7] * z + m[k * 12 + 10];
     for (let i = 0; i < P.count; i += 2) { const a = Math.round(bi.getX(i)), b = Math.round(bi.getY(i)), w = bw.getX(i), x = P.getX(i), y = P.getY(i), z = P.getZ(i), yy = Y(a, x, y, z) * w + Y(b, x, y, z) * (1 - w); if (yy < lo) lo = yy; if (yy > hi) hi = yy; if (a === 0 && w > 0.6) { hs += yy; hn++; } } return { lo, hi, hip: hn ? hs / hn : (lo + hi) / 2 }; };

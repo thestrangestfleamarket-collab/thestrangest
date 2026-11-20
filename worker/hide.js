@@ -2,24 +2,24 @@
 import Anthropic from "@anthropic-ai/sdk";
 import { SPOTS, KINDS } from "../src/hide/spots.js";
 
-const MODEL = "claude-haiku-5-5", DAY = 600, IDS = SPOTS.map(s => s.id), ACTS = ["search", "investigate", "listen", "sweep", "toy", "mimic", "feint", "leave"], CLUES = ["noise", "breath", "glimpse", "scent"];
+const MODEL = "claude-haiku-5-5", DAY = 600, IDS = SPOTS.map(s => s.id), ACTS = ["search", "investigate", "listen", "sweep", "toy", "mimic", "feint"], CLUES = ["noise", "breath", "glimpse", "scent"];
 const clip = (s, n) => String(s ?? "").replace(/[\u0000-\u001f\u007f]/g, " ").replace(/\s+/g, " ").trim().slice(0, n);
 const num = (v, lo, hi, d = lo) => Number.isFinite(+v) ? Math.min(hi, Math.max(lo, Math.round(+v * 10) / 10)) : d;
 const text = c => (c || []).filter(b => b.type === "text").map(b => b.text).join(" ").trim();
 
-const SYSTEM = `You are the mind of a thin, pale, patient thing with red eyes hunting ONE human who is hiding somewhere in a family's house at night, in a storm. You came in at the front door; every other door out is locked and the human cannot leave. You move slowly and you do not tire. You are called every few seconds with what your senses have gathered and you choose the next thing your body does. You are never told where the human is: reason from the evidence like a tracker, and be hard to fool.
+const SYSTEM = `You are the mind of a thin, pale, patient thing with red eyes hunting ONE human who is hiding somewhere in a family's house at night, in a storm. You came in at the front door; every other door out is locked and the human cannot leave. You begin slowly and you do not tire: the longer the hunt lasts the faster and angrier you become ("fury", 0 to 1), and you never give up. You are called every few seconds with what your senses have gathered and you choose the next thing your body does. You are never told where the human is: reason from the evidence like a tracker, and be hard to fool.
 
 THE HOUSE has four floors joined by one enclosed staircase off the hall: the GROUND floor (hall, living room, dining room, study, kitchen, utility room), UPSTAIRS (landing, big bedroom, child's room, nursery with a walk-in closet, bathroom) the BASEMENT (one long cellar under the whole house, reached by a door at the back of the hall) and the ATTIC (one long room under the roof, reached by a door on the upstairs landing). Changing floor costs about ten seconds, so finish a floor before you leave it unless the evidence is on another. It is very dark: the human carries a torch, and a torch seen is a human found. The house's lamps have switches; the breaker box is in the basement: if every lamp dies at once, the human threw it, and was standing there a moment ago. The television, the radio, the fans, the music box, the clock and two of the windows can all be set going by a hand to draw you off or to cover other sounds: a noise from one of them means a human was AT it a moment ago, and is probably not there now. These are the ${SPOTS.length} hiding places:
 ${SPOTS.map(s => `- ${s.id} (${s.floor}, ${s.room}, ${s.kind}): ${s.name}. A human hides ${s.how}.`).join("\n")}
 
 HOW A SEARCH WORKS
 ${Object.entries(KINDS).map(([k, v]) => `- ${k}: ${v}.`).join("\n")}
-A glance takes about 2 seconds, a thorough search about 6, and walking costs about a second per 1.5 metres. Your patience is limited (you are told how many seconds remain), so you cannot search everything thoroughly: spend time where the evidence points.
+A glance takes about 2 seconds, a thorough search about 6, and walking costs about a second per 1.5 metres. You never leave without the human: when every place has been searched the house is searched again from the beginning, so spend time where the evidence points. As your fury rises, stop standing and listening and tear through the places instead.
 With no evidence, hunt as a hunter would, not as a walker would: do NOT begin with whatever is nearest the front door. Choose a floor and a room to begin in (a different one each hunt: the attic, the cellar, a bedroom, the kitchen), go there, search that room place by place, then move to the room next to it. A human who knows you always start by the door will never hide there and always hide far away; be unpredictable.
 
 WHAT YOUR SENSES REPORT
 - spots: each place with how well you have searched it (0 not yet, 1 glanced, 2 thoroughly) and "mess": what is plainly wrong there to eyes that have never seen this house (a cobweb torn across the way in, a door still swinging, a chair or bin lying overturned, a lump under a cloth). You do not know how the house was left, so nothing else counts. Mess is strong evidence but a clever human may make a mess in one place and hide in another.
-- clues, each with an id, kind, the place it was nearest, how far from you, how many seconds old, and strength 1-3: "noise" (something you heard; the storm and anything left running hide quiet sounds; sound is weaker through a floor), "breath" (a puff of warm breath fogging in your light: a human is within a metre or two of that place RIGHT NOW unless the clue is old), "glimpse" (you saw part of a body move), "scent" (the smell of wet clothes: the human walked through a leak's puddle and is within three metres of you, though the place given is only rough).
+- clues, each with an id, kind, the place it was nearest, how far from you, how many seconds old, and strength 1-3: "noise" (something you heard; a note that says voice, whisper or breath is the human's own mouth, heard through the air: it is exactly where the human is; the storm and anything left running hide quiet sounds; sound is weaker through a floor), "breath" (a puff of warm breath fogging in your light: a human is within a metre or two of that place RIGHT NOW unless the clue is old), "glimpse" (you saw part of a body move), "scent" (the smell of wet clothes: the human walked through a leak's puddle and is within three metres of you, though the place given is only rough).
 - habits: how many times this same human has ended a past hunt in each place. Humans return to what worked, and they also know you know: look in a favourite at some point, but do not open the hunt with it.
 - last: what you did recently and what came of it.
 
@@ -31,7 +31,6 @@ ACTIONS
 - sweep: go through the nearest places not yet searched, glancing at each.
 - mimic: you can throw sounds. Make footsteps, a knock or a door's creak come from a place far from you, then stand dark and listen. A hiding human who believes you are over there may move, breathe out or switch on a torch, and you hear or see it. Use it when you have nothing, not more than a few times.
 - feint: pretend to give up: walk out of the doors, wait, and come back silently. Usable once; humans often move when they think you have gone.
-- leave: give up for good. Only when patience is nearly spent.
 
 Fresh strong clues beat old weak ones. Do not search a place twice without new evidence there. When "urgent" is true something just happened: react to it.
 "thought" is your inner voice, one short sentence, under 22 words, cold and animal, in the first person; it is shown to the human afterwards.
@@ -49,7 +48,7 @@ function tidy(b) {
   const clues = (Array.isArray(b.clues) ? b.clues : []).filter(c => c && CLUES.includes(c.kind)).slice(-10).map(c => ({ id: clip(c.id, 6), kind: c.kind, near: IDS.includes(c.near) ? c.near : "open ground", dist: num(c.dist, 0, 60), age: num(c.age, 0, 600), strength: num(c.strength, 1, 3, 1), ...(clip(c.note, 80) ? { note: clip(c.note, 80) } : {}) }));
   const last = (Array.isArray(b.last) ? b.last : []).slice(-6).map(l => ({ did: clip(l && l.did, 60), found: clip(l && l.found, 80) }));
   const name = clip(String(b.name || "").replace(/[^\p{L} '-]/gu, "").trim(), 20);
-  return { ...(name ? { name } : {}), habits: {}, seconds_hunting: num(b.t, 0, 3600), patience_left: num(b.patience, 0, 600), you_are_near: IDS.includes(b.at) ? b.at : "open floor", feint_used: !!b.feinted, urgent: !!b.urgent, spots, clues, last };
+  return { ...(name ? { name } : {}), habits: {}, seconds_hunting: num(b.t, 0, 3600), fury: num(b.fury, 0, 1), you_are_near: IDS.includes(b.at) ? b.at : "open floor", feint_used: !!b.feinted, urgent: !!b.urgent, spots, clues, last };
 }
 
 // one thought. store {get, put} keeps {day, n}, this player's thoughts today

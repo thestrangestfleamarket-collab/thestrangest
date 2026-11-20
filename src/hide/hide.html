@@ -12,9 +12,9 @@
 html,body{height:100%;margin:0;background:var(--bg);color:var(--ink);overflow:hidden;font-family:var(--display)}
 [hidden]{display:none!important}
 canvas{display:block;position:fixed;inset:0;width:100%;height:100%}
-#ui{position:fixed;inset:0;z-index:5;display:flex;align-items:flex-end;overflow:auto;padding:max(24px,env(safe-area-inset-top,0px)) max(16px,env(safe-area-inset-right,0px)) max(40px,env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px));
+#ui{position:fixed;inset:0;z-index:5;display:flex;align-items:flex-start;overflow:auto;padding:max(24px,env(safe-area-inset-top,0px)) max(16px,env(safe-area-inset-right,0px)) max(40px,env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px));
   background:radial-gradient(120% 90% at 78% 8%,rgba(227,154,69,.13) 0%,rgba(4,5,6,0) 45%),linear-gradient(0deg,rgba(4,5,6,.98) 0%,rgba(4,5,6,.93) 55%,rgba(4,5,6,.8) 100%)}
-#card{max-width:36rem;margin-left:min(7vw,5rem);display:flex;flex-direction:column;gap:1rem;min-width:0}
+#card{max-width:36rem;margin-top:auto;margin-left:min(7vw,5rem);display:flex;flex-direction:column;gap:1rem;min-width:0}
 .eyebrow{font:500 .72rem/1 var(--util);letter-spacing:.3em;text-transform:uppercase;color:var(--lamp)}
 h1{font:400 clamp(3rem,11vw,6.2rem)/.86 var(--display);letter-spacing:-.01em;margin:0;color:var(--paper);text-wrap:balance}
 h1 em{font-style:normal;color:var(--blood)}
@@ -38,13 +38,13 @@ dt{color:var(--ink)}dd{margin:0}
 <div id="ui"><div id="card">
   <div class="eyebrow">Sixty seconds</div>
   <h1>Dead <em>End</em></h1>
-  <p>You are alone in a house in a storm. You have one minute to hide before it comes in at the front door. Closets, wardrobes, beds, curtains, piles of boxes, the cellar, the attic: seventy-one places will hold a body. It listens, it sees your torch, and it notices what you moved. Leave the television on downstairs and it may go there first.</p>
+  <p>You are alone in a house in a storm. You have one minute to hide before it comes in at the front door. Closets, wardrobes, beds, curtains, piles of boxes, the cellar, the attic: seventy-one places will hold a body. It listens, to the house and to your own microphone; it sees your torch, and it notices what you moved. Leave the television on downstairs and it may go there first. It does not give up, and the longer it hunts the faster it gets: the only way out is the key to the kitchen's side door.</p>
   <div id="load"><div id="bar"></div></div>
   <p class="small"><label for="pname">Your first name, if you want it to know it </label><input id="pname" maxlength="20" autocomplete="given-name" style="font:inherit;background:#0b0b0c;color:inherit;border:1px solid #444;padding:.3em .5em;width:9em"></p>
   <div class="btns"><button id="bvr" class="main" disabled>Enter headset</button><button id="bdesk" disabled>Play on screen</button></div>
   <dl><dt>Headset</dt><dd>Left stick walks. Right stick turns, and pulled down it crouches you. The trigger is your hand: squeeze it on a door, a lid or anything loose to take hold, on a switch to work it. Your torch is in your left hand: squeeze that trigger on nothing to put it out or on. A hand over your mouth holds your breath.</dd>
       <dt>Screen</dt><dd>WASD, Shift to run, C to crouch then lie flat, mouse button to take hold, carry, throw or work a switch, E to open and shut, F for your torch, Space to climb over, Q to hold your breath.</dd></dl>
-  <div class="small" id="mind"></div><div class="small" id="vrnote"></div><div class="small" id="note"></div>
+  <div class="small" id="mind"></div><div class="small" id="mic"></div><div class="small" id="vrnote"></div><div class="small" id="note"></div>
   <div class="small">Dark, loud and frightening. Play seated or with clear floor around you.</div>
 </div></div>
 <script type="module">__HIDE__</script>

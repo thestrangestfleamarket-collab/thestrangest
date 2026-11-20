@@ -399,7 +399,7 @@ export function buildCart(scene, city) {
     const spare = Math.floor(s.kettle / BOWL_BROTH + 0.01);
     for (const p of C.pots) if (p.type) a.broth[p.type] = Math.max(0, Math.floor((p.level - 0.03) / (BOWL_BROTH / G.mods.pot) + 0.01)) + spare;
     for (const v of C.tares) a.tare[v.type] = Math.max(0, Math.floor((v.level - 0.03) / BOWL_TARE + 0.01)) + Math.floor(s.jar[v.type] / BOWL_TARE + 0.01);
-    for (const k in C.bins) a.tops[k] = C.bins[k].stock + (s.raw[k] || 0) * (YIELD[k] || 0) + G.items.filter((i) => !i.dead && ((i.kind === 'food' && i.topping === k) || (i.kind === 'raw' && i.raw === k))).reduce((n, i) => n + (i.kind === 'raw' ? i.left * (k === 'egg' ? 2 : i.def.per) : i.servings || 1), 0);
+    for (const k in C.bins) a.tops[k] = C.bins[k].stock + (s.raw[k] || 0) * (YIELD[k] || 0) + G.items.filter((i) => !i.dead && ((i.kind === 'food' && i.topping === k) || (i.kind === 'raw' && i.raw === k))).reduce((n, i) => n + (i.kind === 'raw' ? i.left * (k === 'egg' ? 2 : i.def.per) : i.total || 1), 0);
     return a;
   };
   C.canMake = (key, a = C.avail()) => { const r = RECIPES[key]; return a.noodles > 0 && a.broth[r.broth] > 0 && a.tare[r.tare] > 0; };

@@ -48,7 +48,7 @@ export class GameAudio {
 
   level(k = 'master') { return VOL[k]; }
   setLevel(k, v) { if (!(k in VOL)) return 0; VOL[k] = Math.round(Math.max(0, Math.min(1.5, v)) * 100) / 100; try { localStorage.setItem(VKEY, JSON.stringify(VOL)); } catch (e) { /* not kept */ } if (G.set && k === 'master') G.set.volume = VOL.master;
-    if (this.ready) { const t = this.ctx.currentTime; this.master.gain.setTargetAtTime(VOL.master, t, 0.03); for (const n of this.busN[k] || []) n.gain.setTargetAtTime(VOL[k], t, 0.03); } for (const f of this.onLevel) f(k, VOL[k]); return VOL[k]; }
+    if (this.ready) { this.master.gain.value = VOL.master; for (const n of this.busN[k] || []) n.gain.value = VOL[k]; } for (const f of this.onLevel) f(k, VOL[k]); return VOL[k]; }
   nudge(k, d) { return this.setLevel(k, Math.round((VOL[k] + d) * 20) / 20); }
   // a level's node: what is placed in the street goes through it to the dry chain, what is everywhere (flat) straight to the master; follow() has any other gain keep a level
   bus(k, flat) { const key = k + (flat ? '|f' : ''); let n = this.busK[key]; if (!n) { n = this.busK[key] = this.follow(k, this.ctx.createGain()); n.connect(flat ? this.master : this.dry); } return n; }

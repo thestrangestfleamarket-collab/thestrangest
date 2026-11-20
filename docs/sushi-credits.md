@@ -13,6 +13,17 @@
 - The hydrant and the manhole covers (`data/sushi/m/fire_hydrant.glb`, its paint taken out for the page's black and silver, and `manhole.glb`; `tools/sushi-models.cjs`): Poly Haven, CC0: Fire Hydrant, Gonçalo Felício, https://polyhaven.com/a/fire_hydrant; Water Manhole Cover, Raunox, https://polyhaven.com/a/water_manhole_cover.
 - The boombox's stations are real ones streamed live, each by its own public stream: WBGO 88.3 (Newark), WWOZ 90.7 (New Orleans), WQXR 105.9 (New York), and SomaFM's Seven Inch Soul and Underground 80s (somafm.com, listener-supported). Its cassette (when no station will play) is made in the page.
 - The cart's television and the repair shop's window sets play THE LATE MOVIE (`data/sushi/films.json`): Night of the Living Dead (1968, public domain; the Internet Archive's `night_of_the_living_dead_dvd`), a small copy of our own (`tools/sushi-film.sh`).
+- The television's other channels (`data/sushi/films.json` `market.take`) are THE MARKET's own (`data/tv.json`, each programme's Internet Archive item and file there), streamed from the Internet Archive (`https://archive.org/cors/<item>/<file>`), nothing copied; all 157 files were found there on 20 Nov 2026:
+
+| Channel | What | Source | Licence |
+|---|---|---|---|
+| 2 BOOP TV | 33 Betty Boop cartoons, Fleischer Studios, 1932-1939 | Internet Archive items `bb_*` | public domain (copyright not renewed) |
+| 4 SATURDAY MORNING | 18 cartoons: Popeye, Noveltoons, Little Audrey, Little Lulu and others, Famous Studios and friends, 1941-1957 | Internet Archive | public domain |
+| 6 THE MAN OF STEEL | 10 Superman cartoons, Fleischer and Famous Studios, 1941-1943 | Internet Archive items `superman_*` | public domain |
+| 7 ODD REELS | 33 advertising, school and safety films, 1935-1963 | the Prelinger Archives at the Internet Archive | public domain |
+| 9 OLD TIME TOONS | 7 cartoons, 1930-1948 | Internet Archive | public domain |
+| 11 PRIME TIME | 33 episodes: Bonanza, Dragnet, The Beverly Hillbillies, One Step Beyond, The Lone Ranger, 1949-1963 | Internet Archive | public domain (these episodes' copyrights not renewed) |
+| 13 MISSION CONTROL | 23 NASA films, 1959-1975 | NASA, at the Internet Archive | public domain (US government work) |
 - The street's and the cart's surfaces and the things left on the pavement: Poly Haven, CC0 (`tools/sushi-assets.py`; colour pictures only, made 512 or 256 px JPEG; the models thinned with `tools/hide-slim.cjs`, their pictures 256 px):
 
 | What | File | Author, source | Licence |

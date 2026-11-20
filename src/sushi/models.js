@@ -4,10 +4,10 @@ import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { MeshoptDecoder } from 'three/addons/libs/meshopt_decoder.module.js';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import { mat } from './ctx.js';
-const gl = new GLTFLoader(), got = {}, src = {}; gl.setMeshoptDecoder(MeshoptDecoder);
+const gl = new GLTFLoader(), got = {}, src = {}, PLAIN = { trashbag: 0x30333a }; gl.setMeshoptDecoder(MeshoptDecoder);
 // the file as it comes: its meshes by name (a car's body, paint and glass; a tree's wood and leaves)
 export const raw = (file) => (src[file] ||= gl.loadAsync('/sushi-assets/m/' + file + '.glb').then((d) => { const out = {}; d.scene.updateMatrixWorld(true); d.scene.traverse((o) => { if (o.isMesh) { const g = o.geometry.clone().applyMatrix4(o.matrixWorld); out[o.name || o.material.name] = { geo: g, map: o.material.map || null, alpha: o.material.alphaTest > 0 || o.material.transparent }; } }); return out; }));
-export const glb = (file, tint = 0xa8a8a8) => (got[file + tint] ||= gl.loadAsync('/sushi-assets/m/' + file + '.glb').then((d) => { d.scene.traverse((o) => { if (o.isMesh) { o.material = mat({ map: o.material.map, color: tint }); o.castShadow = false; o.userData.nopick = true; } }); return d.scene; }));
+export const glb = (file, tint = 0xa8a8a8) => (got[file + tint] ||= gl.loadAsync('/sushi-assets/m/' + file + '.glb').then((d) => { d.scene.traverse((o) => { if (o.isMesh) { o.material = PLAIN[file] ? mat({ color: PLAIN[file], roughness: 0.45, emissive: 0x15171b }) : mat({ map: o.material.map, color: tint }); o.castShadow = false; o.userData.nopick = true; } }); return d.scene; }));
 // Polyfork's cars (data/sushi/cars.json, tools/sushi-cars.cjs): each {body (its own colours), paint (its coachwork, for the page to colour; own: Polyfork's colour for it), glass, size}, in metres, nose along +x
 let carsP = null; const b64 = (s) => Uint8Array.from(atob(s), (c) => c.charCodeAt(0));
 export const cars = () => (carsP ||= fetch('/sushi-assets/cars.json').then((r) => r.json()).then((D) => { const out = {}, col = new THREE.Color();

@@ -22,6 +22,8 @@ import { buildTalk } from './talk.js';
 import { buildGrit } from './grit.js';
 import { buildGuide } from './guide.js';
 import { buildMenu } from './menu.js';
+import { buildBoards } from './boards.js';
+import { Cash } from './till.js';
 import { buildReport } from './report.js';
 import { buildTank } from './tank.js';
 import { buildTV } from './tv.js';
@@ -89,7 +91,7 @@ const input = buildInput(renderer, rig, camera, canvas);
 const life = buildLife(scene, city, cart), shade = buildShade(scene, city);
 const talk = buildTalk(scene);
 const grit = buildGrit(scene, city, cart);
-const guide = buildGuide(scene, cart);
+const boards = buildBoards(), guide = buildGuide(scene, cart);
 T.metreUV(cart.group);
 G.baked = mergeStatic(cart.group) + mergeStatic(city.group);
 for (const g of [cart.group, city.group]) g.traverse((o) => { if (o.isMesh && !o.userData.dyn && !o.userData.item && o.castShadow) { if (!o.geometry.boundingSphere) o.geometry.computeBoundingSphere(); if (o.geometry.boundingSphere.radius * Math.max(o.scale.x, o.scale.y, o.scale.z) > 0.12) o.layers.enable(2); } });   // the still street and cart cast the sun's shadows (not their small things)
@@ -134,7 +136,7 @@ function tick(dt) {
   life.update(dt, G.t); shade.update();
   busk.update(dt); talk.update(dt); tv.update(dt); tank.update(dt); story.update(dt); live.update(dt); share.update(dt); if (!guest) cook.update(dt);
   grit.update(dt, G.t);
-  guide.update(dt, G.t); gameMenu.update(dt); report.update(dt);
+  guide.update(dt, G.t); gameMenu.update(dt); boards.update(); report.update(dt);
   G.fx.update(dt);
   G.audio.update(boil, life.env);
 }
@@ -192,7 +194,7 @@ function frame(now) {
 }
 renderer.setAnimationLoop(frame);
 
-G.debug = { weather, dawn, tv, Items, DRINKS, PH, person: makePerson, PF, tenant: tenantFigure, city, guide, menu: gameMenu, report, tick, frame, render, input, startDesktop, startVR, THREE, share, guest, tank };
+G.debug = { boards, Cash, weather, dawn, tv, Items, DRINKS, PH, person: makePerson, PF, tenant: tenantFigure, city, guide, menu: gameMenu, report, tick, frame, render, input, startDesktop, startVR, THREE, share, guest, tank };
 if (G.guest) { menu.querySelector('h2').textContent = 'RAMEN, as yourself: walk the park corner up to the ramen cart, take a stool, order a bowl and pay for it. The cook, the customers and everyone passing are the same people every page on the block sees.'; $('help').innerHTML = '<div><b>Browser</b> WASD walk · mouse look · V first / third person · E sit at a stool or get up · click the menu to order · M settings</div><div><b>VR</b> left stick walk · right stick turn · trigger by a stool to sit · step away to get up · poke the menu to order</div><div><b>Back</b> walk out at the end of the street, or LEAVE, to THE MARKET</div>'; $('keys').textContent = 'WASD walk · V view · E sit / get up · click: order · M settings · Esc: free mouse'; deskBtn.textContent = 'Walk the block in this browser'; }
 window.G = G;
 { const box = $('say'); // on a screen: M the settings board, G the guide, T to type what you say if you would rather not speak it

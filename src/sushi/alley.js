@@ -45,7 +45,7 @@ export function buildAlley(scene, o = {}) {
   // the sodium lamps' own light on the pavement (three, as many as the frame can afford); the rest of the night's light is drawn, not cast
   const lampLights = street.lampAt.slice(0, 3).map(([x, y, z]) => { const p = new THREE.PointLight(0xffa04a, 0, 22, 1.5); p.position.set(x, y - 0.3, z); scene.add(p); return p; });
   const fogC = new THREE.Color(), tmp = new THREE.Color(), tmp2 = new THREE.Color(), _mp = new THREE.Vector3(), MOONC = new THREE.Color(0x9ab0e8), NIGHTF = new THREE.Color(0x6a6480), DAYF = new THREE.Color(0xbcd0ec), EARTH = new THREE.Color(0x5a5a5e), CITYGLOW = new THREE.Color(0x4a3428);
-  let lit = 0, skyT = 0, wet = 0, lastH = -1, envAt = [-1, -1]; const api = {};
+  let lit = 0, litSet = false, skyT = 0, wet = 0, lastH = -1, envAt = [-1, -1]; const api = {};
   const sm = (a, b, x) => { const t = clamp((x - a) / (b - a), 0, 1); return t * t * (3 - 2 * t); };
   const paint = () => { const K = G.clock, h = K ? K.hour : 11, w = G.weather ? G.weather.now : weatherAt(K ? K.frac : 0), jd = city.jd(h);
     const Sk = sky.set(jd, w, null), e = Sk.e, day = sm(-10, 8, e);   // (the twilight counts: the dawn brightens the street before the sun is up)
@@ -71,7 +71,7 @@ export function buildAlley(scene, o = {}) {
   paint();
   ups.push((dt, t) => {
     const K = G.clock, hr = K ? K.hour : 11, want = hr >= 17.9 && hr < 29.4 ? 1 : hr >= 29.4 && hr < 30.3 ? clamp((30.3 - hr) / 0.9, 0, 1) : 0;   // the street's lamps and signs come on as the sun goes and go off through the dawn
-    lit += clamp(want - lit, -dt / 4, dt / 4); const e = S.easy ? 0.6 : 1; api.lit = lit;
+    if (!litSet) { litSet = true; lit = want; } lit += clamp(want - lit, -dt / 4, dt / 4); const e = S.easy ? 0.6 : 1; api.lit = lit;
     for (const m of lampMats) m.emissiveIntensity = lit * (m.userData.k || 1.6) * e + (m.userData.day || 0); HU.opacity.value = lit * 0.3 * e; NIGHT.value = lit * e;
     lampLights.forEach((l) => { l.intensity = lit * 9; });
     wet += clamp(clamp((G.rainK || 0) / 0.2, 0, 1) - wet, -dt / 300, dt / 60); T.SURF.wet.value = wet;   // the ground darkens as it rains and dries slowly after
@@ -82,5 +82,5 @@ export function buildAlley(scene, o = {}) {
   // where the corner's people stop (plan.js SPOTS): the park bench, the crossing, the railings, the museum's steps and the bank's door across Market St, the apartment house's door on West St
   const P = (x, z) => new THREE.Vector3(x, 0, z), shops = SPOTS.map((s) => ({ type: s.type, open: true, p: P(s.x, s.z), name: s.name })), all = shops;
   const block = buildBlock(city, shops, { near: LANES[0], far: LANES[1], split: (KERB + FKERB) / 2, end: E0, west: W0, cross: XWALK }); ups.push((dt, t) => block.update(dt, t));
-  return Object.assign(api, { group: city, jd: (h) => city.jd(h), shops: all, fronts: { shops: [] }, street, corner, glow, fill, sun, moon, lamps: lampMats, alley: true, vent: null, skyDome: sky, weatherAt, setEasy(on) { S.easy = on; paint(); }, update(dt, t) { for (const u of ups) u(dt, t); }, halo, rain: null, cars: street.cars, glowMap, bakeFar() { }, reflect() { } });
+  return Object.assign(api, { group: city, jd: (h) => city.jd(h), shops: all, fronts: { shops: [] }, street, corner, glow, fill, sun, moon, lamps: lampMats, alley: true, vent: { x: 7.5, z: (KERB + FKERB) / 2 + 3.5 }, skyDome: sky, weatherAt, setEasy(on) { S.easy = on; paint(); }, update(dt, t) { for (const u of ups) u(dt, t); }, halo, rain: null, cars: street.cars, glowMap, bakeFar() { }, reflect() { } });
 }

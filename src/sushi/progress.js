@@ -32,7 +32,7 @@ export const START = 2, NEED = [null, null, { rep: 58, asks: 3 }, { rep: 66, ask
 export const EXTRAS = { rep: 64, day: 5 };   // special requests (firm noodles, extra toppings, one left out)
 const U = RECIPES[DAYDISH[0]].price;   // every amount is counted in bowls of the first dish, so the prices can change under it
 export const DAYS = {
-  bowls: [25, 40, 47, 52, 56, 60, 64],   // the takings to aim for, day by day, in bowls: a gentle first day, then near what a fair cook takes
+  bowls: [23, 36, 42, 47, 50, 54, 58],   // the takings to aim for, day by day, in bowls: a gentle first day, then near what a fair cook takes
   target: (d, easy) => Math.round(U * DAYS.bowls[Math.min(d, DAYS.bowls.length) - 1] * (easy ? 0.6 : 1)),   // the day's takings to aim for
   fee: (d, easy) => Math.round(U * Math.min(6 + 4 * (d - 1), 36) * (easy ? 0.5 : 1)),         // due at dawn
   rep: (rating, met, short, refused, events) => Math.round((rating - 3.5) * 5) + (met ? 1 : -1) - (short ? 6 : 0) - Math.min(3, refused) + Math.max(-3, Math.min(3, events)),   // how a day moves the reputation (between -12 and +6; never below -3 on EASY, -2 on day one)
@@ -47,9 +47,9 @@ export function buildProgress(params) {
   // the cart as it stands today: the upgrades into G.mods, the menus for the day and the night
   prog.apply = () => { const P = prog.P; Object.assign(G.mods, BASE); for (const u of UPGRADES) if (P.ups.includes(u.id)) Object.assign(G.mods, u.mod);
     day.menu = DAYDISH.filter((k) => P.recipes.includes(k)); day.mods = !!P.extras; day.drinks = P.day >= 2;
-    const nd = Object.keys(RECIPES).filter((k) => RECIPES[k].night); night.menu = [...new Set([...nd, day.menu[0], day.menu[day.menu.length - 1]])];
+    const nd = Object.keys(RECIPES).filter((k) => RECIPES[k].night); night.menu = [...new Set([day.menu[0], ...day.menu.slice(1).slice(-2), ...nd])]; night.mods = day.mods;   // the one menu (night only, owner 19 Nov 2026): the first dish, the two newest and the night's own bowl
     G.cart?.fit?.(); for (const f of prog.hooks) f(); };
-  prog.stage = (isNight) => (isNight ? night : day);
+  prog.stage = () => night;
   prog.on = (f) => { prog.hooks.push(f); };
   prog.has = (id) => prog.P.ups.includes(id);
   prog.price = (id) => { const u = UPGRADES.find((x) => x.id === id); return u ? u.cost * U : 0; };

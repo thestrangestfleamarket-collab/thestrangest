@@ -144,7 +144,7 @@ export function buildTalk() {
     const c = it.c, v = it.v; D.cur = it; it.playing = true; it.t0 = nowS(); talk.spoken.push(it.log = { who: v.name, kind: it.kind, t0: it.t0 }); if (talk.spoken.length > 40) talk.spoken.shift();
     const base = { who: v.name, kind: it.kind, text: it.text, live: !!it.live, thinkMs: it.think, voiceMs: it.voiceMs, firstMs: it.firstMs, waitMs: Math.round((it.t0 - it.born) * 1000), ...(it.prio >= 4 && D.cookEnd > D.lastEnd ? { gapMs: Math.round((it.t0 - D.cookEnd) * 1000) } : {}) };
     if (it.tts || !it.chunks.length) {
-      if (!window.speechSynthesis || !speechSynthesis.getVoices().length) { talk.voiceless = true; G.audio.play?.('voice'); note({ ...base, voice: 'none' }); return end(it); }
+      if (!window.speechSynthesis || !speechSynthesis.getVoices().length) { talk.voiceless = true; G.audio.play?.('voice', mouth(c, new V3())); note({ ...base, voice: 'none' }); return end(it); }
       try { const u = new SpeechSynthesisUtterance(it.text), vs = speechSynthesis.getVoices().filter((x) => /^en/i.test(x.lang)), want = v.g === 'f' ? /female|woman|samantha|victoria|karen|zira|susan|aria|jenny/i : /\bmale|\bman\b|daniel|alex|david|mark|fred|guy|james/i; u.voice = vs.find((x) => want.test(x.name)) || null; u.pitch = v.g === 'f' ? 1.15 : 0.7; u.rate = 1.02; u.lang = 'en-US';
         const est = 0.5 + it.text.length * 0.06; c.p.talkT = est; it.estEnd = nowS() + est; it.utt = u; note({ ...base, voice: 'browser' }); u.onend = u.onerror = () => end(it); speechSynthesis.speak(u); } catch (e) { end(it); }
       return;

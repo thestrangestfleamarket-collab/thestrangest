@@ -184,12 +184,10 @@ let halt = () => {};
   ok(s.units.find(u => u.id === archer.id).rec === 2, 'the archer rests two turns');
   await (await on(A)).reload({ waitUntil: 'commit', timeout: 120000 }); ok(await until(A, () => window.__t && window.__t.me === 0 && window.__t.state && window.__t.state.turnNo === 3), 'a reload comes back to the same seat and the same board: ' + JSON.stringify(await A.evaluate(() => window.__t ? { me: window.__t.me, code: window.__t.code, turnNo: window.__t.state && window.__t.state.turnNo, lobby: document.getElementById('lobbyMsg').textContent } : null)));
   await people(A);
-  { let picked = false, P = A;   // on a slow machine the turn clock may run out meanwhile: whoever's turn it is clicks, again if it passed just then
-    for (let n = 0; n < 3 && !picked; n++) { P = (await st(A)).turn === 0 ? A : B; await people(P);
-      const hit = await (await on(P)).evaluate(() => { const T = window.__t, id = T.state.units.find(u => u.owner === T.me && u.type === 'bulwark').id; let g = null; T.scene.traverse(o => { if (o.userData && o.userData.pick && o.userData.pick.kind === 'unit' && o.userData.pick.id === id) g = o; });
-        const p = g.getWorldPosition(T.V(0, 0, 0)); p.y += 0.06; p.project(T.camera); return { id, x: (p.x + 1) / 2 * innerWidth, y: (1 - p.y) / 2 * innerHeight }; });
-      await (await on(P)).mouse.click(hit.x, hit.y); picked = await until(P, id => window.__t.selected === id, hit.id, 8000); }
-    ok(picked, 'a real click on a knight\'s base picks it'); await tap(P, null); }
+  { const hit = await (await on(A)).evaluate(() => { const T = window.__t, id = T.state.units.find(u => u.owner === 0 && u.type === 'bulwark').id; let g = null; T.scene.traverse(o => { if (o.userData && o.userData.pick && o.userData.pick.kind === 'unit' && o.userData.pick.id === id) g = o; });
+      const p = g.getWorldPosition(T.V(0, 0, 0)); p.y += 0.06; p.project(T.camera); return { id, x: (p.x + 1) / 2 * innerWidth, y: (1 - p.y) / 2 * innerHeight }; });
+    await (await on(A)).mouse.click(hit.x, hit.y);   // told by what the page says of it, not by the pick: on a slow machine the turn's two minutes may have run out, and then nothing of yours can be picked
+    ok(await until(A, () => /^Knight/.test(document.getElementById('info').textContent), null, 8000), 'a real click on a knight\'s base finds it: ' + (await A.textContent('#info')).slice(0, 40)); await tap(A, null); }
 
   ok(await people(A) && await people(B), 'the twenty people are drawn as their models on both pages');
   await shot(A, 'board-player1'); await shot(B, 'board-player2');

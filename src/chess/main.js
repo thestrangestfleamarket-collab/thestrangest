@@ -2,7 +2,9 @@
 import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import * as G from './game.js';
-import { makeStone, makeWood, makeEnvironment, makeBackdrop } from './procedural.js';
+import { makeWood, makeEnvironment, makeBackdrop } from './procedural.js';
+import { makeBoard } from './board.js';
+import { makeLand } from './land.js';
 import { FX } from './fx.js';
 import { Sound } from './audio.js';
 import { loadCharacters, makeCharacter } from './characters.js';
@@ -15,7 +17,7 @@ const FACE_ANGLE = { N: 0, E: -Math.PI / 2, S: Math.PI, W: Math.PI / 2 };
 // ---------------------------------------------------------------- state
 let ws = null, me = -1, code = null, state = null;
 let started = false, present = [false, false], deadline = null, skew = 0;
-let selected = null, inspected = null;
+let selected = null, inspected = null, inspectedTile = null;
 
 function getToken() {
   try {
@@ -43,7 +45,8 @@ renderer.shadowMap.type = THREE.PCFShadowMap;
 document.body.appendChild(renderer.domElement);
 
 const scene = new THREE.Scene();
-const BG = makeBackdrop();
+const HALL_BG = makeBackdrop();
+let BG = HALL_BG;
 const FOG = new THREE.FogExp2(0x0a0b0e, 0.018);
 scene.background = BG;
 scene.fog = FOG;
@@ -54,63 +57,92 @@ camera.position.set(0, 10, 10.5);
 const controls = new OrbitControls(camera, renderer.domElement);
 controls.maxPolarAngle = 1.45;
 controls.minDistance = 4;
-controls.maxDistance = 30;
+controls.maxDistance = 44;
 controls.enablePan = false;
 
 const world = new THREE.Group(); // everything that sits on the table
 scene.add(world);
 
 // Lighting: a warm key light with shadows (parented to the board so it follows it in AR), plus a dim cool fill.
-scene.add(new THREE.HemisphereLight(0x8fa0c0, 0x2a2018, 0.25));
+const hemi = new THREE.HemisphereLight(0x8fa0c0, 0x2a2018, 0.25);
+scene.add(hemi);
 const sun = new THREE.DirectionalLight(0xffe2c0, 3.0);
 sun.position.set(8, 9, 1); // from the side, so shadows are visible from both players' seats
 sun.castShadow = true;
 sun.shadow.mapSize.set(2048, 2048);
 world.add(sun, sun.target);
+let shadowExtent = 9;
 function setShadowScale(k) { // shadow volume is in real units, so it must shrink with the board in AR
   const c = sun.shadow.camera;
-  c.left = -9 * k; c.right = 9 * k; c.top = 9 * k; c.bottom = -9 * k; c.near = 1 * k; c.far = 32 * k;
+  const e = shadowExtent;
+  c.left = -e * k; c.right = e * k; c.top = e * k; c.bottom = -e * k; c.near = 1 * k; c.far = (e > 9 ? 44 : 32) * k;
   c.updateProjectionMatrix();
   sun.shadow.normalBias = 0.03 * k;
   sun.shadow.bias = -0.0004;
 }
 setShadowScale(1);
-const tilesGroup = new THREE.Group(), unitsGroup = new THREE.Group(), arrowsGroup = new THREE.Group(), panel = new THREE.Group();
-world.add(tilesGroup, unitsGroup, arrowsGroup, panel);
-const pickRoots = [tilesGroup, unitsGroup, arrowsGroup, panel];
+const fieldGroup = new THREE.Group(), unitsGroup = new THREE.Group(), arrowsGroup = new THREE.Group(), panel = new THREE.Group();
+world.add(fieldGroup, unitsGroup, arrowsGroup, panel);
+const pickRoots = [fieldGroup, unitsGroup, arrowsGroup, panel];
 
-const tx = x => x - (G.COLS - 1) / 2;
-const tz = y => y - (G.ROWS - 1) / 2;
-
-// Board
-const wood = makeWood(11);
-for (const t of Object.values(wood)) t.repeat.set(3, 3);
-const woodMat = new THREE.MeshStandardMaterial({ ...wood, color: 0xffffff });
-const slab = new THREE.Mesh(new THREE.BoxGeometry(G.COLS + 0.7, 0.24, G.ROWS + 0.7), woodMat);
-slab.position.y = -0.22;
-slab.receiveShadow = true;
-world.add(slab);
+// The battlefield: the plain board or a landscaped map (maps.js), built when the match's state first names it.
+let cols = G.COLS, rows = G.ROWS, field = null;
+const tx = x => x - (cols - 1) / 2;
+const tz = y => y - (rows - 1) / 2;
+const ty = (x, y) => (field ? field.yAt(x, y) : 0);
 // A big round table under the board, only for the flat-screen view (in AR your real table does this job).
 const tableWood = makeWood(23);
 for (const t of Object.values(tableWood)) t.repeat.set(5, 5);
 const table = new THREE.Mesh(new THREE.CylinderGeometry(17, 17, 0.4, 56), new THREE.MeshStandardMaterial({ ...tableWood, color: 0x9a8a7a }));
 table.position.y = -0.55;
 table.receiveShadow = true;
+table.raycast = () => {};
 world.add(table);
-const stone = [makeStone(3), makeStone(8)];
-const tiles = [];
-const tileGeo = new THREE.BoxGeometry(0.95, 0.1, 0.95);
-for (let y = 0; y < G.ROWS; y++) {
-  for (let x = 0; x < G.COLS; x++) {
-    const m = new THREE.Mesh(tileGeo, new THREE.MeshStandardMaterial({ ...stone[(x * 7 + y * 3) % 2], normalScale: new THREE.Vector2(1.2, 1.2) }));
-    m.position.set(tx(x), -0.05, tz(y));
-    m.receiveShadow = true;
-    m.userData.pick = { kind: 'tile', x, y };
-    tilesGroup.add(m);
-    tiles.push(m);
-  }
+
+const HALL = { sun: [0xffe2c0, 3.0], dir: [8, 9, 1], hemi: [0x8fa0c0, 0x2a2018, 0.25], fog: [0x0a0b0e, 0.018], exposure: 1.05, env: 0.28, mote: 0xffd9a0 };
+function skyBackdrop(stops) {
+  const canvas = document.createElement('canvas');
+  canvas.width = 16; canvas.height = 256;
+  const ctx = canvas.getContext('2d'), g = ctx.createLinearGradient(0, 0, 0, 256);
+  g.addColorStop(0, stops[0]); g.addColorStop(0.5, stops[1]); g.addColorStop(0.68, stops[2]); g.addColorStop(0.8, '#2a2622'); g.addColorStop(1, '#0c0b0a');
+  ctx.fillStyle = g; ctx.fillRect(0, 0, 16, 256);
+  const tex = new THREE.CanvasTexture(canvas);
+  tex.colorSpace = THREE.SRGBColorSpace;
+  return tex;
 }
-const tileAt = (x, y) => tiles[y * G.COLS + x];
+// The hour's light for the map on the table: sun, sky light, haze and backdrop.
+function applyLook() {
+  const L = (field && field.look) || HALL, land = !!(field && field.land), ar = renderer.xr.isPresenting;
+  sun.color.setHex(L.sun[0]); sun.intensity = L.sun[1];
+  sun.position.set(...L.dir); if (land) sun.position.normalize().multiplyScalar(18);
+  hemi.color.setHex(L.hemi[0]); hemi.groundColor.setHex(L.hemi[1]); hemi.intensity = L.hemi[2];
+  FOG.color.setHex(L.fog[0]); FOG.density = L.fog[1];
+  BG = land ? skyBackdrop(L.sky) : HALL_BG;
+  scene.background = ar ? null : BG;
+  renderer.toneMappingExposure = L.exposure;
+  scene.environmentIntensity = L.env;
+  shadowExtent = land ? Math.hypot(cols + 2 * field.border, rows + 2 * field.border) / 2 + 0.5 : 9;
+  setShadowScale(world.scale.x);
+  if (field) field.setFog(ar ? 0 : L.fog[1]);
+}
+function setField(id) {
+  if (!G.MAPS[id]) id = 'board';
+  if (field && field.id === id) return;
+  if (field) field.dispose();
+  const m = G.MAPS[id];
+  cols = m.cols; rows = m.rows;
+  field = (m.tiles ? makeLand : makeBoard)(m, { fx, id });
+  fieldGroup.add(field.group);
+  applyLook(); applyQuality(); placePanel();
+  motes.material.color.setHex(((field.look || HALL).mote));
+  if (!renderer.xr.isPresenting) resetCamera();
+  ambience();
+}
+// The map's standing sounds, where they are in the room: the river, the birds, the leaves.
+function ambience() {
+  if (!field) return;
+  sound.ambience({ river: field.river && worldPos(field.river), birds: field.look && field.look.birds && field.woods ? worldPos(field.woods) : null, leaves: field.woods && worldPos(field.woods) });
+}
 
 // ---------------------------------------------------------------- text helpers
 function textTexture(w, h) {
@@ -209,7 +241,7 @@ function buildUnit(u) {
   g.traverse(o => { if (o.isMesh) o.userData.base = o.material.color.clone(); });
   const label = makeLabel();
   g.add(label);
-  g.userData = { ch, type: u.type, pick: { kind: 'unit', id: u.id }, label, key: '', target: new THREE.Vector3(tx(u.x), 0, tz(u.y)), angle: FACE_ANGLE[u.facing] };
+  g.userData = { ch, type: u.type, pick: { kind: 'unit', id: u.id }, label, key: '', target: new THREE.Vector3(tx(u.x), ty(u.x, u.y), tz(u.y)), angle: FACE_ANGLE[u.facing] };
   g.position.copy(g.userData.target);
   g.rotation.y = g.userData.angle;
   return g;
@@ -223,7 +255,7 @@ function syncUnits() {
     alive.add(u.id);
     let g = unitMeshes.get(u.id);
     if (!g) { g = buildUnit(u); unitMeshes.set(u.id, g); unitsGroup.add(g); }
-    g.userData.target.set(tx(u.x), 0, tz(u.y));
+    g.userData.target.set(tx(u.x), ty(u.x, u.y), tz(u.y));
     g.userData.angle = FACE_ANGLE[u.facing];
     const key = `${u.hp}|${u.rec}|${u.snare}`;
     if (key !== g.userData.key) {
@@ -280,7 +312,7 @@ const recenterButton3D = makeButton('RECENTER', '#3a404b', 1.3, 'recenter');
 function placePanel() {
   const seat = me === 1 ? 1 : 0;
   panel.rotation.y = seat === 1 ? Math.PI : 0;
-  panel.position.set(0, 0, (seat === 1 ? -1 : 1) * (G.ROWS / 2 + 0.5));
+  panel.position.set(0, 0, (seat === 1 ? -1 : 1) * (rows / 2 + (field ? field.border : 0.35) + 0.15));
 }
 
 let lastStatus = '';
@@ -310,7 +342,7 @@ function floatText(pos, text, color) {
   t.tex.needsUpdate = true;
   const s = new THREE.Sprite(new THREE.SpriteMaterial({ map: t.tex, depthTest: false, transparent: true }));
   s.scale.set(1.6, 0.4, 1);
-  s.position.copy(pos).setY(2.0);
+  s.position.copy(pos).setY(pos.y + 2.0);
   s.renderOrder = 10;
   s.raycast = () => {};
   s.userData.life = 1.4;
@@ -322,6 +354,7 @@ function floatText(pos, text, color) {
 const fx = new FX(world);
 const sound = new Sound();
 const V = (x, y, z) => new THREE.Vector3(x, y, z);
+const up = (v, h) => v.clone().setY(v.y + h); // a point this high above the ground under v
 const worldPos = local => world.localToWorld(local.clone()); // board space -> room space, for 3D audio
 const later = (t, fn) => (t > 0 ? setTimeout(fn, t * 1000) : fn());
 const IMPACT_DELAY = { melee: 0.16, line: 0.18, ranged: 0.4, blast: 0.5, heal: 0.25, snare: 0.3 };
@@ -329,10 +362,10 @@ let shake = 0;
 
 function explode(t) {
   const wp = worldPos(t);
-  fx.flash({ pos: t.clone().setY(0.5), tex: 'light_01', color: 0xffc070, size: 3.5, life: 0.25, grow: 0.8 });
-  fx.burst({ pos: t.clone().setY(0.2), tex: 'fire_01', color: 0xff8a30, count: 22, size: 0.9, life: 0.6, speed: 2.6, up: 0.9, drag: 3, grow: 0.8, spread: 0.8 });
-  fx.burst({ pos: t.clone().setY(0.3), tex: 'spark_01', color: 0xffd080, count: 18, size: 0.22, life: 0.9, speed: 5, up: 0.9, gravity: 9, drag: 0.6 });
-  fx.burst({ pos: t.clone().setY(0.3), tex: 'smoke_07', color: 0x2a2622, count: 9, size: 1.2, life: 1.8, speed: 0.8, up: 1.4, drag: 1, grow: 1.2, additive: false, opacity: 0.55, spread: 0.8 });
+  fx.flash({ pos: up(t, 0.5), tex: 'light_01', color: 0xffc070, size: 3.5, life: 0.25, grow: 0.8 });
+  fx.burst({ pos: up(t, 0.2), tex: 'fire_01', color: 0xff8a30, count: 22, size: 0.9, life: 0.6, speed: 2.6, up: 0.9, drag: 3, grow: 0.8, spread: 0.8 });
+  fx.burst({ pos: up(t, 0.3), tex: 'spark_01', color: 0xffd080, count: 18, size: 0.22, life: 0.9, speed: 5, up: 0.9, gravity: 9, drag: 0.6 });
+  fx.burst({ pos: up(t, 0.3), tex: 'smoke_07', color: 0x2a2622, count: 9, size: 1.2, life: 1.8, speed: 0.8, up: 1.4, drag: 1, grow: 1.2, additive: false, opacity: 0.55, spread: 0.8 });
   fx.decal({ pos: t, tex: 'scorch_02', size: 2.8 });
   fx.lightFlash(t, 0xff8a30, 60, 0.5);
   sound.play('boom*', { pos: wp, vol: 1 });
@@ -360,31 +393,31 @@ function castFxNow(kind, g, a, t) {
     sound.play('swing*', { pos: wp, vol: 0.9 });
     sound.whoosh({ pos: wp, dur: 0.18, from: 900, to: 3000, vol: 0.25 });
     if (kind === 'melee') {
-      fx.flash({ pos: a.clone().addScaledVector(dir, 0.7).setY(0.7), tex: 'slash_02', size: 1.3, life: 0.22, grow: 0.4, rotation: Math.random() * 6.28 });
+      fx.flash({ pos: up(a, 0.7).addScaledVector(dir, 0.7), tex: 'slash_02', size: 1.3, life: 0.22, grow: 0.4, rotation: Math.random() * 6.28 });
     } else {
-      for (const d of [1, 2]) fx.flash({ pos: a.clone().addScaledVector(dir, d).setY(0.65), tex: 'flare_01', color: 0xe8f0ff, size: 0.9, life: 0.2 + d * 0.05, grow: 0.8 });
+      for (const d of [1, 2]) fx.flash({ pos: up(a, 0.65).addScaledVector(dir, d), tex: 'flare_01', color: 0xe8f0ff, size: 0.9, life: 0.2 + d * 0.05, grow: 0.8 });
     }
   } else if (kind === 'ranged') {
     sound.play('bow', { pos: wp, vol: 0.8, rate: 1.4 });
     sound.whoosh({ pos: wp, dur: 0.38, from: 1500, to: 600, vol: 0.3 });
-    fx.projectile({ from: a.clone().setY(0.9), to: t.clone().setY(0.6), arc: 1.1, dur: 0.4, tex: 'spark_05', color: 0xfff2c0, size: 0.35, trailTex: 'circle_05', trailColor: 0xcfd8ff, trailSize: 0.12 });
+    fx.projectile({ from: up(a, 0.9), to: up(t, 0.6), arc: 1.1, dur: 0.4, tex: 'spark_05', color: 0xfff2c0, size: 0.35, trailTex: 'circle_05', trailColor: 0xcfd8ff, trailSize: 0.12 });
   } else if (kind === 'blast') {
     sound.whoosh({ pos: wp, dur: 0.5, from: 200, to: 1200, vol: 0.6, q: 0.8 });
-    fx.flash({ pos: a.clone().setY(1.1), tex: 'flare_01', color: 0xff7a20, size: 1.2, life: 0.3 });
-    fx.projectile({ from: a.clone().setY(1.1), to: t.clone().setY(0.3), arc: 2.2, dur: 0.5, tex: 'fire_01', color: 0xffa040, size: 0.8, trailTex: 'flame_05', trailColor: 0xff6a20, trailSize: 0.45, onHit: () => explode(t) });
+    fx.flash({ pos: up(a, 1.1), tex: 'flare_01', color: 0xff7a20, size: 1.2, life: 0.3 });
+    fx.projectile({ from: up(a, 1.1), to: up(t, 0.3), arc: 2.2, dur: 0.5, tex: 'fire_01', color: 0xffa040, size: 0.8, trailTex: 'flame_05', trailColor: 0xff6a20, trailSize: 0.45, onHit: () => explode(t) });
   } else if (kind === 'heal') {
     sound.play('heal*', { pos: worldPos(t), vol: 0.8 });
-    fx.flash({ pos: a.clone().setY(1.0), tex: 'light_01', color: 0x7dffa8, size: 1, life: 0.4 });
+    fx.flash({ pos: up(a, 1.0), tex: 'light_01', color: 0x7dffa8, size: 1, life: 0.4 });
     later(0.2, () => {
-      fx.burst({ pos: t.clone().setY(0.2), tex: 'star_06', color: 0x7dffa8, count: 14, size: 0.28, life: 1.0, speed: 0.6, up: 2.2, drag: 1, spread: 0.4 });
-      fx.flash({ pos: t.clone().setY(0.6), tex: 'twirl_01', color: 0x7dffa8, size: 1.4, life: 0.7, spin: 4 });
+      fx.burst({ pos: up(t, 0.2), tex: 'star_06', color: 0x7dffa8, count: 14, size: 0.28, life: 1.0, speed: 0.6, up: 2.2, drag: 1, spread: 0.4 });
+      fx.flash({ pos: up(t, 0.6), tex: 'twirl_01', color: 0x7dffa8, size: 1.4, life: 0.7, spin: 4 });
     });
   } else if (kind === 'snare') {
     sound.play('snare*', { pos: worldPos(t), vol: 0.7 });
-    fx.projectile({ from: a.clone().setY(1.1), to: t.clone().setY(0.7), arc: 0.4, dur: 0.3, tex: 'magic_05', color: 0xc08bff, size: 0.5, trailTex: 'magic_03', trailColor: 0x9a5cff, trailSize: 0.3,
+    fx.projectile({ from: up(a, 1.1), to: up(t, 0.7), arc: 0.4, dur: 0.3, tex: 'magic_05', color: 0xc08bff, size: 0.5, trailTex: 'magic_03', trailColor: 0x9a5cff, trailSize: 0.3,
       onHit: () => {
-        fx.flash({ pos: t.clone().setY(0.6), tex: 'twirl_01', color: 0xb070ff, size: 1.8, life: 0.8, spin: -5 });
-        fx.burst({ pos: t.clone().setY(0.4), tex: 'magic_03', color: 0xb070ff, count: 12, size: 0.3, life: 0.9, speed: 1.2, up: 0.6, drag: 2, spread: 0.3 });
+        fx.flash({ pos: up(t, 0.6), tex: 'twirl_01', color: 0xb070ff, size: 1.8, life: 0.8, spin: -5 });
+        fx.burst({ pos: up(t, 0.4), tex: 'magic_03', color: 0xb070ff, count: 12, size: 0.3, life: 0.9, speed: 1.2, up: 0.6, drag: 2, spread: 0.3 });
       } });
   }
 }
@@ -400,9 +433,9 @@ function hitFx(g, e, kind, a) {
   const armored = G.TYPES[g.userData.type].armor > 0;
   if (kind === 'blast') { sound.play('flesh*', { pos: wp, vol: 0.5 }); return; }
   sound.play(armored ? 'armor*' : kind === 'ranged' ? 'thud*' : 'flesh*', { pos: wp, vol: 1 });
-  fx.flash({ pos: p.clone().setY(0.7), tex: 'spark_05', color: armored ? 0xfff0c0 : 0xff5a4a, size: 0.9, life: 0.18, grow: 0.8 });
-  if (armored) fx.burst({ pos: p.clone().setY(0.7), tex: 'spark_01', color: 0xffe0a0, count: 10, size: 0.16, life: 0.6, speed: 3.5, up: 0.8, gravity: 9, drag: 0.8 });
-  else fx.burst({ pos: p.clone().setY(0.7), tex: 'dirt_02', color: 0xb02a20, count: 7, size: 0.3, life: 0.5, speed: 1.6, up: 0.8, gravity: 6, additive: false, opacity: 0.8 });
+  fx.flash({ pos: up(p, 0.7), tex: 'spark_05', color: armored ? 0xfff0c0 : 0xff5a4a, size: 0.9, life: 0.18, grow: 0.8 });
+  if (armored) fx.burst({ pos: up(p, 0.7), tex: 'spark_01', color: 0xffe0a0, count: 10, size: 0.16, life: 0.6, speed: 3.5, up: 0.8, gravity: 9, drag: 0.8 });
+  else fx.burst({ pos: up(p, 0.7), tex: 'dirt_02', color: 0xb02a20, count: 7, size: 0.3, life: 0.5, speed: 1.6, up: 0.8, gravity: 6, additive: false, opacity: 0.8 });
 }
 
 function blockFx(g) {
@@ -411,8 +444,8 @@ function blockFx(g) {
   g.scale.setScalar(1.12); // brace
   floatText(p, 'Blocked', '#ffffff');
   sound.play('block*', { pos: worldPos(p), vol: 1 });
-  fx.flash({ pos: p.clone().setY(0.75), tex: 'star_06', size: 1.1, life: 0.2, grow: 0.9 });
-  fx.burst({ pos: p.clone().setY(0.75), tex: 'spark_01', color: 0xffffff, count: 14, size: 0.16, life: 0.6, speed: 4, up: 0.7, gravity: 9, drag: 0.8 });
+  fx.flash({ pos: up(p, 0.75), tex: 'star_06', size: 1.1, life: 0.2, grow: 0.9 });
+  fx.burst({ pos: up(p, 0.75), tex: 'spark_01', color: 0xffffff, count: 14, size: 0.16, life: 0.6, speed: 4, up: 0.7, gravity: 9, drag: 0.8 });
 }
 
 function deathFx(g) {
@@ -420,13 +453,20 @@ function deathFx(g) {
   const p = g.position.clone(), wp = worldPos(p);
   sound.play('fall*', { pos: wp, vol: 1 });
   sound.play('drop', { pos: wp, vol: 0.5, delay: 0.25 });
-  fx.burst({ pos: p.clone().setY(0.3), tex: 'smoke_04', color: 0x555048, count: 8, size: 0.9, life: 1.4, speed: 0.7, up: 1, drag: 1.5, grow: 1, additive: false, opacity: 0.5, spread: 0.4 });
+  fx.burst({ pos: up(p, 0.3), tex: 'smoke_04', color: 0x555048, count: 8, size: 0.9, life: 1.4, speed: 0.7, up: 1, drag: 1.5, grow: 1, additive: false, opacity: 0.5, spread: 0.4 });
 }
 
-function moveFx(g) {
-  const p = g.position.clone(), wp = worldPos(p);
-  for (let i = 0; i < 3; i++) sound.play('step*', { pos: wp, vol: 0.5, delay: i * 0.13 });
-  fx.burst({ pos: p.clone().setY(0.08), tex: 'dirt_02', color: 0x8a7a66, count: 5, size: 0.4, life: 0.6, speed: 0.6, up: 0.5, drag: 2, grow: 0.8, additive: false, opacity: 0.4, spread: 0.2 });
+// Footsteps by the ground stepped onto: soft in grass, a rustle in the wood, hollow on the bridge, a splash in the ford.
+const STEP = { '.': [0.82, 0.4], f: [0.78, 0.4], d: [1, 0.5], b: [1.3, 0.6], s: [0.7, 0.3] };
+function moveFx(g, e) {
+  const p = g.position.clone(), wp = worldPos(p), k = field && field.land ? field.ground(e.x, e.y) : null, [rate, vol] = STEP[k] || [1, 0.5];
+  for (let i = 0; i < 3; i++) {
+    sound.play('step*', { pos: wp, vol, rate, delay: i * 0.13 });
+    if (k === 's') sound.whoosh({ pos: wp, dur: 0.22, from: 2600, to: 500, vol: 0.22, q: 0.6, delay: i * 0.13 + 0.03 });
+    else if (k === 'f' || k === '.') sound.whoosh({ pos: wp, dur: 0.12, from: 5000, to: 2500, vol: 0.05, q: 0.5, delay: i * 0.13 });
+    else if (k === 'b') sound.play('thud*', { pos: wp, vol: 0.12, rate: 1.5, delay: i * 0.13 });
+  }
+  fx.burst({ pos: up(p, 0.08), tex: 'dirt_02', color: 0x8a7a66, count: 5, size: 0.4, life: 0.6, speed: 0.6, up: 0.5, drag: 2, grow: 0.8, additive: false, opacity: 0.4, spread: 0.2 });
 }
 
 // Starts the effects for one batch of server events. Returns how long (seconds) the board
@@ -435,10 +475,10 @@ function playEvents(events) {
   let impact = 0, kind = null, a = null, wait = 0;
   for (const e of events) {
     const g = unitMeshes.get(e.id);
-    if (e.t === 'move') { if (g) moveFx(g); }
+    if (e.t === 'move') { if (g) moveFx(g, e); }
     else if (e.t === 'act') {
       kind = e.kind;
-      const t = V(tx(e.x), 0, tz(e.y));
+      const t = V(tx(e.x), ty(e.x, e.y), tz(e.y));
       a = g ? g.userData.target.clone() : t.clone();
       castFx(kind, g, a, t);
       impact = leadTime(kind, g) + IMPACT_DELAY[kind]; wait = impact + 0.1;
@@ -454,28 +494,7 @@ function playEvents(events) {
   return wait;
 }
 
-// ---------------------------------------------------------------- atmosphere: braziers, dust, quality
-const braziers = [];
-const ironMat = new THREE.MeshStandardMaterial({ color: 0x2a2a2e, metalness: 0.9, roughness: 0.5 });
-for (const [sx, sz] of [[-1, -1], [1, 1], [1, -1], [-1, 1]]) {
-  const pos = V(sx * (G.COLS / 2 + 0.75), 0, sz * (G.ROWS / 2 + 0.75));
-  const post = new THREE.Mesh(new THREE.CylinderGeometry(0.07, 0.1, 1.0, 8), ironMat);
-  post.position.copy(pos).setY(0.4);
-  const bowl = new THREE.Mesh(new THREE.CylinderGeometry(0.24, 0.12, 0.16, 12), ironMat);
-  bowl.position.copy(pos).setY(0.95);
-  post.castShadow = bowl.castShadow = true;
-  post.raycast = bowl.raycast = () => {};
-  world.add(post, bowl);
-  fx.flame(pos.clone().setY(1.0));
-  const b = { pos: pos.clone().setY(1.2), light: null };
-  if (braziers.length < 2) { // two real lights (opposite corners) are enough and keep shading cheap
-    b.light = new THREE.PointLight(0xff9a4a, 5, 16, 1.5);
-    b.light.position.copy(b.pos);
-    world.add(b.light);
-  }
-  braziers.push(b);
-}
-
+// ---------------------------------------------------------------- atmosphere: dust, quality
 const MOTES = 140;
 const moteGeo = new THREE.BufferGeometry();
 const motePos = new Float32Array(MOTES * 3);
@@ -485,12 +504,13 @@ const motes = new THREE.Points(moteGeo, new THREE.PointsMaterial({ map: fx.tex.c
 motes.raycast = () => {};
 world.add(motes);
 
-let quality = 'high';
+let quality = 'high', lean = 0; // lean: how far the headset has been eased (govern)
 try { quality = localStorage.getItem('quality') || 'high'; } catch { /* storage blocked */ }
 function applyQuality() {
   const high = quality === 'high';
-  sun.castShadow = high;
+  sun.castShadow = high && lean < 2;
   motes.visible = high && !renderer.xr.isPresenting;
+  if (field) field.setDetail(high, renderer.xr.isPresenting);
   if (!renderer.xr.isPresenting) renderer.setPixelRatio(high ? Math.min(devicePixelRatio, 2) : 1);
   $('qualityBtn').textContent = `Quality: ${quality}`;
 }
@@ -498,6 +518,10 @@ function applyQuality() {
 // ---------------------------------------------------------------- UI refresh
 const has = (list, x, y) => list.some(p => p.x === x && p.y === y);
 
+function groundLine(x, y) {
+  const g = G.ground(state, x, y), h = G.high(state, x, y);
+  return g.name + (h ? `, level ${h}` : '') + (g.info ? ': ' + g.info : '') + (h ? ' High ground: +1 reach at targets below, +1 move point to climb.' : '');
+}
 function statusLines() {
   if (!state) return ['', ''];
   let l1;
@@ -516,28 +540,27 @@ function statusLines() {
   if (u) {
     const t = G.TYPES[u.type];
     l2 = `${t.name}: HP ${u.hp}/${t.hp}, power ${t.pow}, armour ${t.armor}%, block ${t.block}%, move ${t.move}, rest ${t.rec}`;
-  }
+  } else if (inspectedTile) l2 = groundLine(inspectedTile.x, inspectedTile.y);
   return [l1, l2];
 }
 
 function refresh() {
-  if (!state) return;
+  if (!state || !field) return;
   const sel = selected && G.unitById(state, selected);
   const usable = sel && G.canUse(state, me, sel);
   const moves = usable && !(state.active && state.active.moved) ? G.reachable(state, sel) : [];
   const hits = usable && !(state.active && state.active.acted) ? G.targets(state, sel) : [];
   const heal = sel && G.TYPES[sel.type].kind === 'heal';
-  for (const m of tiles) {
-    const { x, y } = m.userData.pick;
-    let c = (x + y) % 2 ? 0xd8d4cc : 0x8f8b85, e = 0x000000; // tints multiply the stone texture
-    if (sel && sel.x === x && sel.y === y) { c = 0xffe08a; e = 0x5a4600; }
-    else if (has(hits, x, y)) { c = heal ? 0xa8ffc4 : 0xff9a9a; e = heal ? 0x0f5a2a : 0x7a1010; }
-    else if (has(moves, x, y)) { c = 0x9cc0ff; e = 0x12409a; }
-    m.material.color.setHex(c);
-    m.material.emissive.setHex(e);
-  }
+  const keep = [];
+  field.clear();
+  for (const p of moves) { field.mark(p.x, p.y, 'move'); keep.push(p.x + ',' + p.y); }
+  for (const p of hits) field.mark(p.x, p.y, heal ? 'heal' : 'hit');
+  if (sel) field.mark(sel.x, sel.y, 'sel');
+  field.flush();
+  for (const u of state.units) keep.push(u.x + ',' + u.y);
+  field.cut(keep);
   arrowsGroup.visible = !!usable;
-  if (usable) arrowsGroup.position.set(tx(sel.x), 0, tz(sel.y));
+  if (usable) arrowsGroup.position.set(tx(sel.x), ty(sel.x, sel.y), tz(sel.y));
   endButton3D.visible = myTurn();
   $('endBtn').disabled = !myTurn();
   $('endBtn').textContent = state.active ? 'End turn' : 'Pass turn';
@@ -546,7 +569,7 @@ function refresh() {
   drawStatus(l1, l2);
   $('status').textContent = l1;
   const u = inspected && G.unitById(state, inspected);
-  $('info').innerHTML = u ? `<b>${G.TYPES[u.type].name}</b> - ${l2.split(': ')[1]}. ${G.TYPES[u.type].info}` :
+  $('info').innerHTML = u ? `<b>${G.TYPES[u.type].name}</b> - ${l2.split(': ')[1]}. ${G.TYPES[u.type].info}` : inspectedTile && field.land ? l2 :
     (myTurn() ? 'Pick one of your units, move (blue), act (red), then tap a yellow arrow to choose its facing and end the turn.' : '');
 }
 
@@ -555,7 +578,7 @@ function sendAction(action) { if (ws && ws.readyState === 1) ws.send(JSON.string
 
 function handlePick(p) {
   if (!state) return;
-  if (!p) { if (!state.active) selected = null; inspected = null; refresh(); return; }
+  if (!p) { if (!state.active) selected = null; inspected = null; inspectedTile = null; refresh(); return; }
   if (p.kind === 'recenter') { needPlace = true; return; }
   if (p.kind === 'end') { if (myTurn()) { sound.play('end', { vol: 0.5 }); sendAction({ type: 'end' }); } return; }
   if (p.kind === 'face') { if (myTurn() && selected) { sound.play('end', { vol: 0.5 }); sendAction({ type: 'end', unit: selected, facing: p.dir }); } return; }
@@ -568,6 +591,7 @@ function handlePick(p) {
     if (!(state.active && state.active.acted) && has(G.targets(state, sel), x, y)) return sendAction({ type: 'act', unit: sel.id, x, y });
     if (!u && !(state.active && state.active.moved) && has(G.reachable(state, sel), x, y)) return sendAction({ type: 'move', unit: sel.id, x, y });
   }
+  inspectedTile = u ? null : { x, y };
   if (u) {
     inspected = u.id;
     if (G.canUse(state, me, u)) { if (selected !== u.id) sound.play('select', { vol: 0.4 }); selected = u.id; }
@@ -585,8 +609,8 @@ function pickFromRay() {
     let o = h.object, hidden = false;
     for (let p = o; p; p = p.parent) if (!p.visible) hidden = true;
     if (hidden) continue;
-    while (o && !o.userData.pick) o = o.parent;
-    if (o) return { pick: o.userData.pick, point: h.point };
+    while (o && !o.userData.pick && !o.userData.pickFace) o = o.parent;
+    if (o) return { pick: o.userData.pick || o.userData.pickFace(h.faceIndex), point: h.point };
   }
   return null;
 }
@@ -672,24 +696,26 @@ function placeBoardInFront() {
 renderer.xr.addEventListener('sessionstart', () => {
   scene.background = null;
   scene.fog = null;
+  if (field) field.setFog(0);
   table.visible = false;
   motes.visible = false;
   world.scale.setScalar(AR_SCALE);
   setShadowScale(AR_SCALE);
+  slowMs = slowT = lean = 0;
+  applyQuality();
   sound.refDistance = 0.7;
   controls.enabled = false;
   panel.visible = true;
   controllers.forEach(c => { c.visible = true; });
   needPlace = true; xrFrames = 0;
-  slowMs = slowT = lean = 0;
 });
 renderer.xr.addEventListener('sessionend', () => {
-  scene.background = BG;
   scene.fog = FOG;
   table.visible = true;
   world.scale.setScalar(1);
-  setShadowScale(1);
+  applyLook();
   sound.refDistance = 14;
+  lean = 0;
   applyQuality();
   world.position.set(0, 0, 0);
   world.rotation.y = 0;
@@ -713,14 +739,15 @@ $('arBtn').onclick = async () => {
 
 // ---------------------------------------------------------------- render loop
 function resetCamera() {
-  camera.position.set(0, 10, me === 1 ? -10.5 : 10.5);
+  const k = Math.max(cols / 9, rows / 11) * (field && field.land ? 1.1 : 1);
+  camera.position.set(0, 10 * k, (me === 1 ? -10.5 : 10.5) * k);
   controls.target.set(0, 0, 0);
   controls.update();
 }
 
 // In the headset a late frame is a jump in the room (a drawn frame is only turned to follow the head, never moved),
 // so the frame rate is held: when frames run long, first 72 a second, then the shadows go.
-let slowMs = 0, slowT = 0, lean = 0;
+let slowMs = 0, slowT = 0;
 function govern(dt) {
   const ses = renderer.xr.isPresenting && renderer.xr.getSession();
   if (!ses || lean > 1) return;
@@ -732,7 +759,7 @@ function govern(dt) {
   if (lean === 0 && hz > 72 && ses.updateTargetFrameRate) { lean = 1; ses.updateTargetFrameRate(72).catch(() => {}); }
   else { lean = 2; sun.castShadow = false; }
 }
-const ONE = new THREE.Vector3(1, 1, 1), camPos = new THREE.Vector3(), camDir = new THREE.Vector3(), camUp = new THREE.Vector3();
+const ONE = new THREE.Vector3(1, 1, 1), camLocal = new THREE.Vector3(), camPos = new THREE.Vector3(), camDir = new THREE.Vector3(), camUp = new THREE.Vector3();
 let nextCrackle = 0;
 let lastSecond = 0;
 let lastTime = 0, now = 0;
@@ -746,7 +773,7 @@ renderer.setAnimationLoop(time => {
     g.position.lerp(g.userData.target, k);
     const ch = g.userData.ch;
     if (ch) { ch.setMoving(far > 0.12); ch.update(dt); }
-    else if (far > 0.12) g.position.y = Math.abs(Math.sin(now * 13 + g.id)) * 0.14; // walking bob
+    else if (far > 0.12) g.position.y = g.userData.target.y + Math.abs(Math.sin(now * 13 + g.id)) * 0.14; // walking bob
     g.scale.lerp(ONE, k);
     let d = g.userData.angle - g.rotation.y;
     d = Math.atan2(Math.sin(d), Math.cos(d));
@@ -770,10 +797,6 @@ renderer.setAnimationLoop(time => {
     if (d.t > hold + 0.5) { unitsGroup.remove(d.g); dying.splice(i, 1); }
   }
   fx.update(dt);
-  for (let i = 0; i < braziers.length; i++) {
-    const l = braziers[i].light;
-    if (l) l.intensity = 5 * (0.82 + 0.12 * Math.sin(now * 11 + i * 2) + 0.08 * Math.sin(now * 23.7 + i));
-  }
   if (motes.visible) {
     for (let i = 0; i < MOTES; i++) {
       motePos[i * 3 + 1] += dt * 0.12;
@@ -782,12 +805,13 @@ renderer.setAnimationLoop(time => {
     }
     moteGeo.attributes.position.needsUpdate = true;
   }
-  if (now > nextCrackle) {
+  if (field && field.fires.length && now > nextCrackle) {
     nextCrackle = now + 0.1 + Math.random() * 0.5;
-    sound.crackle(worldPos(braziers[Math.floor(Math.random() * braziers.length)].pos));
+    sound.crackle(worldPos(field.fires[Math.floor(Math.random() * field.fires.length)]));
   }
   const viewCam = renderer.xr.isPresenting ? renderer.xr.getCamera() : camera;
   viewCam.getWorldPosition(camPos);
+  if (field) field.update(dt, now, world.worldToLocal(camLocal.copy(camPos)));
   viewCam.getWorldDirection(camDir);
   camUp.set(0, 1, 0).applyQuaternion(viewCam.quaternion);
   sound.setListener(camPos, camDir, camUp);
@@ -811,7 +835,7 @@ renderer.setAnimationLoop(time => {
     }
   }
   const sec = Math.floor(Date.now() / 1000);
-  if (sec !== lastSecond) { lastSecond = sec; refresh(); } // keeps the turn clock ticking
+  if (sec !== lastSecond) { lastSecond = sec; refresh(); if (renderer.xr.isPresenting) ambience(); } // keeps the turn clock ticking
   renderer.render(scene, camera);
 });
 
@@ -845,6 +869,7 @@ function connect(first) {
     }
     if (m.t === 'state') {
       const turnChanged = !state || state.turn !== m.state.turn;
+      if (!state || state.map !== m.state.map) { state = m.state; setField(m.state.map); }
       const wait = playEvents(m.events || []);
       state = m.state;
       started = m.started; present = m.present; deadline = m.deadline; skew = m.now - Date.now();
@@ -860,7 +885,14 @@ function connect(first) {
   };
 }
 
-$('createBtn').onclick = () => { sound.init(); $('lobbyMsg').textContent = ''; connect({ t: 'create', token }); };
+for (const [id, m] of Object.entries(G.MAPS)) { const o = document.createElement('option'); o.value = id; o.textContent = m.name; $('mapSel').appendChild(o); }
+const mapNote = () => { $('mapInfo').textContent = G.MAPS[$('mapSel').value].info; try { localStorage.setItem('map', $('mapSel').value); } catch { /* storage blocked */ } };
+try { const m = localStorage.getItem('map'); if (G.MAPS[m]) $('mapSel').value = m; } catch { /* storage blocked */ }
+$('mapSel').onchange = mapNote; mapNote();
+$('rules').innerHTML = Object.values(G.TERRAIN).filter(t => t.info).map(t => `<b>${t.name}</b> ${t.info}`).join('<br>') + '<br><b>High ground</b> Stepping up a level costs one more move point; two levels at once cannot be climbed. Whatever works at range reaches one tile further at targets below it.';
+$('helpBtn').onclick = () => { $('help').hidden = !$('help').hidden; };
+$('help').onclick = () => { $('help').hidden = true; };
+$('createBtn').onclick = () => { sound.init(); $('lobbyMsg').textContent = ''; connect({ t: 'create', token, map: $('mapSel').value }); };
 $('joinBtn').onclick = () => {
   sound.init();
   const c = $('codeInput').value.trim().toUpperCase();
@@ -881,4 +913,13 @@ loadCharacters().then(() => {
 }).catch(err => console.warn('Character models failed to load; using simple shapes.', err));
 
 // Hooks for automated tests.
-window.__t = { handlePick, castFx, explode, V, camera, controls, fx, sun, renderer, scene, get state() { return state; }, get me() { return me; }, get code() { return code; }, get selected() { return selected; }, get lean() { return lean; } };
+// A map on the table with no match behind it (for pictures and checks): ?show=river, or __t.show('river').
+function show(id) {
+  state = G.newGame(id); me = 0; code = 'SHOW'; started = false;
+  $('lobby').style.display = 'none'; $('hud').style.display = 'flex';
+  for (const g of unitMeshes.values()) unitsGroup.remove(g);
+  unitMeshes.clear();
+  setField(state.map); syncUnits(); refresh();
+}
+if (new URLSearchParams(location.search).get('show')) show(new URLSearchParams(location.search).get('show'));
+window.__t = { handlePick, show, world, G, get field() { return field; }, castFx, explode, V, camera, controls, fx, sun, renderer, scene, get state() { return state; }, get me() { return me; }, get code() { return code; }, get selected() { return selected; }, get lean() { return lean; } };

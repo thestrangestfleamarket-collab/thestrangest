@@ -1,4 +1,6 @@
 // Pure game rules, shared by the server (authoritative) and the client (highlights).
+import { MAPS, TERRAIN, CLIMB, REACH, mapOf, groundAt, highAt } from './maps.js';
+export { MAPS, TERRAIN, mapOf };
 export const COLS = 9;
 export const ROWS = 11;
 export const TURN_SECONDS = 120;
@@ -31,24 +33,37 @@ const LAYOUT = [
   ['hexbinder', 3, 10], ['mender', 5, 10],
 ];
 
-export function newGame() {
-  const units = [];
+// The line-up is written for the board; on a wider or deeper map it keeps its place in the middle of the last rows.
+export function newGame(map = 'board') {
+  if (!MAPS[map]) map = 'board';
+  const m = MAPS[map], units = [], ox = Math.floor((m.cols - COLS) / 2), oy = m.rows - ROWS;
   let id = 1;
   for (const owner of [0, 1]) {
-    for (const [type, x, y] of LAYOUT) {
+    for (const [type, lx, ly] of LAYOUT) {
+      const x = lx + ox, y = ly + oy;
       units.push({
         id: id++, type, owner,
-        x: owner === 0 ? x : COLS - 1 - x,
-        y: owner === 0 ? y : ROWS - 1 - y,
+        x: owner === 0 ? x : m.cols - 1 - x,
+        y: owner === 0 ? y : m.rows - 1 - y,
         facing: owner === 0 ? 'N' : 'S',
         hp: TYPES[type].hp, rec: 0, snare: 0,
       });
     }
   }
-  return { cols: COLS, rows: ROWS, units, turn: 0, turnNo: 1, active: null, passes: 0, winner: null };
+  return { map, cols: m.cols, rows: m.rows, units, turn: 0, turnNo: 1, active: null, passes: 0, winner: null };
 }
 
-export const inBounds = (x, y) => x >= 0 && y >= 0 && x < COLS && y < ROWS;
+export const inBounds = (s, x, y) => x >= 0 && y >= 0 && x < s.cols && y < s.rows;
+export const ground = (s, x, y) => groundAt(mapOf(s.map), x, y);
+export const high = (s, x, y) => highAt(mapOf(s.map), x, y);
+// Move points to step from one tile onto the next one, or Infinity where the ground forbids it.
+export function stepCost(s, fx, fy, x, y) {
+  const g = ground(s, x, y), up = high(s, x, y) - high(s, fx, fy);
+  if (g.solid || up > 1) return Infinity;
+  return (g.cost || 1) + (up > 0 ? CLIMB : 0);
+}
+// How far a unit that works at range reaches at this tile: one further at ground below it.
+export const reach = (s, u, x, y) => TYPES[u.type].max + (TYPES[u.type].kind !== 'melee' && TYPES[u.type].kind !== 'line' && high(s, u.x, u.y) > high(s, x, y) ? REACH : 0);
 export const unitAt = (s, x, y) => s.units.find(u => u.x === x && u.y === y) || null;
 export const unitById = (s, id) => s.units.find(u => u.id === id) || null;
 const dist = (a, b) => Math.abs(a.x - b.x) + Math.abs(a.y - b.y);
@@ -60,19 +75,22 @@ export function canUse(s, player, u) {
   return !s.active || s.active.id === u.id;
 }
 
+// Every tile the unit can end on, the cheapest way there within its move points (ground and climbs cost more).
 export function reachable(s, u) {
-  const out = [];
-  const seen = new Set([u.x + ',' + u.y]);
-  let frontier = [{ x: u.x, y: u.y }];
-  for (let step = 0; step < TYPES[u.type].move; step++) {
+  const out = [], best = new Map([[u.x + ',' + u.y, 0]]), move = TYPES[u.type].move;
+  let frontier = [{ x: u.x, y: u.y, c: 0 }];
+  while (frontier.length) {
     const next = [];
     for (const p of frontier) {
+      if (best.get(p.x + ',' + p.y) !== p.c) continue;
       for (const [dx, dy] of Object.values(DIRS)) {
         const x = p.x + dx, y = p.y + dy, k = x + ',' + y;
-        if (!inBounds(x, y) || seen.has(k) || unitAt(s, x, y)) continue;
-        seen.add(k);
-        next.push({ x, y });
-        out.push({ x, y });
+        if (!inBounds(s, x, y) || unitAt(s, x, y)) continue;
+        const c = p.c + stepCost(s, p.x, p.y, x, y);
+        if (c > move || (best.has(k) && best.get(k) <= c)) continue;
+        if (!best.has(k)) out.push({ x, y });
+        best.set(k, c);
+        next.push({ x, y, c });
       }
     }
     frontier = next;
@@ -87,7 +105,9 @@ export function targets(s, u) {
   if (t.kind === 'line') {
     for (const [dx, dy] of Object.values(DIRS)) {
       for (let i = 1; i <= t.max; i++) {
-        const v = unitAt(s, u.x + dx * i, u.y + dy * i);
+        const x = u.x + dx * i, y = u.y + dy * i;
+        if (!inBounds(s, x, y) || ground(s, x, y).wall) break;
+        const v = unitAt(s, x, y);
         if (v && v.owner !== u.owner) { out.push({ x: v.x, y: v.y }); break; }
       }
     }
@@ -96,7 +116,7 @@ export function targets(s, u) {
   for (const v of s.units) {
     if (v.id === u.id) continue;
     const d = dist(u, v);
-    if (d < t.min || d > t.max) continue;
+    if (d < t.min || d > reach(s, u, v.x, v.y)) continue;
     const enemy = v.owner !== u.owner;
     if (t.kind === 'heal') { if (!enemy && v.hp < TYPES[v.type].hp) out.push({ x: v.x, y: v.y }); }
     else if (t.kind === 'blast') out.push({ x: v.x, y: v.y });
@@ -119,11 +139,12 @@ function strike(s, attacker, target, blockable, rand, events) {
   const at = TYPES[attacker.type], tt = TYPES[target.type];
   const side = sideOf(target, attacker.x, attacker.y);
   if (blockable && target.snare === 0) {
-    const chance = side === 'front' ? tt.block : side === 'side' ? tt.block / 2 : 0;
+    const chance = (side === 'front' ? tt.block : side === 'side' ? tt.block / 2 : 0) * (ground(s, target.x, target.y).slip ?? 1);
     if (rand() * 100 < chance) { events.push({ t: 'block', id: target.id }); return; }
   }
   let pow = at.pow;
   if (at.backstab && side === 'back') pow *= at.backstab;
+  if (at.kind === 'ranged') pow *= ground(s, target.x, target.y).cover ?? 1;
   const dmg = Math.max(1, Math.round(pow * (100 - tt.armor) / 100));
   target.hp -= dmg;
   events.push({ t: 'hit', id: target.id, dmg, side });
@@ -227,7 +248,9 @@ export function apply(s, player, a, rand = Math.random) {
     } else if (t.kind === 'line') {
       const sx = Math.sign(dx), sy = Math.sign(dy);
       for (let i = 1; i <= t.max; i++) {
-        const v = unitAt(s, u.x + sx * i, u.y + sy * i);
+        const x = u.x + sx * i, y = u.y + sy * i;
+        if (!inBounds(s, x, y) || ground(s, x, y).wall) break;
+        const v = unitAt(s, x, y);
         if (v) strike(s, u, v, true, rand, events);
       }
     } else if (t.kind === 'blast') {

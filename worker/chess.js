@@ -39,7 +39,7 @@ const CHESS = {
         if (!token) return this.send(ws, { t: "error", msg: "Missing player token" });
         if (m.t === "create") {
           if (this.room) return this.send(ws, { t: "error", msg: "That room code was just taken, please try again" });
-          this.host.room = { code, state: G.newGame(), tokens: [null, null], deadline: null };
+          this.host.room = { code, state: G.newGame(typeof m.map === 'string' ? m.map : 'board'), tokens: [null, null], deadline: null };
         } else if (!this.room) return this.send(ws, { t: "error", msg: "No room with that code" });
         const r = this.room;
         let seat = r.tokens.indexOf(token);

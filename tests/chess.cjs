@@ -186,8 +186,8 @@ let halt = () => {};
   await people(A);
   { const hit = await (await on(A)).evaluate(() => { const T = window.__t, id = T.state.units.find(u => u.owner === 0 && u.type === 'bulwark').id; let g = null; T.scene.traverse(o => { if (o.userData && o.userData.pick && o.userData.pick.kind === 'unit' && o.userData.pick.id === id) g = o; });
       const p = g.getWorldPosition(T.V(0, 0, 0)); p.y += 0.06; p.project(T.camera); return { id, x: (p.x + 1) / 2 * innerWidth, y: (1 - p.y) / 2 * innerHeight }; });
-    await (await on(A)).mouse.click(hit.x, hit.y); await (await on(A)).waitForTimeout(400);
-    ok((await (await on(A)).evaluate(() => window.__t.selected)) === hit.id, 'a real click on a knight\'s base picks it'); await tap(A, null); }
+    await (await on(A)).mouse.click(hit.x, hit.y);
+    ok(await until(A, id => window.__t.selected === id, hit.id, 8000), 'a real click on a knight\'s base picks it'); await tap(A, null); }
 
   ok(await people(A) && await people(B), 'the twenty people are drawn as their models on both pages');
   await shot(A, 'board-player1'); await shot(B, 'board-player2');
@@ -224,9 +224,9 @@ let halt = () => {};
       const f = await L.evaluate(() => { const T = window.__t, F = T.field, st = F.stats(); let off = 0; T.scene.traverse(o => { const p = o.userData && o.userData.pick; if (p && p.kind === 'unit') { const u = T.state.units.find(u => u.id === p.id); if (u && Math.abs(o.userData.target.y - F.yAt(u.x, u.y)) > 1e-6) off++; } }); return { id: F.id, cols: F.cols, rows: F.rows, st, off, lights: F.lights.length, bg: !!T.scene.background }; });
       ok(f.id === id && f.cols === m.cols && f.rows === m.rows && f.off === 0 && f.bg && f.lights <= 2, m.name + ' is built from its data, every piece standing on its own tile\'s ground');
       ok(f.st.tris > 20000 && f.st.tris < 260000 && f.st.draws < 90, 'its cost on the low setting: ' + f.st.draws + ' draws, ' + f.st.tris + ' triangles, ' + f.st.blades + ' blades of grass, ' + f.st.trees + ' trees');
-      const tile = (() => { for (let y = 0; y < m.rows; y++) for (let x = 0; x < m.cols; x++) if (m.tiles[y][x] === 'f' && y > 2 && y < m.rows - 3) return { x, y }; })();
+      const tile = (() => { for (let y = m.rows - 4; y > 2; y--) for (let x = 0; x < m.cols; x++) if (m.tiles[y][x] === 'f') return { x, y }; })();   // the nearest forest tile to the seat: nothing higher stands in front of it
       const at = await L.evaluate(t => { const T = window.__t, p = T.V(t.x - (T.field.cols - 1) / 2, T.field.yAt(t.x, t.y), t.y - (T.field.rows - 1) / 2); p.project(T.camera); return { x: (p.x + 1) / 2 * innerWidth, y: (1 - p.y) / 2 * innerHeight }; }, tile);
-      await L.mouse.click(at.x, at.y); await L.waitForTimeout(500);
+      await L.mouse.click(at.x, at.y); await until(L, () => /^Forest/.test(document.getElementById('info').textContent), null, 8000);
       ok(/^Forest/.test(await L.textContent('#info')), 'a real click on a forest tile there says what the ground is: ' + (await L.textContent('#info')).slice(0, 60));
       const u = (await st(L)).units.find(u => u.owner === 0 && u.type === 'strider'); await tap(L, { kind: 'unit', id: u.id });
       const marks = await L.evaluate(() => { const T = window.__t, G = T.G, s = T.state, u = s.units.find(u => u.id === T.selected); return { n: G.reachable(s, u).length, solid: G.reachable(s, u).filter(p => G.ground(s, p.x, p.y).solid).length }; });

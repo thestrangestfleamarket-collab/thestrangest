@@ -289,16 +289,20 @@ void main(){
 
   // ---- trees, rocks, walls, logs: real models, set out from the map
   const trees = [], spots = [], fires = [], lights = [], fliers = [];
+  const forests = map.tiles.join('').split('f').length - 1;
   const kinds = look.wood ? ['oak', 'birch', 'fir', 'birch'] : look.crag ? ['fir'] : ['birch', 'oak'];
   for (let y = 0; y < rows; y++) for (let x = 0; x < cols; x++) if (letter(x, y) === 'f') {
     const a = R() * 6.28;
-    for (const s of [1, -1]) { const px = x + 0.5 + Math.cos(a) * 0.3 * s, pz = y + 0.5 + Math.sin(a) * 0.3 * s; trees.push({ kind: kinds[Math.floor(R() * kinds.length)], x: px, z: pz, h: 1.45 + R() * 0.6, key: x + ',' + y, fade: 1, want: 1 }); }
+    for (const s of forests > 8 ? [1] : [1, -1]) { const px = x + 0.5 + Math.cos(a) * 0.3 * s, pz = y + 0.5 + Math.sin(a) * 0.3 * s; trees.push({ kind: kinds[Math.floor(R() * kinds.length)], x: px, z: pz, h: 1.45 + R() * 0.6, key: x + ',' + y, fade: 1, want: 1 }); }
   }
-  for (let pz = -B + 0.5; pz < rows + B - 0.3; pz += 0.95) for (let px = -B + 0.5; px < cols + B - 0.3; px += 0.95) {
-    const x = px + (R() - 0.5) * 0.7, z = pz + (R() - 0.5) * 0.7, s = sample(x, z);
-    if (s.out < 0.7 || s.w[3] > 0.05 || s.w[2] > 0.3 || R() > (look.wood ? 0.45 : look.crag ? 0.2 : 0.3)) continue;
-    trees.push({ kind: kinds[Math.floor(R() * kinds.length)], x, z, h: 2.1 + R() * 1.3, key: null, fade: 1, want: 1 });
-  }
+  { const far = [];   // the trees round the edge: sixteen at most, spread all round
+    for (let pz = -B + 0.5; pz < rows + B - 0.3; pz += 0.95) for (let px = -B + 0.5; px < cols + B - 0.3; px += 0.95) {
+      const x = px + (R() - 0.5) * 0.7, z = pz + (R() - 0.5) * 0.7, s = sample(x, z);
+      if (s.out < 0.7 || s.w[3] > 0.05 || s.w[2] > 0.3 || R() > (look.wood ? 0.7 : look.crag ? 0.25 : 0.4)) continue;
+      far.push({ kind: kinds[Math.floor(R() * kinds.length)], x, z, h: 2.1 + R() * 1.3, key: null, fade: 1, want: 1 });
+    }
+    for (let i = far.length - 1; i > 0; i--) { const j = Math.floor(R() * (i + 1)); [far[i], far[j]] = [far[j], far[i]]; }
+    trees.push(...far.slice(0, 16)); }
   const sway = (mat, leaf) => {
     mat.onBeforeCompile = s => { Object.assign(s.uniforms, { uTime: U.uTime, uWind: U.uWind });
       s.vertexShader = s.vertexShader.replace('#include <common>', '#include <common>\nuniform float uTime; uniform vec2 uWind; attribute float aFade; varying float vFade;')

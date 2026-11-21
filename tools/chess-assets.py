@@ -17,3 +17,4 @@ for name, slug in TEX.items():
     if name in NORMAL: open(OUT + 'tex/' + name + '_n.jpg', 'wb').write(small(get(nor['1k']['jpg']['url']), q=84))
     print(name, slug)
 for a, b in COPY.items(): shutil.copyfile('data/tank/' + a, OUT + b)
+print('''then: node tools/hide-slim.cjs data/chess/land/m '{"birch":2400,"oak":3000,"fir":2200}' ''')

@@ -10,11 +10,11 @@ const ASSETS = '/chess-assets/land/';
 // the hour's light: sun [colour, strength], where it stands, sky light [sky, ground, strength], haze [colour, density], backdrop top to bottom, the water's reflected sky (horizon, zenith) and body (shallow, deep), grass (root, tip)
 export const HOURS = {
   morning: { sun: [0xfff0d8, 3.1], dir: [7, 9, 3], hemi: [0xbcd6ff, 0x55633a, 0.8], fog: [0xa9bfcf, 0.011], sky: ['#5f97cf', '#b4d0e6', '#e4e0cf'], exposure: 1.02, env: 0.45,
-    water: [0xc9dceb, 0x6f9fd0, 0x4f7f72, 0x16383c], grass: [0x2f4a1a, 0x8fae45], mote: 0xfff4d0, fire: 2.5 },
+    water: [0xc9dceb, 0x6f9fd0, 0x5f9488, 0x1f4c52], grass: [0x2f4a1a, 0x8fae45], turf: 0x6f9038, mote: 0xfff4d0, fire: 2.5 },
   sunset: { sun: [0xffa860, 3.3], dir: [9, 4.2, -2.5], hemi: [0xa49ac4, 0x4a3324, 0.6], fog: [0xc48a6c, 0.015], sky: ['#343b74', '#d47f5a', '#f4c58a'], exposure: 1.0, env: 0.4,
-    water: [0xf0b084, 0x5a5a94, 0x5a6a5a, 0x1c2c34], grass: [0x3a4018, 0xa89a48], mote: 0xffc890, fire: 4 },
+    water: [0xf0b084, 0x5a5a94, 0x5a6a5a, 0x1c2c34], grass: [0x3a4018, 0xa89a48], turf: 0x8a8a42, mote: 0xffc890, fire: 4 },
   dusk: { sun: [0x8fa8ff, 1.25], dir: [-6, 8, 4], hemi: [0x5c6ea4, 0x1c2622, 0.55], fog: [0x26344a, 0.026], sky: ['#0b1128', '#22304e', '#4a5672'], exposure: 1.12, env: 0.3,
-    water: [0x5a6c94, 0x18223c, 0x2c4a4c, 0x0a161c], grass: [0x1c2c1a, 0x52703c], mote: 0xd8ff9a, fire: 6 },
+    water: [0x6a7ca4, 0x1c2a48, 0x3a5c5e, 0x14282e], grass: [0x1c2c1a, 0x52703c], turf: 0x4a6a48, mote: 0xd8ff9a, fire: 6 },
 };
 const MARK = { sel: [255, 205, 80, 255], hit: [255, 60, 50, 255], heal: [70, 235, 125, 255], move: [70, 140, 255, 235] };
 
@@ -151,13 +151,14 @@ export function makeLand(map, { fx, id }) {
   const markData = new Uint8Array(cols * rows * 4), markTex = new THREE.DataTexture(markData, cols, rows);
   markTex.magFilter = markTex.minFilter = THREE.NearestFilter; markTex.needsUpdate = true; U.tMark.value = markTex;
   const groundMat = drape(new THREE.MeshStandardMaterial({ map: tex('grass_d', true), normalMap: tex('grass_n'), roughness: 0.96, metalness: 0 }), U, 'ground', {
-    uniforms: { tDirt: { value: tex('dirt_d', true) }, tForest: { value: tex('forest_d', true) }, tRock: { value: tex('rock_d', true) }, tBed: { value: tex('bed_d', true) }, tRockN: { value: tex('rock_n') } },
+    uniforms: { tDirt: { value: tex('dirt_d', true) }, tForest: { value: tex('forest_d', true) }, tRock: { value: tex('rock_d', true) }, tBed: { value: tex('bed_d', true) }, tRockN: { value: tex('rock_n') }, uTurf: { value: new THREE.Color(look.turf) } },
     vpars: 'attribute vec4 aW; varying vec4 vW;\n', vmain: '#include <begin_vertex>\nvB = position.xz; vW = aW;',
-    fpars: 'uniform sampler2D tDirt, tForest, tRock, tBed, tRockN; varying vec4 vW;\n',
+    fpars: 'uniform sampler2D tDirt, tForest, tRock, tBed, tRockN; uniform vec3 uTurf; varying vec4 vW;\n',
     fmap: `{ vec3 c = texture2D(map, vMapUv).rgb;
+      c = mix(c, uTurf * dot(c, vec3(.3, .6, .1)) * 3.2, .78);
       c *= mix(vec3(1.), vec3(.8, .88, .66), smoothstep(.35, .7, texture2D(tBed, vMapUv * .11).g));
       c = mix(c, texture2D(tDirt, vMapUv).rgb, vW.x); c = mix(c, texture2D(tForest, vMapUv).rgb * .85, vW.y);
-      c = mix(c, texture2D(tRock, vMapUv * .7).rgb, vW.z); c = mix(c, texture2D(tBed, vMapUv * 1.3).rgb * .7, vW.w);
+      c = mix(c, texture2D(tRock, vMapUv * .7).rgb * vec3(.6, .55, .5), vW.z); c = mix(c, texture2D(tBed, vMapUv * 1.3).rgb * .7, vW.w);
       diffuseColor.rgb *= c; }`,
     frag: f => f.replace('#include <normal_fragment_maps>', THREE.ShaderChunk.normal_fragment_maps.replaceAll('texture2D( normalMap, vNormalMapUv ).xyz', 'mix(texture2D(normalMap, vNormalMapUv).xyz, texture2D(tRockN, vNormalMapUv * .7).xyz, clamp(vW.z + vW.w + vW.x * .5, 0., 1.))'))
       .replace('#include <roughnessmap_fragment>', '#include <roughnessmap_fragment>\nroughnessFactor = mix(roughnessFactor, .5, vW.w);'),
@@ -263,7 +264,7 @@ void main(){
       if (w[3] > 0.1 || w[2] > 0.45 || r < w[0] * 0.93 || (w[1] > 0.5 && r < 0.55)) continue;
       const tall = inside ? 0.08 + R() * 0.09 : 0.14 + R() * 0.2 * sm(0, 1, s.out), m = 0.75 + R() * 0.5, q = R();
       blades.push(x - cols / 2, s.h, z - rows / 2, R() * 6.28, tall, R(), (c0.r + (c1.r - c0.r) * q) * m, (c0.g + (c1.g - c0.g) * q) * m, (c0.b + (c1.b - c0.b) * q) * m);
-      if (R() < (inside ? 0.012 : 0.03) && w[1] < 0.5 && look.hour !== 'dusk') { const f = FL[Math.floor(R() * FL.length)], t = tall * 1.5 + 0.05; const o = blades.length - 9; blades[o + 4] = t; heads.push(blades[o], s.h, blades[o + 2], blades[o + 3], t, blades[o + 5], f[0], f[1], f[2]); }
+      if (R() < (inside ? 0.006 : 0.02) && w[1] < 0.5 && look.hour !== 'dusk') { const f = FL[Math.floor(R() * FL.length)], t = tall * 1.5 + 0.05; const o = blades.length - 9; blades[o + 4] = t; heads.push(blades[o], s.h, blades[o + 2], blades[o + 3], t, blades[o + 5], f[0], f[1], f[2]); }
     } }
   const order = Array.from({ length: blades.length / 9 }, (_, i) => i); for (let i = order.length - 1; i > 0; i--) { const j = Math.floor(R() * (i + 1)); [order[i], order[j]] = [order[j], order[i]]; }
   const grassMat = drape(new THREE.MeshLambertMaterial({ side: THREE.DoubleSide }), U, 'grass', {
@@ -284,7 +285,7 @@ void main(){
     const m = new THREE.Mesh(g, grassMat); m.frustumCulled = false; m.receiveShadow = true; m.raycast = () => {}; group.add(m); return m;
   };
   const grass = tuft(blades, order, [-0.022, 0, 0, 0.022, 0, 0, -0.014, 0.55, 0, 0.014, 0.55, 0, 0, 1, 0], [0, 1, 2, 2, 1, 3, 2, 3, 4]), grassN = order.length;
-  const hd = 0.07; if (heads.length) tuft(heads, null, [-hd, 1, 0, hd, 1, 0, 0, 1, -hd, 0, 1, hd, 0, 1.12, 0], [0, 4, 2, 2, 4, 1, 1, 4, 3, 3, 4, 0]);
+  const hd = 0.045; if (heads.length) tuft(heads, null, [-hd, 1, 0, hd, 1, 0, 0, 1, -hd, 0, 1, hd, 0, 1.12, 0], [0, 4, 2, 2, 4, 1, 1, 4, 3, 3, 4, 0]);
 
   // ---- trees, rocks, walls, logs: real models, set out from the map
   const trees = [], spots = [], fires = [], lights = [], fliers = [];
@@ -295,7 +296,7 @@ void main(){
   }
   for (let pz = -B + 0.5; pz < rows + B - 0.3; pz += 0.95) for (let px = -B + 0.5; px < cols + B - 0.3; px += 0.95) {
     const x = px + (R() - 0.5) * 0.7, z = pz + (R() - 0.5) * 0.7, s = sample(x, z);
-    if (s.out < 0.7 || s.w[3] > 0.05 || s.w[2] > 0.3 || R() > (look.wood ? 0.62 : look.crag ? 0.2 : 0.3)) continue;
+    if (s.out < 0.7 || s.w[3] > 0.05 || s.w[2] > 0.3 || R() > (look.wood ? 0.45 : look.crag ? 0.2 : 0.3)) continue;
     trees.push({ kind: kinds[Math.floor(R() * kinds.length)], x, z, h: 2.1 + R() * 1.3, key: null, fade: 1, want: 1 });
   }
   const sway = (mat, leaf) => {
@@ -311,22 +312,27 @@ void main(){
     return mat;
   };
   const M4 = new THREE.Matrix4(), Q = new THREE.Quaternion(), E = new THREE.Euler(), V3 = new THREE.Vector3(), SC = new THREE.Vector3(), treeMeshes = [];
+  let detail = 1, arMode = false;
+  // in the headset half the trees round the edge stand down (those on forest tiles always stand)
+  const setTrees = () => { for (const tm of treeMeshes) for (const im of tm.ims) im.count = arMode ? tm.inside + Math.ceil((tm.mine.length - tm.inside) / 2) : tm.mine.length; };
   for (const kind of new Set(trees.map(t => t.kind))) model(kind).then(g => {
     if (dead.v) return;
+    let ims = null;
     const mine = trees.filter(t => t.kind === kind), fade = new THREE.InstancedBufferAttribute(new Float32Array(mine.length).fill(1), 1);
     g.scene.traverse(o => {
       if (!o.isMesh) return;
+      if (!ims) ims = [];
       const leaf = o.material.alphaTest > 0, geo2 = o.geometry.clone(); geo2.setAttribute('aFade', fade);
       const im = new THREE.InstancedMesh(geo2, sway(o.material.clone(), leaf), mine.length);
       mine.forEach((t, i) => { const y = sample(t.x, t.z).h - 0.02; Q.setFromEuler(E.set(0, hash(t.x, t.z) * 6.28, 0)); im.setMatrixAt(i, M4.compose(V3.set(t.x - cols / 2, y, t.z - rows / 2), Q, SC.setScalar(t.h))); t.i = i; t.lx = t.x - cols / 2; t.lz = t.z - rows / 2; });
-      im.castShadow = true; im.receiveShadow = !leaf; im.frustumCulled = false; im.raycast = () => {}; group.add(im);
+      im.castShadow = true; im.receiveShadow = !leaf; im.frustumCulled = false; im.raycast = () => {}; group.add(im); ims.push(im);
     });
-    treeMeshes.push({ mine, fade });
+    treeMeshes.push({ mine, fade, ims, inside: mine.filter(t => t.key).length }); setTrees();
   }).catch(() => {});
 
   const rocks = [];   // [x, z (tile space), width, tallness, which stone]
   for (let y = 0; y < rows; y++) for (let x = 0; x < cols; x++) if (letter(x, y) === 'r') {
-    rocks.push([x + 0.5 + (R() - 0.5) * 0.1, y + 0.5 + (R() - 0.5) * 0.1, 0.8 + R() * 0.15, look.crag ? 1.5 : 1.25, Math.floor(R() * 3)]);
+    rocks.push([x + 0.5 + (R() - 0.5) * 0.1, y + 0.5 + (R() - 0.5) * 0.1, 0.8 + R() * 0.15, look.crag ? 1.35 : 1.15, Math.floor(R() * 8)]);
     for (let k = 0; k < 3; k++) rocks.push([x + 0.5 + (R() - 0.5) * 0.8, y + 0.5 + (R() - 0.5) * 0.8, 0.22 + R() * 0.2, 1, 3 + Math.floor(R() * 5)]);
   }
   for (let k = 0; k < 150; k++) { const x = -B + R() * (cols + 2 * B), z = -B + R() * (rows + 2 * B), s = sample(x, z), bank = s.w[3] > 0.25 && s.w[3] < 0.8;
@@ -339,7 +345,7 @@ void main(){
     parts.forEach((pg, pi) => {
       const mine = rocks.filter(r => r[4] % parts.length === pi); if (!mine.length) return;
       const im = new THREE.InstancedMesh(pg, src.material, mine.length);
-      mine.forEach((r, i) => { const s = sample(r[0], r[1]); Q.setFromEuler(E.set(0, hash(r[0], r[1]) * 6.28, 0)); im.setMatrixAt(i, M4.compose(V3.set(r[0] - cols / 2, s.h - r[2] * 0.08, r[1] - rows / 2), Q, SC.set(r[2], r[2] * r[3] * Math.min(1.6, 0.75 / pg.userData.tall + 0.4), r[2]))); });
+      mine.forEach((r, i) => { const s = sample(r[0], r[1]); Q.setFromEuler(E.set(0, hash(r[0], r[1]) * 6.28, 0)); im.setMatrixAt(i, M4.compose(V3.set(r[0] - cols / 2, s.h - r[2] * 0.08, r[1] - rows / 2), Q, SC.set(r[2], r[2] * r[3] * Math.min(1.3, Math.max(0.6, 0.8 / pg.userData.tall)), r[2]))); });
       im.castShadow = im.receiveShadow = true; im.frustumCulled = false; im.raycast = () => {}; group.add(im);
     });
   }).catch(() => {});
@@ -381,7 +387,7 @@ void main(){
   for (let i = 0; i < (look.butterflies || 0); i++) { const cx = (R() - 0.5) * (cols + 2), cz = (R() - 0.5) * (rows + 2), s = sample(cx + cols / 2, cz + rows / 2); if (s.w[3] > 0.3) continue;
     flier(0.05, [0xf4efe0, 0xffd24a, 0x8fb4ff][i % 3], (t, ph, o) => { o.set(cx + Math.sin(t * 0.37 + ph) * 0.8 + Math.sin(t * 1.3 + ph) * 0.12, s.h + 0.4 + Math.sin(t * 0.9 + ph * 2) * 0.15, cz + Math.cos(t * 0.29 + ph * 1.7) * 0.8); return 7; }); }
 
-  let detail = 1, arMode = false;
+
   const P0 = new THREE.Vector3(), P1 = new THREE.Vector3(), cutKeys = new Set();
   return {
     id, group, pick, look, fires, lights, river, cols, rows, border: B, land: true,
@@ -392,7 +398,7 @@ void main(){
     flush() { markTex.needsUpdate = true; },
     // tiles whose trees must not hide what stands there
     cut(keys) { cutKeys.clear(); for (const k of keys) cutKeys.add(k); },
-    setDetail(high, ar) { detail = high ? 1 : 0.4; arMode = ar; grass.geometry.instanceCount = Math.floor(grassN * detail * (ar ? 0.6 : 1)); for (const s of mist) s.visible = high; },
+    setDetail(high, ar) { detail = high ? 1 : 0.4; arMode = ar; grass.geometry.instanceCount = Math.floor(grassN * detail * (ar ? 0.6 : 1)); for (const s of mist) s.visible = high; setTrees(); },
     setFog(d) { if (water) water.material.uniforms.uFogD.value = d; },
     stats() { let tris = 0, draws = 0; group.traverse(o => { if (!o.isMesh && !o.isPoints) return; if (o.visible === false || o === pick) return; draws++; const g = o.geometry, n = (g.index ? g.index.count : g.attributes.position.count) / 3; tris += n * (o.isInstancedMesh ? o.count : g.isInstancedBufferGeometry ? g.instanceCount : 1); }); return { draws, tris: Math.round(tris), trees: trees.length, blades: grass.geometry.instanceCount }; },
     // cam: the viewer's place in the board's own space

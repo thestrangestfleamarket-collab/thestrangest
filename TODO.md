@@ -392,3 +392,9 @@ Last (owner, 7 Nov 2026: "we will do VR checks last"): every check and look line
 - [ ] **P2 · M · find** Recorded sound in place of the made ones (shots, glass, the room, a real piano), and voices pre-recorded with ElevenLabs for the written lines.
 - [ ] **P3 · M · code** A check of whole nights at speed, and of the hands in an emulated Quest 3.
 
+
+## SKIRMISH TABLE (`/chess`)
+
+- **P2** Choose your team (owner, 21 Nov 2026: "look at how TAO lets you choose your characters"): a point budget, any mix, set out on your own rows, saved teams. [taking: claude/chess-teams, 21 Nov 2026]
+- **P2** A computer opponent, then the solo campaign across landscaped maps (owner, 21 Nov 2026: "a DND campaign style layout ... that you can play through").
+- **P2** Upgrades, earned and kept for a login; fair duels ignore them (owner, 21 Nov 2026: "look for options to upgrade characters").

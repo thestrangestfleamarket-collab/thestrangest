@@ -104,7 +104,7 @@ let halt = () => {};
     for (const o of [a, b, n]) o.s.close(); }
 
   // ---- two pages, one match ----
-  const launch = () => chromium.launch({ ...(process.env.PWCHROME ? { executablePath: process.env.PWCHROME } : {}), args: ['--use-gl=angle', '--use-angle=swiftshader', '--enable-unsafe-swiftshader', '--ignore-gpu-blocklist'] });
+  const launch = () => chromium.launch({ ...(process.env.PWCHROME ? { executablePath: process.env.PWCHROME } : {}), args: OUT ? ['--use-gl=angle', '--use-angle=swiftshader', '--enable-unsafe-swiftshader', '--ignore-gpu-blocklist'] : ['--use-gl=swiftshader', '--enable-unsafe-swiftshader', '--ignore-gpu-blocklist'] });
   const b = await launch(), b2 = OUT ? await launch() : b;   // for pictures the second player has a browser of their own
   const errs = [], miss = [];
   const open = async (init, br = b) => { const ctx = await br.newContext({ viewport: { width: 1280, height: 800 }, deviceScaleFactor: OUT ? 2 : 1 }), pg = await ctx.newPage();
@@ -115,7 +115,7 @@ let halt = () => {};
   // for pictures the pages draw at full quality, too slow for two at once in software: only the page being used is at full size, the other is shrunk to a stamp
   let cur = null; const on = async pg => { if (OUT && cur !== pg) { if (cur) await cur.setViewportSize({ width: 96, height: 60 }); await pg.setViewportSize({ width: 1280, height: 800 }); cur = pg; await pg.waitForTimeout(500); } return pg; };
   const st = async pg => (await on(pg)).evaluate(() => window.__t.state), tap = async (pg, p) => (await on(pg)).evaluate(p => window.__t.handlePick(p), p);
-  const until = async (pg, fn, arg, ms = OUT ? 240000 : 60000) => (await on(pg)).waitForFunction(fn, arg, { timeout: ms }).then(() => true, () => false);
+  const until = async (pg, fn, arg, ms = OUT ? 240000 : 60000) => { await on(pg); await pg.waitForFunction(() => !!window.__t, null, { timeout: ms }).catch(() => {}); return pg.waitForFunction(fn, arg, { timeout: ms }).then(() => true, () => false); };
   const shot = async (pg, name) => { if (OUT) { await on(pg); await pg.waitForTimeout(1500); await pg.screenshot({ path: path.join(OUT, name + '.png'), timeout: 240000 }).catch(e => ok(false, 'the picture ' + name + ': ' + e.message.split('\n')[0])); } };
   const people = pg => until(pg, () => { let n = 0; window.__t.scene.traverse(o => { if (o.isSkinnedMesh) n++; }); return n >= 20; }, null, 180000);
   const A = await open(), B = await open(null, b2); await on(A);
@@ -142,7 +142,7 @@ let halt = () => {};
   await (await on(B)).waitForTimeout(350); await shot(B, 'attack');
   await tap(B, { kind: 'end' }); await until(A, () => window.__t.state.turn === 0); s = await st(A);
   ok(s.units.find(u => u.id === archer.id).rec === 2, 'the archer rests two turns');
-  await (await on(A)).reload({ waitUntil: 'commit', timeout: 120000 }); ok(await until(A, () => window.__t && window.__t.me === 0 && window.__t.state && window.__t.state.turnNo === 3), 'a reload comes back to the same seat and the same board');
+  await (await on(A)).reload({ waitUntil: 'commit', timeout: 120000 }); ok(await until(A, () => window.__t && window.__t.me === 0 && window.__t.state && window.__t.state.turnNo === 3), 'a reload comes back to the same seat and the same board: ' + JSON.stringify(await A.evaluate(() => window.__t ? { me: window.__t.me, code: window.__t.code, turnNo: window.__t.state && window.__t.state.turnNo, lobby: document.getElementById('lobbyMsg').textContent } : null)));
   await people(A);
   { const hit = await (await on(A)).evaluate(() => { const T = window.__t, id = T.state.units.find(u => u.owner === 0 && u.type === 'bulwark').id; let g = null; T.scene.traverse(o => { if (o.userData && o.userData.pick && o.userData.pick.kind === 'unit' && o.userData.pick.id === id) g = o; });
       const p = g.getWorldPosition(T.V(0, 0, 0)); p.y += 0.06; p.project(T.camera); return { id, x: (p.x + 1) / 2 * innerWidth, y: (1 - p.y) / 2 * innerHeight }; });
@@ -163,7 +163,7 @@ let halt = () => {};
       if (u) cur = await step({ type: 'act', unit: u.id, ...strike(u)[0] });
       else { u = mine.filter(u => G.TYPES[u.type].pow > 0).sort((a, c) => Math.min(...foes.map(f => d(a, f))) - Math.min(...foes.map(f => d(c, f))))[0] || mine[0];
         if (u) { const near = t => Math.min(...foes.map(f => d(t, f))), mv = G.reachable(S, u).sort((a, c) => near(a) - near(c))[0];
-          if (mv && near(mv) < near(u)) { cur = await step({ type: 'move', unit: u.id, x: mv.x, y: mv.y }); const v = G.unitById(cur, u.id), tg = v ? G.targets(cur, v).filter(t => { const q = G.unitAt(cur, t.x, t.y); return q && q.owner !== p && G.TYPES[v.type].pow > 0; }) : []; if (tg.length) cur = await step({ type: 'act', unit: u.id, ...tg[0] }); } } }
+          if (mv && (near(mv) < near(u) || Math.random() < 0.5)) { cur = await step({ type: 'move', unit: u.id, x: mv.x, y: mv.y }); const v = G.unitById(cur, u.id), tg = v ? G.targets(cur, v).filter(t => { const q = G.unitAt(cur, t.x, t.y); return q && q.owner !== p && G.TYPES[v.type].pow > 0; }) : []; if (tg.length) cur = await step({ type: 'act', unit: u.id, ...tg[0] }); } } }
       if (cur.winner === null) { const n = me.got.length; me.act({ type: 'end' }); await wait(() => me.got.length > n, 5000); }
       await wait(() => bots[0].state.turn !== p || bots[0].state.winner !== null, 5000); turns++; if (me.got.length === n0) break; }
     const E = bots[0].state, win = E.winner;

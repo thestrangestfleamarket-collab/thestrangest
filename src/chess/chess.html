@@ -23,6 +23,14 @@
   #lobby h1 { margin: 0 0 4px; font-size: 24px; }
   #lobby p { margin: 0 0 18px; color: #a5acb8; }
   #lobby .row { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; margin-top: 12px; }
+  select { font: inherit; color: inherit; background: #0d0f13; border: 1px solid #3a404b; border-radius: 8px; padding: 10px 12px; }
+  #mapInfo { color: #a5acb8; margin-top: 10px; min-height: 2.8em; }
+  #help { position: fixed; inset: 0; display: flex; align-items: center; justify-content: center; padding: 16px; background: rgba(14, 16, 20, .7); z-index: 9; }
+  #help[hidden] { display: none; }
+  #help .card { background: #1d2129; border: 1px solid #2c323c; border-radius: 14px; padding: 20px 24px; max-width: 520px; }
+  #help h2 { margin: 0 0 10px; font-size: 19px; }
+  #help p { color: #a5acb8; margin: 12px 0 0; }
+  #rules { line-height: 1.6; }
   #lobbyMsg { color: #ff9c8a; min-height: 1.4em; margin-top: 12px; }
   body::after { content: ''; position: fixed; inset: 0; pointer-events: none; z-index: 1;
     background: radial-gradient(ellipse at center, transparent 55%, rgba(0, 0, 0, .6) 100%); }
@@ -40,7 +48,11 @@
   <div class="card">
     <h1>Skirmish Table</h1>
     <p>Two-player turn-based tactics. Plays on a Quest 3 in mixed reality or in any browser.</p>
-    <button id="createBtn">Create a match</button>
+    <div class="row" style="margin-top:0">
+      <select id="mapSel" aria-label="Battlefield"></select>
+      <button id="createBtn">Create a match</button>
+    </div>
+    <div id="mapInfo"></div>
     <div class="row">
       <input id="codeInput" maxlength="4" placeholder="CODE" autocomplete="off" aria-label="Room code">
       <button id="joinBtn" class="secondary">Join with code</button>
@@ -53,11 +65,13 @@
   <button id="arBtn" hidden>Enter AR</button>
   <button id="soundBtn" class="secondary">Sound on</button>
   <button id="qualityBtn" class="secondary">Quality: high</button>
+  <button id="helpBtn" class="secondary">Ground rules</button>
   <button id="copyBtn" class="secondary">Copy invite link</button>
   <button id="endBtn">End turn</button>
   <button id="quitBtn" class="danger">Surrender</button>
 </div>
 <div id="info"></div>
+<div id="help" hidden><div class="card"><h2>Ground rules</h2><div id="rules"></div><p>Tap a tile to see what it is. Tap here to close.</p></div></div>
 <script type="module">__CHESS__</script>
 </body>
 </html>

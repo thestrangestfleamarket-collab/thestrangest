@@ -101,7 +101,7 @@ export class FX {
     const m = new THREE.Mesh(new THREE.PlaneGeometry(size, size), mat);
     m.rotation.x = -Math.PI / 2;
     m.rotation.z = Math.random() * 6.28;
-    m.position.set(pos.x, 0.012, pos.z);
+    m.position.set(pos.x, (pos.y || 0) + 0.012, pos.z);
     m.raycast = () => {};
     this.parent.add(m);
     let age = 0;
@@ -164,7 +164,7 @@ export class FX {
           q.s.scale.set(sz, sz * 1.3, 1);
           q.mat.opacity = Math.sin(Math.min(1, q.t * 1.2) * Math.PI) * 0.9;
         }
-        return true;
+        return !group.userData.dead;
       },
       dispose: () => {},
     });
@@ -172,7 +172,7 @@ export class FX {
   }
 
   lightFlash(pos, color, intensity, life) {
-    this.light.position.set(pos.x, 1.4, pos.z);
+    this.light.position.set(pos.x, (pos.y || 0) + 1.4, pos.z);
     this.light.color.setHex(color);
     this.lightPeak = intensity; this.lightLife = this.lightMax = life;
   }

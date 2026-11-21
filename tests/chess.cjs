@@ -2,7 +2,7 @@
 const { chromium } = require('playwright'), path = require('path'), fs = require('fs'), os = require('os'), { pathToFileURL } = require('url'), { spawn } = require('child_process');
 const fails = [], ok = (c, m) => { if (!c) { fails.push(m); console.log((process.env.GITHUB_ACTIONS ? '::error title=chess::' : 'FAIL ') + m); } else console.log('ok   ' + m); };
 const PAGE = path.resolve(process.argv[2] || 'dist/chess.html'), OUT = process.argv[3]; if (OUT) fs.mkdirSync(OUT, { recursive: true });
-const PORT = 8797, BASE = 'http://127.0.0.1:' + PORT, ROOT = path.join(__dirname, '..');
+const PORT = +process.env.PORT || 8797, BASE = 'http://127.0.0.1:' + PORT, ROOT = path.join(__dirname, '..');
 const IWER = fs.readFileSync(require.resolve('iwer/build/iwer.min.js'), 'utf8');
 const nap = ms => new Promise(r => setTimeout(r, ms));
 let halt = () => {};
@@ -42,6 +42,35 @@ let halt = () => {};
     G.apply(s, 0, { type: 'end' }); G.apply(s, 1, { type: 'surrender' });
     ok(s.winner === 0 && !G.apply(s, 0, { type: 'end' }).ok, 'a surrender gives the other the win; nothing after the end'); }
   { const s = G.newGame(); for (let i = 0; i < G.MAX_PASSES; i++) G.apply(s, s.turn, { type: 'end' }); ok(s.winner === -1, 'four passes in a row is a draw'); }
+  // ---- the ground (src/chess/maps.js): every map the same from both seats, every rule the same for every piece ----
+  { const land = Object.entries(G.MAPS).filter(([, m]) => m.tiles), turned = m => m.tiles.every((r, y) => [...r].every((c, x) => c === m.tiles[m.rows - 1 - y][m.cols - 1 - x] && m.high[y][x] === m.high[m.rows - 1 - y][m.cols - 1 - x]));
+    ok(land.length >= 3 && land.every(([, m]) => m.tiles.length === m.rows && m.high.length === m.rows && m.tiles.every(r => r.length === m.cols && [...r].every(c => G.TERRAIN[c])) && turned(m)), 'the landscaped maps (' + land.map(([id]) => id).join(', ') + ') are whole and read the same from both seats');
+    ok(G.newGame().map === 'board' && G.newGame('nowhere').map === 'board' && !G.MAPS.board.tiles && G.newGame().cols === 9 && G.newGame().rows === 11, 'the plain board is still a map, with no ground, and the one a match gets when none is named');
+    ok(land.every(([id, m]) => { const s = G.newGame(id); return s.units.length === 20 && s.cols === m.cols && s.rows === m.rows && s.units.every(u => !G.ground(s, u.x, u.y).solid && (u.owner === 0 ? u.y >= m.rows - m.zone : u.y < m.zone)) && new Set(s.units.map(u => u.x + ',' + u.y)).size === 20; }), 'on every map the twenty pieces set out on open ground in their own rows');
+    const on = (type, owner, x, y, facing = 'N') => ({ id: 0, type, owner, x, y, facing, hp: G.TYPES[type].hp, rec: 0, snare: 0 }), game = (...units) => { const s = G.newGame('river'); s.units = units.map((u, i) => ({ ...u, id: i + 1 })); return s; }, can = (s, u, x, y) => G.reachable(s, u).some(p => p.x === x && p.y === y);
+    { const s = game(on('bulwark', 0, 3, 6)), k = s.units[0], all = G.reachable(s, k);
+      ok(all.every(p => !G.ground(s, p.x, p.y).solid) && !can(s, k, 3, 5) && can(s, k, 2, 5) && !can(s, k, 2, 4), 'deep water cannot be entered; the ford takes two move points, so a knight three tiles from the far bank only reaches the ford');
+      const r = game(on('strider', 0, 3, 6)); ok(can(r, r.units[0], 2, 4) && can(r, r.units[0], 3, 4) && !can(r, r.units[0], 3, 5), 'the rogue wades the ford and comes out the other side');
+      const b = game(on('bulwark', 0, 5, 7)); ok(can(b, b.units[0], 5, 5) && can(b, b.units[0], 5, 4) && !can(b, b.units[0], 4, 5), 'the bridge crosses the river at walking pace'); }
+    { const s = game(on('bulwark', 0, 5, 7)), k = s.units[0]; ok(can(s, k, 6, 7) && !can(s, k, 7, 7) && can(s, k, 4, 7) && !can(s, k, 3, 7), 'forest takes two move points a tile; rock cannot be entered'); }
+    { const s = game(on('bulwark', 0, 3, 8)), k = s.units[0]; ok(G.high(s, 2, 8) === 1 && can(s, k, 2, 8) && can(s, k, 1, 8) && !can(s, k, 0, 8) && can(game(on('bulwark', 0, 2, 8)), { type: 'bulwark', x: 2, y: 8 }, 5, 8), 'stepping up a level costs one more move point (down costs nothing more)'); }
+    { const s = game(on('slinger', 0, 2, 8), on('mender', 1, 2, 2, 'S'), on('slinger', 0, 6, 9), on('mender', 1, 6, 3, 'S')), [hi, a, lo, b] = s.units, t = (u, v) => G.targets(s, u).some(p => p.x === v.x && p.y === v.y);
+      ok(t(hi, a) && !t(lo, b) && G.reach(s, hi, a.x, a.y) === 6 && G.reach(s, lo, b.x, b.y) === 5, 'an archer on high ground reaches one tile further at a target below; on the level it does not');
+      const r = G.apply(s, 0, { type: 'act', unit: hi.id, x: a.x, y: a.y }, never); ok(r.ok && a.hp === 24 - 8, 'arrows do half damage to a piece in the forest (16 becomes 8)'); }
+    { const s = game(on('strider', 0, 2, 6), on('bulwark', 1, 2, 5, 'S'), on('strider', 0, 6, 7), on('bulwark', 1, 6, 6, 'S')), [r1, wet, r2, dry] = s.units, half = () => 0.5;
+      G.apply(s, 0, { type: 'act', unit: r1.id, x: 2, y: 5 }, half); G.apply(s, 0, { type: 'end' }); G.apply(s, 1, { type: 'end' }); G.apply(s, 0, { type: 'act', unit: r2.id, x: 6, y: 6 }, half);
+      ok(wet.hp < 50 && dry.hp === 50, 'a piece standing in the ford blocks at half its block: the same blow gets through there and is blocked on dry ground'); }
+    { const s = game(on('lancer', 0, 3, 8), on('mender', 1, 3, 6, 'S'), on('lancer', 0, 4, 8), on('mender', 1, 4, 6, 'S')), [l1, , l2, v2] = s.units;
+      ok(G.ground(s, 3, 7).wall && G.targets(s, l1).length === 0 && G.targets(s, l2).length === 1 && !G.apply(s, 0, { type: 'act', unit: l1.id, x: 3, y: 6 }).ok && G.apply(s, 0, { type: 'act', unit: l2.id, x: 4, y: 6 }, never).ok && v2.hp < 24, 'a rock stops the berserker\'s axe; open ground does not'); }
+    let bad = 0, games = 0;
+    for (const [id] of land) for (let g = 0; g < 60; g++, games++) { const s = G.newGame(id);
+      for (let i = 0; i < 600 && s.winner === null; i++) { const p = s.turn, mine = s.units.filter(u => G.canUse(s, p, u)), u = mine[Math.floor(Math.random() * mine.length)];
+        if (u) { const mv = G.reachable(s, u); if (mv.length && Math.random() < 0.8 && !G.apply(s, p, { type: 'move', unit: u.id, ...mv[Math.floor(Math.random() * mv.length)] }).ok) bad++;
+          const tg = G.targets(s, u); if (tg.length && !G.apply(s, p, { type: 'act', unit: u.id, ...tg[Math.floor(Math.random() * tg.length)] }).ok) bad++; }
+        if (s.winner === null && !G.apply(s, p, { type: 'end', unit: u && u.id, facing: u ? 'NESW'[Math.floor(Math.random() * 4)] : undefined }).ok) bad++;
+        if (s.units.some(u => G.ground(s, u.x, u.y).solid)) bad++; }
+      if (new Set(s.units.map(u => u.x + ',' + u.y)).size !== s.units.length) bad++; }
+    ok(bad === 0, games + ' random games on the landscaped maps: every move the rules offer is taken, nobody ends in water or rock'); }
   { let bad = 0;
     for (let g = 0; g < 200; g++) { const s = G.newGame();
       for (let i = 0; i < 600 && s.winner === null; i++) { const p = s.turn, mine = s.units.filter(u => G.canUse(s, p, u)), u = mine[Math.floor(Math.random() * mine.length)];
@@ -66,7 +95,9 @@ let halt = () => {};
     ok(off[0] && !off[1] && last(b2, 'joined').you === 1 && last(a, 'state').present[1] && host.saves > 0, 'a player who drops is shown offline and comes back to the same seat');
     say(a, { t: 'act', action: { type: 'surrender' } }); ok(host.room.state.winner === 1 && host.room.deadline === null && last(c, 'state').state.winner === 1, 'a surrender ends it for everyone and stops the clock');
     clearTimeout(M.timer);
-    ok(CHESS.CODE.test(CHESS.code()) && !CHESS.CODE.test('abcd') && !CHESS.CODE.test('ABCDE'), 'a room\'s code is four capital letters'); }
+    ok(CHESS.CODE.test(CHESS.code()) && !CHESS.CODE.test('abcd') && !CHESS.CODE.test('ABCDE'), 'a room\'s code is four capital letters');
+    const mk = map => { const h = { room: null, save() {} }, m = new CHESS.Match(h), w = sock(); m.open(w); m.message(w, 'WXYZ', JSON.stringify({ t: 'create', token: 't', map })); clearTimeout(m.timer); return h.room.state; };
+    ok(mk('river').map === 'river' && mk('river').cols === 11 && mk('nowhere').map === 'board' && mk(7).map === 'board' && mk(undefined).map === 'board', 'the host names the map when the room is made; one the server does not know is the plain board'); }
 
   // ---- the website's worker and its Chess Durable Object ----
   const CFG = path.join(ROOT, '.site-wrangler.jsonc'); fs.writeFileSync(CFG, fs.readFileSync(path.join(ROOT, 'wrangler.jsonc'), 'utf8').replace(/^\s*"ai"\s*:\s*\{[^}]*\},?\s*$/m, '')); process.on('exit', () => { try { fs.unlinkSync(CFG); } catch (e) {} });
@@ -83,10 +114,12 @@ let halt = () => {};
     // every file the page's code names: the people, the sprites, the sounds
     const src = f => fs.readFileSync(path.join(ROOT, 'src/chess', f), 'utf8'), names = (f, re) => [...new Set([...src(f).matchAll(re)].map(m => m[1]))];
     const sfx = eval(/const FILES = (\[[\s\S]*?\]);/.exec(src('audio.js'))[1]), glb = [...names('characters.js', /'((?:Male|Female|Hair)_[A-Za-z]+)'/g), 'animations'], png = fs.readdirSync(path.join(ROOT, 'data/chess/fx')).map(f => f.replace('.png', ''));
-    const urls = [...sfx.map(n => 'sfx/' + n + '.mp3'), ...glb.map(n => 'characters/' + n + '.glb'), ...png.map(n => 'fx/' + n + '.png')], bad = [], types = {};
+    const land = fs.readdirSync(path.join(ROOT, 'data/chess/land')).flatMap(d => fs.readdirSync(path.join(ROOT, 'data/chess/land', d)).map(f => 'land/' + d + '/' + f));
+    ok(land.length >= 15 && [...src('land.js').matchAll(/tex\('(\w+)'/g)].every(m => land.includes('land/tex/' + m[1] + '.jpg')) && [...src('land.js').matchAll(/model\('(\w+)'\)/g)].every(m => land.includes('land/m/' + m[1] + '.glb')), 'every picture and model the landscape names is in data/chess/land/ (' + land.length + ' files)');
+    const urls = [...sfx.map(n => 'sfx/' + n + '.mp3'), ...glb.map(n => 'characters/' + n + '.glb'), ...png.map(n => 'fx/' + n + '.png'), ...land], bad = [], types = {};
     for (const u of urls) { const q = await fetch(BASE + '/chess-assets/' + u, { method: 'HEAD' }); if (q.status !== 200) bad.push(u + ' ' + q.status); else types[u.split('.').pop()] = q.headers.get('content-type'); }
     ok(sfx.length >= 30 && glb.length >= 8 && png.length >= 10 && !bad.length, 'every file it fetches is handed out (' + sfx.length + ' mp3, ' + glb.length + ' glb, ' + png.length + ' png)' + (bad.length ? ': ' + bad.join(', ') : ''));
-    ok(/audio\/mpeg/.test(types.mp3) && /gltf-binary/.test(types.glb) && /image\/png/.test(types.png), 'each as its kind: ' + JSON.stringify(types));
+    ok(/audio\/mpeg/.test(types.mp3) && /gltf-binary/.test(types.glb) && /image\/png/.test(types.png) && /image\/jpeg/.test(types.jpg), 'each as its kind: ' + JSON.stringify(types));
     const x = await fetch(BASE + '/chess-assets/../g/market.html'), y = await fetch(BASE + '/chess-assets/CREDITS.md'), z = await fetch(BASE + '/chess/ws?create=1');
     ok(x.status !== 200 && y.status === 404 && z.status === 426, 'nothing else under /chess-assets/, and the room answers only a socket'); }
 
@@ -102,6 +135,13 @@ let halt = () => {};
     b.act({ type: 'surrender' }); await wait(() => a.state && a.state.winner !== null);
     ok(a.state && a.state.winner === 0, 'a surrender there gives the other player the win');
     for (const o of [a, b, n]) o.s.close(); }
+  { const a = await seat('create=1', { t: 'create', token: 'map-a', map: 'river' }); await wait(() => a.code);
+    const b = await seat('room=' + a.code, { t: 'join', code: a.code, token: 'map-b' }); await wait(() => b.state && a.state && b.got.some(m => m.t === 'state' && m.started));
+    const k = a.state.units.find(u => u.owner === 0 && u.type === 'bulwark' && u.x === 4), e0 = a.err.length;
+    a.act({ type: 'move', unit: k.id, x: 4, y: 5 }); await wait(() => a.err.length > e0); const wet = a.err.length > e0;
+    a.act({ type: 'move', unit: k.id, x: 4, y: 6 }); await wait(() => b.state.active);
+    ok(a.state.map === 'river' && b.state.map === 'river' && b.state.cols === 11 && wet && b.state.units.find(u => u.id === k.id).y === 6, 'a match made on Millford Crossing is judged by its ground in the Durable Object: no step into the river, the step to its bank goes through');
+    for (const o of [a, b]) o.s.close(); }
 
   // ---- two pages, one match ----
   const launch = () => chromium.launch({ ...(process.env.PWCHROME ? { executablePath: process.env.PWCHROME } : {}), args: OUT ? ['--use-gl=angle', '--use-angle=swiftshader', '--enable-unsafe-swiftshader', '--ignore-gpu-blocklist'] : ['--use-gl=swiftshader', '--enable-unsafe-swiftshader', '--ignore-gpu-blocklist'] });
@@ -146,8 +186,8 @@ let halt = () => {};
   await people(A);
   { const hit = await (await on(A)).evaluate(() => { const T = window.__t, id = T.state.units.find(u => u.owner === 0 && u.type === 'bulwark').id; let g = null; T.scene.traverse(o => { if (o.userData && o.userData.pick && o.userData.pick.kind === 'unit' && o.userData.pick.id === id) g = o; });
       const p = g.getWorldPosition(T.V(0, 0, 0)); p.y += 0.06; p.project(T.camera); return { id, x: (p.x + 1) / 2 * innerWidth, y: (1 - p.y) / 2 * innerHeight }; });
-    await (await on(A)).mouse.click(hit.x, hit.y); await (await on(A)).waitForTimeout(400);
-    ok((await (await on(A)).evaluate(() => window.__t.selected)) === hit.id, 'a real click on a knight\'s base picks it'); await tap(A, null); }
+    await (await on(A)).mouse.click(hit.x, hit.y);
+    ok(await until(A, id => window.__t.selected === id, hit.id, 8000), 'a real click on a knight\'s base picks it'); await tap(A, null); }
 
   ok(await people(A) && await people(B), 'the twenty people are drawn as their models on both pages');
   await shot(A, 'board-player1'); await shot(B, 'board-player2');
@@ -175,6 +215,28 @@ let halt = () => {};
   ok(errs.length === 0, 'no page errors' + (errs.length ? ': ' + errs.slice(0, 4).join(' | ') : ''));
   ok(miss.length === 0, 'nothing the pages asked for was refused' + (miss.length ? ': ' + [...new Set(miss)].slice(0, 6).join(', ') : ''));
   await A.context().close(); await B.context().close(); if (b2 !== b) await b2.close();
+
+  // ---- the landscaped maps on the page: built from the map's data, a piece stands on its ground, a click finds its tile ----
+  { const n0 = errs.length, L = await open(); cur = null;
+    for (const id of Object.keys(G.MAPS).filter(id => G.MAPS[id].tiles)) { const m = G.MAPS[id];
+      await L.goto(BASE + '/chess?show=' + id, { waitUntil: 'commit', timeout: 120000 }); await until(L, () => !!window.__t && !!window.__t.field && window.__t.field.land);
+      await until(L, () => window.__t.field.stats().draws > 20, null, 120000); await people(L);
+      const f = await L.evaluate(() => { const T = window.__t, F = T.field, st = F.stats(); let off = 0; T.scene.traverse(o => { const p = o.userData && o.userData.pick; if (p && p.kind === 'unit') { const u = T.state.units.find(u => u.id === p.id); if (u && Math.abs(o.userData.target.y - F.yAt(u.x, u.y)) > 1e-6) off++; } }); return { id: F.id, cols: F.cols, rows: F.rows, st, off, lights: F.lights.length, bg: !!T.scene.background }; });
+      ok(f.id === id && f.cols === m.cols && f.rows === m.rows && f.off === 0 && f.bg && f.lights <= 2, m.name + ' is built from its data, every piece standing on its own tile\'s ground');
+      ok(f.st.tris > 20000 && f.st.tris < 260000 && f.st.draws < 90, 'its cost on the low setting: ' + f.st.draws + ' draws, ' + f.st.tris + ' triangles, ' + f.st.blades + ' blades of grass, ' + f.st.trees + ' trees');
+      const tile = (() => { for (let y = m.rows - 4; y > 2; y--) for (let x = 0; x < m.cols; x++) if (m.tiles[y][x] === 'f') return { x, y }; })();   // the nearest forest tile to the seat: nothing higher stands in front of it
+      const at = await L.evaluate(t => { const T = window.__t, p = T.V(t.x - (T.field.cols - 1) / 2, T.field.yAt(t.x, t.y), t.y - (T.field.rows - 1) / 2); p.project(T.camera); return { x: (p.x + 1) / 2 * innerWidth, y: (1 - p.y) / 2 * innerHeight }; }, tile);
+      await L.mouse.click(at.x, at.y); await until(L, () => /^Forest/.test(document.getElementById('info').textContent), null, 8000);
+      ok(/^Forest/.test(await L.textContent('#info')), 'a real click on a forest tile there says what the ground is: ' + (await L.textContent('#info')).slice(0, 60));
+      const u = (await st(L)).units.find(u => u.owner === 0 && u.type === 'strider'); await tap(L, { kind: 'unit', id: u.id });
+      const marks = await L.evaluate(() => { const T = window.__t, G = T.G, s = T.state, u = s.units.find(u => u.id === T.selected); return { n: G.reachable(s, u).length, solid: G.reachable(s, u).filter(p => G.ground(s, p.x, p.y).solid).length }; });
+      ok(marks.n > 4 && marks.solid === 0, 'the rogue\'s moves are marked over the ground (' + marks.n + ' tiles, none of them water or rock)');
+      await shot(L, 'map-' + id); await tap(L, null); }
+    await L.goto(BASE + '/chess', { waitUntil: 'commit', timeout: 120000 }); await until(L, () => !!window.__t && document.getElementById('mapSel').options.length >= 4);
+    await L.selectOption('#mapSel', 'pass'); await L.evaluate(() => document.getElementById('createBtn').click());
+    ok(await until(L, () => window.__t.state && window.__t.state.map === 'pass' && window.__t.field && window.__t.field.id === 'pass') && /crags/.test(await L.textContent('#mapInfo')), 'the host picks the map on the menu: Greywether Pass is the one the room is made on');
+    await L.evaluate(() => document.getElementById('helpBtn').click()); ok(/Forest/.test(await L.textContent('#rules')) && /High ground/.test(await L.textContent('#rules')), 'GROUND RULES lists what each ground does');
+    ok(errs.length === n0, 'no page errors on the landscaped maps' + (errs.length > n0 ? ': ' + errs.slice(n0, n0 + 4).join(' | ') : '')); await L.context().close(); }
 
   // ---- an emulated Quest 3: AR, the board in front of you, a controller picks a piece ----
   { const n0 = errs.length, Q = await open(IWER + ';window.xrDevice=new IWER.XRDevice(IWER.metaQuest3);xrDevice.installRuntime({forceInstall:true});xrDevice.position.set(0,1.6,0);');

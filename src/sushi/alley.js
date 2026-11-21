@@ -9,7 +9,7 @@ import { AIR } from './air.js';
 import { weatherAt } from './weather.js';
 import { buildCorner, NIGHT } from './corner.js';
 import { buildStreet } from './street.js';
-import { NZ, KERB, FKERB, FZ, W0, E0, ROAD, LANES, XWALK, SPOTS } from './plan.js';
+import { NZ, KERB, FKERB, FZ, W0, E0, ROAD, LANES, XWALK, SPOTS, ROWD } from './plan.js';
 export { NZ, KERB, FKERB, FZ, W0, E0, ROAD } from './plan.js';
 
 export const FOG = 0xb8c4cc;
@@ -32,6 +32,9 @@ export function buildAlley(scene, o = {}) {
   const lampMats = [];   // each: emissiveIntensity = lit * (userData.k or 1.6)
   // ---- the corner itself (corner.js), and what stands lit and drives by on it (street.js)
   const corner = buildCorner(city);
+  // the yard wall behind the park-side row of fronts: a dark brick wall past the row's ends, the skyline over it
+  { const W = 330, H = 3.4, g = new THREE.PlaneGeometry(W, H), uv = g.attributes.uv; for (let i = 0; i < uv.count; i++) uv.setXY(i, uv.getX(i) * W / 2.4, uv.getY(i) * H / 2.4);
+    const w = new THREE.Mesh(g, T.surface(mat({ map: T.photo('brick_dark'), color: 0x8a8480 }), { grime: 0.4 })); w.rotation.y = Math.PI; w.position.set(-30, H / 2 - 0.3, NZ + ROWD + 0.35); w.userData.keep = true; w.userData.nopick = true; w.receiveShadow = true; city.add(w); }
   const street = buildStreet({ city, scene, R, flat, halo, addHalo, haloSet, lampMats, ups, corner, glowMap, api: () => lit });
   // ---- the light, after THE MARKET's: the real sun and moon over New York on the run's clock (sky.js, ephem.js), the light from whichever is up and its shadows, the hemisphere's fill by the sky's colour, the air's haze and mist (air.js) by the hour and the weather (weather.js)
   const fill = new THREE.HemisphereLight(0xbcd0ec, 0x5a5a5e, 1.05); scene.add(fill);

@@ -79,7 +79,7 @@ const shot = (j, name) => { if (out && j) fs.writeFileSync(path.join(out, name),
   // in a headset (an emulated Quest 3): the guest stands out in front of the cart, walks the alley with the stick, never into the cart, and sees through their own eyes
   const iwer = fs.readFileSync(require.resolve('iwer/build/iwer.js'), 'utf8') + ';window.__xrd=new IWER.XRDevice(IWER.metaQuest3);window.__xrd.installRuntime({forceInstall:true});';
   const V = await cx.newPage(); V.on('pageerror', (e) => errs.push('guest vr: ' + e.message.slice(0, 200))); await V.addInitScript((c) => { if (!sessionStorage.getItem('holo')) sessionStorage.setItem('holo', c); }, JSON.stringify(guestCard)); await V.addInitScript(iwer);
-  await V.goto(BASE + '/ramen?guest=1'); await V.waitForFunction('window.G && G.debug && G.guestRole', null, { timeout: 300000 });
+  await V.goto(BASE + '/ramen?guest=1&link'); await V.waitForFunction('window.G && G.debug && G.guestRole', null, { timeout: 300000 });
   const vr = await V.evaluate(async () => { const T3 = G.debug.THREE, xr = window.__xrd, out = {}; G.renderer.shadowMap.enabled = false; const frames = (n) => new Promise((res) => { const t0 = G.t, iv = setInterval(() => { if (G.t - t0 >= n * 0.049) { clearInterval(iv); res(); } }, 50); }), eye = () => G.camera.getWorldPosition(new T3.Vector3());
     await G.debug.startVR(); await frames(14); out.presenting = G.renderer.xr.isPresenting; const e0 = eye(); out.start = [+e0.x.toFixed(2), +e0.z.toFixed(2)];
     xr.controllers.left.updateAxis('thumbstick', 'y-axis', -1); await frames(30); xr.controllers.left.updateAxis('thumbstick', 'y-axis', 0); await frames(4); const e1 = eye(); out.walked = +Math.hypot(e1.x - e0.x, e1.z - e0.z).toFixed(2); out.at = [+e1.x.toFixed(2), +e1.z.toFixed(2)];

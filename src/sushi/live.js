@@ -113,7 +113,7 @@ export function buildLive() {
   live.send = (m) => { if (link) { if (NET.on) link.send(m); } else if (framed) try { window.parent.postMessage({ yataiNet: m }, location.origin); } catch (e) { /* alone */ } };
   live.seen = () => G.t - seenT < 4; live.framed = framed;
   live.body = body; live.take = take;
-  live.status = () => (G.guest ? (live.cooks.size ? 'IN THE ALLEY · ' + live.cooks.size + ' COOK' + (live.cooks.size > 1 ? 'S' : '') + ' AT WORK' : 'IN THE ALLEY · NOBODY COOKING') + (live.watchers.size ? ' · ' + live.watchers.size + ' MORE HERE' : '') : framed ? 'LINKED THROUGH THE HOLODECK' : !link ? (/^https?:$/.test(location.protocol) ? 'NOT LINKED (LOG IN)' : 'NOT LINKED') : !NET.on ? 'CONNECTING…' : 'LINKED · ' + live.watchers.size + ' IN THE ALLEY' + (live.cooks.size ? ' · ' + live.cooks.size + ' MORE CART' + (live.cooks.size > 1 ? 'S' : '') : ''));
+  live.status = () => (G.guest ? (live.cooks.size ? 'IN THE ALLEY · ' + live.cooks.size + ' COOK' + (live.cooks.size > 1 ? 'S' : '') + ' AT WORK' : 'IN THE ALLEY · NOBODY COOKING') + (live.watchers.size ? ' · ' + live.watchers.size + ' MORE HERE' : '') : framed ? 'LINKED THROUGH THE HOLODECK' : !link ? 'NOT LINKED' : !NET.on ? 'CONNECTING…' : 'LINKED · ' + live.watchers.size + ' IN THE ALLEY' + (live.cooks.size ? ' · ' + live.cooks.size + ' MORE CART' + (live.cooks.size > 1 ? 'S' : '') : ''));
   live.net = () => ({ on: NET.on, me: NET.me, slot: link ? link.slot() : live.slot, others: [...NET.others.values()].map((o) => [o.id, !!o.cp]) });
   const _seat = new THREE.Vector3();
   live.update = (dt) => {

@@ -7,12 +7,17 @@ const W = JSON.parse(fs.readFileSync(path.join(ROOT, 'data/world.json'), 'utf8')
 // see: where eyes can be (the cook's place, the stools, the pavement a guest walks and the camera 2.6 m behind them, from a sitter's eye to the raised camera's), how fine each look is, and how a large piece is split into parts (unit: larger than this, by squares of part metres)
 const REG = { x0: -190, x1: 130, z0: -120, z1: 210, near: 40, mid: 90, cell: 44, tex: 512, out: { x0: -260, x1: 230, z0: -170, z1: 230, size: 16, tris: 320 }, walk: { x0: -12, x1: 43, z0: -7.4, z1: 2.4 },
   see: { px: 1024, xs: [-12, 43, 4], zs: [-7.2, -4.8, -2.4, 0, 2.3], ys: [1.15, 1.7, 3.3], cook: { xs: [-0.5, 0, 0.5], zs: [0, 0.6, 1.2], ys: [1.2, 1.6, 1.9] }, stools: { xs: [-0.8, 0, 0.8], z: -1.2, ys: [1.2, 1.6] }, cart: [-1.2, -0.6, 1.2, 1.85], unit: 8, part: 5 } };
+// Market St alone (owner, 20 Nov 2026): nothing north of the park's wall line or south of Market St's row is read (north, south). The park's side is lined with Market St's own fronts that stand out of the cart's sight (SHOPS, west to east from x0: "use the unique store fronts like arcade, theatre, playhouse, musuems"): each is read a second time, turned round to face the street, its front where the park's wall was (band: where the row stands, with what stands out before its fronts; each shop: where it is, and S, pz2: x -> S - x, z -> pz2 - z)
+const T2M = 0.84, zOf = (y) => (y - CART.y) * T2M, xOf = (x) => (x - CART.x) * T2M, SHOPS = { x0: -62, list: ['theatre', 'bank', 'art', 'play', 'gym', 'clinic', 'butterflies', 'pets', 'reptiles', 'birdshop'] };
+const ROW = { z0: 1e9, z1: 1e9, front: 0, dz: 0, north: zOf(W.park.y0) - 0.05, south: zOf(W.block.back), clear: [-4, 4], band: [zOf(W.block.back) - 0.4, zOf(W.block.front) + 3.5], pz2: zOf(W.park.y0) + zOf(W.block.front), shops: [] };
+{ let at = SHOPS.x0; for (const id of SHOPS.list) { const P = W.places.find((p) => p.id === id), a = xOf(P.x0), b = xOf(P.x1); ROW.shops.push({ id, x0: a, x1: b, S: at + (b - a) / 2 + (a + b) / 2 }); at += b - a; } }
 const srv = require('http').createServer((q, r) => { const f = path.join(DIST, decodeURIComponent(q.url.split('?')[0])); fs.readFile(f, (e, d) => { if (e) { r.writeHead(404); return r.end(); } r.writeHead(200, { 'content-type': f.endsWith('.html') ? 'text/html' : 'application/octet-stream' }); r.end(d); }); });
 
 // ---- in the page ----
 const bake = async (o) => {
-  const D = __dbg, T = D.THREE, sc = D.scene, TL = D.cv().TILE, M = TL / 0.84, B = D.MAPK.BOD, cx = B.XS(o.cart.x), cz = B.ZS(o.cart.y), gy = D.ground(cx, cz), R = o.REG;
+  const D = __dbg, T = D.THREE, sc = D.scene, TL = D.cv().TILE, M = TL / 0.84, B = D.MAPK.BOD, cx = B.XS(o.cart.x), cz = B.ZS(o.cart.y), gy = D.ground(cx, cz), R = o.REG, MV = o.row; MV.dy = -(D.ground(cx, cz + ((MV.z0 + MV.z1) / 2) * M) - gy) / M;   // (the row stands on Market St's own level)
   for (let i = 0; i < 400 && BATCH.left(400 * M) > 0; i++) { BATCH.rush(250, 400 * M); await new Promise((r) => setTimeout(r, 60)); }   // every patch of ground in sight painted first
+  if (window.FACADES) for (const n of FACADES.near) { n.r = 1e9; n.g.visible = true; }   // every front's close work (the market shows it only from near): the turned fronts stand by the cart
   const unpainted = BATCH.left(400 * M); sc.updateMatrixWorld(true);
   const vis = (q) => { for (let p = q; p; p = p.parent) if (!p.visible) return false; return true; };
   const chain = (q) => { const c = []; for (let p = q; p; p = p.parent) if (p.name) c.push(p.name); return c.join('<'); };
@@ -42,7 +47,13 @@ const bake = async (o) => {
   const CL = [null], SE = R.see, WK = R.walk, dWalk = (x0, z0, x1, z1) => Math.hypot(Math.max(x0 - WK.x1, 0, WK.x0 - x1), Math.max(z0 - WK.z1, 0, WK.z0 - z1));   // CL: every piece (or part of a large one): its triangles, its name, how near it comes to where a player can be, its material
   const one = (q, mw, g, m, start, count, tint, tag, vr) => { const P = g.attributes.position, idx = g.index, v0 = vr ? vr[0] : 0;
     if (vr) { bb.makeEmpty(); for (let i = v0; i < v0 + vr[1]; i++) bb.expandByPoint(v.fromBufferAttribute(P, i)); bb.applyMatrix4(mw); } else { if (!g.boundingBox) g.computeBoundingBox(); bb.copy(g.boundingBox).applyMatrix4(mw); }
-    const x0 = (bb.min.x - cx) / M, x1 = (bb.max.x - cx) / M, z0 = (bb.min.z - cz) / M, z1 = (bb.max.z - cz) / M, y0 = (bb.min.y - gy) / M, y1 = (bb.max.y - gy) / M;
+    const x0 = (bb.min.x - cx) / M, x1 = (bb.max.x - cx) / M, y0 = (bb.min.y - gy) / M, y1 = (bb.max.y - gy) / M; let z0 = (bb.min.z - cz) / M, z1 = (bb.max.z - cz) / M;
+    const row = z0 >= MV.z0 - MV.front && z1 <= MV.z1 + 0.4, dz = row ? MV.dz : 0, dy = row ? MV.dy : 0, zm = (z0 + z1) / 2, wide = Math.hypot(x1 - x0, z1 - z0) > 8;   // row: a thing of the Hudson row, read where it stands on the park's side
+    if (row && !wide && x1 > MV.clear[0] && x0 < MV.clear[1] && z0 + dz < MV.north - 0.3) { note(skipped, 'where the cart stands ' + tag, 1); return; }
+    if (!row && (zm > MV.north || zm < MV.south) && (!wide || y1 > 1.2)) { note(skipped, 'beyond Market St ' + tag, 1); return; }   // (a wide flat thing is ground: cut at the line instead)
+    if (!row && !wide && (z1 > MV.north + 1.5 || z0 < MV.south - 1.5)) { note(skipped, 'beyond Market St ' + tag, 1); return; }
+    const gone = (za, zb, zc) => !row && ((za > MV.north && zb > MV.north && zc > MV.north) || (za < MV.south && zb < MV.south && zc < MV.south));
+    z0 += dz; z1 += dz;
     const size = Math.hypot(x1 - x0, y1 - y0, z1 - z0), O = R.out, inR = !(x1 < R.x0 || x0 > R.x1 || z1 < R.z0 || z0 > R.z1);
     const nt = (count === Infinity || count == null ? (idx ? idx.count : P.count) : count) / 3;
     if (y1 < -1.2 || y0 > 140 || !(inR || (size > O.size && nt <= O.tris && !(x1 < O.x0 || x0 > O.x1 || z1 < O.z0 || z0 > O.z1)))) return;
@@ -50,7 +61,7 @@ const bake = async (o) => {
     let c = chunks.get(key); if (!c) chunks.set(key, c = { m: mi, P: buf(Float32Array), N: buf(Float32Array), U: hasUv ? buf(Float32Array) : null, C: buf(Float32Array), I: buf(Uint32Array), T: buf(Uint32Array), n: 0, col: false });
     const N = A.normal, U = A.uv, C = A.color, aC = A.aCol, base = c.n, flip = mw.determinant() < 0; nm.getNormalMatrix(mw);
     // a point of it: where (the cart's metres), which way it faces, its place on its picture, its colour and glow
-    const rec = (i) => { v.fromBufferAttribute(P, i).applyMatrix4(mw); const o = [(v.x - cx) / M, (v.y - gy) / M, (v.z - cz) / M, 0, 1, 0, 0, 0, 1, 1, 1, gl ? gl.getX(i) : 0];
+    const rec = (i) => { v.fromBufferAttribute(P, i).applyMatrix4(mw); const o = [(v.x - cx) / M, (v.y - gy) / M + dy, (v.z - cz) / M + dz, 0, 1, 0, 0, 0, 1, 1, 1, gl ? gl.getX(i) : 0];
       if (N) { n.fromBufferAttribute(N, i).applyMatrix3(nm).normalize(); o[3] = n.x; o[4] = n.y; o[5] = n.z; } if (c.U) { o[6] = U.getX(i); o[7] = U.getY(i); }
       if (C && m.vertexColors) { o[8] = C.getX(i); o[9] = C.getY(i); o[10] = C.getZ(i); } if (aC) { o[8] *= aC.getX(i); o[9] *= aC.getY(i); o[10] *= aC.getZ(i); } if (tint) { o[8] *= tint.r; o[9] *= tint.g; o[10] *= tint.b; } return o; };
     const push = (o) => { c.P.add(o[0]); c.P.add(o[1]); c.P.add(o[2]); c.N.add(o[3]); c.N.add(o[4]); c.N.add(o[5]); if (c.U) { c.U.add(o[6]); c.U.add(o[7]); } if (o[8] !== 1 || o[9] !== 1 || o[10] !== 1) c.col = true; c.C.add(o[8]); c.C.add(o[9]); c.C.add(o[10]); c.C.add(o[11]); return c.n++; };
@@ -63,13 +74,24 @@ const bake = async (o) => {
     const cnt = vr ? vr[1] : P.count, s = start || 0, e = Math.min(idx ? idx.count : v0 + cnt, count === Infinity || count == null ? Infinity : s + count);
     const heavy = nt > 1500, F = heavy ? { x0: R.x0 - 20, x1: R.x1 + 20, z0: R.z0 - 20, z1: R.z1 + 20 } : O, out = (x, z) => x < F.x0 || x > F.x1 || z < F.z0 || z > F.z1;   // a thing that runs on out of sight is cut off there (sooner if it is many-faced)
     // what the market cuts off with a plane (a neighbouring section's copy, cut at this one's edge) is cut here the same way: each triangle against each plane, in the cart's metres
-    const planes = (m.clippingPlanes || []).map((pl) => { const a = pl.normal.x, b = pl.normal.y, c3 = pl.normal.z; return [a, b, c3, (a * cx + b * gy + c3 * cz + pl.constant) / M]; });
+    const planes = (m.clippingPlanes || []).map((pl) => { const a = pl.normal.x, b = pl.normal.y, c3 = pl.normal.z; return [a, b, c3, (a * cx + b * gy + c3 * cz + pl.constant) / M - c3 * dz - b * dy]; }); if (planes.length && !row) planes.push([0, 0, -1, MV.north], [0, 0, 1, -MV.south]);
     if (planes.length) { const dist = (pl, o) => pl[0] * o[0] + pl[1] * o[1] + pl[2] * o[2] + pl[3], mix = (a, b, t) => a.map((x, k) => x + (b[k] - x) * t);
-      for (let i = s; i + 2 < e; i += 3) { let poly = [0, 1, 2].map((k) => rec(idx ? idx.getX(i + k) : i + k)); if (poly.every((o) => out(o[0], o[2]))) continue;
+      for (let i = s; i + 2 < e; i += 3) { let poly = [0, 1, 2].map((k) => rec(idx ? idx.getX(i + k) : i + k)); if (poly.every((o) => out(o[0], o[2])) || gone(poly[0][2], poly[1][2], poly[2][2])) continue;
         for (const pl of planes) { const nx = []; for (let k = 0; k < poly.length; k++) { const a = poly[k], b = poly[(k + 1) % poly.length], da = dist(pl, a), db = dist(pl, b); if (da >= 0) nx.push(a); if ((da >= 0) !== (db >= 0)) nx.push(mix(a, b, da / (da - db))); } poly = nx; if (poly.length < 3) break; }
         if (poly.length < 3) continue; const ids = poly.map(push); for (let k = 1; k + 1 < ids.length; k++) { if (flip) tri(ids[0], ids[k + 1], ids[k]); else tri(ids[0], ids[k], ids[k + 1]); } } }
     else { for (let i = v0; i < v0 + cnt; i++) push(rec(i)); const far = (k) => out(c.P.a[(base + k) * 3], c.P.a[(base + k) * 3 + 2]);
-      for (let i = s; i + 2 < e; i += 3) { const a = (idx ? idx.getX(i) : i) - v0, b2 = (idx ? idx.getX(i + 1) : i + 1) - v0, c2 = (idx ? idx.getX(i + 2) : i + 2) - v0; if (big && far(a) && far(b2) && far(c2)) continue; if (flip) tri(base + a, base + c2, base + b2); else tri(base + a, base + b2, base + c2); } } };
+      for (let i = s; i + 2 < e; i += 3) { const a = (idx ? idx.getX(i) : i) - v0, b2 = (idx ? idx.getX(i + 1) : i + 1) - v0, c2 = (idx ? idx.getX(i + 2) : i + 2) - v0; if (big && far(a) && far(b2) && far(c2)) continue;
+        if (!row) { const za = c.P.a[(base + a) * 3 + 2], zb = c.P.a[(base + b2) * 3 + 2], zc = c.P.a[(base + c2) * 3 + 2], inK = (z) => z <= MV.north && z >= MV.south;
+          if (!(inK(za) && inK(zb) && inK(zc))) { const src = [a, b2, c2].map((k) => rec(v0 + k)), cut = (poly, pls) => { for (const pl of pls) { const nx = []; for (let k = 0; k < poly.length; k++) { const p = poly[k], q2 = poly[(k + 1) % poly.length], da = pl[0] * p[2] + pl[1], db = pl[0] * q2[2] + pl[1]; if (da >= 0) nx.push(p); if ((da >= 0) !== (db >= 0)) nx.push(p.map((x, j) => x + (q2[j] - x) * (da / (da - db)))); } poly = nx; if (poly.length < 3) break; } return poly; };
+            for (const [pls, mz, my] of [[[[-1, MV.north], [1, -MV.south]], 0, 0], [[[-1, MV.z1], [1, -(MV.z0 - 0.05)]], MV.dz, MV.dy]]) { const poly = cut(src, pls); if (poly.length < 3) continue; const ids = poly.map((p) => { const q2 = p.slice(); q2[1] += my; q2[2] += mz; return push(q2); }); for (let k = 1; k + 1 < ids.length; k++) { if (flip) tri(ids[0], ids[k + 1], ids[k]); else tri(ids[0], ids[k], ids[k + 1]); } }
+            continue; } } if (flip) tri(base + a, base + c2, base + b2); else tri(base + a, base + b2, base + c2); } }
+    // a front of the park's side: this piece's triangles that are of one of the chosen shops, turned round and stood across the street
+    if (MV.shops.length && z1 >= MV.band[0] && z0 <= MV.band[1] && y1 > 0.06) { const made = new Map();
+      for (let i = s; i + 2 < e; i += 3) { const ii = [0, 1, 2].map((k) => (idx ? idx.getX(i + k) : i + k)), R3 = ii.map(rec), mx = (R3[0][0] + R3[1][0] + R3[2][0]) / 3, mz = (R3[0][2] + R3[1][2] + R3[2][2]) / 3;
+        if (mz < MV.band[0] || mz > MV.band[1] || Math.max(R3[0][1], R3[1][1], R3[2][1]) < 0.06) continue; const pi = MV.shops.findIndex((p) => mx >= p.x0 && mx < p.x1); if (pi < 0) continue; const p = MV.shops[pi];
+        if (p.S - mx > MV.clear[0] && p.S - mx < MV.clear[1] && MV.pz2 - mz < MV.north - 0.3 && Math.min(R3[0][1], R3[1][1], R3[2][1]) < 4) continue;   // (clear of the cart)
+        const ids = ii.map((vi, k) => { const key = vi * 64 + pi; let id = made.get(key); if (id == null) { const q2 = R3[k].slice(); q2[0] = p.S - q2[0]; q2[2] = MV.pz2 - q2[2]; q2[3] = -q2[3]; q2[5] = -q2[5]; id = push(q2); made.set(key, id); } return id; });
+        if (flip) tri(ids[0], ids[2], ids[1]); else tri(ids[0], ids[1], ids[2]); } } };
   sc.traverse((q) => { if (!q.isMesh || q.isSkinnedMesh || !q.geometry || !q.geometry.attributes.position || !vis(q)) return; const g = q.geometry, A = g.attributes, ch = chain(q), tag = (q.name || '') + '<' + ch.split('<').slice(-3).join('<');
     if (A.bi || A.pidx || A.skinIndex || A.reg || q.userData.sky || q.userData.PM) { note(skipped, 'body ' + tag, 1); return; }
     if (!q.isInstancedMesh && moved(q)) { note(skipped, 'moving ' + tag, 1); return; }
@@ -112,7 +134,7 @@ const bake = async (o) => {
   const texAt = new Map(), texOut = []; for (const [ti, d] of [...texD].sort((a, b) => a[0] - b[0])) { texAt.set(ti, texOut.length); texOut.push(picture(TX[ti], d)); }
   const matAt = new Map(), matOut = []; for (const mi of [...matD.keys()].sort((a, b) => a - b)) { const q = { ...ML[mi].q }; q.map = q.map >= 0 ? texAt.get(q.map) : -1; q.emap = q.emap >= 0 ? texAt.get(q.emap) : -1; matAt.set(mi, matOut.length); matOut.push(q); }
   // the lamps (THE MARKET's own list of lights), where they stand
-  const lights = D.LITE.recs.map((l) => { l.getWorldPosition(v); return { p: [(v.x - cx) / M, (v.y - gy) / M, (v.z - cz) / M], c: [l.color.r, l.color.g, l.color.b], i: l.userData.i0 || l.intensity, d: l.distance / M, spot: !!l.isSpotLight }; }).filter((l) => l.p[0] > R.x0 && l.p[0] < R.x1 && l.p[2] > R.z0 && l.p[2] < R.z1 && l.p[1] > -0.5);
+  const lights = D.LITE.recs.map((l) => { l.getWorldPosition(v); return { p: [(v.x - cx) / M, (v.y - gy) / M, (v.z - cz) / M], c: [l.color.r, l.color.g, l.color.b], i: l.userData.i0 || l.intensity, d: l.distance / M, spot: !!l.isSpotLight }; }).filter((l) => l.p[2] <= MV.north && l.p[2] >= MV.south).flatMap((l) => { const p = l.p[2] >= MV.band[0] && l.p[2] <= MV.band[1] && MV.shops.find((q2) => l.p[0] >= q2.x0 && l.p[0] < q2.x1); return p ? [l, { ...l, p: [p.S - l.p[0], l.p[1], MV.pz2 - l.p[2]] }] : [l]; }).filter((l) => l.p[0] > R.x0 && l.p[0] < R.x1 && l.p[2] > R.z0 && l.p[2] < R.z1 && l.p[1] > -0.5);
   const b64 = (a) => { const u = new Uint8Array(a.buffer, a.byteOffset, a.byteLength); let s = ''; for (let i = 0; i < u.length; i += 0x8000) s += String.fromCharCode.apply(null, u.subarray(i, i + 0x8000)); return btoa(s); };
   const enc = (x) => Math.round(255 * (x <= 0.0031308 ? 12.92 * Math.max(0, x) : 1.055 * Math.pow(Math.min(1, x), 1 / 2.4) - 0.055));
   const out = []; let tris = 0;
@@ -126,7 +148,7 @@ const bake = async (o) => {
     const I = k > 65535 ? new Uint32Array(I0) : new Uint16Array(I0); tris += I0.length / 3;
     out.push({ m: matAt.get(c.m), n: k, lo, hi, ul, uh, ck, i32: k > 65535, P: b64(P), N: b64(N), U: U ? b64(U) : null, C: C ? b64(C) : null, I: b64(I), ni: I0.length }); }
   const prof = { z: [], x: [] }; for (let z = 6; z >= -46; z -= 0.25) prof.z.push([z, +((D.ground(cx, cz + z * M) - gy) / M).toFixed(3)]); for (let x = -60; x <= 60; x += 0.5) prof.x.push([x, +((D.ground(cx + x * M, cz - 3 * M) - gy) / M).toFixed(3), +((D.ground(cx + x * M, cz - 12 * M) - gy) / M).toFixed(3)]);
-  return { unpainted, prof, frame: { cx, cz, gy, M, TL, tile: [o.cart.x, o.cart.y] }, mats: matOut, texs: texOut, chunks: out, lights, stat, skipped, tris, all, pieces: CL.length - 1, seen: nSeen, looks, top };
+  return { dy: MV.dy, unpainted, prof, frame: { cx, cz, gy, M, TL, tile: [o.cart.x, o.cart.y] }, mats: matOut, texs: texOut, chunks: out, lights, stat, skipped, tris, all, pieces: CL.length - 1, seen: nSeen, looks, top };
 };
 
 (async () => {
@@ -134,10 +156,10 @@ const bake = async (o) => {
   const b = await chromium.launch({ ...(process.env.PWCHROME ? { executablePath: process.env.PWCHROME } : {}), args: ['--use-gl=angle', '--use-angle=swiftshader', '--enable-unsafe-swiftshader', '--ignore-gpu-blocklist'] });
   const p = await b.newPage({ viewport: { width: 640, height: 360 } }); p.on('pageerror', (e) => console.log('PAGEERR', e.message.slice(0, 300)));
   await p.goto(`${base}/market.html?fresh=1&at=${XS.toFixed(2)},${ZS.toFixed(2)}&hour=13&view=first&cull=0&freepics=0&dither=0`); await p.waitForFunction('window.__started', null, { timeout: 900000 }); await p.waitForTimeout(+process.env.WAIT || 60000);
-  const r = await p.evaluate(bake, { cart: { x: CART.x, y: CART.y }, REG, parked: (W.cars || []).map((c) => [c.x, c.y]), top: process.env.TOPDOWN ? { x0: REG.x0, x1: REG.x1, z0: REG.z0, z1: REG.z1, k: 6 } : null });
+  const r = await p.evaluate(bake, { cart: { x: CART.x, y: CART.y }, REG, parked: (W.cars || []).map((c) => [c.x, c.y]), row: ROW, top: process.env.TOPDOWN ? { x0: REG.x0, x1: REG.x1, z0: REG.z0, z1: REG.z1, k: 6 } : null });
   await b.close(); srv.close();
   const top = (S, n) => Object.entries(S).sort((a, c) => c[1] - a[1]).slice(0, n).map(([k, t]) => t + ' ' + k).join('\n');
-  console.log('unpainted', r.unpainted, 'frame', JSON.stringify(r.frame), 'read', r.all, 'triangles in', r.pieces, 'pieces; seen', r.seen, 'pieces in', r.looks, 'looks; kept', r.tris, 'triangles', 'chunks', r.chunks.length, 'materials', r.mats.length, 'pictures', r.texs.length, 'lamps', r.lights.length);
+  console.log('row dy', r.dy, 'unpainted', r.unpainted, 'frame', JSON.stringify(r.frame), 'read', r.all, 'triangles in', r.pieces, 'pieces; seen', r.seen, 'pieces in', r.looks, 'looks; kept', r.tris, 'triangles', 'chunks', r.chunks.length, 'materials', r.mats.length, 'pictures', r.texs.length, 'lamps', r.lights.length);
   if (r.top) fs.writeFileSync(process.env.TOPDOWN, Buffer.from(r.top.split(',')[1], 'base64'));
   if (process.env.PROF) fs.writeFileSync(process.env.PROF, JSON.stringify({ ...r.prof, stat: r.stat, skipped: r.skipped }));
   if (LIST) { console.log('--- kept, by triangles\n' + top(r.stat, 90) + '\n--- left out\n' + top(r.skipped, 60)); return; }

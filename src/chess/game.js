@@ -35,16 +35,104 @@ const LAYOUT = [
   ['hexbinder', 3, 10], ['mender', 5, 10],
 ];
 
+// Experience and upgrades. A unit type earns experience in battles (earned), which makes levels (levelOf); each level is one point to spend
+// in that type's tree. An upgrade is only numbers added to the unit's own (`up`), so every rule that reads a number reads the upgrade too.
+// Beyond the plain numbers a unit may carry: flank (the share of its block that holds against a blow from the side, half unless raised),
+// leech (the share of the damage it deals that it takes back as health), chain (it does not rest after a kill), pierce (its shots ignore cover),
+// spare (its blast passes over its own side), cleanse (its healing also breaks a snare), sting (damage its snare does, unblockable).
+export const LEVELS_XP = [30, 90, 180];
+export const levelOf = xp => LEVELS_XP.filter(n => (+xp || 0) >= n).length;
+export const UPGRADES = {
+  bulwark: [
+    { id: 'plate', tier: 1, name: 'Tempered plate', info: '+8 health', up: { hp: 8 } },
+    { id: 'edge', tier: 1, name: 'Whetted edge', info: '+3 power', up: { pow: 3 } },
+    { id: 'march', tier: 2, name: 'Forced march', info: '+1 move', up: { move: 1 } },
+    { id: 'mail', tier: 2, name: 'Double mail', info: '+10% armour', up: { armor: 10 } },
+    { id: 'wall', tier: 3, name: 'Shield wall', info: 'Blocks blows from the side as well as from the front', up: { flank: 0.5 } },
+  ],
+  lancer: [
+    { id: 'hide', tier: 1, name: 'Thick hide', info: '+6 health', up: { hp: 6 } },
+    { id: 'heft', tier: 1, name: 'Heavier head', info: '+3 power', up: { pow: 3 } },
+    { id: 'haft', tier: 2, name: 'Long haft', info: 'The axe reaches a third tile', up: { max: 1 } },
+    { id: 'stride', tier: 2, name: 'Long stride', info: '+1 move', up: { move: 1 } },
+    { id: 'blood', tier: 3, name: 'Bloodlust', info: 'Takes back a third of the damage it deals as health', up: { leech: 0.34 } },
+  ],
+  strider: [
+    { id: 'wiry', tier: 1, name: 'Wiry', info: '+5 health', up: { hp: 5 } },
+    { id: 'feint', tier: 1, name: 'Feint', info: '+15 block', up: { block: 15 } },
+    { id: 'fleet', tier: 2, name: 'Fleet', info: '+1 move', up: { move: 1 } },
+    { id: 'kidney', tier: 2, name: 'Kidney strike', info: 'Backstab does double damage', up: { backstab: 0.5 } },
+    { id: 'chain', tier: 3, name: 'Slip away', info: 'Does not rest after a kill', up: { chain: 1 } },
+  ],
+  slinger: [
+    { id: 'jerkin', tier: 1, name: 'Padded jerkin', info: '+5 health', up: { hp: 5 } },
+    { id: 'draw', tier: 1, name: 'Heavy draw', info: '+3 power', up: { pow: 3 } },
+    { id: 'eye', tier: 2, name: 'Long eye', info: '+1 range', up: { max: 1 } },
+    { id: 'nock', tier: 2, name: 'Quick nock', info: 'Rests one turn less', up: { rec: -1 } },
+    { id: 'pierce', tier: 3, name: 'Bodkin points', info: 'Arrows ignore the cover of a forest', up: { pierce: 1 } },
+  ],
+  ember: [
+    { id: 'ward', tier: 1, name: 'Warded robe', info: '+5 health', up: { hp: 5 } },
+    { id: 'heat', tier: 1, name: 'White heat', info: '+3 power', up: { pow: 3 } },
+    { id: 'lob', tier: 2, name: 'High lob', info: '+1 range', up: { max: 1 } },
+    { id: 'kindle', tier: 2, name: 'Quick kindling', info: 'Rests one turn less', up: { rec: -1 } },
+    { id: 'spare', tier: 3, name: 'Tamed flame', info: 'The burst passes over its own side', up: { spare: 1 } },
+  ],
+  mender: [
+    { id: 'hale', tier: 1, name: 'Hale', info: '+5 health', up: { hp: 5 } },
+    { id: 'balm', tier: 1, name: 'Strong balm', info: 'Heals 5 more', up: { pow: 5 } },
+    { id: 'reachm', tier: 2, name: 'Far hand', info: '+1 range', up: { max: 1 } },
+    { id: 'calm', tier: 2, name: 'Steady hands', info: 'Rests one turn less', up: { rec: -1 } },
+    { id: 'cleanse', tier: 3, name: 'Unbinding', info: 'Healing also breaks a snare', up: { cleanse: 1 } },
+  ],
+  hexbinder: [
+    { id: 'veil', tier: 1, name: 'Veil', info: '+5 health', up: { hp: 5 } },
+    { id: 'guardh', tier: 1, name: 'Quick step', info: '+20 block', up: { block: 20 } },
+    { id: 'knot', tier: 2, name: 'Tighter knot', info: 'The snare holds one turn longer', up: { snare: 1 } },
+    { id: 'haste', tier: 2, name: 'Ready word', info: 'Rests one turn less', up: { rec: -1 } },
+    { id: 'sting', tier: 3, name: 'Thorned snare', info: 'The snare also does 8 damage', up: { sting: 8 } },
+  ],
+};
+// The upgrades a type may hold: ones its tree has, no more than its level, none above its level's tier, a higher tier only on top of a lower one.
+export function tidyUps(ups, xp) {
+  const out = {};
+  for (const type of Object.keys(UPGRADES)) {
+    const lvl = levelOf(xp && xp[type]), got = [];
+    for (const id of Array.isArray(ups && ups[type]) ? ups[type] : []) {
+      const u = UPGRADES[type].find(q => q.id === id);
+      if (!u || got.includes(id) || got.length >= lvl || u.tier > lvl) continue;
+      if (u.tier > 1 && !got.some(g => UPGRADES[type].find(q => q.id === g).tier === u.tier - 1)) continue;
+      got.push(id);
+    }
+    if (got.length) out[type] = got;
+  }
+  return out;
+}
+// The numbers a side's upgrades add, type by type: { type: { stat: amount } }.
+export function upsOf(ups) {
+  const out = {};
+  for (const [type, ids] of Object.entries(ups || {})) { const o = {}; for (const id of ids) { const u = (UPGRADES[type] || []).find(q => q.id === id); if (u) for (const k in u.up) o[k] = (o[k] || 0) + u.up[k]; } if (Object.keys(o).length) out[type] = o; }
+  return out;
+}
+// What a side's unit types earned in a finished match: for being fielded, for a win, for each kill.
+export function earned(s, owner) {
+  const out = {};
+  if (s.winner === null || !s.fielded) return out;
+  for (const type of s.fielded[owner] || []) out[type] = 10 + (s.winner === owner ? 10 : 0) + 4 * ((s.tally && s.tally[owner][type]) || 0);
+  return out;
+}
+
 // A unit's numbers: its type's, changed by whatever it carries (u.up: { stat: amount }); every rule reads them here.
 export function stats(u) {
   const t = TYPES[u.type];
   if (!u.up) return t;
   const o = { ...t };
-  for (const k in u.up) o[k] = Math.max(0, (typeof t[k] === 'number' ? t[k] : 0) + u.up[k]);
+  for (const k in u.up) o[k] = Math.max(0, (typeof t[k] === 'number' ? t[k] : k === 'flank' ? 0.5 : 0) + u.up[k]);
+  o.armor = Math.min(80, o.armor); o.block = Math.min(95, o.block);
   return o;
 }
 export const stat = (u, k) => stats(u)[k];
-const piece = (id, type, owner, x, y) => ({ id, type, owner, x, y, facing: owner === 0 ? 'N' : 'S', hp: TYPES[type].hp, rec: 0, snare: 0 });
+const piece = (id, type, owner, x, y, up) => { const u = { id, type, owner, x, y, facing: owner === 0 ? 'N' : 'S', hp: TYPES[type].hp, rec: 0, snare: 0 }; if (up) { u.up = up; u.hp = stats(u).hp; } return u; };
 // The standing line-up (it costs exactly the budget). It is written for the board; on a wider or deeper map it keeps its place in the middle of the last rows.
 export function defaultTeam(map, owner) {
   const m = mapOf(map), ox = Math.floor((m.cols - COLS) / 2), oy = m.rows - ROWS;
@@ -82,12 +170,13 @@ export function checkTeam(s, owner, team) {
   return null;
 }
 // Before the match starts: replace this side's units with a checked team. Returns the error, or null.
-export function setTeam(s, owner, team) {
+// `ups` is what that side's upgrades add, by type (upsOf), or nothing in a fair match.
+export function setTeam(s, owner, team, ups) {
   if (s.phase !== 'setup') return 'The match has started';
   const e = checkTeam(s, owner, team);
   if (e) return e;
   s.units = s.units.filter(u => u.owner !== owner);
-  team.forEach((m, i) => s.units.push(piece(owner * 100 + i + 1, m.type, owner, m.x, m.y)));
+  team.forEach((m, i) => s.units.push(piece(owner * 100 + i + 1, m.type, owner, m.x, m.y, ups && ups[m.type])));
   return null;
 }
 // A side set out as written, unchecked: the computer's force in a battle of the campaign.
@@ -95,7 +184,11 @@ export function placeTeam(s, owner, team) {
   s.units = s.units.filter(u => u.owner !== owner);
   team.forEach((m, i) => s.units.push(piece(owner * 100 + i + 1, m.type, owner, m.x, m.y)));
 }
-export function begin(s) { s.phase = 'play'; }
+export function begin(s) {
+  s.phase = 'play';
+  s.fielded = [0, 1].map(o => [...new Set(s.units.filter(u => u.owner === o).map(u => u.type))]);
+  s.tally = [{}, {}];
+}
 
 // Move points to step from one tile onto the next one, or Infinity where the ground forbids it.
 export function stepCost(s, fx, fy, x, y) {
@@ -159,7 +252,7 @@ export function targets(s, u) {
     const d = dist(u, v);
     if (d < t.min || d > reach(s, u, v.x, v.y)) continue;
     const enemy = v.owner !== u.owner;
-    if (t.kind === 'heal') { if (!enemy && v.hp < stats(v).hp) out.push({ x: v.x, y: v.y }); }
+    if (t.kind === 'heal') { if (!enemy && (v.hp < stats(v).hp || (t.cleanse && v.snare > 0))) out.push({ x: v.x, y: v.y }); }
     else if (t.kind === 'blast') out.push({ x: v.x, y: v.y });
     else if (enemy) out.push({ x: v.x, y: v.y });
   }
@@ -181,24 +274,35 @@ export function damage(s, attacker, target) {
   const at = stats(attacker), side = sideOf(target, attacker.x, attacker.y);
   let pow = at.pow;
   if (at.backstab && side === 'back') pow *= at.backstab;
-  if (at.kind === 'ranged') pow *= ground(s, target.x, target.y).cover ?? 1;
+  if (at.kind === 'ranged' && !at.pierce) pow *= ground(s, target.x, target.y).cover ?? 1;
   return Math.max(1, Math.round(pow * (100 - stats(target).armor) / 100));
+}
+
+// Damage done: the wound, the kill (counted for the attacker's type), and what a leeching attacker takes back.
+function harm(s, attacker, target, dmg, side, events) {
+  target.hp -= dmg;
+  events.push({ t: 'hit', id: target.id, dmg, side });
+  const leech = stats(attacker).leech;
+  if (leech && attacker.id !== target.id && attacker.owner !== target.owner && attacker.hp > 0) {
+    const amt = Math.min(Math.round(dmg * leech), stats(attacker).hp - attacker.hp);
+    if (amt > 0) { attacker.hp += amt; events.push({ t: 'heal', id: attacker.id, amt }); }
+  }
+  if (target.hp <= 0) {
+    s.units = s.units.filter(u => u.id !== target.id);
+    events.push({ t: 'die', id: target.id });
+    if (attacker.owner !== target.owner) { if (s.tally) s.tally[attacker.owner][attacker.type] = (s.tally[attacker.owner][attacker.type] || 0) + 1; if (s.active && s.active.id === attacker.id) s.active.killed = true; }
+  }
 }
 
 function strike(s, attacker, target, blockable, rand, events) {
   const tt = stats(target);
   const side = sideOf(target, attacker.x, attacker.y);
   if (blockable && target.snare === 0) {
-    const chance = (side === 'front' ? tt.block : side === 'side' ? tt.block / 2 : 0) * (ground(s, target.x, target.y).slip ?? 1);
+    const chance = (side === 'front' ? tt.block : side === 'side' ? tt.block * Math.min(1, tt.flank ?? 0.5) : 0) * (ground(s, target.x, target.y).slip ?? 1);
     if (rand() * 100 < chance) { events.push({ t: 'block', id: target.id }); return; }
   }
   const dmg = damage(s, attacker, target);
-  target.hp -= dmg;
-  events.push({ t: 'hit', id: target.id, dmg, side });
-  if (target.hp <= 0) {
-    s.units = s.units.filter(u => u.id !== target.id);
-    events.push({ t: 'die', id: target.id });
-  }
+  harm(s, attacker, target, dmg, side, events);
 }
 
 function checkWinner(s, events) {
@@ -218,8 +322,8 @@ function endTurn(s, events) {
   if (s.active) {
     const u = unitById(s, s.active.id);
     if (u) {
-      const rec = stats(u).rec;
-      u.rec = s.active.acted ? rec : s.active.moved ? Math.floor(rec / 2) : 0;
+      const t = stats(u), rec = t.rec;
+      u.rec = s.active.acted ? (t.chain && s.active.killed ? 0 : rec) : s.active.moved ? Math.floor(rec / 2) : 0;
     }
     s.passes = 0;
   } else {
@@ -288,7 +392,7 @@ export function apply(s, player, a, rand = Math.random) {
     const t = stats(u);
     const dx = a.x - u.x, dy = a.y - u.y;
     u.facing = Math.abs(dx) >= Math.abs(dy) ? (dx > 0 ? 'E' : 'W') : (dy > 0 ? 'S' : 'N');
-    s.active = { id: u.id, moved: s.active ? s.active.moved : false, acted: true };
+    s.active = { id: u.id, moved: s.active ? s.active.moved : false, acted: true, killed: false };
     events.push({ t: 'act', id: u.id, kind: t.kind, x: a.x, y: a.y });
     const target = unitAt(s, a.x, a.y);
     if (t.kind === 'melee' || t.kind === 'ranged') {
@@ -305,15 +409,17 @@ export function apply(s, player, a, rand = Math.random) {
       const area = [[0, 0], ...Object.values(DIRS)];
       for (const [ax, ay] of area) {
         const v = unitAt(s, a.x + ax, a.y + ay);
-        if (v) strike(s, u, v, false, rand, events);
+        if (v && !(t.spare && v.owner === u.owner)) strike(s, u, v, false, rand, events);
       }
     } else if (t.kind === 'heal') {
       const amt = Math.min(t.pow, stats(target).hp - target.hp);
       target.hp += amt;
-      events.push({ t: 'heal', id: target.id, amt });
+      if (amt > 0 || !t.cleanse) events.push({ t: 'heal', id: target.id, amt });
+      if (t.cleanse && target.snare > 0) { target.snare = 0; events.push({ t: 'free', id: target.id }); }
     } else if (t.kind === 'snare') {
       target.snare = t.snare;
       events.push({ t: 'snare', id: target.id });
+      if (t.sting) harm(s, u, target, Math.max(1, Math.round(t.sting * (100 - stats(target).armor) / 100)), sideOf(target, u.x, u.y), events);
     }
     checkWinner(s, events);
     return { ok: true, events };

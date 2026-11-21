@@ -21,6 +21,7 @@ let ws = null, me = -1, code = null, state = null;
 let started = false, present = [false, false], deadline = null, skew = 0;
 let selected = null, inspected = null, inspectedTile = null;
 let solo = null, campNode = null, camp = { done: [] }, company = [], overland = false, campSel = null, companyTried = false, afterShown = false;
+let prog = { xp: {}, ups: {} }, openMatch = false, gained = null;
 let held = null, setupSel = null, ready = [false, false], seated = [false, false], teams = [], teamAt = -1, setupNote = '', signedIn = false;
 
 function getToken() {
@@ -173,12 +174,13 @@ function makeLabel() {
 
 function drawLabel(sprite, u) {
   const { ctx, tex } = sprite.userData.t;
-  const type = G.TYPES[u.type];
+  const type = G.stats(u), stars = u.up ? Object.keys(u.up).length : 0;
   ctx.clearRect(0, 0, 256, 96);
   ctx.textAlign = 'center';
   ctx.font = 'bold 30px system-ui, sans-serif';
   ctx.lineWidth = 6; ctx.strokeStyle = '#000'; ctx.fillStyle = '#fff';
-  ctx.strokeText(type.name, 128, 30); ctx.fillText(type.name, 128, 30);
+  const name = type.name + (stars ? ' ' + '\u2605'.repeat(Math.min(3, stars)) : '');
+  ctx.strokeText(name, 128, 30, 250); ctx.fillText(name, 128, 30, 250);
   ctx.fillStyle = '#000'; ctx.fillRect(28, 42, 200, 18);
   ctx.fillStyle = u.owner === 0 ? '#2bb3a3' : '#f08a3c';
   ctx.fillRect(30, 44, 196 * Math.max(0, u.hp) / type.hp, 14);
@@ -265,7 +267,7 @@ function syncUnits() {
     if (!g) { g = buildUnit(u); unitMeshes.set(u.id, g); unitsGroup.add(g); }
     g.userData.target.set(tx(u.x), ty(u.x, u.y), tz(u.y));
     g.userData.angle = FACE_ANGLE[u.facing];
-    const key = `${u.hp}|${u.rec}|${u.snare}`;
+    const key = `${u.hp}|${u.rec}|${u.snare}|${u.up ? Object.keys(u.up).join() : ''}`;
     if (key !== g.userData.key) {
       g.userData.key = key;
       drawLabel(g.userData.label, u);
@@ -504,6 +506,7 @@ function playEvents(events) {
     else if (e.t === 'block') later(impact, () => blockFx(g));
     else if (e.t === 'heal') later(impact, () => g && g.parent && floatText(g.position, `+${e.amt}`, '#6be08f'));
     else if (e.t === 'snare') later(impact, () => g && g.parent && floatText(g.position, 'Snared', '#d7a6ff'));
+    else if (e.t === 'free') later(impact + 0.3, () => g && g.parent && floatText(g.position, 'Freed', '#6be08f'));
     else if (e.t === 'die') { later(impact + 0.12, () => deathFx(g)); wait = impact + 0.2; }
     else if (e.t === 'turn') { if (e.player === me) later(wait + 0.15, () => sound.play('turn', { vol: 0.5 })); }
     else if (e.t === 'over') later(wait + 0.4, () => sound.play(e.winner === me ? 'win' : 'lose', { vol: 0.7 }));
@@ -557,7 +560,7 @@ function statusLines() {
   let l2 = campNode ? nodeOf(campNode).name : solo ? `Against the computer (${LEVELS[solo].name})` : `Room ${code}` + (me < 0 ? ' - spectating' : '');
   const u = inspected && G.unitById(state, inspected);
   if (u) {
-    const t = G.TYPES[u.type];
+    const t = G.stats(u);
     l2 = `${t.name}: HP ${u.hp}/${t.hp}, power ${t.pow}, armour ${t.armor}%, block ${t.block}%, move ${t.move}, rest ${t.rec}`;
   } else if (inspectedTile) l2 = groundLine(inspectedTile.x, inspectedTile.y);
   return [l1, l2];
@@ -687,8 +690,9 @@ const post = (path, body) => fetch(path, { method: 'POST', headers: { 'content-t
 // Saved teams: kept on the website for a login, in this browser otherwise.
 async function loadTeams() {
   const j = await post('/chess/load', {});
-  if (j && j.rec) { signedIn = true; teams = j.rec.teams || []; company = j.rec.company || []; camp = j.rec.camp || { done: [] }; }
-  else { try { teams = JSON.parse(localStorage.getItem('chess-teams')) || []; company = JSON.parse(localStorage.getItem('chess-company')) || []; camp = JSON.parse(localStorage.getItem('chess-camp')) || { done: [] }; } catch { teams = []; } }
+  if (j && j.rec) { signedIn = true; teams = j.rec.teams || []; company = j.rec.company || []; camp = j.rec.camp || { done: [] }; prog = { xp: j.rec.xp || {}, ups: j.rec.ups || {} }; }
+  else { try { const p = JSON.parse(localStorage.getItem('chess-prog')); if (p && typeof p === 'object') prog = { xp: p.xp || {}, ups: G.tidyUps(p.ups, p.xp || {}) }; } catch { /* storage blocked */ }
+    try { teams = JSON.parse(localStorage.getItem('chess-teams')) || []; company = JSON.parse(localStorage.getItem('chess-company')) || []; camp = JSON.parse(localStorage.getItem('chess-camp')) || { done: [] }; } catch { teams = []; } }
   if (!Array.isArray(camp.done)) camp = { done: [] };
   drawTeams();
   if (overland) { drawNodes(); drawCamp(); }
@@ -733,6 +737,7 @@ function drawSetup(on) {
   $('readyBtn').textContent = rd ? 'Stand down' : 'Ready'; $('readyBtn').className = rd ? 'danger' : '';
   $('removeBtn').disabled = rd || !setupSel; $('defaultBtn').disabled = rd; $('teamSel').disabled = rd;
   $('setupMsg').textContent = setupNote;
+  $('fairNote').textContent = openMatch ? 'Your upgrades count in this match.' : 'A fair match: upgrades are not used.';
 }
 
 // ---------------------------------------------------------------- the campaign: the overland map, a banner a battle, then the battle against the computer
@@ -785,12 +790,40 @@ function startBattle() {
   if (!campSel || !isOpen(campSel, camp.done)) return;
   sound.play('end', { vol: 0.5 });
   overland = false; nodesGroup.clear(); fight3D.visible = false; $('camp').hidden = true; companyTried = false; afterShown = false;
-  connect({ t: 'create', token, camp: campSel, done: camp.done });
+  connect({ t: 'create', token, camp: campSel, done: camp.done, prog });
 }
-// When a match against the computer ends: what happened, and the way on.
+function keepProg() {
+  prog.ups = G.tidyUps(prog.ups, prog.xp);
+  if (signedIn) post('/chess/save', { ups: prog.ups }); else { try { localStorage.setItem('chess-prog', JSON.stringify(prog)); } catch { /* storage blocked */ } }
+}
+// The upgrade trees: a row a unit type, its level and experience, the upgrades it may take.
+function drawUnits() {
+  const box = $('unitRows'); box.innerHTML = '';
+  for (const [type, t] of Object.entries(G.TYPES)) {
+    const xp = prog.xp[type] || 0, lvl = G.levelOf(xp), mine = prog.ups[type] || [], next = G.LEVELS_XP[lvl], row = document.createElement('div');
+    row.className = 'urow'; row.dataset.type = type;
+    row.innerHTML = `<div class="uhead"><b>${t.name}</b> level ${lvl} <span>${next ? xp + ' / ' + next + ' experience' : xp + ' experience (highest level)'}</span> <i>${lvl - mine.length} point${lvl - mine.length === 1 ? '' : 's'} to spend</i></div>`;
+    for (const u of G.UPGRADES[type]) {
+      const has = mine.includes(u.id), can = !has && G.tidyUps({ [type]: [...mine, u.id] }, prog.xp)[type]?.includes(u.id), b = document.createElement('button');
+      b.className = 'up ' + (has ? 'has' : can ? '' : 'secondary'); b.disabled = !has && !can; b.dataset.id = u.id;
+      b.innerHTML = `<b>${u.name}</b><br>${u.info}<br><small>${has ? 'taken (tap to give back)' : 'level ' + u.tier}</small>`;
+      b.onclick = () => { prog.ups[type] = has ? mine.filter(q => q !== u.id) : [...mine, u.id]; keepProg(); drawUnits(); };
+      row.appendChild(b);
+    }
+    box.appendChild(row);
+  }
+  $('unitsNote').textContent = (signedIn ? 'Kept with your login.' : 'Kept in this browser; sign in on the website to keep it and to earn experience in duels.') + ' Upgrades count against the computer and in an open match; a fair match ignores them.';
+}
+$('unitsBtn').onclick = $('campUnits').onclick = () => { drawUnits(); $('units').hidden = false; };
+$('unitsClose').onclick = () => { $('units').hidden = true; };
+// When a match ends: what happened, what your units earned, and the way on.
 function showAfter() {
-  if (afterShown || !state || state.winner === null || !(solo || campNode)) return;
+  if (afterShown || !state || state.winner === null || me < 0) return;
   afterShown = true;
+  gained = G.earned(state, me); if (solo && !campNode) for (const k in gained) gained[k] = Math.ceil(gained[k] / 2);
+  const keeps = signedIn || solo || campNode;   // a duel's experience is written by the website, for a login
+  if (keeps) { for (const k in gained) prog.xp[k] = Math.min(999, (prog.xp[k] || 0) + gained[k]); if (!signedIn) { try { localStorage.setItem('chess-prog', JSON.stringify(prog)); } catch { /* storage blocked */ } } }
+  $('afterXp').textContent = Object.keys(gained).length ? (keeps ? 'Experience: ' + Object.entries(gained).map(([k, n]) => `${G.TYPES[k].name} +${n}`).join(', ') + '.' : 'Sign in on the website to earn experience in duels.') : '';
   const won = state.winner === me, n = campNode && nodeOf(campNode);
   if (n && won && !camp.done.includes(n.id)) { camp.done.push(n.id); if (!signedIn) { try { localStorage.setItem('chess-camp', JSON.stringify(camp)); } catch { /* storage blocked */ } } }
   $('afterTitle').textContent = n ? (won ? n.name + ': won' : n.name + ': lost') : won ? 'You win' : state.winner === -1 ? 'A draw' : 'You lose';
@@ -1075,7 +1108,8 @@ function connect(first) {
       state = m.state;
       started = m.started; present = m.present; deadline = m.deadline; skew = m.now - Date.now(); solo = m.solo || null; campNode = m.camp || null;
       if (campNode && state.phase === 'setup' && !companyTried) { companyTried = true; if (company.length && !(m.ready || [])[me]) loadTeam({ units: company }); }
-      if (state.winner !== null && (solo || campNode)) setTimeout(showAfter, wait * 1000 + 1200);
+      openMatch = !!m.open;
+      if (state.winner !== null && me >= 0) setTimeout(showAfter, wait * 1000 + 1200);
       ready = m.ready || [true, true]; seated = m.seated || present;
       if (state.phase !== 'setup') { held = null; setupSel = null; }
       if (state.active && myTurn()) selected = state.active.id;
@@ -1099,9 +1133,9 @@ $('helpBtn').onclick = () => { $('help').hidden = !$('help').hidden; };
 $('help').onclick = () => { $('help').hidden = true; };
 for (const [k, l] of Object.entries(LEVELS)) { const o = document.createElement('option'); o.value = k; o.textContent = l.name; $('levelSel').appendChild(o); }
 $('levelSel').value = 'hard';
-$('soloBtn').onclick = () => { sound.init(); $('lobbyMsg').textContent = ''; connect({ t: 'create', token, map: $('mapSel').value, solo: $('levelSel').value }); };
+$('soloBtn').onclick = () => { sound.init(); $('lobbyMsg').textContent = ''; connect({ t: 'create', token, map: $('mapSel').value, solo: $('levelSel').value, prog }); };
 $('campBtn').onclick = () => { sound.init(); openCampaign(); };
-$('createBtn').onclick = () => { sound.init(); $('lobbyMsg').textContent = ''; connect({ t: 'create', token, map: $('mapSel').value }); };
+$('createBtn').onclick = () => { sound.init(); $('lobbyMsg').textContent = ''; connect({ t: 'create', token, map: $('mapSel').value, open: $('openChk').checked }); };
 $('joinBtn').onclick = () => {
   sound.init();
   const c = $('codeInput').value.trim().toUpperCase();
@@ -1133,4 +1167,4 @@ function show(id, setup) {
 }
 if (new URLSearchParams(location.search).get('camp')) openCampaign();
 if (new URLSearchParams(location.search).get('show')) show(new URLSearchParams(location.search).get('show'), new URLSearchParams(location.search).get('setup'));
-window.__t = { handlePick, show, world, G, openCampaign, CAMPAIGN, get camp() { return camp; }, get overland() { return overland; }, get campSel() { return campSel; }, get solo() { return solo; }, get campNode() { return campNode; }, saveTeam, loadTeam, get teams() { return teams; }, get held() { return held; }, get ready() { return ready; }, get setupSel() { return setupSel; }, get field() { return field; }, castFx, explode, V, camera, controls, fx, sun, renderer, scene, get state() { return state; }, get me() { return me; }, get code() { return code; }, get selected() { return selected; }, get lean() { return lean; } };
+window.__t = { handlePick, show, world, G, drawUnits, get prog() { return prog; }, get openMatch() { return openMatch; }, openCampaign, CAMPAIGN, get camp() { return camp; }, get overland() { return overland; }, get campSel() { return campSel; }, get solo() { return solo; }, get campNode() { return campNode; }, saveTeam, loadTeam, get teams() { return teams; }, get held() { return held; }, get ready() { return ready; }, get setupSel() { return setupSel; }, get field() { return field; }, castFx, explode, V, camera, controls, fx, sun, renderer, scene, get state() { return state; }, get me() { return me; }, get code() { return code; }, get selected() { return selected; }, get lean() { return lean; } };

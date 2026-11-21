@@ -143,6 +143,12 @@ export default {
     // SKIRMISH TABLE (src/chess/): a two-player tactics board, its own page at /chess, to anyone with the link; its people, sprites and sounds under /chess-assets/; a match is one Chess Durable Object, found by its four-letter code (/chess/ws?create, /chess/ws?room=CODE)
     if ((request.method === "GET" || request.method === "HEAD") && p === "/chess") return page(env, url, "/chess", request, "no-cache");
     if (p === "/chess/") return Response.redirect(url.origin + "/chess" + url.search, 301);
+    if (request.method === "POST" && (p === "/chess/save" || p === "/chess/load")) {   // a login's saved teams (worker/chess.js); anyone else's stay in their own browser (rec: null)
+      if (request.headers.get("Origin") !== url.origin && !(dev && !request.headers.get("Origin"))) return json({ why: "not from the game's page" }, 403);
+      const id = await who(env, request, dev); if (!id) return json({ rec: null });
+      if (tooMany("csave:" + id, 30)) return json({ why: "too much at once, wait a minute" }, 429);
+      let body; try { body = await request.json(); } catch (e) { body = {}; } if (!body || typeof body !== "object") body = {};
+      const H = homeOf(env), st = { get: () => H.botGet("chess:" + id), put: v => H.botPut("chess:" + id, v) }; return json(p === "/chess/save" ? await CHESS.save(st, body) : await CHESS.load(st)); }
     if (p === "/chess/ws") {
       if (request.headers.get("Upgrade") !== "websocket") return new Response("Expected a WebSocket", { status: 426 });
       if (request.headers.get("Origin") !== url.origin && !dev) return new Response("not found", { status: 404 });
@@ -1143,6 +1149,7 @@ export class Laser extends Server {
 }
 // SKIRMISH TABLE's match: one room by its four-letter code, two seats and spectators; every move is judged here by the game's rules and the state sent to all (worker/chess.js), kept so a seat can come back
 export class Chess extends DurableObject {
+  get turnSeconds() { return +this.env.CHESS_TURN_SECONDS || 0; }   // only the check sets it (its software-drawn pages are slower than a turn)
   constructor(ctx, env) { super(ctx, env); this.room = null; this.match = new CHESS.Match(this);
     ctx.blockConcurrencyWhile(async () => { this.room = (await ctx.storage.get("room")) || null; }); }
   save() { this.ctx.storage.put("room", this.room); this.ctx.storage.setAlarm(Date.now() + CHESS.IDLE_MS); }

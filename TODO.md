@@ -395,6 +395,5 @@ Last (owner, 7 Nov 2026: "we will do VR checks last"): every check and look line
 
 ## SKIRMISH TABLE (`/chess`)
 
-- **P2** Choose your team (owner, 21 Nov 2026: "look at how TAO lets you choose your characters"): a point budget, any mix, set out on your own rows, saved teams. [taking: claude/chess-teams, 21 Nov 2026]
-- **P2** A computer opponent, then the solo campaign across landscaped maps (owner, 21 Nov 2026: "a DND campaign style layout ... that you can play through").
+- **P2** A computer opponent, then the solo campaign across landscaped maps (owner, 21 Nov 2026: "a DND campaign style layout ... that you can play through"). [taking: claude/chess-solo, 21 Nov 2026]
 - **P2** Upgrades, earned and kept for a login; fair duels ignore them (owner, 21 Nov 2026: "look for options to upgrade characters").

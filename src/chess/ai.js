@@ -14,7 +14,7 @@ const ranged = k => k !== 'melee' && k !== 'line';
 function through(s, target, fx, fy, blockable, facing = target.facing) {
   if (!blockable || target.snare > 0) return 1;
   const side = G.sideOf({ ...target, facing }, fx, fy), b = G.stat(target, 'block') * (G.ground(s, target.x, target.y).slip ?? 1);
-  return 1 - Math.min(100, side === 'front' ? b : side === 'side' ? b / 2 : 0) / 100;
+  return 1 - Math.min(100, side === 'front' ? b : side === 'side' ? b * Math.min(1, G.stat(target, 'flank') ?? 0.5) : 0) / 100;
 }
 // What one strike from attacker (standing at fx, fy) is worth against target: positive for a foe, negative for a friend.
 function strikeWorth(s, a, fx, fy, target, blockable) {
@@ -33,10 +33,10 @@ function actWorth(s, u, x, y, t) {
   }
   if (kind === 'blast') {
     let v = 0;
-    for (const [ax, ay] of [[0, 0], ...Object.values(G.DIRS)]) { const q = G.unitAt(s, t.x + ax, t.y + ay); if (q) v += strikeWorth(s, u, x, y, q, false); }
+    for (const [ax, ay] of [[0, 0], ...Object.values(G.DIRS)]) { const q = G.unitAt(s, t.x + ax, t.y + ay); if (q && !(G.stat(u, 'spare') && q.owner === u.owner)) v += strikeWorth(s, u, x, y, q, false); }
     return v;
   }
-  if (kind === 'heal') { const amt = Math.min(G.stat(u, 'pow'), G.stat(target, 'hp') - target.hp); return amt / G.stat(target, 'hp') * worth(target) * 8; }
+  if (kind === 'heal') { const amt = Math.min(G.stat(u, 'pow'), G.stat(target, 'hp') - target.hp); return amt / G.stat(target, 'hp') * worth(target) * 8 + (G.stat(u, 'cleanse') && target.snare > 0 ? worth(target) * 2 : 0); }
   if (kind === 'snare') return target.snare > 0 ? 0 : worth(target) * (target.rec > 0 ? 1.5 : 3.5) + (G.stat(target, 'block') > 40 ? 2 : 0);
   return 0;
 }

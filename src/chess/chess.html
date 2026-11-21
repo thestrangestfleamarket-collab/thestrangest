@@ -57,6 +57,22 @@
   #after .card { background: #1d2129; border: 1px solid #2c323c; border-radius: 14px; padding: 22px 26px; max-width: 460px; }
   #after h2 { margin: 0 0 8px; }
   #after p { color: #cfd4dc; margin: 0 0 16px; }
+  #openLbl { display: block; margin-top: 10px; color: #cfd4dc; font-size: 14px; }
+  #openLbl input { width: auto; margin-right: 6px; }
+  #fairNote { color: #7d8594; font-size: 12px; margin-top: 6px; }
+  #afterXp { color: #ffd66b !important; }
+  #units { position: fixed; inset: 0; display: flex; align-items: center; justify-content: center; padding: 16px; background: rgba(14, 16, 20, .8); z-index: 11; }
+  #units[hidden] { display: none; }
+  #units .card { background: #1d2129; border: 1px solid #2c323c; border-radius: 14px; padding: 18px 22px; max-width: 980px; width: 100%; max-height: 100%; overflow: auto; }
+  #units h2 { margin: 0 0 10px; }
+  .urow { display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; margin-bottom: 12px; }
+  .urow .uhead { grid-column: 1 / -1; }
+  .urow .uhead span { color: #a5acb8; margin-left: 8px; }
+  .urow .uhead i { color: #ffd66b; font-style: normal; margin-left: 8px; }
+  .urow .up { font-size: 13px; padding: 8px; text-align: left; line-height: 1.3; }
+  .urow .up.has { background: #2f8f4a; }
+  .urow .up small { opacity: .75; }
+  #unitsNote { color: #a5acb8; font-size: 13px; }
   #lobbyMsg { color: #ff9c8a; min-height: 1.4em; margin-top: 12px; }
   body::after { content: ''; position: fixed; inset: 0; pointer-events: none; z-index: 1;
     background: radial-gradient(ellipse at center, transparent 55%, rgba(0, 0, 0, .6) 100%); }
@@ -78,12 +94,13 @@
       <select id="mapSel" aria-label="Battlefield"></select>
       <button id="createBtn">Create a match</button>
     </div>
+    <label id="openLbl"><input type="checkbox" id="openChk"> Open match: both sides' upgrades count (a fair match ignores them)</label>
     <div id="mapInfo"></div>
     <div class="row">
       <select id="levelSel" aria-label="The computer's level"></select>
       <button id="soloBtn" class="secondary">Play the computer</button>
     </div>
-    <div class="row"><button id="campBtn" class="secondary">Campaign: The Cold Beacon</button></div>
+    <div class="row"><button id="campBtn" class="secondary">Campaign: The Cold Beacon</button><button id="unitsBtn" class="secondary">Your units</button></div>
     <div class="row">
       <input id="codeInput" maxlength="4" placeholder="CODE" autocomplete="off" aria-label="Room code">
       <button id="joinBtn" class="secondary">Join with code</button>
@@ -110,6 +127,7 @@
   <div class="row"><button id="saveTeamBtn" class="secondary">Save team</button><button id="delTeamBtn" class="secondary">Delete</button></div>
   <div id="teamNote"></div>
   <button id="readyBtn">Ready</button>
+  <div id="fairNote"></div>
   <div id="setupMsg"></div>
 </div>
 <div id="camp" hidden>
@@ -117,9 +135,10 @@
   <p id="campText"></p>
   <p id="campFoe"></p>
   <p id="campPts"></p>
-  <div class="row"><button id="fightBtn">Fight</button><button id="campBack" class="secondary">Menu</button></div>
+  <div class="row"><button id="fightBtn">Fight</button><button id="campUnits" class="secondary">Your units</button><button id="campBack" class="secondary">Menu</button></div>
 </div>
-<div id="after" hidden><div class="card"><h2 id="afterTitle"></h2><p id="afterText"></p><button id="afterBtn">Continue</button></div></div>
+<div id="after" hidden><div class="card"><h2 id="afterTitle"></h2><p id="afterText"></p><p id="afterXp"></p><button id="afterBtn">Continue</button></div></div>
+<div id="units" hidden><div class="card"><h2>Your units</h2><div id="unitRows"></div><p id="unitsNote"></p><button id="unitsClose">Done</button></div></div>
 <div id="info"></div>
 <div id="help" hidden><div class="card"><h2>Ground rules</h2><div id="rules"></div><p>Tap a tile to see what it is. Tap here to close.</p></div></div>
 <script type="module">__CHESS__</script>

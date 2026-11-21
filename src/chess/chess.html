@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+<meta name="robots" content="noindex">
+<link rel="icon" href="data:,">
+<title>Skirmish Table</title>
+<style>
+  :root { color-scheme: dark; }
+  html, body { margin: 0; height: 100%; overflow: hidden; background: #14171c; color: #e8eaee;
+    font: 15px/1.4 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
+  canvas { display: block; touch-action: none; }
+  button { font: inherit; color: #fff; background: #2f6fed; border: 0; border-radius: 8px; padding: 10px 16px; cursor: pointer; }
+  button.secondary { background: #3a404b; }
+  button.danger { background: #8a2f2f; }
+  button:disabled { opacity: .45; cursor: default; }
+  input { font: inherit; color: inherit; background: #0d0f13; border: 1px solid #3a404b; border-radius: 8px;
+    padding: 10px 12px; width: 6.5em; text-transform: uppercase; letter-spacing: .2em; text-align: center; }
+  #lobby { position: fixed; inset: 0; display: flex; align-items: center; justify-content: center; padding: 16px;
+    background: rgba(14, 16, 20, .92); z-index: 10; }
+  #lobby .card { background: #1d2129; border: 1px solid #2c323c; border-radius: 14px; padding: 24px; max-width: 420px; width: 100%; }
+  #lobby h1 { margin: 0 0 4px; font-size: 24px; }
+  #lobby p { margin: 0 0 18px; color: #a5acb8; }
+  #lobby .row { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; margin-top: 12px; }
+  #lobbyMsg { color: #ff9c8a; min-height: 1.4em; margin-top: 12px; }
+  body::after { content: ''; position: fixed; inset: 0; pointer-events: none; z-index: 1;
+    background: radial-gradient(ellipse at center, transparent 55%, rgba(0, 0, 0, .6) 100%); }
+  #hud, #info { z-index: 2; }
+  #hud { position: fixed; left: 0; right: 0; top: 0; padding: 10px 12px; display: none; gap: 10px; align-items: center;
+    flex-wrap: wrap; background: linear-gradient(#14171ccc, #14171c00); pointer-events: none; }
+  #hud > * { pointer-events: auto; }
+  #status { font-weight: 600; margin-right: auto; text-shadow: 0 1px 3px #000; }
+  #info { position: fixed; left: 12px; right: 12px; bottom: 10px; color: #cfd4dc; text-shadow: 0 1px 3px #000; pointer-events: none; }
+  #info b { color: #fff; }
+</style>
+</head>
+<body>
+<div id="lobby">
+  <div class="card">
+    <h1>Skirmish Table</h1>
+    <p>Two-player turn-based tactics. Plays on a Quest 3 in mixed reality or in any browser.</p>
+    <button id="createBtn">Create a match</button>
+    <div class="row">
+      <input id="codeInput" maxlength="4" placeholder="CODE" autocomplete="off" aria-label="Room code">
+      <button id="joinBtn" class="secondary">Join with code</button>
+    </div>
+    <div id="lobbyMsg"></div>
+  </div>
+</div>
+<div id="hud">
+  <span id="status"></span>
+  <button id="arBtn" hidden>Enter AR</button>
+  <button id="soundBtn" class="secondary">Sound on</button>
+  <button id="qualityBtn" class="secondary">Quality: high</button>
+  <button id="copyBtn" class="secondary">Copy invite link</button>
+  <button id="endBtn">End turn</button>
+  <button id="quitBtn" class="danger">Surrender</button>
+</div>
+<div id="info"></div>
+<script type="module">__CHESS__</script>
+</body>
+</html>

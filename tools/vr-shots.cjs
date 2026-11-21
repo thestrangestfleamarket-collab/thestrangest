@@ -3,7 +3,7 @@
 const { chromium } = require('playwright'), path = require('path'), fs = require('fs'), ROOT = path.resolve('dist');
 const OUT = path.resolve(process.argv[2] || 'data/vr'), ONLY = process.argv[3] && process.argv[3].split(',');
 const till = (pg, f, ms = 420000) => pg.waitForFunction(f, null, { timeout: ms }).catch(() => {}), bdesk = async pg => { await till(pg, () => !document.getElementById('bdesk').disabled); await pg.evaluate(() => document.querySelector('#bdesk').click()); };
-// LASER TAG's and SENSOR TAG's need two linked pages: theirs are their tests' own pictures (node tests/laser.cjs dist/laser.html <folder>), cut to 16:9.
+// LASER TAG's and SENSOR TAG's need two linked pages: theirs are their tests' own pictures (node tests/laser.cjs dist/laser.html <folder>), cut to 16:9. SKIRMISH TABLE's too (node tests/chess.cjs dist/chess.html <folder>, its board-player1.png).
 // id: [page and query, how to start it, seconds to wait before the picture]
 const G = {
   asylum: ['asylum.html', async pg => { await till(pg, () => window.ASY); await pg.evaluate(() => document.querySelector('#play').click()); await pg.waitForTimeout(3000); await pg.evaluate(() => { ASY.G.lightOn = true; }); }, 6],

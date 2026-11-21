@@ -6,6 +6,7 @@ import { LASER } from "./laser.js";
 import { TAG } from "./tag.js";
 import { TANK } from "./tank.js";
 import { SPACE } from "./space.js";
+import { CHESS } from "./chess.js";
 import { MAPPATCH } from "./mappatch.js";
 import { FOLKSIM } from "./folk.js";
 import { MOBSIM } from "./dunmobs.js";
@@ -39,7 +40,7 @@ const SPCA = /^\/space-assets\/((m|snd)\/[A-Za-z0-9_-]+\.(glb|mp3)|tex\/[a-z0-9_
 const JAMA = /^\/jam-assets\/[a-z0-9_-]+\.(glb|json|mp3)$/, JAMT = { glb: "model/gltf-binary", json: "application/json", mp3: "audio/mpeg" };   // STADIUM JAM's avatars, hands and samples: to anyone
 const DRUMA = /^\/drums-assets\/(?:(?:tex|m|p)\/)?[A-Za-z0-9_-]+\.(glb|json|mp3|jpg|webp)$/, DRUMT = { glb: "model/gltf-binary", json: "application/json", mp3: "audio/mpeg", jpg: "image/jpeg", webp: "image/webp" };   // THE GARAGE's recorded kit, models and surfaces: to anyone
 const SAYNO = new Map();
-const GOLFA = /^\/(vr|fly|golf|duel|cantina|hide|zombie|sushi|tank|saloon|turret)-assets\/(?!.*\.\.)[A-Za-z0-9_.\/-]+\.(jpg|json|txt|glb|mp3|hdr|fbx|webp|mp4|bin)$/;   // HALCYON GREENS' pictures and models, AR DUEL's pictures, THE CANTINA's models and pictures, DEAD END's pictures, models and sounds, EYES DOWN's pictures and models, HULL DOWN's sky, surfaces, models and sounds, RAMEN's: to anyone
+const GOLFA = /^\/(vr|fly|golf|duel|cantina|hide|zombie|sushi|tank|saloon|turret|chess)-assets\/(?!.*\.\.)[A-Za-z0-9_.\/-]+\.(jpg|json|txt|glb|mp3|hdr|fbx|webp|mp4|bin|png)$/;   // HALCYON GREENS' pictures and models, AR DUEL's pictures, THE CANTINA's models and pictures, DEAD END's pictures, models and sounds, EYES DOWN's pictures and models, HULL DOWN's sky, surfaces, models and sounds, RAMEN's, SKIRMISH TABLE's people, sprites and sounds: to anyone
 const BOOK = /^\/book\/(\d{1,6})\.txt$/, FILM = /^\/film\/([A-Za-z0-9_.-]{1,80})\/([A-Za-z0-9_.-]{1,120}\.mp4)$/, IA = /^\/ia\/([A-Za-z0-9_.-]{1,80})\.jpg$/, YT = /^\/yt\/([A-Za-z0-9_-]{11})\.jpg$/, BLANK = "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYGD4DwABBAEAHnOcQAAAAABJRU5ErkJggg==";
 const SKYJD = () => { const d = new Date(); return Date.UTC(1985, d.getUTCMonth(), d.getUTCDate()) / 864e5 + 2440587.5; },   // the sky's year is 1985 (src/134b DN.YEAR): that year's comets
    SBDB = "https://ssd-api.jpl.nasa.gov/sbdb_query.api?", SWPC = "https://services.swpc.noaa.gov/";
@@ -139,6 +140,15 @@ export default {
     // LASER TAG (src/laser/): its own page at /laser, to anyone with the link; its one public room is the Laser Durable Object
     if ((request.method === "GET" || request.method === "HEAD") && p === "/laser") return page(env, url, "/laser", request, "no-cache");
     if (p === "/laser/") return Response.redirect(url.origin + "/laser" + url.search, 301);
+    // SKIRMISH TABLE (src/chess/): a two-player tactics board, its own page at /chess, to anyone with the link; its people, sprites and sounds under /chess-assets/; a match is one Chess Durable Object, found by its four-letter code (/chess/ws?create, /chess/ws?room=CODE)
+    if ((request.method === "GET" || request.method === "HEAD") && p === "/chess") return page(env, url, "/chess", request, "no-cache");
+    if (p === "/chess/") return Response.redirect(url.origin + "/chess" + url.search, 301);
+    if (p === "/chess/ws") {
+      if (request.headers.get("Upgrade") !== "websocket") return new Response("Expected a WebSocket", { status: 426 });
+      if (request.headers.get("Origin") !== url.origin && !dev) return new Response("not found", { status: 404 });
+      const code = url.searchParams.has("create") ? CHESS.code() : (url.searchParams.get("room") || "").toUpperCase();
+      if (!CHESS.CODE.test(code)) return new Response("Bad room code", { status: 400 });
+      url.searchParams.set("room", code); return env.Chess.get(env.Chess.idFromName(code)).fetch(new Request(url, request)); }
     // SENSOR TAG (src/tag/): its own page at /tag, to anyone with the link; its one public room is the Tag Durable Object
     if ((request.method === "GET" || request.method === "HEAD") && p === "/tag") return page(env, url, "/tag", request, "no-cache");
     if (p === "/tag/") return Response.redirect(url.origin + "/tag" + url.search, 301);
@@ -1131,6 +1141,19 @@ export class Laser extends Server {
   onClose(c) { if (c.state) this.broadcast(JSON.stringify({ t: "peer-leave", id: c.id }), [c.id]); }
   onError(c) { this.onClose(c); }
 }
+// SKIRMISH TABLE's match: one room by its four-letter code, two seats and spectators; every move is judged here by the game's rules and the state sent to all (worker/chess.js), kept so a seat can come back
+export class Chess extends DurableObject {
+  constructor(ctx, env) { super(ctx, env); this.room = null; this.match = new CHESS.Match(this);
+    ctx.blockConcurrencyWhile(async () => { this.room = (await ctx.storage.get("room")) || null; }); }
+  save() { this.ctx.storage.put("room", this.room); this.ctx.storage.setAlarm(Date.now() + CHESS.IDLE_MS); }
+  async alarm() { if (this.match.sockets.size) { this.ctx.storage.setAlarm(Date.now() + CHESS.IDLE_MS); return; } this.room = null; await this.ctx.storage.deleteAll(); }
+  async fetch(req) {
+    const code = new URL(req.url).searchParams.get("room"), [client, server] = Object.values(new WebSocketPair()); server.accept(); this.match.open(server);
+    server.addEventListener("message", e => { try { this.match.message(server, code, e.data); } catch (err) { console.error(err); } });
+    const gone = () => this.match.gone(server); server.addEventListener("close", gone); server.addEventListener("error", gone);
+    return new Response(null, { status: 101, webSocket: client }); }
+}
+
 // SENSOR TAG's room: the same relay as LASER TAG's, with its own filter (worker/tag.js)
 export class Tag extends Laser { get R() { return TAG; } }
 

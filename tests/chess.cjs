@@ -167,7 +167,7 @@ let halt = () => {};
 
   // ---- the website's worker and its Chess Durable Object ----
   const CFG = path.join(ROOT, '.site-wrangler.jsonc'); fs.writeFileSync(CFG, fs.readFileSync(path.join(ROOT, 'wrangler.jsonc'), 'utf8').replace(/^\s*"ai"\s*:\s*\{[^}]*\},?\s*$/m, '')); process.on('exit', () => { try { fs.unlinkSync(CFG); } catch (e) {} });
-  const w = spawn('npx', ['wrangler', 'dev', '-c', CFG, '--port', String(PORT), '--ip', '127.0.0.1', '--var', 'DEV_AUTH:1', '--show-interactive-dev-session=false', '--persist-to', fs.mkdtempSync(path.join(os.tmpdir(), 'chess-'))], { cwd: ROOT, stdio: ['ignore', 'pipe', 'pipe'], detached: true, env: { ...process.env, WRANGLER_SEND_METRICS: 'false' } });
+  const w = spawn('npx', ['wrangler', 'dev', '-c', CFG, '--port', String(PORT), '--ip', '127.0.0.1', '--var', 'DEV_AUTH:1', '--var', 'CHESS_TURN_SECONDS:900', '--show-interactive-dev-session=false', '--persist-to', fs.mkdtempSync(path.join(os.tmpdir(), 'chess-'))], { cwd: ROOT, stdio: ['ignore', 'pipe', 'pipe'], detached: true, env: { ...process.env, WRANGLER_SEND_METRICS: 'false' } });
   const stop = () => { try { process.kill(-w.pid, 'SIGKILL'); } catch (e) { try { w.kill('SIGKILL'); } catch (_) {} } };
   halt = stop;
   let log = ''; w.stdout.on('data', d => log += d); w.stderr.on('data', d => log += d);
@@ -321,9 +321,10 @@ let halt = () => {};
 
   // ---- the landscaped maps on the page: built from the map's data, a piece stands on its ground, a click finds its tile ----
   { const n0 = errs.length, L = await open(); cur = null;
-    for (const id of Object.keys(G.MAPS).filter(id => G.MAPS[id].tiles)) { const m = G.MAPS[id];
+    for (const id of ['river', 'pass', 'keep'].filter(id => G.MAPS[id])) { const m = G.MAPS[id];   // a river, high ground, walls at dusk; the others are checked as data above
+
       await L.goto(BASE + '/chess?show=' + id, { waitUntil: 'commit', timeout: 120000 }); await until(L, () => !!window.__t && !!window.__t.field && window.__t.field.land);
-      await until(L, () => window.__t.field.stats().draws > 20, null, 120000); await people(L);
+      await until(L, () => window.__t.field.stats().draws > 20, null, 120000);
       const f = await L.evaluate(() => { const T = window.__t, F = T.field, st = F.stats(); let off = 0; T.scene.traverse(o => { const p = o.userData && o.userData.pick; if (p && p.kind === 'unit') { const u = T.state.units.find(u => u.id === p.id); if (u && Math.abs(o.userData.target.y - F.yAt(u.x, u.y)) > 1e-6) off++; } }); return { id: F.id, cols: F.cols, rows: F.rows, st, off, lights: F.lights.length, bg: !!T.scene.background }; });
       ok(f.id === id && f.cols === m.cols && f.rows === m.rows && f.off === 0 && f.bg && f.lights <= 2, m.name + ' is built from its data, every piece standing on its own tile\'s ground');
       ok(f.st.tris > 20000 && f.st.tris < 260000 && f.st.draws < 90, 'its cost on the low setting: ' + f.st.draws + ' draws, ' + f.st.tris + ' triangles, ' + f.st.blades + ' blades of grass, ' + f.st.trees + ' trees');

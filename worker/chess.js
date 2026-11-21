@@ -57,7 +57,7 @@ const CHESS = {
       clearTimeout(this.timer);
       const r = this.room;
       if (!this.started() || r.state.winner !== null || r.ai) { r.deadline = null; return; }   // no clock against the computer
-      if (fresh || !r.deadline) r.deadline = Date.now() + G.TURN_SECONDS * 1000;
+      if (fresh || !r.deadline) r.deadline = Date.now() + (this.host.turnSeconds || G.TURN_SECONDS) * 1000;
       this.timer = setTimeout(() => {
         const res = G.apply(r.state, r.state.turn, { type: "end" });
         if (res.ok) { this.armTimer(true); this.host.save(); this.broadcast(res.events); }

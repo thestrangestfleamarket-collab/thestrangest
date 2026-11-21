@@ -16,7 +16,7 @@ export const HOURS = {
   dusk: { sun: [0x8fa8ff, 1.25], dir: [-6, 8, 4], hemi: [0x5c6ea4, 0x1c2622, 0.55], fog: [0x26344a, 0.026], sky: ['#0b1128', '#22304e', '#4a5672'], exposure: 1.12, env: 0.3,
     water: [0x6a7ca4, 0x1c2a48, 0x3a5c5e, 0x14282e], grass: [0x1c2c1a, 0x52703c], turf: 0x4a6a48, mote: 0xd8ff9a, fire: 6 },
 };
-const MARK = { sel: [255, 205, 80, 255], hit: [255, 60, 50, 255], heal: [70, 235, 125, 255], move: [70, 140, 255, 235] };
+const MARK = { sel: [255, 190, 40, 255], hit: [255, 40, 30, 255], heal: [40, 220, 100, 255], move: [25, 85, 255, 225] };
 
 const cache = new Map();
 const once = (k, make) => { if (!cache.has(k)) cache.set(k, make()); return cache.get(k); };
@@ -51,8 +51,8 @@ const DRAPE = `vec3 markGlow = vec3(0.);
     diffuseColor.rgb = mix(diffuseColor.rgb, diffuseColor.rgb * .4, line * .6);
     vec4 mk = texture2D(tMark, (floor(tc) + .5) / uGrid);
     float band = 1. - smoothstep(.03, .17, e);
-    diffuseColor.rgb = mix(diffuseColor.rgb, mk.rgb, mk.a * (.36 + .5 * band));
-    markGlow = mk.rgb * mk.a * (.1 + .45 * band);
+    diffuseColor.rgb = mix(diffuseColor.rgb, mk.rgb * .8, mk.a * (.34 + .5 * band));
+    markGlow = mk.rgb * mk.a * (.05 + .3 * band);
   } }
 `;
 function drape(mat, U, key, more) {

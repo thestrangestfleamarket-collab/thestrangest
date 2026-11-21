@@ -154,7 +154,9 @@ export default {
       if (request.headers.get("Origin") !== url.origin && !dev) return new Response("not found", { status: 404 });
       const code = url.searchParams.has("create") ? CHESS.code() : (url.searchParams.get("room") || "").toUpperCase();
       if (!CHESS.CODE.test(code)) return new Response("Bad room code", { status: 400 });
-      url.searchParams.set("room", code); return env.Chess.get(env.Chess.idFromName(code)).fetch(new Request(url, request)); }
+      // the room is told who a login is (never taken from the page): the campaign's battles won are kept under it
+      const pid = await who(env, request, dev), fwd = new Request(url, request), hs = new Headers(fwd.headers); hs.delete("x-chess-player"); if (pid) hs.set("x-chess-player", pid);
+      url.searchParams.set("room", code); return env.Chess.get(env.Chess.idFromName(code)).fetch(new Request(url, new Request(fwd, { headers: hs }))); }
     // SENSOR TAG (src/tag/): its own page at /tag, to anyone with the link; its one public room is the Tag Durable Object
     if ((request.method === "GET" || request.method === "HEAD") && p === "/tag") return page(env, url, "/tag", request, "no-cache");
     if (p === "/tag/") return Response.redirect(url.origin + "/tag" + url.search, 301);
@@ -1153,10 +1155,11 @@ export class Chess extends DurableObject {
   constructor(ctx, env) { super(ctx, env); this.room = null; this.match = new CHESS.Match(this);
     ctx.blockConcurrencyWhile(async () => { this.room = (await ctx.storage.get("room")) || null; }); }
   save() { this.ctx.storage.put("room", this.room); this.ctx.storage.setAlarm(Date.now() + CHESS.IDLE_MS); }
+  store(pid) { const H = homeOf(this.env); return { get: () => H.botGet("chess:" + pid), put: v => H.botPut("chess:" + pid, v) }; }
   async alarm() { if (this.match.sockets.size) { this.ctx.storage.setAlarm(Date.now() + CHESS.IDLE_MS); return; } this.room = null; await this.ctx.storage.deleteAll(); }
   async fetch(req) {
-    const code = new URL(req.url).searchParams.get("room"), [client, server] = Object.values(new WebSocketPair()); server.accept(); this.match.open(server);
-    server.addEventListener("message", e => { try { this.match.message(server, code, e.data); } catch (err) { console.error(err); } });
+    const code = new URL(req.url).searchParams.get("room"), [client, server] = Object.values(new WebSocketPair()); server.accept(); this.match.open(server, req.headers.get("x-chess-player") || "");
+    server.addEventListener("message", e => { Promise.resolve().then(() => this.match.message(server, code, e.data)).catch(err => console.error(err)); });
     const gone = () => this.match.gone(server); server.addEventListener("close", gone); server.addEventListener("error", gone);
     return new Response(null, { status: 101, webSocket: client }); }
 }

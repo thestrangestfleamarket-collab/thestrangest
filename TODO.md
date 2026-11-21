@@ -395,5 +395,4 @@ Last (owner, 7 Nov 2026: "we will do VR checks last"): every check and look line
 
 ## SKIRMISH TABLE (`/chess`)
 
-- **P2** A computer opponent, then the solo campaign across landscaped maps (owner, 21 Nov 2026: "a DND campaign style layout ... that you can play through"). [taking: claude/chess-solo, 21 Nov 2026]
-- **P2** Upgrades, earned and kept for a login; fair duels ignore them (owner, 21 Nov 2026: "look for options to upgrade characters").
+- **P2** Upgrades, earned and kept for a login; fair duels ignore them (owner, 21 Nov 2026: "look for options to upgrade characters"). [taking: claude/chess-upgrades, 21 Nov 2026]

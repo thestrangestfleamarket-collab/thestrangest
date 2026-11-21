@@ -46,6 +46,17 @@
   #readyBtn { width: 100%; margin-top: 8px; background: #2f8f4a; }
   #readyBtn.danger { background: #8a2f2f; }
   #setupMsg { color: #ff9c8a; min-height: 1.3em; margin-top: 6px; font-size: 13px; }
+  #camp { position: fixed; left: 12px; top: 64px; width: 300px; z-index: 3; background: #1d2129ee; border: 1px solid #2c323c; border-radius: 12px; padding: 14px; }
+  #camp[hidden], #after[hidden] { display: none; }
+  #camp h2 { margin: 0 0 6px; font-size: 18px; }
+  #camp p { margin: 0 0 8px; color: #cfd4dc; }
+  #campPts { color: #ffd66b !important; }
+  #camp .row { display: flex; gap: 8px; }
+  #camp .row > * { flex: 1; }
+  #after { position: fixed; inset: 0; display: flex; align-items: center; justify-content: center; padding: 16px; background: rgba(14, 16, 20, .6); z-index: 9; }
+  #after .card { background: #1d2129; border: 1px solid #2c323c; border-radius: 14px; padding: 22px 26px; max-width: 460px; }
+  #after h2 { margin: 0 0 8px; }
+  #after p { color: #cfd4dc; margin: 0 0 16px; }
   #lobbyMsg { color: #ff9c8a; min-height: 1.4em; margin-top: 12px; }
   body::after { content: ''; position: fixed; inset: 0; pointer-events: none; z-index: 1;
     background: radial-gradient(ellipse at center, transparent 55%, rgba(0, 0, 0, .6) 100%); }
@@ -68,6 +79,11 @@
       <button id="createBtn">Create a match</button>
     </div>
     <div id="mapInfo"></div>
+    <div class="row">
+      <select id="levelSel" aria-label="The computer's level"></select>
+      <button id="soloBtn" class="secondary">Play the computer</button>
+    </div>
+    <div class="row"><button id="campBtn" class="secondary">Campaign: The Cold Beacon</button></div>
     <div class="row">
       <input id="codeInput" maxlength="4" placeholder="CODE" autocomplete="off" aria-label="Room code">
       <button id="joinBtn" class="secondary">Join with code</button>
@@ -96,6 +112,14 @@
   <button id="readyBtn">Ready</button>
   <div id="setupMsg"></div>
 </div>
+<div id="camp" hidden>
+  <h2 id="campName"></h2>
+  <p id="campText"></p>
+  <p id="campFoe"></p>
+  <p id="campPts"></p>
+  <div class="row"><button id="fightBtn">Fight</button><button id="campBack" class="secondary">Menu</button></div>
+</div>
+<div id="after" hidden><div class="card"><h2 id="afterTitle"></h2><p id="afterText"></p><button id="afterBtn">Continue</button></div></div>
 <div id="info"></div>
 <div id="help" hidden><div class="card"><h2>Ground rules</h2><div id="rules"></div><p>Tap a tile to see what it is. Tap here to close.</p></div></div>
 <script type="module">__CHESS__</script>

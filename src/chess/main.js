@@ -46,7 +46,7 @@ renderer.xr.setReferenceSpaceType('local-floor');
 renderer.toneMapping = THREE.ACESFilmicToneMapping;
 renderer.toneMappingExposure = 1.05;
 renderer.shadowMap.enabled = true;
-renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+renderer.shadowMap.type = THREE.PCFShadowMap;
 document.body.appendChild(renderer.domElement);
 
 const scene = new THREE.Scene();
@@ -521,11 +521,11 @@ const motes = new THREE.Points(moteGeo, new THREE.PointsMaterial({ map: fx.tex.c
 motes.raycast = () => {};
 world.add(motes);
 
-let quality = 'high';
+let quality = 'high', lean = 0; // lean: how far the headset has been eased (govern)
 try { quality = localStorage.getItem('quality') || 'high'; } catch { /* storage blocked */ }
 function applyQuality() {
   const high = quality === 'high';
-  sun.castShadow = high;
+  sun.castShadow = high && lean < 2;
   motes.visible = high && !renderer.xr.isPresenting;
   if (field) field.setDetail(high, renderer.xr.isPresenting);
   if (!renderer.xr.isPresenting) renderer.setPixelRatio(high ? Math.min(devicePixelRatio, 2) : 1);
@@ -855,6 +855,7 @@ const controllers = [];
 const tmpM = new THREE.Matrix4(), tmpV = new THREE.Vector3();
 
 function rayFromController(c) {
+  c.updateMatrixWorld(); // this frame's pose: the scene only brings it up to date when it is drawn
   tmpM.identity().extractRotation(c.matrixWorld);
   raycaster.ray.origin.setFromMatrixPosition(c.matrixWorld);
   raycaster.ray.direction.set(0, 0, -1).applyMatrix4(tmpM);
@@ -872,7 +873,7 @@ for (const i of [0, 1]) {
   scene.add(dot);
   c.userData = { line, dot };
   c.addEventListener('select', () => { sound.init(); rayFromController(c); const hit = pickFromRay(); handlePick(hit && hit.pick); });
-  c.addEventListener('squeezestart', () => { grab = { c, offset: world.position.clone().sub(tmpV.setFromMatrixPosition(c.matrixWorld)) }; });
+  c.addEventListener('squeezestart', () => { c.updateMatrixWorld(); grab = { c, offset: world.position.clone().sub(tmpV.setFromMatrixPosition(c.matrixWorld)) }; });
   c.addEventListener('squeezeend', () => { if (grab && grab.c === c) grab = null; });
   c.visible = false;
   scene.add(c);
@@ -900,6 +901,7 @@ renderer.xr.addEventListener('sessionstart', () => {
   motes.visible = false;
   world.scale.setScalar(AR_SCALE);
   setShadowScale(AR_SCALE);
+  slowMs = slowT = lean = 0;
   applyQuality();
   sound.refDistance = 0.7;
   controls.enabled = false;
@@ -913,6 +915,7 @@ renderer.xr.addEventListener('sessionend', () => {
   world.scale.setScalar(1);
   applyLook();
   sound.refDistance = 14;
+  lean = 0;
   applyQuality();
   world.position.set(0, 0, 0);
   world.rotation.y = 0;
@@ -942,13 +945,29 @@ function resetCamera() {
   controls.update();
 }
 
-const clock = new THREE.Clock();
+// In the headset a late frame is a jump in the room (a drawn frame is only turned to follow the head, never moved),
+// so the frame rate is held: when frames run long, first 72 a second, then the shadows go.
+let slowMs = 0, slowT = 0;
+function govern(dt) {
+  const ses = renderer.xr.isPresenting && renderer.xr.getSession();
+  if (!ses || lean > 1) return;
+  const hz = ses.frameRate || 72;
+  slowMs += (dt * 1000 - slowMs) * 0.05;
+  slowT = slowMs > 1150 / hz ? slowT + dt : 0;
+  if (slowT < 2) return;
+  slowT = 0;
+  if (lean === 0 && hz > 72 && ses.updateTargetFrameRate) { lean = 1; ses.updateTargetFrameRate(72).catch(() => {}); }
+  else { lean = 2; sun.castShadow = false; }
+}
 const ONE = new THREE.Vector3(1, 1, 1), camLocal = new THREE.Vector3(), camPos = new THREE.Vector3(), camDir = new THREE.Vector3(), camUp = new THREE.Vector3();
 let nextCrackle = 0;
 let lastSecond = 0;
-renderer.setAnimationLoop(() => {
-  const dt = Math.min(clock.getDelta(), 0.1);
-  const k = 1 - Math.exp(-7 * dt), now = clock.elapsedTime;
+let lastTime = 0, now = 0;
+renderer.setAnimationLoop(time => {
+  const dt = lastTime ? Math.min(Math.max(time - lastTime, 0) / 1000, 0.1) : 0; // the frame's own time (the headset's display time), not when this code got to run
+  lastTime = time; now += dt;
+  govern(dt);
+  const k = 1 - Math.exp(-7 * dt);
   for (const g of unitMeshes.values()) {
     const far = Math.hypot(g.position.x - g.userData.target.x, g.position.z - g.userData.target.z);
     g.position.lerp(g.userData.target, k);
@@ -967,7 +986,7 @@ renderer.setAnimationLoop(() => {
     s.material.opacity = Math.min(1, s.userData.life * 2);
     if (s.userData.life <= 0) { world.remove(s); s.material.map.dispose(); s.material.dispose(); floaters.splice(i, 1); }
   }
-  arrowsGroup.children.forEach(a => { a.position.y = 2.1 + Math.sin(clock.elapsedTime * 4) * 0.06; });
+  arrowsGroup.children.forEach(a => { a.position.y = 2.1 + Math.sin(now * 4) * 0.06; });
   for (let i = dying.length - 1; i >= 0; i--) { // fall over, lie there, then shrink away
     const d = dying[i];
     d.t += dt;
@@ -1000,7 +1019,7 @@ renderer.setAnimationLoop(() => {
   if (renderer.xr.isPresenting) {
     xrFrames++;
     if (needPlace && xrFrames > 10) { placeBoardInFront(); needPlace = false; }
-    if (grab) world.position.copy(tmpV.setFromMatrixPosition(grab.c.matrixWorld)).add(grab.offset);
+    if (grab) { grab.c.updateMatrixWorld(); world.position.copy(tmpV.setFromMatrixPosition(grab.c.matrixWorld)).add(grab.offset); }
     for (const c of controllers) {
       rayFromController(c);
       const hit = pickFromRay();
@@ -1114,4 +1133,4 @@ function show(id, setup) {
 }
 if (new URLSearchParams(location.search).get('camp')) openCampaign();
 if (new URLSearchParams(location.search).get('show')) show(new URLSearchParams(location.search).get('show'), new URLSearchParams(location.search).get('setup'));
-window.__t = { handlePick, show, world, G, openCampaign, CAMPAIGN, get camp() { return camp; }, get overland() { return overland; }, get campSel() { return campSel; }, get solo() { return solo; }, get campNode() { return campNode; }, saveTeam, loadTeam, get teams() { return teams; }, get held() { return held; }, get ready() { return ready; }, get setupSel() { return setupSel; }, get field() { return field; }, castFx, explode, V, camera, controls, fx, sun, renderer, scene, get state() { return state; }, get me() { return me; }, get code() { return code; }, get selected() { return selected; } };
+window.__t = { handlePick, show, world, G, openCampaign, CAMPAIGN, get camp() { return camp; }, get overland() { return overland; }, get campSel() { return campSel; }, get solo() { return solo; }, get campNode() { return campNode; }, saveTeam, loadTeam, get teams() { return teams; }, get held() { return held; }, get ready() { return ready; }, get setupSel() { return setupSel; }, get field() { return field; }, castFx, explode, V, camera, controls, fx, sun, renderer, scene, get state() { return state; }, get me() { return me; }, get code() { return code; }, get selected() { return selected; }, get lean() { return lean; } };

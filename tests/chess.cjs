@@ -372,7 +372,8 @@ let halt = () => {};
     ok(errs.length === n0, 'no page errors in the campaign' + (errs.length > n0 ? ': ' + errs.slice(n0, n0 + 4).join(' | ') : '')); await C.context().close(); }
 
   // ---- an emulated Quest 3: AR, the board in front of you, a controller picks a piece ----
-  { const n0 = errs.length, Q = await open(IWER + ';window.xrDevice=new IWER.XRDevice(IWER.metaQuest3);xrDevice.installRuntime({forceInstall:true});xrDevice.position.set(0,1.6,0);');
+  { const n0 = errs.length, Q = await open(IWER + ';window.xrDevice=new IWER.XRDevice(IWER.metaQuest3);xrDevice.installRuntime({forceInstall:true});xrDevice.position.set(0,1.6,0);'
+      + ';(()=>{const raf=window.requestAnimationFrame.bind(window);let real=-1,ft=0;window.__even=false;window.requestAnimationFrame=cb=>raf(t=>{if(t!==real){real=t;ft=window.__even?ft+1000/90:t;}cb(ft);});})();');   // __even: every frame is told it is 1/90 s after the last, however long it took
     await Q.goto(BASE + '/chess', { waitUntil: 'commit', timeout: 120000 }); await until(Q, () => !!window.__t); await Q.evaluate(() => document.getElementById('createBtn').click()); await until(Q, () => window.__t.code && window.__t.state);
     const qc = await Q.evaluate(() => window.__t.code), foe = await seat('room=' + qc, { t: 'join', code: qc, token: 'quest-foe' }); await until(Q, () => window.__t.ready[1]);
     ok(await until(Q, () => !document.getElementById('arBtn').hidden, null, 20000), 'in a Quest 3 the page offers ENTER AR');
@@ -382,29 +383,57 @@ let halt = () => {};
     await until(Q, () => { const w = window.__t.scene.children.find(o => o.isGroup && o.children.length > 3); return w.position.z < -0.3; }, null, 30000);
     const bd = await board(); ok(Math.abs(bd.s - 0.06) < 1e-6 && Math.abs(bd.z + 0.55) < 0.05 && Math.abs(bd.y - 1.1) < 0.05, 'the board is set at table size (a tile 6 cm) half a metre in front of you: ' + JSON.stringify(bd));
     await people(Q);
+    // the checks below step by drawn frames, however slow they are
+    await Q.evaluate(() => { const T = window.__t, R = T.renderer, draw = R.render; window.__after = null; R.render = (s, c) => { draw.call(R, s, c); const f = window.__after; if (f) f(); };
+      window.__drawn = fn => new Promise(res => { window.__after = () => { window.__after = null; res(fn && fn()); }; });   // after the next frame is drawn
+      window.__w = T.scene.children.find(o => o.isGroup && o.children.length > 3); });
     const aim = async id => Q.evaluate(id => { const T = window.__t; let g = null; T.scene.traverse(o => { if (o.userData && o.userData.pick && o.userData.pick.kind === 'unit' && o.userData.pick.id === id) g = o; });
       const p = g.getWorldPosition(T.V(0, 0, 0)), c = xrDevice.controllers.right; c.position.set(p.x, p.y + 0.3, p.z); c.quaternion.set(-Math.SQRT1_2, 0, 0, Math.SQRT1_2); }, id);
-    const press = async (k = 'trigger') => { await Q.evaluate(k => xrDevice.controllers.right.updateButtonValue(k, 1), k); await Q.waitForTimeout(400); await Q.evaluate(k => xrDevice.controllers.right.updateButtonValue(k, 0), k); await Q.waitForTimeout(400); };
+    const press = (k = 'trigger') => Q.evaluate(async k => { const c = xrDevice.controllers.right; c.updateButtonValue(k, 1); await window.__drawn(); await window.__drawn(); c.updateButtonValue(k, 0); await window.__drawn(); await window.__drawn(); }, k);   // held over two drawn frames, however slow they are
     { const spot = pk => Q.evaluate(pk => { const T = window.__t; let g = null; T.scene.traverse(o => { const p = o.userData && o.userData.pick; if (p && p.kind === pk.kind && (p.type === pk.type) && (p.act === pk.act) && o.visible) g = o; }); if (!g) return false;
         const p = g.getWorldPosition(T.V(0, 0, 0)), c = xrDevice.controllers.right; c.position.set(p.x, p.y + 0.25, p.z); c.quaternion.set(-Math.SQRT1_2, 0, 0, Math.SQRT1_2); return true; }, pk);
-      const mage = (await st(Q)).units.find(u => u.type === 'mender'); await tap(Q, { kind: 'unit', id: mage.id }); const s1 = await spot({ kind: 'setup', act: 'remove' }); await Q.waitForTimeout(600); await press(); await until(Q, () => window.__t.state.units.length === 9);
-      const s2 = await spot({ kind: 'chip', type: 'hexbinder' }); await Q.waitForTimeout(600); await press(); const heldQ = await Q.evaluate(() => window.__t.held);
+      const mage = (await st(Q)).units.find(u => u.type === 'mender'); await tap(Q, { kind: 'unit', id: mage.id }); const s1 = await spot({ kind: 'setup', act: 'remove' }); await Q.evaluate(async () => { await window.__drawn(); await window.__drawn(); }); await press(); await until(Q, () => window.__t.state.units.length === 9);
+      const s2 = await spot({ kind: 'chip', type: 'hexbinder' }); await Q.evaluate(async () => { await window.__drawn(); await window.__drawn(); }); await press(); const heldQ = await Q.evaluate(() => window.__t.held);
       await tap(Q, { kind: 'tile', x: mage.x, y: mage.y }); await until(Q, () => window.__t.state.units.length === 10);
       ok(s1 && s2 && heldQ === 'hexbinder' && (await st(Q)).units.filter(u => u.type === 'hexbinder').length === 2 && (await st(Q)).units.every(u => u.owner === 0), 'in the headset the table\'s own buttons set out a team: REMOVE under the controller, then the Enchanter\'s chip, then a tile');
-      const s3 = await spot({ kind: 'setup', act: 'ready' }); await Q.waitForTimeout(600); await press();
+      const s3 = await spot({ kind: 'setup', act: 'ready' }); await Q.evaluate(async () => { await window.__drawn(); await window.__drawn(); }); await press();
       ok(s3 && await until(Q, () => window.__t.state.phase === 'play' && window.__t.state.units.length === 20) && foe.state.units.filter(u => u.owner === 0 && u.type === 'hexbinder').length === 2, 'READY under the controller starts the match with that team'); }
-    const kn = (await st(Q)).units.find(u => u.owner === 0 && u.type === 'lancer'); await aim(kn.id); await Q.waitForTimeout(600); await press();
+    const kn = (await st(Q)).units.find(u => u.owner === 0 && u.type === 'lancer'); await aim(kn.id); await Q.evaluate(async () => { await window.__drawn(); await window.__drawn(); }); await press();
     ok((await Q.evaluate(() => window.__t.selected)) === kn.id, 'the controller\'s trigger, pointed down at a piece, picks it');
     await tap(Q, { kind: 'tile', x: kn.x, y: kn.y - 2 }); await until(Q, id => window.__t.state.active && window.__t.state.active.id === id, kn.id); await tap(Q, { kind: 'end' });
     ok(await wait(() => foe.state && foe.state.turn === 1 && foe.state.units.find(u => u.id === kn.id).y === kn.y - 2), 'a move made in the headset reaches the other player');
+    // smooth in the headset: under a head sweep the board stays where it is in the room, drawn from that frame's own head pose, and a label keeps to its piece
+    { const r = await Q.evaluate(async () => { const T = window.__t, w = window.__w, V = () => T.V(0, 0, 0); let g = null; T.scene.traverse(o => { if (!g && o.userData && o.userData.pick && o.userData.pick.kind === 'unit') g = o; });
+        const eyes = () => { const e = T.renderer.xr.getCamera().cameras; return V().setFromMatrixPosition(e[0].matrixWorld).add(V().setFromMatrixPosition(e[1].matrixWorld)).multiplyScalar(0.5); };   // midway between the two eyes as drawn
+        const see = () => ({ cam: eyes().distanceTo(xrDevice.position), w: w.getWorldPosition(V()), l: g.userData.label.getWorldPosition(V()).sub(g.getWorldPosition(V())) });
+        const a = await window.__drawn(see); let cam = a.cam, drift = 0, lab = 0;
+        for (let i = 1; i <= 12; i++) { xrDevice.position.set(0.3 * Math.sin(i * 0.2), 1.6 + 0.05 * Math.sin(i * 0.3), 0.1 * Math.sin(i * 0.15)); const b = await window.__drawn(see); cam = Math.max(cam, b.cam); drift = Math.max(drift, b.w.distanceTo(a.w)); lab = Math.max(lab, b.l.distanceTo(a.l)); }
+        xrDevice.position.set(0, 1.6, 0); await window.__drawn(); return { cam: cam * 1000, drift: drift * 1000, lab: lab * 1000 }; });
+      ok(r.cam < 0.01 && r.drift < 0.01 && r.lab < 0.01, 'a head sweep of 30 cm: each frame is drawn from its own head pose, the board does not move in the room, a label keeps to its piece (mm: ' + JSON.stringify(r) + ')'); }
     await Q.evaluate(() => xrDevice.controllers.right.updateButtonValue('squeeze', 1)); await Q.waitForTimeout(3000); await Q.evaluate(() => { const c = xrDevice.controllers.right; c.position.set(c.position.x + 0.2, c.position.y, c.position.z); }); await until(Q, x => { const w = window.__t.scene.children.find(o => o.isGroup && o.children.length > 3); return Math.abs(w.position.x - x - 0.2) < 0.03; }, bd.x, 20000);
     const moved = await board(); await Q.evaluate(() => xrDevice.controllers.right.updateButtonValue('squeeze', 0));
     ok(Math.abs(moved.x - bd.x - 0.2) < 0.03, 'holding the grip drags the board with the hand');
+    { const slip = await Q.evaluate(async () => { const T = window.__t, w = window.__w, V = () => T.V(0, 0, 0), c = xrDevice.controllers.right, hands = T.scene.children.filter(o => o.isGroup && o.children.some(k => k.isLine));
+        const rel = () => w.getWorldPosition(V()).x - hands.map(h => h.getWorldPosition(V())).sort((a, b) => a.distanceTo(c.position) - b.distanceTo(c.position))[0].x;   // the board from the hand as drawn
+        c.updateButtonValue('squeeze', 1); for (let i = 0; i < 5; i++) await window.__drawn(); const r0 = await window.__drawn(rel); let slip = 0;
+        for (let i = 0; i < 8; i++) { c.position.set(c.position.x + 0.002, c.position.y, c.position.z); slip = Math.max(slip, Math.abs(await window.__drawn(rel) - r0)); }
+        c.updateButtonValue('squeeze', 0); await window.__drawn(); return slip * 1000; });
+      ok(slip < 0.05, 'dragged smoothly (2 mm a frame) the board is drawn with the hand in the same frame, not one behind (' + slip.toFixed(3) + ' mm apart)'); }
+    ok(await until(Q, () => window.__t.lean === 2 && !window.__t.sun.castShadow, null, 120000), 'a headset whose frames run late is eased: a lower frame rate where it has one, then no shadows');
     if (OUT) await Q.screenshot({ path: path.join(OUT, 'quest3-ar.png'), timeout: 180000 }).catch(() => {});
     await Q.evaluate(() => window.__t.openCampaign()); await until(Q, () => window.__t.overland && window.__t.field.id === '@camp');
     await Q.evaluate(() => { const T = window.__t; let g = null; T.scene.traverse(o => { const p = o.userData && o.userData.pick; if (p && p.kind === 'node' && p.id === 'toll') g = o; }); const p = g.getWorldPosition(T.V(0, 0, 0)), c = xrDevice.controllers.right; c.position.set(p.x, p.y + 0.3, p.z); c.quaternion.set(-Math.SQRT1_2, 0, 0, Math.SQRT1_2); }); await Q.waitForTimeout(600); await press();
     ok((await Q.evaluate(() => window.__t.campSel)) === 'toll' && await Q.evaluate(() => { let v = false; window.__t.scene.traverse(o => { if (o.userData && o.userData.pick && o.userData.pick.kind === 'fight' && o.visible) v = true; }); return v; }) && (await Q.evaluate(() => window.__t.renderer.xr.isPresenting)), 'in the headset the campaign\'s map is on the table too: the trigger on a banner picks its battle and FIGHT stands beside the board');
     await Q.evaluate(() => window.__t.renderer.xr.getSession().end()); ok(await until(Q, () => !window.__t.renderer.xr.isPresenting && window.__t.scene.background !== null), 'leaving AR puts the table and its hall back');
+    // smooth on the screen too: a piece on its way moves by the frame's own time, so equal frames are equal steps
+    { const r = await Q.evaluate(async () => { const T = window.__t; let g = null; T.scene.traverse(o => { if (!g && o.userData && o.userData.pick && o.userData.pick.kind === 'unit') g = o; });
+        const tg = g.userData.target, x0 = tg.x; let xs; window.__even = true;
+        for (let n = 0, whole = false; n < 3 && !whole; n++) { xs = []; tg.x = x0 + 3; g.position.x = x0;
+          await new Promise(res => { const f = () => { xs.push(g.position.x); if (xs.length < 26) requestAnimationFrame(f); else res(); }; requestAnimationFrame(f); });
+          whole = tg.x === x0 + 3; }   // a turn that ran out meanwhile put the piece's goal back: again
+        tg.x = x0; g.position.x = x0; window.__even = false;
+        const q = []; for (let i = 4; i < xs.length; i++) q.push((x0 + 3 - xs[i]) / (x0 + 3 - xs[i - 1])); return { lo: Math.min(...q), hi: Math.max(...q), want: Math.exp(-7 / 90) }; });
+      ok(Math.abs(r.lo - r.want) < 1e-6 && Math.abs(r.hi - r.want) < 1e-6, 'a walking piece steps by the frame\'s own time: over equal frames every step is the same share of the way left (' + r.lo.toFixed(6) + ' to ' + r.hi.toFixed(6) + ', ' + r.want.toFixed(6) + ' wanted)'); }
     ok(errs.length === n0, 'no page errors in the headset' + (errs.length > n0 ? ': ' + errs.slice(n0, n0 + 4).join(' | ') : '')); foe.s.close(); }
   await done(b);
 })().catch(e => { console.log('FAIL the check itself broke: ' + (e && e.stack || e)); halt(); process.exit(1); });

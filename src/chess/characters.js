@@ -4,6 +4,7 @@
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import * as SkeletonUtils from 'three/addons/utils/SkeletonUtils.js';
+import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 
 const SPEC = {
   bulwark:   { body: 'Male_Ranger', hide: ['Head_Hood'], head: 'Male_Head', hair: ['Hair_Buzzed'], hairColor: 0x2a2018, tint: 0x8f98a8, metal: 0.55, idle: 'Sword_Idle', attack: 'Sword_Attack', gear: ['sword', 'shield'] },
@@ -77,6 +78,41 @@ const HOLD = {
   shield: ['lowerarm_l', [0, 0.14, -0.07], [Math.PI / 2, 0, 0]],
 };
 
+// A body comes as many skinned pieces (arms, legs, belts...). Pieces that share a material are joined into one,
+// so a unit is one or two draws and one skeleton instead of up to ten. Made once per body and set of hidden pieces.
+const bodies = {};
+function bodyOf(spec) {
+  const key = spec.body + '|' + (spec.hide || []).join(',');
+  if (bodies[key]) return bodies[key];
+  const scene = SkeletonUtils.clone(models[spec.body].scene);
+  scene.updateMatrixWorld(true);
+  const groups = new Map(), drop = [];
+  scene.traverse(o => {
+    if (!o.isSkinnedMesh) return;
+    if ((spec.hide || []).some(h => o.name.includes(h))) { drop.push(o); return; }
+    if (!groups.has(o.material)) groups.set(o.material, []);
+    groups.get(o.material).push(o);
+  });
+  const inv = new THREE.Matrix4();
+  for (const list of groups.values()) {
+    if (list.length < 2) continue;
+    const first = list[0];
+    inv.copy(first.matrixWorld).invert();
+    const names = Object.keys(first.geometry.attributes).filter(n => list.every(m => m.geometry.attributes[n]));
+    const parts = list.map(m => {
+      const g = m.geometry.clone().applyMatrix4(new THREE.Matrix4().multiplyMatrices(inv, m.matrixWorld));
+      for (const n of Object.keys(g.attributes)) if (!names.includes(n)) g.deleteAttribute(n);
+      return g;
+    });
+    const merged = mergeGeometries(parts);
+    if (!merged) continue; // pieces that cannot be joined stay as they are
+    first.geometry = merged;
+    drop.push(...list.slice(1));
+  }
+  for (const o of drop) o.removeFromParent();
+  return (bodies[key] = scene);
+}
+
 // Hair textures are greyscale, so each character tints them with its own hair colour.
 function staticClone(name, hairColor) {
   const o = models[name].scene.clone(true);
@@ -93,7 +129,7 @@ export function makeCharacter(type) {
   const spec = SPEC[type];
   if (!ready || !spec) return null;
   const object = new THREE.Group();
-  const body = SkeletonUtils.clone(models[spec.body].scene);
+  const body = SkeletonUtils.clone(bodyOf(spec));
   object.add(body);
   const mats = new Map();
   body.traverse(o => {

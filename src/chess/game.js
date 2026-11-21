@@ -51,11 +51,11 @@ export function defaultTeam(map, owner) {
   return LAYOUT.map(([type, lx, ly]) => ({ type, x: owner === 0 ? lx + ox : m.cols - 1 - lx - ox, y: owner === 0 ? ly + oy : m.rows - 1 - ly - oy }));
 }
 // A match starts in play with the standing line-ups; with setup, each side first picks and places its own (setTeam), then begin().
-export function newGame(map = 'board', { setup = false } = {}) {
+export function newGame(map = 'board', { setup = false, budget = BUDGET } = {}) {
   if (!MAPS[map]) map = 'board';
   const m = MAPS[map], units = [];
   for (const owner of [0, 1]) defaultTeam(map, owner).forEach((u, i) => units.push(piece(owner * 100 + i + 1, u.type, owner, u.x, u.y)));
-  return { map, cols: m.cols, rows: m.rows, phase: setup ? 'setup' : 'play', units, turn: 0, turnNo: 1, active: null, passes: 0, winner: null };
+  return { map, cols: m.cols, rows: m.rows, phase: setup ? 'setup' : 'play', budget, units, turn: 0, turnNo: 1, active: null, passes: 0, winner: null };
 }
 
 export const inBounds = (s, x, y) => x >= 0 && y >= 0 && x < s.cols && y < s.rows;
@@ -78,7 +78,7 @@ export function checkTeam(s, owner, team) {
     count[m.type] = (count[m.type] || 0) + 1;
     if (count[m.type] > t.limit) return `At most ${t.limit} of the ${t.name}`;
   }
-  if (teamCost(team) > BUDGET) return `Over the budget of ${BUDGET} points`;
+  if (teamCost(team) > (s.budget ?? BUDGET)) return `Over the budget of ${s.budget ?? BUDGET} points`;
   return null;
 }
 // Before the match starts: replace this side's units with a checked team. Returns the error, or null.
@@ -89,6 +89,11 @@ export function setTeam(s, owner, team) {
   s.units = s.units.filter(u => u.owner !== owner);
   team.forEach((m, i) => s.units.push(piece(owner * 100 + i + 1, m.type, owner, m.x, m.y)));
   return null;
+}
+// A side set out as written, unchecked: the computer's force in a battle of the campaign.
+export function placeTeam(s, owner, team) {
+  s.units = s.units.filter(u => u.owner !== owner);
+  team.forEach((m, i) => s.units.push(piece(owner * 100 + i + 1, m.type, owner, m.x, m.y)));
 }
 export function begin(s) { s.phase = 'play'; }
 

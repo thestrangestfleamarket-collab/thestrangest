@@ -5,6 +5,8 @@ import * as G from './game.js';
 import { makeWood, makeEnvironment, makeBackdrop } from './procedural.js';
 import { makeBoard } from './board.js';
 import { makeLand } from './land.js';
+import { LEVELS } from './ai.js';
+import { CAMPAIGN, nodeOf, budgetFor, isOpen, finished } from './campaign.js';
 import { FX } from './fx.js';
 import { Sound } from './audio.js';
 import { loadCharacters, makeCharacter } from './characters.js';
@@ -18,6 +20,7 @@ const FACE_ANGLE = { N: 0, E: -Math.PI / 2, S: Math.PI, W: Math.PI / 2 };
 let ws = null, me = -1, code = null, state = null;
 let started = false, present = [false, false], deadline = null, skew = 0;
 let selected = null, inspected = null, inspectedTile = null;
+let solo = null, campNode = null, camp = { done: [] }, company = [], overland = false, campSel = null, companyTried = false, afterShown = false;
 let held = null, setupSel = null, ready = [false, false], seated = [false, false], teams = [], teamAt = -1, setupNote = '', signedIn = false;
 
 function getToken() {
@@ -85,7 +88,9 @@ function setShadowScale(k) { // shadow volume is in real units, so it must shrin
 setShadowScale(1);
 const fieldGroup = new THREE.Group(), unitsGroup = new THREE.Group(), arrowsGroup = new THREE.Group(), panel = new THREE.Group();
 world.add(fieldGroup, unitsGroup, arrowsGroup, panel);
-const pickRoots = [fieldGroup, unitsGroup, arrowsGroup, panel];
+const nodesGroup = new THREE.Group(); // the campaign's banners on its overland map
+world.add(nodesGroup);
+const pickRoots = [fieldGroup, unitsGroup, arrowsGroup, panel, nodesGroup];
 
 // The battlefield: the plain board or a landscaped map (maps.js), built when the match's state first names it.
 let cols = G.COLS, rows = G.ROWS, field = null;
@@ -127,11 +132,11 @@ function applyLook() {
   setShadowScale(world.scale.x);
   if (field) field.setFog(ar ? 0 : L.fog[1]);
 }
-function setField(id) {
-  if (!G.MAPS[id]) id = 'board';
+function setField(id, own) {
+  if (!own && !G.MAPS[id]) id = 'board';
   if (field && field.id === id) return;
   if (field) field.dispose();
-  const m = G.MAPS[id];
+  const m = own || G.MAPS[id];
   cols = m.cols; rows = m.rows;
   field = (m.tiles ? makeLand : makeBoard)(m, { fx, id });
   fieldGroup.add(field.group);
@@ -314,6 +319,8 @@ function makeButton(text, color, x, pick, w = 2.3, z = 1.25) {
   return b;
 }
 const endButton3D = makeButton('END TURN', '#2f6fed', -1.3, 'end');
+const fight3D = makeButton('FIGHT', '#2f8f4a', 0, 'fight', 2.3, 2.2), after3D = makeButton('MAP', '#2f6fed', 0, 'after', 2.3, 2.2);
+fight3D.visible = after3D.visible = false;
 const recenterButton3D = makeButton('RECENTER', '#3a404b', 1.3, 'recenter');
 // Setting out, in the headset: a chip a unit type, then REMOVE, DEFAULT, SAVED (the next saved team) and READY.
 const chips3D = Object.keys(G.TYPES).map((type, i) => makeButton('', '#3a404b', (i - 3) * 1.0, { kind: 'chip', type }, 0.95, 2.2));
@@ -538,16 +545,16 @@ function statusLines() {
   if (state.winner !== null) {
     l1 = state.winner === -1 ? 'Draw' : me < 0 ? `Player ${state.winner + 1} wins` : state.winner === me ? 'You win!' : 'You lose';
   } else if (state.phase === 'setup') {
-    l1 = me < 0 ? `Room ${code} - the sides are setting out` : ready[me] ? `Ready - waiting for ${seated[1 - me] ? 'the other side' : 'an opponent'}` : `Choose your team - ${G.teamCost(state.units)}/${G.BUDGET} points`;
+    l1 = me < 0 ? `Room ${code} - the sides are setting out` : ready[me] ? `Ready - waiting for ${seated[1 - me] ? 'the other side' : 'an opponent'}` : `Choose your team - ${G.teamCost(state.units)}/${state.budget ?? G.BUDGET} points`;
   } else if (!started) {
     l1 = `Room ${code} - waiting for opponent`;
   } else {
     const secs = deadline ? Math.max(0, Math.ceil((deadline - (Date.now() + skew)) / 1000)) : 0;
-    const who = me < 0 ? `Player ${state.turn + 1}'s turn` : myTurn() ? 'Your turn' : "Opponent's turn";
-    l1 = `${who} - ${secs}s`;
+    const who = me < 0 ? `Player ${state.turn + 1}'s turn` : myTurn() ? 'Your turn' : solo ? 'The computer is moving' : "Opponent's turn";
+    l1 = deadline ? `${who} - ${secs}s` : who;
     if (me >= 0 && !present[1 - me]) l1 += ' (opponent offline)';
   }
-  let l2 = `Room ${code}` + (me < 0 ? ' - spectating' : '');
+  let l2 = campNode ? nodeOf(campNode).name : solo ? `Against the computer (${LEVELS[solo].name})` : `Room ${code}` + (me < 0 ? ' - spectating' : '');
   const u = inspected && G.unitById(state, inspected);
   if (u) {
     const t = G.TYPES[u.type];
@@ -557,6 +564,7 @@ function statusLines() {
 }
 
 function refresh() {
+  if (overland) return drawCamp();
   if (!state || !field) return;
   const setup = inSetup();
   const sel = setup ? setupSel && G.unitById(state, setupSel) : selected && G.unitById(state, selected);
@@ -594,6 +602,13 @@ function refresh() {
 function sendAction(action) { if (ws && ws.readyState === 1) ws.send(JSON.stringify({ t: 'act', action })); }
 
 function handlePick(p) {
+  if (p && p.kind === 'after') return afterGo();
+  if (overland) {
+    if (p && p.kind === 'recenter') { needPlace = true; return; }
+    if (p && p.kind === 'fight') return startBattle();
+    if (p && p.kind === 'node') { if (campSel !== p.id) sound.play('select', { vol: 0.4 }); campSel = p.id; } else campSel = null;
+    return drawCamp();
+  }
   if (!state) return;
   if (inSetup() && !(p && p.kind === 'recenter')) return setupPick(p);
   if (!p) { if (!state.active) selected = null; inspected = null; inspectedTile = null; refresh(); return; }
@@ -632,6 +647,7 @@ function sendTeam(units) {
   return true;
 }
 function setupAct(act) {
+  if (act === 'ready' && campNode && !ready[me]) { company = relTeam(); if (signedIn) post('/chess/save', { company }); else { try { localStorage.setItem('chess-company', JSON.stringify(company)); } catch { /* storage blocked */ } } }   // the company you field carries to the next battle
   if (act === 'ready') { sound.play('end', { vol: 0.5 }); if (ws && ws.readyState === 1) ws.send(JSON.stringify({ t: 'ready', on: !ready[me] })); return; }
   if (ready[me]) return;
   if (act === 'remove') { const u = setupSel && G.unitById(state, setupSel); if (u) { setupSel = null; sendTeam(myTeam().filter(m => !(m.x === u.x && m.y === u.y))); } }
@@ -663,6 +679,7 @@ function loadTeam(t) {
     if (best < 0) break;
     out.push({ type: m.type, x: free[best].x, y: free[best].y }); free.splice(best, 1);
   }
+  while (out.length > 1 && G.teamCost(out) > (state.budget ?? G.BUDGET)) out.pop();
   setupSel = null;
   return sendTeam(out);
 }
@@ -670,9 +687,11 @@ const post = (path, body) => fetch(path, { method: 'POST', headers: { 'content-t
 // Saved teams: kept on the website for a login, in this browser otherwise.
 async function loadTeams() {
   const j = await post('/chess/load', {});
-  if (j && j.rec) { signedIn = true; teams = j.rec.teams || []; }
-  else { try { teams = JSON.parse(localStorage.getItem('chess-teams')) || []; } catch { teams = []; } }
+  if (j && j.rec) { signedIn = true; teams = j.rec.teams || []; company = j.rec.company || []; camp = j.rec.camp || { done: [] }; }
+  else { try { teams = JSON.parse(localStorage.getItem('chess-teams')) || []; company = JSON.parse(localStorage.getItem('chess-company')) || []; camp = JSON.parse(localStorage.getItem('chess-camp')) || { done: [] }; } catch { teams = []; } }
+  if (!Array.isArray(camp.done)) camp = { done: [] };
   drawTeams();
+  if (overland) { drawNodes(); drawCamp(); }
 }
 function keepTeams() {
   if (signedIn) post('/chess/save', { teams }); else { try { localStorage.setItem('chess-teams', JSON.stringify(teams)); } catch { /* storage blocked */ } }
@@ -702,9 +721,10 @@ loadTeams();
 function drawSetup(on) {
   $('setup').hidden = !on || renderer.xr.isPresenting;
   for (const b of [...chips3D, ...setup3D]) b.visible = on;
+  $('copyBtn').hidden = !!solo;
   if (!on) return;
   const mine = state.units.filter(u => u.owner === me), cost = G.teamCost(mine), rd = ready[me];
-  $('budget').textContent = `${cost} / ${G.BUDGET} points - ${mine.length} unit${mine.length === 1 ? '' : 's'}`;
+  $('budget').textContent = `${cost} / ${state.budget ?? G.BUDGET} points - ${mine.length} unit${mine.length === 1 ? '' : 's'}`;
   for (const b of $('roster').children) { const t = G.TYPES[b.dataset.type], n = mine.filter(u => u.type === b.dataset.type).length;
     b.textContent = `${t.name} - ${t.cost} pts - ${n}/${t.limit}`; b.classList.toggle('held', held === b.dataset.type); b.disabled = rd; }
   chips3D.forEach(b => { const type = b.userData.pick.type, t = G.TYPES[type], n = mine.filter(u => u.type === type).length; b.userData.label(`${t.name}\n${t.cost} pts  ${n}/${t.limit}`, held === type ? '#b8860b' : '#3a404b'); });
@@ -714,6 +734,74 @@ function drawSetup(on) {
   $('removeBtn').disabled = rd || !setupSel; $('defaultBtn').disabled = rd; $('teamSel').disabled = rd;
   $('setupMsg').textContent = setupNote;
 }
+
+// ---------------------------------------------------------------- the campaign: the overland map, a banner a battle, then the battle against the computer
+function drawNodes() {
+  nodesGroup.clear();
+  if (!overland || !field) return;
+  const wood = new THREE.MeshStandardMaterial({ color: 0x4a3324, roughness: 0.8 });
+  for (const n of CAMPAIGN.nodes) {
+    const won = camp.done.includes(n.id), open = isOpen(n.id, camp.done), g = new THREE.Group(), big = n.last ? 1.35 : 1;
+    const pole = new THREE.Mesh(new THREE.CylinderGeometry(0.035, 0.045, 1.7 * big, 8), wood); pole.position.y = 0.85 * big; pole.castShadow = true;
+    const flag = new THREE.Mesh(new THREE.PlaneGeometry(0.62 * big, 0.4 * big), new THREE.MeshStandardMaterial({ color: won ? 0x3fae6a : open ? 0xffc23a : 0x6a6f7a, side: THREE.DoubleSide, roughness: 0.9, emissive: open && !won ? 0x4a3000 : 0 }));
+    flag.position.set(0.33 * big, 1.45 * big, 0); flag.castShadow = true;
+    const base = new THREE.Mesh(new THREE.CylinderGeometry(0.42, 0.46, 0.06, 20), new THREE.MeshStandardMaterial({ color: n.id === campSel ? 0xffe08a : 0x2c2018, roughness: 0.7 })); base.position.y = 0.03;
+    const t = textTexture(512, 96), label = new THREE.Sprite(new THREE.SpriteMaterial({ map: t.tex, depthTest: false, transparent: true }));
+    t.ctx.font = 'bold 40px system-ui, sans-serif'; t.ctx.textAlign = 'center'; t.ctx.lineWidth = 7; t.ctx.strokeStyle = '#000'; t.ctx.fillStyle = won ? '#9be8b4' : open ? '#fff' : '#a0a6b0';
+    const text = (won ? '\u2713 ' : '') + n.name + (n.optional ? ' (side)' : ''); t.ctx.strokeText(text, 256, 60, 500); t.ctx.fillText(text, 256, 60, 500); t.tex.needsUpdate = true;
+    label.scale.set(2.6, 0.49, 1); label.position.y = 2.15 * big; label.renderOrder = 5; label.raycast = () => {};
+    g.add(pole, flag, base, label); g.position.set(tx(n.at[0]), ty(n.at[0], n.at[1]), tz(n.at[1])); g.userData.pick = { kind: 'node', id: n.id };
+    nodesGroup.add(g);
+  }
+}
+function drawCamp() {
+  const n = campSel && nodeOf(campSel), open = n && isOpen(n.id, camp.done), won = n && camp.done.includes(n.id), total = CAMPAIGN.nodes.length, ar = renderer.xr.isPresenting;
+  $('camp').hidden = !overland || ar; $('setup').hidden = true;
+  for (const b of [...chips3D, ...setup3D, endButton3D]) b.visible = false;
+  fight3D.visible = !!open; arrowsGroup.visible = false;
+  for (const g of nodesGroup.children) g.children[2].material.color.setHex(g.userData.pick.id === campSel ? 0xffe08a : 0x2c2018);
+  const l1 = `${CAMPAIGN.name} - ${camp.done.length} of ${total} battles won` + (finished(camp.done) ? ' - the beacon burns' : '');
+  $('status').textContent = l1; $('info').textContent = n ? '' : 'Pick a banner on the map to see the battle there.';
+  drawStatus(n ? n.name : l1, n ? (open ? (won ? 'Won. FIGHT to fight it again.' : 'FIGHT to begin.') : 'Not open yet.') : 'Point at a banner and pull the trigger.');
+  $('campName').textContent = n ? n.name + (n.optional ? ' (a side battle)' : '') : CAMPAIGN.name;
+  $('campText').textContent = n ? (won ? n.won : n.text) : CAMPAIGN.intro;
+  const count = {}; if (n) for (const [type] of n.enemy) count[G.TYPES[type].name] = (count[G.TYPES[type].name] || 0) + 1;
+  $('campFoe').textContent = n ? 'Against you: ' + Object.entries(count).map(([k, v]) => (v > 1 ? v + ' ' + k + 's' : 'a ' + k)).join(', ') + '. On ' + G.MAPS[n.map].name + '.' : '';
+  $('campPts').textContent = n ? (open ? `You field ${budgetFor(camp.done)} points.` + (n.gain && !won ? ` Winning adds ${n.gain}.` : '') : 'Not open yet: win ' + n.needs.filter(q => !camp.done.includes(q)).map(q => nodeOf(q).name).join(' and ') + ' first.') : `You field ${budgetFor(camp.done)} points. Fallen units are back for the next battle.`;
+  $('fightBtn').hidden = !n; $('fightBtn').disabled = !open; $('fightBtn').textContent = won ? 'Fight again' : 'Fight';
+  $('endBtn').hidden = true; $('copyBtn').hidden = true; $('quitBtn').textContent = 'Leave';
+}
+function openCampaign() {
+  overland = true; state = null; code = null; me = -1; started = false; campSel = null; campNode = null; solo = null; companyTried = false; afterShown = false;
+  if (ws) { const w = ws; ws = null; w.onclose = null; w.close(); }
+  for (const g of unitMeshes.values()) unitsGroup.remove(g);
+  unitMeshes.clear();
+  $('lobby').style.display = 'none'; $('hud').style.display = 'flex'; $('after').hidden = true; after3D.visible = false;
+  setField('@camp', CAMPAIGN.map); me = 0; resetCamera(); me = -1;
+  drawNodes(); drawCamp();
+  history.replaceState(null, '', location.pathname + '?camp=1');
+}
+function startBattle() {
+  if (!campSel || !isOpen(campSel, camp.done)) return;
+  sound.play('end', { vol: 0.5 });
+  overland = false; nodesGroup.clear(); fight3D.visible = false; $('camp').hidden = true; companyTried = false; afterShown = false;
+  connect({ t: 'create', token, camp: campSel, done: camp.done });
+}
+// When a match against the computer ends: what happened, and the way on.
+function showAfter() {
+  if (afterShown || !state || state.winner === null || !(solo || campNode)) return;
+  afterShown = true;
+  const won = state.winner === me, n = campNode && nodeOf(campNode);
+  if (n && won && !camp.done.includes(n.id)) { camp.done.push(n.id); if (!signedIn) { try { localStorage.setItem('chess-camp', JSON.stringify(camp)); } catch { /* storage blocked */ } } }
+  $('afterTitle').textContent = n ? (won ? n.name + ': won' : n.name + ': lost') : won ? 'You win' : state.winner === -1 ? 'A draw' : 'You lose';
+  $('afterText').textContent = n ? (won ? n.won + (n.gain ? ` You may field ${n.gain} more points.` : '') + (n.last ? ' The campaign is won.' : '') : 'The company falls back to its camp. Everyone will be on their feet to try again.') : '';
+  $('afterBtn').textContent = n ? 'Back to the map' : 'Menu';
+  $('after').hidden = renderer.xr.isPresenting; after3D.visible = true; after3D.userData.label(n ? 'MAP' : 'MENU', '#2f6fed');
+}
+function afterGo() { if (campNode || overland) openCampaign(); else location.href = location.pathname; }
+$('afterBtn').onclick = afterGo;
+$('fightBtn').onclick = startBattle;
+$('campBack').onclick = () => { location.href = location.pathname; };
 
 const raycaster = new THREE.Raycaster();
 function pickFromRay() {
@@ -966,7 +1054,9 @@ function connect(first) {
       if (!state || state.map !== m.state.map) { state = m.state; setField(m.state.map); }
       const wait = playEvents(m.events || []);
       state = m.state;
-      started = m.started; present = m.present; deadline = m.deadline; skew = m.now - Date.now();
+      started = m.started; present = m.present; deadline = m.deadline; skew = m.now - Date.now(); solo = m.solo || null; campNode = m.camp || null;
+      if (campNode && state.phase === 'setup' && !companyTried) { companyTried = true; if (company.length && !(m.ready || [])[me]) loadTeam({ units: company }); }
+      if (state.winner !== null && (solo || campNode)) setTimeout(showAfter, wait * 1000 + 1200);
       ready = m.ready || [true, true]; seated = m.seated || present;
       if (state.phase !== 'setup') { held = null; setupSel = null; }
       if (state.active && myTurn()) selected = state.active.id;
@@ -988,6 +1078,10 @@ $('mapSel').onchange = mapNote; mapNote();
 $('rules').innerHTML = Object.values(G.TERRAIN).filter(t => t.info).map(t => `<b>${t.name}</b> ${t.info}`).join('<br>') + '<br><b>High ground</b> Stepping up a level costs one more move point; two levels at once cannot be climbed. Whatever works at range reaches one tile further at targets below it.';
 $('helpBtn').onclick = () => { $('help').hidden = !$('help').hidden; };
 $('help').onclick = () => { $('help').hidden = true; };
+for (const [k, l] of Object.entries(LEVELS)) { const o = document.createElement('option'); o.value = k; o.textContent = l.name; $('levelSel').appendChild(o); }
+$('levelSel').value = 'hard';
+$('soloBtn').onclick = () => { sound.init(); $('lobbyMsg').textContent = ''; connect({ t: 'create', token, map: $('mapSel').value, solo: $('levelSel').value }); };
+$('campBtn').onclick = () => { sound.init(); openCampaign(); };
 $('createBtn').onclick = () => { sound.init(); $('lobbyMsg').textContent = ''; connect({ t: 'create', token, map: $('mapSel').value }); };
 $('joinBtn').onclick = () => {
   sound.init();
@@ -1018,5 +1112,6 @@ function show(id, setup) {
   unitMeshes.clear();
   setField(state.map); syncUnits(); refresh();
 }
+if (new URLSearchParams(location.search).get('camp')) openCampaign();
 if (new URLSearchParams(location.search).get('show')) show(new URLSearchParams(location.search).get('show'), new URLSearchParams(location.search).get('setup'));
-window.__t = { handlePick, show, world, G, saveTeam, loadTeam, get teams() { return teams; }, get held() { return held; }, get ready() { return ready; }, get setupSel() { return setupSel; }, get field() { return field; }, castFx, explode, V, camera, controls, fx, sun, renderer, scene, get state() { return state; }, get me() { return me; }, get code() { return code; }, get selected() { return selected; } };
+window.__t = { handlePick, show, world, G, openCampaign, CAMPAIGN, get camp() { return camp; }, get overland() { return overland; }, get campSel() { return campSel; }, get solo() { return solo; }, get campNode() { return campNode; }, saveTeam, loadTeam, get teams() { return teams; }, get held() { return held; }, get ready() { return ready; }, get setupSel() { return setupSel; }, get field() { return field; }, castFx, explode, V, camera, controls, fx, sun, renderer, scene, get state() { return state; }, get me() { return me; }, get code() { return code; }, get selected() { return selected; } };

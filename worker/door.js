@@ -1149,6 +1149,7 @@ export class Laser extends Server {
 }
 // SKIRMISH TABLE's match: one room by its four-letter code, two seats and spectators; every move is judged here by the game's rules and the state sent to all (worker/chess.js), kept so a seat can come back
 export class Chess extends DurableObject {
+  get turnSeconds() { return +this.env.CHESS_TURN_SECONDS || 0; }   // only the check sets it (its software-drawn pages are slower than a turn)
   constructor(ctx, env) { super(ctx, env); this.room = null; this.match = new CHESS.Match(this);
     ctx.blockConcurrencyWhile(async () => { this.room = (await ctx.storage.get("room")) || null; }); }
   save() { this.ctx.storage.put("room", this.room); this.ctx.storage.setAlarm(Date.now() + CHESS.IDLE_MS); }

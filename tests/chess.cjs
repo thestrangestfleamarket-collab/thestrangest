@@ -275,6 +275,7 @@ let halt = () => {};
   let cur = null; const on = async pg => { if (OUT && cur !== pg) { if (cur) await cur.setViewportSize({ width: 96, height: 60 }); await pg.setViewportSize({ width: 1280, height: 800 }); cur = pg; await pg.waitForTimeout(500); } return pg; };
   const st = async pg => (await on(pg)).evaluate(() => window.__t.state), tap = async (pg, p) => (await on(pg)).evaluate(p => window.__t.handlePick(p), p);
   const until = async (pg, fn, arg, ms = OUT ? 240000 : 60000) => { await on(pg); await pg.waitForFunction(() => !!window.__t, null, { timeout: ms }).catch(() => {}); return pg.waitForFunction(fn, arg, { timeout: ms }).then(() => true, () => false); };
+  const soon = async (pg, fn, arg, ms = 12000) => { const t = Date.now(); while (Date.now() - t < ms) { if (await pg.evaluate(fn, arg).catch(() => false)) return true; await nap(250); } return false; };   // asked of the page directly, not on its next frame: a software-drawn frame can outlast the wait
   const shot = async (pg, name) => { if (OUT) { await on(pg); await pg.waitForTimeout(1500); await pg.screenshot({ path: path.join(OUT, name + '.png'), timeout: 240000 }).catch(e => ok(false, 'the picture ' + name + ': ' + e.message.split('\n')[0])); } };
   const people = pg => until(pg, () => { let n = 0; window.__t.scene.traverse(o => { if (o.isSkinnedMesh) n++; }); return n >= 20; }, null, 180000);
   const A = await open(), B = await open(null, b2); await on(A);
@@ -325,7 +326,7 @@ let halt = () => {};
   { let got = false, why = '';   // a real click; if the page was busy it is tried once more, and a miss says what the page held
     for (let i = 0; i < 2 && !got; i++) { const hit = await (await on(A)).evaluate(() => { const T = window.__t, id = T.state.units.find(u => u.owner === 0 && u.type === 'bulwark').id; let g = null; T.scene.traverse(o => { if (o.userData && o.userData.pick && o.userData.pick.kind === 'unit' && o.userData.pick.id === id) g = o; });
         const p = g.getWorldPosition(T.V(0, 0, 0)); p.y += 0.06; p.project(T.camera); return { id, x: (p.x + 1) / 2 * innerWidth, y: (1 - p.y) / 2 * innerHeight }; });
-      await (await on(A)).mouse.click(hit.x, hit.y); got = await until(A, id => window.__t.selected === id, hit.id, 8000);
+      await (await on(A)).mouse.click(hit.x, hit.y); got = await soon(A, id => window.__t.selected === id, hit.id);
       if (!got) why += ' | ' + JSON.stringify(await A.evaluate(h => { const T = window.__t, el = document.elementFromPoint(h.x, h.y); return { want: h.id, at: [Math.round(h.x), Math.round(h.y)], sel: T.selected, me: T.me, turn: T.state.turn, phase: T.state.phase, el: el && (el.id || el.tagName), info: document.getElementById('info').textContent.slice(0, 60), status: document.getElementById('status').textContent }; }, hit)); }
     ok(got, 'a real click on a knight\'s base picks it' + why); await tap(A, null); }
 
@@ -367,7 +368,7 @@ let halt = () => {};
       ok(f.st.tris > 20000 && f.st.tris < 260000 && f.st.draws < 90, 'its cost on the low setting: ' + f.st.draws + ' draws, ' + f.st.tris + ' triangles, ' + f.st.blades + ' blades of grass, ' + f.st.trees + ' trees');
       const taken = new Set(G.newGame(id).units.map(u => u.x + ',' + u.y)), tile = (() => { for (let y = m.rows - 1; y >= 0; y--) for (let x = 0; x < m.cols; x++) if (m.tiles[y][x] === 'f' && !taken.has(x + ',' + y) && G.MAPS[id].high[y][x] >= (G.MAPS[id].high[Math.min(m.rows - 1, y + 1)][x])) return { x, y }; })();   // the forest tile nearest the seat with nobody on it and nothing higher in front
       const at = await L.evaluate(t => { const T = window.__t, p = T.V(t.x - (T.field.cols - 1) / 2, T.field.yAt(t.x, t.y), t.y - (T.field.rows - 1) / 2); p.project(T.camera); return { x: (p.x + 1) / 2 * innerWidth, y: (1 - p.y) / 2 * innerHeight }; }, tile);
-      await L.mouse.click(at.x, at.y); await until(L, () => /^Forest/.test(document.getElementById('info').textContent), null, 8000);
+      await L.mouse.click(at.x, at.y); await soon(L, () => /^Forest/.test(document.getElementById('info').textContent));
       ok(/^Forest/.test(await L.textContent('#info')), 'a real click on a forest tile there says what the ground is: ' + (await L.textContent('#info')).slice(0, 60));
       const u = (await st(L)).units.find(u => u.owner === 0 && u.type === 'strider'); await tap(L, { kind: 'unit', id: u.id });
       const marks = await L.evaluate(() => { const T = window.__t, G = T.G, s = T.state, u = s.units.find(u => u.id === T.selected); return { n: G.reachable(s, u).length, solid: G.reachable(s, u).filter(p => G.ground(s, p.x, p.y).solid).length }; });
@@ -386,21 +387,21 @@ let halt = () => {};
     await C.evaluate(() => document.getElementById('campBtn').click());
     ok(await until(C, () => window.__t.overland && window.__t.field && window.__t.field.id === '@camp' && window.__t.field.stats().draws > 20, null, 120000) && (await C.evaluate(() => { let n = 0; window.__t.scene.traverse(o => { if (o.userData && o.userData.pick && o.userData.pick.kind === 'node') n++; }); return n; })) === N && /0 of/.test(await C.textContent('#status')), 'CAMPAIGN lays the overland map on the table with a banner at each of its ' + N + ' battles');
     const at = await C.evaluate(() => { const T = window.__t; let g = null; T.scene.traverse(o => { if (o.userData && o.userData.pick && o.userData.pick.kind === 'node' && o.userData.pick.id === 'toll') g = o; }); const p = g.getWorldPosition(T.V(0, 0, 0)); p.y += 0.06; p.project(T.camera); return { x: (p.x + 1) / 2 * innerWidth, y: (1 - p.y) / 2 * innerHeight }; });
-    await C.mouse.click(at.x, at.y); const picked = await until(C, () => window.__t.campSel === 'toll', null, 8000);
+    await C.mouse.click(at.x, at.y); const picked = await soon(C, () => window.__t.campSel === 'toll');
     ok(picked && /Toll at Millford/.test(await C.textContent('#campName')) && /28 points/.test(await C.textContent('#campPts')) && /Knight/.test(await C.textContent('#campFoe')) && !(await C.isDisabled('#fightBtn')), 'a real click on a banner tells the battle there: its words, who stands against you, the points you field');
     await tap(C, { kind: 'node', id: 'beacon' }); const shut = (await C.isDisabled('#fightBtn')) && /Not open yet/.test(await C.textContent('#campPts')); await shot(C, 'campaign'); await tap(C, { kind: 'node', id: 'toll' });
     await C.evaluate(() => document.getElementById('fightBtn').click());
     ok(shut && await until(C, () => window.__t.state && window.__t.state.map === 'river' && window.__t.state.phase === 'setup' && window.__t.campNode === 'toll' && window.__t.me === 0) && (await st(C)).budget === 28 && /\/ 28 points/.test(await C.textContent('#budget')), 'a battle not yet open cannot be fought; FIGHT opens the first on its own field, to set out under the campaign\'s points');
     await C.evaluate(() => document.getElementById('readyBtn').click()); await until(C, () => window.__t.state.phase === 'play' && window.__t.state.units.length > 10);
     const foes = (await st(C)).units.filter(u => u.owner === 1).length; await tap(C, { kind: 'end' });
-    ok(foes === CAMP.nodeOf('toll').enemy.length && await until(C, () => window.__t.state.turn === 0 && window.__t.state.turnNo >= 3, null, 30000) && /^Your turn$/.test(await C.textContent('#status')), 'READY starts the battle against the enemy as written (' + foes + '); the computer takes its turn and gives yours back, with no clock');
+    ok(foes === CAMP.nodeOf('toll').enemy.length && await soon(C, () => window.__t.state.turn === 0 && window.__t.state.turnNo >= 3, null, 40000) && /^Your turn$/.test(await C.textContent('#status')), 'READY starts the battle against the enemy as written (' + foes + '); the computer takes its turn and gives yours back, with no clock');
     // the rest of the battle, played for you over your own socket by the Veteran's mind; whichever way it ends, the page must say so and take you back to the map
     const me = await seat('room=' + await C.evaluate(() => window.__t.code), { t: 'join', code: await C.evaluate(() => window.__t.code), token: await C.evaluate(() => sessionStorage.getItem('token')) }, false); await wait(() => me.state);
     for (let i = 0; i < 400 && me.state.winner === null; i++) { if (me.state.turn !== 0) { await wait(() => me.state.turn === 0 || me.state.winner !== null, 20000); continue; }
       for (const a of AI.plan(me.state, 0, 'hard')) { const n = me.got.length; me.act(a); await wait(() => me.got.length > n, 5000); if (me.state.winner !== null) break; }
       if (me.state.turn === 0 && me.state.winner === null) { const n = me.got.length; me.act({ type: 'end' }); await wait(() => me.got.length > n, 5000); } }
     const won = me.state.winner === 0; me.s.close();
-    ok(me.state.winner !== null && await until(C, () => !document.getElementById('after').hidden, null, 20000) && (won ? /won/ : /lost/).test(await C.textContent('#afterTitle')), 'the battle is fought to its end (' + (won ? 'won' : 'lost') + ' in ' + me.state.turnNo + ' turns), and the page says how it went');
+    ok(me.state.winner !== null && await soon(C, () => !document.getElementById('after').hidden, null, 40000) && (won ? /won/ : /lost/).test(await C.textContent('#afterTitle')), 'the battle is fought to its end (' + (won ? 'won' : 'lost') + ' in ' + me.state.turnNo + ' turns), and the page says how it went');
     await C.evaluate(() => document.getElementById('afterBtn').click());
     ok(await until(C, () => window.__t.overland && window.__t.field.id === '@camp') && (await C.evaluate(() => window.__t.camp.done.join())) === (won ? 'toll' : '') && (await C.evaluate(() => window.__t.CAMPAIGN && JSON.parse(localStorage.getItem('chess-camp') || '{"done":[]}').done.join())) === (won ? 'toll' : ''), 'BACK TO THE MAP: ' + (won ? 'the battle is marked won, kept in the browser for anyone not signed in, and the next ones are open' : 'nothing is won, and the battle can be tried again'));
     ok(errs.length === n0, 'no page errors in the campaign' + (errs.length > n0 ? ': ' + errs.slice(n0, n0 + 4).join(' | ') : '')); await C.context().close(); }

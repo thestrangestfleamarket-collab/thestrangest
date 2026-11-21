@@ -31,6 +31,21 @@
   #help h2 { margin: 0 0 10px; font-size: 19px; }
   #help p { color: #a5acb8; margin: 12px 0 0; }
   #rules { line-height: 1.6; }
+  #setup { position: fixed; left: 12px; top: 64px; width: 236px; z-index: 3; background: #1d2129ee; border: 1px solid #2c323c; border-radius: 12px; padding: 12px; max-height: calc(100% - 140px); overflow: auto; }
+  #setup[hidden] { display: none; }
+  #setup h2 { margin: 0 0 4px; font-size: 17px; }
+  #setup .row { display: flex; gap: 6px; margin-top: 6px; }
+  #setup .row > * { flex: 1; }
+  #setup button { padding: 7px 8px; font-size: 14px; }
+  #setup select { padding: 7px 8px; font-size: 14px; width: 100%; }
+  #budget { color: #ffd66b; font-weight: 600; margin-bottom: 6px; }
+  #roster { display: grid; gap: 4px; }
+  #roster .chip { text-align: left; }
+  #roster .chip.held { background: #b8860b; }
+  #teamNote { color: #7d8594; font-size: 12px; margin-top: 4px; }
+  #readyBtn { width: 100%; margin-top: 8px; background: #2f8f4a; }
+  #readyBtn.danger { background: #8a2f2f; }
+  #setupMsg { color: #ff9c8a; min-height: 1.3em; margin-top: 6px; font-size: 13px; }
   #lobbyMsg { color: #ff9c8a; min-height: 1.4em; margin-top: 12px; }
   body::after { content: ''; position: fixed; inset: 0; pointer-events: none; z-index: 1;
     background: radial-gradient(ellipse at center, transparent 55%, rgba(0, 0, 0, .6) 100%); }
@@ -69,6 +84,17 @@
   <button id="copyBtn" class="secondary">Copy invite link</button>
   <button id="endBtn">End turn</button>
   <button id="quitBtn" class="danger">Surrender</button>
+</div>
+<div id="setup" hidden>
+  <h2>Choose your team</h2>
+  <div id="budget"></div>
+  <div id="roster"></div>
+  <div class="row"><button id="removeBtn" class="secondary">Remove</button><button id="defaultBtn" class="secondary">Default</button></div>
+  <div class="row"><select id="teamSel" aria-label="Saved teams"></select></div>
+  <div class="row"><button id="saveTeamBtn" class="secondary">Save team</button><button id="delTeamBtn" class="secondary">Delete</button></div>
+  <div id="teamNote"></div>
+  <button id="readyBtn">Ready</button>
+  <div id="setupMsg"></div>
 </div>
 <div id="info"></div>
 <div id="help" hidden><div class="card"><h2>Ground rules</h2><div id="rules"></div><p>Tap a tile to see what it is. Tap here to close.</p></div></div>

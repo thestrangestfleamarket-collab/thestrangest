@@ -71,6 +71,14 @@ let halt = () => {};
         if (s.units.some(u => G.ground(s, u.x, u.y).solid)) bad++; }
       if (new Set(s.units.map(u => u.x + ',' + u.y)).size !== s.units.length) bad++; }
     ok(bad === 0, games + ' random games on the landscaped maps: every move the rules offer is taken, nobody ends in water or rock'); }
+  // ---- teams: a point budget, limits by type, your own rows ----
+  { const s = G.newGame('river', { setup: true }), def = G.defaultTeam('river', 0), row = s.rows - 1, k = (type, x, y = row) => ({ type, x, y }), t = (...u) => G.checkTeam(s, 0, u) || '';
+    ok(s.phase === 'setup' && G.BUDGET === 40 && G.teamCost(def) === G.BUDGET && def.length === 10 && G.checkTeam(s, 0, def) === null && G.checkTeam(s, 1, G.defaultTeam('river', 1)) === null && !G.apply(s, 0, { type: 'end' }).ok, 'the standing line-up costs exactly the budget of 40 points and may be fielded by either side; no move before the match starts');
+    ok(Object.values(G.TYPES).every(t => t.cost >= 3 && t.cost <= 5 && t.limit >= 2) && /budget/.test(t(...[0, 1, 2, 3].map(x => k('bulwark', x)), ...[4, 5, 6, 7].map(x => k('strider', x)), k('slinger', 8), k('slinger', 9))) && /At most 2/.test(t(k('mender', 0), k('mender', 1), k('mender', 2))), 'a team over the budget is refused, and so is a third cleric');
+    ok(/own rows/.test(t(k('strider', 0, 3))) && /own rows/.test(t(k('strider', 99))) && /own rows/.test(t(k('strider', 0.5))) && /Two units/.test(t(k('strider', 0), k('lancer', 0))) && /Unknown/.test(t(k('dragon', 0))) && /Unknown/.test(t(k('constructor', 0))) && /1 to 12/.test(t()) && /1 to 12/.test(G.checkTeam(s, 0, 'x')) && /own rows/.test(G.checkTeam(s, 1, [k('strider', 0)])), 'units go on your own rows, one a tile, of a kind the game has');
+    const small = [k('strider', 5), k('ember', 4), k('ember', 6, row - 1)];
+    ok(G.setTeam(s, 0, small) === null && s.units.filter(u => u.owner === 0).length === 3 && s.units.filter(u => u.owner === 1).length === 10 && new Set(s.units.map(u => u.id)).size === 13 && s.units.find(u => u.owner === 0 && u.type === 'strider').facing === 'N', 'a checked team replaces that side\'s units and leaves the other side alone');
+    G.begin(s); ok(s.phase === 'play' && /started/.test(G.setTeam(s, 0, def)) && G.apply(s, 0, { type: 'end' }).ok, 'once begun the teams are fixed and the match plays'); }
   { let bad = 0;
     for (let g = 0; g < 200; g++) { const s = G.newGame();
       for (let i = 0; i < 600 && s.winner === null; i++) { const p = s.turn, mine = s.units.filter(u => G.canUse(s, p, u)), u = mine[Math.floor(Math.random() * mine.length)];
@@ -89,6 +97,13 @@ let halt = () => {};
     say(a, { t: 'create', token: 'ta' }); say(a, { t: 'act', action: { type: 'end' } }); const waiting = last(a, 'error');
     say(b, { t: 'join', code: 'ABCD', token: 'tb' }); say(c, { t: 'join', code: 'ABCD', token: 'tc' });
     ok(none && /No room/.test(none.msg) && last(a, 'joined').you === 0 && last(b, 'joined').you === 1 && last(c, 'joined').you === -1 && /Waiting/.test(waiting.msg), 'the room: nothing to join before it is made, two seats, the third watches, no move before the second sits');
+    { const sa = last(a, 'state'), sb = last(b, 'state').state, sc = last(c, 'state').state;
+      ok(sa.state.phase === 'setup' && !sa.started && sa.state.units.length === 10 && sa.state.units.every(u => u.owner === 0) && sb.units.length === 10 && sb.units.every(u => u.owner === 1) && sc.units.length === 0 && host.room.deadline === null, 'while the sides set out each sees only its own units, a spectator none, and no clock runs');
+      say(a, { t: 'team', units: [{ type: 'strider', x: 4, y: 10 }, { type: 'ember', x: 3, y: 9 }] }); say(a, { t: 'team', units: [{ type: 'strider', x: 4, y: 2 }] }); const zone = last(a, 'error'); say(c, { t: 'team', units: [{ type: 'strider', x: 4, y: 10 }] }); say(c, { t: 'ready', on: true });
+      ok(last(a, 'state').state.units.length === 2 && /own rows/.test(zone.msg) && last(b, 'state').state.units.length === 10 && host.room.state.units.length === 12, 'the room checks a team by the rules: a good one is taken, one off your rows refused, a spectator has no say');
+      say(a, { t: 'ready', on: true }); const one = last(a, 'state'); say(a, { t: 'team', units: G.defaultTeam('board', 0) }); const fixed = last(a, 'error'); say(a, { t: 'ready', on: false }); const down = last(a, 'state').ready[0]; say(a, { t: 'ready', on: true }); say(b, { t: 'ready', on: true });
+      ok(!one.started && one.ready[0] && !one.ready[1] && /ready/.test(fixed.msg) && !down && last(a, 'state').started && last(b, 'state').state.phase === 'play' && last(b, 'state').state.units.length === 12 && host.room.deadline > Date.now(), 'ready fixes your team (stand down to change it); when both are ready the match starts, each sees the other, the clock runs');
+      say(b, { t: 'team', units: G.defaultTeam('board', 1) }); ok(/started/.test(last(b, 'error').msg), 'no team is changed once the match has started'); }
     say(b, { t: 'act', action: { type: 'end' } }); const turn = last(b, 'error'); say(c, { t: 'act', action: { type: 'surrender' } });
     ok(turn && /not your turn/.test(turn.msg) && host.room.state.winner === null && last(c, 'state').started && host.room.deadline > Date.now(), 'the rules decide in the room: no move out of turn, none from a spectator, the turn clock runs');
     M.gone(b); const off = last(a, 'state').present; const b2 = sock(); M.open(b2); say(b2, { t: 'join', code: 'ABCD', token: 'tb' });
@@ -96,6 +111,9 @@ let halt = () => {};
     say(a, { t: 'act', action: { type: 'surrender' } }); ok(host.room.state.winner === 1 && host.room.deadline === null && last(c, 'state').state.winner === 1, 'a surrender ends it for everyone and stops the clock');
     clearTimeout(M.timer);
     ok(CHESS.CODE.test(CHESS.code()) && !CHESS.CODE.test('abcd') && !CHESS.CODE.test('ABCDE'), 'a room\'s code is four capital letters');
+    { const mem = { v: null }, st = { get: async () => mem.v, put: async v => { mem.v = v; } }, team = { name: 'Two <mages>!', units: [{ type: 'ember', dx: -1, r: 0 }, { type: 'ember', dx: 1, r: 0 }, { type: 'dragon', dx: 0, r: 0 }, { type: 'mender', dx: 99, r: 0 }] };
+      const kept = await CHESS.save(st, { teams: [team, { name: '', units: [] }, 7], xp: { bulwark: 999 } }), back = await CHESS.load(st);
+      ok(kept.ok && back.rec.teams.length === 1 && back.rec.teams[0].name === 'Two mages' && back.rec.teams[0].units.length === 2 && !('xp' in mem.v) && (await CHESS.load({ get: async () => null })).rec.teams.length === 0, 'a login\'s saved teams are cut to size before they are kept: ' + JSON.stringify(back.rec.teams[0])); }
     const mk = map => { const h = { room: null, save() {} }, m = new CHESS.Match(h), w = sock(); m.open(w); m.message(w, 'WXYZ', JSON.stringify({ t: 'create', token: 't', map })); clearTimeout(m.timer); return h.room.state; };
     ok(mk('river').map === 'river' && mk('river').cols === 11 && mk('nowhere').map === 'board' && mk(7).map === 'board' && mk(undefined).map === 'board', 'the host names the map when the room is made; one the server does not know is the plain board'); }
 
@@ -124,8 +142,8 @@ let halt = () => {};
     ok(x.status !== 200 && y.status === 404 && z.status === 426, 'nothing else under /chess-assets/, and the room answers only a socket'); }
 
   // a seat over a bare socket (the page's own messages)
-  const seat = (query, first) => new Promise(res => { const s = new WebSocket('ws://127.0.0.1:' + PORT + '/chess/ws?' + query), o = { s, got: [], state: null, you: null, code: null, err: [], act: a => s.send(JSON.stringify({ t: 'act', action: a })) };
-    s.onmessage = e => { const m = JSON.parse(e.data); o.got.push(m); if (m.t === 'joined') { o.you = m.you; o.code = m.code; } if (m.t === 'state') o.state = m.state; if (m.t === 'error') o.err.push(m.msg); };
+  const seat = (query, first, auto = true) => new Promise(res => { const s = new WebSocket('ws://127.0.0.1:' + PORT + '/chess/ws?' + query), o = { s, got: [], state: null, you: null, code: null, err: [], act: a => s.send(JSON.stringify({ t: 'act', action: a })), say: m => s.send(JSON.stringify(m)) };
+    s.onmessage = e => { const m = JSON.parse(e.data); o.got.push(m); if (m.t === 'joined') { o.you = m.you; o.code = m.code; if (auto && m.you >= 0) o.say({ t: 'ready', on: true }); } if (m.t === 'state') o.state = m.state; if (m.t === 'error') o.err.push(m.msg); };
     s.onopen = () => { s.send(JSON.stringify(first)); res(o); }; s.onerror = () => res(o); });
   const wait = async (f, ms = 15000) => { const t = Date.now(); while (Date.now() - t < ms) { if (f()) return true; await nap(20); } return false; };
   { const a = await seat('create=1', { t: 'create', token: 'sock-a' }); await wait(() => a.code);
@@ -135,6 +153,17 @@ let halt = () => {};
     b.act({ type: 'surrender' }); await wait(() => a.state && a.state.winner !== null);
     ok(a.state && a.state.winner === 0, 'a surrender there gives the other player the win');
     for (const o of [a, b, n]) o.s.close(); }
+  { const a = await seat('create=1', { t: 'create', token: 'team-a', map: 'ruins' }, false); await wait(() => a.state);
+    const b = await seat('room=' + a.code, { t: 'join', code: a.code, token: 'team-b' }, false); await wait(() => b.state);
+    a.say({ t: 'team', units: [{ type: 'bulwark', x: 5, y: 10 }, { type: 'slinger', x: 4, y: 10 }, { type: 'slinger', x: 6, y: 10 }] }); await wait(() => a.state.units.length === 3);
+    b.say({ t: 'team', units: [{ type: 'ember', x: 5, y: 0 }, { type: 'ember', x: 4, y: 0 }, { type: 'ember', x: 6, y: 0 }] }); await wait(() => b.err.length);
+    const hidden = a.state.units.length === 3 && b.state.units.length === 10 && b.state.units.every(u => u.owner === 1) && /At most 2/.test(b.err[0] || '');
+    a.say({ t: 'ready', on: true }); b.say({ t: 'ready', on: true }); await wait(() => a.state.phase === 'play' && b.state.phase === 'play');
+    ok(hidden && a.state.units.length === 13 && b.state.units.filter(u => u.owner === 0).map(u => u.type).sort().join() === 'bulwark,slinger,slinger' && a.got.some(m => m.t === 'state' && m.started), 'in the Durable Object: each side sets out unseen, a team over a limit is refused, and both ready starts the match with the teams as placed');
+    const dev = await fetch(BASE + '/chess/load', { method: 'POST', headers: { 'content-type': 'application/json', Origin: 'https://elsewhere.example' }, body: '{}' });
+    const anon = await fetch(BASE + '/chess/load', { method: 'POST', headers: { 'content-type': 'application/json', Origin: BASE }, body: '{}' }).then(r => r.json()).catch(() => 0);
+    ok(dev.status === 403 && anon && anon.rec === null, 'saved teams are a login\'s own: the website refuses the call from another site, and tells anyone not signed in to keep theirs in the browser');
+    for (const o of [a, b]) o.s.close(); }
   { const a = await seat('create=1', { t: 'create', token: 'map-a', map: 'river' }); await wait(() => a.code);
     const b = await seat('room=' + a.code, { t: 'join', code: a.code, token: 'map-b' }); await wait(() => b.state && a.state && b.got.some(m => m.t === 'state' && m.started));
     const k = a.state.units.find(u => u.owner === 0 && u.type === 'bulwark' && u.x === 4), e0 = a.err.length;
@@ -163,9 +192,28 @@ let halt = () => {};
   await shot(A, 'menu');
   await (await on(A)).evaluate(() => document.getElementById('createBtn').click()); ok(await until(A, () => window.__t.code && window.__t.me === 0), 'CREATE A MATCH opens a room and seats you');
   const code = await (await on(A)).evaluate(() => window.__t.code);
-  ok(/^[A-Z]{4}$/.test(code || '') && (await (await on(A)).evaluate(() => location.pathname + location.search)) === '/chess?room=' + code && /waiting for opponent/.test(await (await on(A)).textContent('#status')), 'its link is /chess?room=' + code + ', and it waits for an opponent');
+  ok(/^[A-Z]{4}$/.test(code || '') && (await (await on(A)).evaluate(() => location.pathname + location.search)) === '/chess?room=' + code && /Choose your team - 40\/40 points/.test(await (await on(A)).textContent('#status')), 'its link is /chess?room=' + code + ', and it starts by choosing a team');
+  // the team picker: remove a rogue, place a third archer, a tile off your rows is refused, save the team, go back to the standing one, load the saved one
+  { const P = await on(A), mine = async () => (await st(A)).units, n = async t => (await mine()).filter(u => u.type === t).length, txt = id => P.textContent('#' + id);
+    ok(await P.isVisible('#setup') && (await mine()).length === 10 && (await mine()).every(u => u.owner === 0) && /40 \/ 40 points/.test(await txt('budget')) && (await P.locator('#roster button').count()) === 7, 'the picker shows the budget, the seven kinds with their cost and limit, and only your own side on the table');
+    const rogue = (await mine()).find(u => u.type === 'strider'); await tap(A, { kind: 'unit', id: rogue.id }); await P.click('#removeBtn'); await until(A, () => window.__t.state.units.length === 9);
+    ok((await n('strider')) === 1 && /36 \/ 40 points/.test(await txt('budget')), 'REMOVE takes the picked unit off and gives its points back');
+    await P.click('#roster button[data-type="slinger"]'); const heldNow = await P.evaluate(() => window.__t.held); await tap(A, { kind: 'tile', x: 0, y: 10 }); await until(A, () => window.__t.state.units.length === 10);
+    await tap(A, { kind: 'tile', x: 0, y: 5 }); await P.waitForTimeout(300);
+    ok(heldNow === 'slinger' && (await n('slinger')) === 3 && (await mine()).some(u => u.type === 'slinger' && u.x === 0 && u.y === 10) && /own rows/.test(await txt('setupMsg')) && /40 \/ 40/.test(await txt('budget')), 'a kind is picked, then a tile on your rows: a third archer stands there; a tile off your rows is refused');
+    await tap(A, { kind: 'tile', x: 1, y: 10 }); await P.waitForTimeout(300); ok(/budget/.test(await txt('setupMsg')) && (await mine()).length === 10, 'and nothing more fits in the budget');
+    await tap(A, null); const arch = (await mine()).find(u => u.x === 0 && u.y === 10); await tap(A, { kind: 'unit', id: arch.id }); await tap(A, { kind: 'tile', x: 8, y: 9 }); await until(A, () => window.__t.state.units.some(u => u.x === 8 && u.y === 9));
+    ok((await mine()).some(u => u.type === 'slinger' && u.x === 8 && u.y === 9) && !(await mine()).some(u => u.x === 0 && u.y === 10), 'a placed unit is picked up and set down on another tile');
+    const saved = await P.evaluate(() => window.__t.saveTeam('Three bows')); await P.click('#defaultBtn'); await until(A, () => window.__t.state.units.filter(u => u.type === 'slinger').length === 2);
+    const std = (await n('strider')) === 2; await P.selectOption('#teamSel', '0'); await until(A, () => window.__t.state.units.filter(u => u.type === 'slinger').length === 3);
+    ok(saved && std && (await n('slinger')) === 3 && (await mine()).some(u => u.x === 8 && u.y === 9) && (await P.evaluate(() => window.__t.teams.length)) === 1 && /Three bows/.test(await txt('teamSel')), 'a team is saved by name, DEFAULT brings the standing line-up back, and the saved team is set out again from the list');
+    await P.click('#defaultBtn'); await until(A, () => window.__t.state.units.filter(u => u.type === 'slinger').length === 2);
+    await shot(A, 'team');
+    await P.click('#readyBtn'); ok(await until(A, () => /^Ready - waiting for an opponent/.test(document.getElementById('status').textContent)) && (await txt('readyBtn')) === 'Stand down', 'READY, and it waits for an opponent'); }
   await (await on(B)).goto(BASE + '/chess?room=' + code, { waitUntil: 'commit', timeout: 120000 });
-  ok(await until(B, () => window.__t.me === 1) && await until(A, () => document.getElementById('status').textContent.startsWith('Your turn')), 'the link seats the second player, and the first is told it is their turn');
+  ok(await until(B, () => window.__t.me === 1 && window.__t.state && window.__t.state.units.length === 10) && (await st(B)).units.every(u => u.owner === 1) && (await st(A)).units.length === 10, 'the link seats the second player, who sets out without seeing the first\'s side');
+  await (await on(B)).evaluate(() => document.getElementById('readyBtn').click());
+  ok(await until(A, () => document.getElementById('status').textContent.startsWith('Your turn')) && await until(B, () => window.__t.state.units.length === 20) && !(await (await on(B)).isVisible('#setup')), 'both ready: the match starts, both sides are on the table, and the first is told it is their turn');
   await people(A);
 
   let s = await st(A); const rogue = s.units.find(u => u.owner === 0 && u.type === 'strider');
@@ -193,7 +241,7 @@ let halt = () => {};
   await shot(A, 'board-player1'); await shot(B, 'board-player2');
 
   // the rest of the match, played out for both seats over their own sockets (each page's token), the pages watching: every piece that can strike does, the others close in
-  { const tok = async pg => (await on(pg)).evaluate(() => sessionStorage.getItem('token')), bots = [await seat('room=' + code, { t: 'join', code, token: await tok(A) }), await seat('room=' + code, { t: 'join', code, token: await tok(B) })];
+  { const tok = async pg => (await on(pg)).evaluate(() => sessionStorage.getItem('token')), bots = [await seat('room=' + code, { t: 'join', code, token: await tok(A) }, false), await seat('room=' + code, { t: 'join', code, token: await tok(B) }, false)];
     await wait(() => bots[0].state && bots[1].state);
     const seated = bots[0].you === 0 && bots[1].you === 1, d = (a, c) => Math.abs(a.x - c.x) + Math.abs(a.y - c.y);
     let turns = 0, refused = 0;
@@ -241,7 +289,7 @@ let halt = () => {};
   // ---- an emulated Quest 3: AR, the board in front of you, a controller picks a piece ----
   { const n0 = errs.length, Q = await open(IWER + ';window.xrDevice=new IWER.XRDevice(IWER.metaQuest3);xrDevice.installRuntime({forceInstall:true});xrDevice.position.set(0,1.6,0);');
     await Q.goto(BASE + '/chess', { waitUntil: 'commit', timeout: 120000 }); await until(Q, () => !!window.__t); await Q.evaluate(() => document.getElementById('createBtn').click()); await until(Q, () => window.__t.code && window.__t.state);
-    const qc = await Q.evaluate(() => window.__t.code), foe = await seat('room=' + qc, { t: 'join', code: qc, token: 'quest-foe' }); await until(Q, () => document.getElementById('status').textContent.startsWith('Your turn'));
+    const qc = await Q.evaluate(() => window.__t.code), foe = await seat('room=' + qc, { t: 'join', code: qc, token: 'quest-foe' }); await until(Q, () => window.__t.ready[1]);
     ok(await until(Q, () => !document.getElementById('arBtn').hidden, null, 20000), 'in a Quest 3 the page offers ENTER AR');
     await Q.evaluate(() => document.getElementById('arBtn').click());
     ok(await until(Q, () => window.__t.renderer.xr.isPresenting && window.__t.scene.background === null), 'it starts a passthrough session: no sky, no table, the room shows through');
@@ -252,6 +300,14 @@ let halt = () => {};
     const aim = async id => Q.evaluate(id => { const T = window.__t; let g = null; T.scene.traverse(o => { if (o.userData && o.userData.pick && o.userData.pick.kind === 'unit' && o.userData.pick.id === id) g = o; });
       const p = g.getWorldPosition(T.V(0, 0, 0)), c = xrDevice.controllers.right; c.position.set(p.x, p.y + 0.3, p.z); c.quaternion.set(-Math.SQRT1_2, 0, 0, Math.SQRT1_2); }, id);
     const press = async (k = 'trigger') => { await Q.evaluate(k => xrDevice.controllers.right.updateButtonValue(k, 1), k); await Q.waitForTimeout(400); await Q.evaluate(k => xrDevice.controllers.right.updateButtonValue(k, 0), k); await Q.waitForTimeout(400); };
+    { const spot = pk => Q.evaluate(pk => { const T = window.__t; let g = null; T.scene.traverse(o => { const p = o.userData && o.userData.pick; if (p && p.kind === pk.kind && (p.type === pk.type) && (p.act === pk.act) && o.visible) g = o; }); if (!g) return false;
+        const p = g.getWorldPosition(T.V(0, 0, 0)), c = xrDevice.controllers.right; c.position.set(p.x, p.y + 0.25, p.z); c.quaternion.set(-Math.SQRT1_2, 0, 0, Math.SQRT1_2); return true; }, pk);
+      const mage = (await st(Q)).units.find(u => u.type === 'mender'); await tap(Q, { kind: 'unit', id: mage.id }); const s1 = await spot({ kind: 'setup', act: 'remove' }); await Q.waitForTimeout(600); await press(); await until(Q, () => window.__t.state.units.length === 9);
+      const s2 = await spot({ kind: 'chip', type: 'hexbinder' }); await Q.waitForTimeout(600); await press(); const heldQ = await Q.evaluate(() => window.__t.held);
+      await tap(Q, { kind: 'tile', x: mage.x, y: mage.y }); await until(Q, () => window.__t.state.units.length === 10);
+      ok(s1 && s2 && heldQ === 'hexbinder' && (await st(Q)).units.filter(u => u.type === 'hexbinder').length === 2 && (await st(Q)).units.every(u => u.owner === 0), 'in the headset the table\'s own buttons set out a team: REMOVE under the controller, then the Enchanter\'s chip, then a tile');
+      const s3 = await spot({ kind: 'setup', act: 'ready' }); await Q.waitForTimeout(600); await press();
+      ok(s3 && await until(Q, () => window.__t.state.phase === 'play' && window.__t.state.units.length === 20) && foe.state.units.filter(u => u.owner === 0 && u.type === 'hexbinder').length === 2, 'READY under the controller starts the match with that team'); }
     const kn = (await st(Q)).units.find(u => u.owner === 0 && u.type === 'lancer'); await aim(kn.id); await Q.waitForTimeout(600); await press();
     ok((await Q.evaluate(() => window.__t.selected)) === kn.id, 'the controller\'s trigger, pointed down at a piece, picks it');
     await tap(Q, { kind: 'tile', x: kn.x, y: kn.y - 2 }); await until(Q, id => window.__t.state.active && window.__t.state.active.id === id, kn.id); await tap(Q, { kind: 'end' });

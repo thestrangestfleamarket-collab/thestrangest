@@ -18,6 +18,7 @@ const FACE_ANGLE = { N: 0, E: -Math.PI / 2, S: Math.PI, W: Math.PI / 2 };
 let ws = null, me = -1, code = null, state = null;
 let started = false, present = [false, false], deadline = null, skew = 0;
 let selected = null, inspected = null, inspectedTile = null;
+let held = null, setupSel = null, ready = [false, false], seated = [false, false], teams = [], teamAt = -1, setupNote = '', signedIn = false;
 
 function getToken() {
   try {
@@ -31,6 +32,7 @@ function getToken() {
 }
 const token = getToken();
 const myTurn = () => started && state && state.winner === null && state.turn === me;
+const inSetup = () => !!state && state.phase === 'setup' && me >= 0 && state.winner === null;
 
 // ---------------------------------------------------------------- scene
 const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
@@ -254,6 +256,7 @@ function syncUnits() {
   for (const u of state.units) {
     alive.add(u.id);
     let g = unitMeshes.get(u.id);
+    if (g && g.userData.type !== u.type) { unitsGroup.remove(g); unitMeshes.delete(u.id); g = null; }
     if (!g) { g = buildUnit(u); unitMeshes.set(u.id, g); unitsGroup.add(g); }
     g.userData.target.set(tx(u.x), ty(u.x, u.y), tz(u.y));
     g.userData.angle = FACE_ANGLE[u.facing];
@@ -266,6 +269,7 @@ function syncUnits() {
     }
   }
   for (const [id, g] of unitMeshes) {
+    if (!alive.has(id) && state.phase === 'setup') { unitMeshes.delete(id); unitsGroup.remove(g); continue; }
     if (!alive.has(id)) { unitMeshes.delete(id); g.userData.pick = null; g.userData.label.visible = false; if (g.userData.ch) g.userData.ch.once('death'); dying.push({ g, t: 0 }); }
   }
 }
@@ -292,22 +296,28 @@ statusPlane.rotation.x = -0.9;
 statusPlane.raycast = () => {};
 panel.add(statusPlane);
 
-function makeButton(text, color, x, kind) {
-  const t = textTexture(256, 96);
-  t.ctx.fillStyle = color; t.ctx.fillRect(0, 0, 256, 96);
-  t.ctx.fillStyle = '#fff'; t.ctx.font = 'bold 38px system-ui, sans-serif'; t.ctx.textAlign = 'center'; t.ctx.textBaseline = 'middle';
-  t.ctx.fillText(text, 128, 50);
-  t.tex.needsUpdate = true;
-  const side = new THREE.MeshStandardMaterial({ color });
-  const top = new THREE.MeshBasicMaterial({ map: t.tex });
-  const b = new THREE.Mesh(new THREE.BoxGeometry(2.3, 0.22, 0.86), [side, side, top, side, side, side]);
-  b.position.set(x, 0.05, 1.25);
-  b.userData.pick = { kind };
+function makeButton(text, color, x, pick, w = 2.3, z = 1.25) {
+  const t = textTexture(Math.round(w / 0.86 * 96), 96), side = new THREE.MeshStandardMaterial({ color }), top = new THREE.MeshBasicMaterial({ map: t.tex });
+  const b = new THREE.Mesh(new THREE.BoxGeometry(w, 0.22, 0.86), [side, side, top, side, side, side]);
+  b.position.set(x, 0.05, z);
+  b.userData.pick = typeof pick === 'string' ? { kind: pick } : pick;
+  b.userData.label = (text, color, small) => {
+    const key = text + color + small; if (b.userData.key === key) return; b.userData.key = key;
+    const W = t.canvas.width, c = t.ctx, lines = String(text).split('\n');
+    c.fillStyle = color; c.fillRect(0, 0, W, 96); side.color.set(color);
+    c.fillStyle = '#fff'; c.textAlign = 'center'; c.textBaseline = 'middle';
+    lines.forEach((l, i) => { c.font = `bold ${lines.length > 1 ? (i ? 24 : 26) : 38}px system-ui, sans-serif`; c.fillText(l, W / 2, lines.length > 1 ? 30 + i * 36 : 50, W - 10); });
+    t.tex.needsUpdate = true;
+  };
+  b.userData.label(text, color);
   panel.add(b);
   return b;
 }
 const endButton3D = makeButton('END TURN', '#2f6fed', -1.3, 'end');
 const recenterButton3D = makeButton('RECENTER', '#3a404b', 1.3, 'recenter');
+// Setting out, in the headset: a chip a unit type, then REMOVE, DEFAULT, SAVED (the next saved team) and READY.
+const chips3D = Object.keys(G.TYPES).map((type, i) => makeButton('', '#3a404b', (i - 3) * 1.0, { kind: 'chip', type }, 0.95, 2.2));
+const setup3D = [['remove', 'REMOVE'], ['default', 'DEFAULT'], ['saved', 'SAVED'], ['ready', 'READY']].map(([act, text], i) => makeButton(text, '#3a404b', (i - 1.5) * 1.75, { kind: 'setup', act }, 1.65, 3.15));
 
 function placePanel() {
   const seat = me === 1 ? 1 : 0;
@@ -527,6 +537,8 @@ function statusLines() {
   let l1;
   if (state.winner !== null) {
     l1 = state.winner === -1 ? 'Draw' : me < 0 ? `Player ${state.winner + 1} wins` : state.winner === me ? 'You win!' : 'You lose';
+  } else if (state.phase === 'setup') {
+    l1 = me < 0 ? `Room ${code} - the sides are setting out` : ready[me] ? `Ready - waiting for ${seated[1 - me] ? 'the other side' : 'an opponent'}` : `Choose your team - ${G.teamCost(state.units)}/${G.BUDGET} points`;
   } else if (!started) {
     l1 = `Room ${code} - waiting for opponent`;
   } else {
@@ -546,13 +558,15 @@ function statusLines() {
 
 function refresh() {
   if (!state || !field) return;
-  const sel = selected && G.unitById(state, selected);
-  const usable = sel && G.canUse(state, me, sel);
+  const setup = inSetup();
+  const sel = setup ? setupSel && G.unitById(state, setupSel) : selected && G.unitById(state, selected);
+  const usable = !setup && sel && G.canUse(state, me, sel);
   const moves = usable && !(state.active && state.active.moved) ? G.reachable(state, sel) : [];
   const hits = usable && !(state.active && state.active.acted) ? G.targets(state, sel) : [];
   const heal = sel && G.TYPES[sel.type].kind === 'heal';
   const keep = [];
   field.clear();
+  if (setup && !ready[me] && (held || sel)) for (let y = 0; y < rows; y++) for (let x = 0; x < cols; x++) if (G.inZone(state, me, y) && !G.ground(state, x, y).solid && !G.unitAt(state, x, y)) { field.mark(x, y, 'move'); keep.push(x + ',' + y); }
   for (const p of moves) { field.mark(p.x, p.y, 'move'); keep.push(p.x + ',' + p.y); }
   for (const p of hits) field.mark(p.x, p.y, heal ? 'heal' : 'hit');
   if (sel) field.mark(sel.x, sel.y, 'sel');
@@ -562,14 +576,17 @@ function refresh() {
   arrowsGroup.visible = !!usable;
   if (usable) arrowsGroup.position.set(tx(sel.x), ty(sel.x, sel.y), tz(sel.y));
   endButton3D.visible = myTurn();
-  $('endBtn').disabled = !myTurn();
+  drawSetup(setup);
+  $('endBtn').disabled = !myTurn(); $('endBtn').hidden = setup;
   $('endBtn').textContent = state.active ? 'End turn' : 'Pass turn';
   $('quitBtn').textContent = state.winner !== null || me < 0 ? 'Leave' : 'Surrender';
   const [l1, l2] = statusLines();
   drawStatus(l1, l2);
   $('status').textContent = l1;
   const u = inspected && G.unitById(state, inspected);
-  $('info').innerHTML = u ? `<b>${G.TYPES[u.type].name}</b> - ${l2.split(': ')[1]}. ${G.TYPES[u.type].info}` : inspectedTile && field.land ? l2 :
+  const ht = setup && held && G.TYPES[held];
+  $('info').innerHTML = ht ? `<b>${ht.name}</b> - ${ht.cost} points, at most ${ht.limit}: HP ${ht.hp}, power ${ht.pow}, armour ${ht.armor}%, block ${ht.block}%, move ${ht.move}, rest ${ht.rec}. ${ht.info}` : u ? `<b>${G.TYPES[u.type].name}</b> - ${l2.split(': ')[1]}. ${G.TYPES[u.type].info}` : inspectedTile && field.land ? l2 :
+    setup ? (ready[me] ? 'You are ready. Stand down to change your team.' : 'Pick a unit type, then a tile on your own rows to place it. Tap a placed unit to move or remove it. READY when done.') :
     (myTurn() ? 'Pick one of your units, move (blue), act (red), then tap a yellow arrow to choose its facing and end the turn.' : '');
 }
 
@@ -578,6 +595,7 @@ function sendAction(action) { if (ws && ws.readyState === 1) ws.send(JSON.string
 
 function handlePick(p) {
   if (!state) return;
+  if (inSetup() && !(p && p.kind === 'recenter')) return setupPick(p);
   if (!p) { if (!state.active) selected = null; inspected = null; inspectedTile = null; refresh(); return; }
   if (p.kind === 'recenter') { needPlace = true; return; }
   if (p.kind === 'end') { if (myTurn()) { sound.play('end', { vol: 0.5 }); sendAction({ type: 'end' }); } return; }
@@ -601,6 +619,100 @@ function handlePick(p) {
     if (!state.active) selected = null;
   }
   refresh();
+}
+
+// ---------------------------------------------------------------- setting out: a team under the budget, placed on your own rows
+const myTeam = () => state.units.filter(u => u.owner === me).map(u => ({ type: u.type, x: u.x, y: u.y }));
+function sendTeam(units) {
+  const e = G.checkTeam(state, me, units);
+  setupNote = e || '';
+  if (e) { sound.play('thud*', { vol: 0.3 }); refresh(); return false; }
+  if (ws && ws.readyState === 1) ws.send(JSON.stringify({ t: 'team', units }));
+  else { G.setTeam(state, me, units); syncUnits(); }   // a map shown with no room behind it
+  return true;
+}
+function setupAct(act) {
+  if (act === 'ready') { sound.play('end', { vol: 0.5 }); if (ws && ws.readyState === 1) ws.send(JSON.stringify({ t: 'ready', on: !ready[me] })); return; }
+  if (ready[me]) return;
+  if (act === 'remove') { const u = setupSel && G.unitById(state, setupSel); if (u) { setupSel = null; sendTeam(myTeam().filter(m => !(m.x === u.x && m.y === u.y))); } }
+  else if (act === 'default') { setupSel = null; sendTeam(G.defaultTeam(state.map, me)); }
+  else if (act === 'saved' && teams.length) { teamAt = (teamAt + 1) % teams.length; loadTeam(teams[teamAt]); }
+  refresh();
+}
+function setupPick(p) {
+  if (p && p.kind === 'setup') return setupAct(p.act);
+  if (ready[me]) return;
+  if (!p) { held = null; setupSel = null; return refresh(); }
+  if (p.kind === 'chip') { if (held !== p.type) sound.play('select', { vol: 0.4 }); held = held === p.type ? null : p.type; setupSel = null; return refresh(); }
+  let x, y;
+  if (p.kind === 'unit') { const u = G.unitById(state, p.id); if (!u) return; x = u.x; y = u.y; } else if (p.kind === 'tile') { x = p.x; y = p.y; } else return;
+  const u = G.unitAt(state, x, y), team = myTeam();
+  if (u) { setupSel = setupSel === u.id ? null : u.id; held = null; inspected = u.id; sound.play('select', { vol: 0.4 }); }
+  else if (held) { if (sendTeam([...team, { type: held, x, y }])) sound.play('drop', { vol: 0.4 }); }
+  else if (setupSel) { const m = G.unitById(state, setupSel), i = m ? team.findIndex(q => q.x === m.x && q.y === m.y) : -1; if (i >= 0) { team[i] = { type: team[i].type, x, y }; if (sendTeam(team)) sound.play('step*', { vol: 0.4 }); } }
+  refresh();
+}
+// A saved team is kept by where each unit stands from the middle column and the back row, so it fits any map and either seat.
+const relTeam = () => myTeam().map(m => ({ type: m.type, dx: (me === 0 ? m.x : cols - 1 - m.x) - Math.floor(cols / 2), r: me === 0 ? rows - 1 - m.y : m.y }));
+function loadTeam(t) {
+  const zone = G.MAPS[state.map].zone, free = [], out = [], mid = Math.floor(cols / 2);
+  for (let r = 0; r < zone; r++) for (let c = 0; c < cols; c++) { const x = me === 0 ? c : cols - 1 - c, y = me === 0 ? rows - 1 - r : r; if (!G.ground(state, x, y).solid) free.push({ c, r, x, y }); }
+  for (const m of t.units) {
+    let best = -1, bd = 1e9;
+    free.forEach((f, i) => { const d = Math.abs(f.c - mid - m.dx) + Math.abs(f.r - m.r); if (d < bd) { bd = d; best = i; } });
+    if (best < 0) break;
+    out.push({ type: m.type, x: free[best].x, y: free[best].y }); free.splice(best, 1);
+  }
+  setupSel = null;
+  return sendTeam(out);
+}
+const post = (path, body) => fetch(path, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(body) }).then(r => (r.ok ? r.json() : null)).catch(() => null);
+// Saved teams: kept on the website for a login, in this browser otherwise.
+async function loadTeams() {
+  const j = await post('/chess/load', {});
+  if (j && j.rec) { signedIn = true; teams = j.rec.teams || []; }
+  else { try { teams = JSON.parse(localStorage.getItem('chess-teams')) || []; } catch { teams = []; } }
+  drawTeams();
+}
+function keepTeams() {
+  if (signedIn) post('/chess/save', { teams }); else { try { localStorage.setItem('chess-teams', JSON.stringify(teams)); } catch { /* storage blocked */ } }
+  drawTeams();
+}
+function drawTeams() {
+  const sel = $('teamSel'); sel.innerHTML = '';
+  const o = document.createElement('option'); o.value = ''; o.textContent = teams.length ? 'Saved teams…' : 'No saved teams'; sel.appendChild(o);
+  teams.forEach((t, i) => { const q = document.createElement('option'); q.value = i; q.textContent = t.name; sel.appendChild(q); });
+  $('teamNote').textContent = signedIn ? 'Kept with your login.' : 'Kept in this browser.';
+}
+function saveTeam(name) {
+  name = String(name || '').trim().slice(0, 24); if (!name || !inSetup()) return false;
+  const t = { name, units: relTeam() }, i = teams.findIndex(q => q.name === name);
+  if (i >= 0) teams[i] = t; else { if (teams.length >= 12) teams.shift(); teams.push(t); }
+  keepTeams(); return true;
+}
+for (const [type, t] of Object.entries(G.TYPES)) { const b = document.createElement('button'); b.className = 'secondary chip'; b.dataset.type = type; b.onclick = () => handlePick({ kind: 'chip', type }); $('roster').appendChild(b); b.title = t.info; }
+$('removeBtn').onclick = () => setupAct('remove');
+$('defaultBtn').onclick = () => setupAct('default');
+$('readyBtn').onclick = () => { sound.init(); setupAct('ready'); };
+$('teamSel').onchange = () => { const t = teams[+$('teamSel').value]; if ($('teamSel').value !== '' && t && !ready[me]) { loadTeam(t); refresh(); } };
+$('saveTeamBtn').onclick = () => { if (saveTeam(prompt('Name this team:', 'My team'))) setupNote = 'Team saved.'; refresh(); };
+$('delTeamBtn').onclick = () => { const i = +$('teamSel').value; if ($('teamSel').value !== '' && teams[i]) { teams.splice(i, 1); keepTeams(); } };
+loadTeams();
+// The setting-out panel (the page's on a screen, the table's in the headset) as the state stands.
+function drawSetup(on) {
+  $('setup').hidden = !on || renderer.xr.isPresenting;
+  for (const b of [...chips3D, ...setup3D]) b.visible = on;
+  if (!on) return;
+  const mine = state.units.filter(u => u.owner === me), cost = G.teamCost(mine), rd = ready[me];
+  $('budget').textContent = `${cost} / ${G.BUDGET} points - ${mine.length} unit${mine.length === 1 ? '' : 's'}`;
+  for (const b of $('roster').children) { const t = G.TYPES[b.dataset.type], n = mine.filter(u => u.type === b.dataset.type).length;
+    b.textContent = `${t.name} - ${t.cost} pts - ${n}/${t.limit}`; b.classList.toggle('held', held === b.dataset.type); b.disabled = rd; }
+  chips3D.forEach(b => { const type = b.userData.pick.type, t = G.TYPES[type], n = mine.filter(u => u.type === type).length; b.userData.label(`${t.name}\n${t.cost} pts  ${n}/${t.limit}`, held === type ? '#b8860b' : '#3a404b'); });
+  setup3D[3].userData.label(rd ? 'STAND DOWN' : 'READY', rd ? '#8a2f2f' : '#2f8f4a');
+  setup3D[2].userData.label(teams.length ? (teamAt >= 0 ? teams[teamAt].name.toUpperCase().slice(0, 9) : 'SAVED') : 'NO SAVED', '#3a404b');
+  $('readyBtn').textContent = rd ? 'Stand down' : 'Ready'; $('readyBtn').className = rd ? 'danger' : '';
+  $('removeBtn').disabled = rd || !setupSel; $('defaultBtn').disabled = rd; $('teamSel').disabled = rd;
+  $('setupMsg').textContent = setupNote;
 }
 
 const raycaster = new THREE.Raycaster();
@@ -836,6 +948,7 @@ function connect(first) {
     const m = JSON.parse(ev.data);
     if (m.t === 'error') {
       if (!code) { $('lobbyMsg').textContent = m.msg; ws.close(); }
+      else if (inSetup()) { setupNote = m.msg; refresh(); }
       return;
     }
     if (m.t === 'joined') {
@@ -854,6 +967,8 @@ function connect(first) {
       const wait = playEvents(m.events || []);
       state = m.state;
       started = m.started; present = m.present; deadline = m.deadline; skew = m.now - Date.now();
+      ready = m.ready || [true, true]; seated = m.seated || present;
+      if (state.phase !== 'setup') { held = null; setupSel = null; }
       if (state.active && myTurn()) selected = state.active.id;
       else if (turnChanged || state.winner !== null) selected = null;
       if (wait > 0) setTimeout(() => { syncUnits(); refresh(); }, wait * 1000); // let the hit land first
@@ -895,12 +1010,13 @@ loadCharacters().then(() => {
 
 // Hooks for automated tests.
 // A map on the table with no match behind it (for pictures and checks): ?show=river, or __t.show('river').
-function show(id) {
-  state = G.newGame(id); me = 0; code = 'SHOW'; started = false;
+function show(id, setup) {
+  state = G.newGame(id, { setup: !!setup }); me = 0; code = 'SHOW'; started = false; ready = [false, false];
+  if (setup) state.units = state.units.filter(u => u.owner === 0);
   $('lobby').style.display = 'none'; $('hud').style.display = 'flex';
   for (const g of unitMeshes.values()) unitsGroup.remove(g);
   unitMeshes.clear();
   setField(state.map); syncUnits(); refresh();
 }
-if (new URLSearchParams(location.search).get('show')) show(new URLSearchParams(location.search).get('show'));
-window.__t = { handlePick, show, world, G, get field() { return field; }, castFx, explode, V, camera, controls, fx, sun, renderer, scene, get state() { return state; }, get me() { return me; }, get code() { return code; }, get selected() { return selected; } };
+if (new URLSearchParams(location.search).get('show')) show(new URLSearchParams(location.search).get('show'), new URLSearchParams(location.search).get('setup'));
+window.__t = { handlePick, show, world, G, saveTeam, loadTeam, get teams() { return teams; }, get held() { return held; }, get ready() { return ready; }, get setupSel() { return setupSel; }, get field() { return field; }, castFx, explode, V, camera, controls, fx, sun, renderer, scene, get state() { return state; }, get me() { return me; }, get code() { return code; }, get selected() { return selected; } };

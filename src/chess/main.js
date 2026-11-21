@@ -749,8 +749,8 @@ function drawNodes() {
     const t = textTexture(512, 96), label = new THREE.Sprite(new THREE.SpriteMaterial({ map: t.tex, depthTest: false, transparent: true }));
     t.ctx.font = 'bold 40px system-ui, sans-serif'; t.ctx.textAlign = 'center'; t.ctx.lineWidth = 7; t.ctx.strokeStyle = '#000'; t.ctx.fillStyle = won ? '#9be8b4' : open ? '#fff' : '#a0a6b0';
     const text = (won ? '\u2713 ' : '') + n.name + (n.optional ? ' (side)' : ''); t.ctx.strokeText(text, 256, 60, 500); t.ctx.fillText(text, 256, 60, 500); t.tex.needsUpdate = true;
-    label.scale.set(2.6, 0.49, 1); label.position.y = 2.15 * big; label.renderOrder = 5; label.raycast = () => {};
-    g.add(pole, flag, base, label); g.position.set(tx(n.at[0]), ty(n.at[0], n.at[1]), tz(n.at[1])); g.userData.pick = { kind: 'node', id: n.id };
+    label.scale.set(3.6, 0.675, 1); label.position.y = 2.2 * big; label.renderOrder = 5; label.raycast = () => {};
+    g.add(pole, flag, base, label); g.position.set(tx(n.at[0]), ty(n.at[0], n.at[1]), tz(n.at[1])); g.scale.setScalar(1.4); g.userData.pick = { kind: 'node', id: n.id };
     nodesGroup.add(g);
   }
 }

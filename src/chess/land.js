@@ -221,7 +221,7 @@ void main(){
   vec3 Rf = reflect(-V, N), sky = mix(uSkyH, uSkyZ, clamp(Rf.y * 1.4, 0., 1.));
   float k = smoothstep(0., .3, depth);
   vec3 col = mix(mix(uShallow, uDeep, k), sky, fres) + uSunC * pow(max(dot(Rf, uSun), 0.), 70.);
-  float foam = smoothstep(.05, .0, depth - (a.b - .4) * .07) * .55 + smoothstep(.72, .95, a.b * b.b * 2.2) * .12 * k;
+  float foam = smoothstep(.05, .0, depth - (a.b - .4) * .07) * .5;
   col = mix(col, vec3(.92, .95, .97) * (uSkyH * .5 + .5), clamp(foam, 0., 1.));
   float al = max(max(mix(.3, .93, k), fres), foam) * smoothstep(.002, .02, depth);
   vec2 tc = vP + uGrid * .5;
@@ -387,7 +387,7 @@ void main(){
     flies = new THREE.Points(g, new THREE.PointsMaterial({ map: fx.tex.circle_05, color: 0xd8ff7a, size: 0.13, transparent: true, opacity: 0.85, depthWrite: false, blending: THREE.AdditiveBlending })); flies.userData = { p, seed }; flies.frustumCulled = false; flies.raycast = () => {}; group.add(flies); }
   const flier = (size, color, path) => { const g = new THREE.BufferGeometry(), a = new Float32Array([0, 0, -size * 0.5, 0, 0, size * 0.5, -size, 0, 0, 0, 0, size * 0.5, 0, 0, -size * 0.5, size, 0, 0]); g.setAttribute('position', new THREE.BufferAttribute(a, 3));
     const m = new THREE.Mesh(g, new THREE.MeshBasicMaterial({ color, side: THREE.DoubleSide })); m.raycast = () => {}; m.frustumCulled = false; group.add(m); fliers.push({ m, a, size, path, ph: R() * 6.28 }); };
-  for (let i = 0; i < (look.birds || 0); i++) { const r = Math.max(cols, rows) * 0.55 + i * 0.9, h = 4.2 + i * 0.6, sp = (0.22 + i * 0.04) * (i % 2 ? -1 : 1); flier(0.2, 0x1c1c22, (t, ph, o) => { const a = t * sp + ph; o.set(Math.cos(a) * r, h + Math.sin(t * 0.3 + ph) * 0.3, Math.sin(a) * r * 0.8); return 5 + Math.sin(t * 0.2 + ph); }); }
+  for (let i = 0; i < (look.birds || 0); i++) { const r = Math.max(cols, rows) * 0.75 + 2 + i * 1.1, h = 6 + i * 0.7, sp = (0.22 + i * 0.04) * (i % 2 ? -1 : 1); flier(0.13, 0x1c1c22, (t, ph, o) => { const a = t * sp + ph; o.set(Math.cos(a) * r, h + Math.sin(t * 0.3 + ph) * 0.3, Math.sin(a) * r * 0.8); return 5 + Math.sin(t * 0.2 + ph); }); }
   for (let i = 0; i < (look.butterflies || 0); i++) { const cx = (R() - 0.5) * (cols + 2), cz = (R() - 0.5) * (rows + 2), s = sample(cx + cols / 2, cz + rows / 2); if (s.w[3] > 0.3) continue;
     flier(0.05, [0xf4efe0, 0xffd24a, 0x8fb4ff][i % 3], (t, ph, o) => { o.set(cx + Math.sin(t * 0.37 + ph) * 0.8 + Math.sin(t * 1.3 + ph) * 0.12, s.h + 0.4 + Math.sin(t * 0.9 + ph * 2) * 0.15, cz + Math.cos(t * 0.29 + ph * 1.7) * 0.8); return 7; }); }
 

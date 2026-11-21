@@ -104,51 +104,56 @@ let halt = () => {};
     for (const o of [a, b, n]) o.s.close(); }
 
   // ---- two pages, one match ----
-  const b = await chromium.launch({ ...(process.env.PWCHROME ? { executablePath: process.env.PWCHROME } : {}), args: ['--use-gl=swiftshader', '--enable-unsafe-swiftshader', '--ignore-gpu-blocklist'] });
+  const launch = () => chromium.launch({ ...(process.env.PWCHROME ? { executablePath: process.env.PWCHROME } : {}), args: ['--use-gl=angle', '--use-angle=swiftshader', '--enable-unsafe-swiftshader', '--ignore-gpu-blocklist'] });
+  const b = await launch(), b2 = OUT ? await launch() : b;   // for pictures the second player has a browser of their own
   const errs = [], miss = [];
-  const open = async (init) => { const ctx = await b.newContext({ viewport: { width: 1280, height: 800 }, deviceScaleFactor: OUT ? 2 : 1 }), pg = await ctx.newPage();
+  const open = async (init, br = b) => { const ctx = await br.newContext({ viewport: { width: 1280, height: 800 }, deviceScaleFactor: OUT ? 2 : 1 }), pg = await ctx.newPage();
     if (!OUT) await pg.addInitScript(() => { try { localStorage.setItem('quality', 'low'); } catch (e) {} });   // the software renderer is slow
     if (init) await pg.addInitScript(init);
     pg.on('pageerror', e => errs.push(e.message.slice(0, 300))); pg.on('console', m => { if (m.type() === 'error') errs.push('console: ' + m.text().slice(0, 300)); });
     pg.on('response', r => { if (r.status() >= 400) miss.push(r.status() + ' ' + r.url().replace(BASE, '')); }); return pg; };
-  const st = pg => pg.evaluate(() => window.__t.state), tap = (pg, p) => pg.evaluate(p => window.__t.handlePick(p), p);
-  const until = (pg, fn, arg, ms = 60000) => pg.waitForFunction(fn, arg, { timeout: ms }).then(() => true, () => false);
-  const shot = async (pg, name) => { if (OUT) { await pg.waitForTimeout(1500); await pg.screenshot({ path: path.join(OUT, name + '.png'), timeout: 180000 }); } };
+  // for pictures the pages draw at full quality, too slow for two at once in software: only the page being used is at full size, the other is shrunk to a stamp
+  let cur = null; const on = async pg => { if (OUT && cur !== pg) { if (cur) await cur.setViewportSize({ width: 96, height: 60 }); await pg.setViewportSize({ width: 1280, height: 800 }); cur = pg; await pg.waitForTimeout(500); } return pg; };
+  const st = async pg => (await on(pg)).evaluate(() => window.__t.state), tap = async (pg, p) => (await on(pg)).evaluate(p => window.__t.handlePick(p), p);
+  const until = async (pg, fn, arg, ms = OUT ? 240000 : 60000) => (await on(pg)).waitForFunction(fn, arg, { timeout: ms }).then(() => true, () => false);
+  const shot = async (pg, name) => { if (OUT) { await on(pg); await pg.waitForTimeout(1500); await pg.screenshot({ path: path.join(OUT, name + '.png'), timeout: 240000 }).catch(e => ok(false, 'the picture ' + name + ': ' + e.message.split('\n')[0])); } };
   const people = pg => until(pg, () => { let n = 0; window.__t.scene.traverse(o => { if (o.isSkinnedMesh) n++; }); return n >= 20; }, null, 180000);
-  const A = await open(), B = await open();
-  await A.goto(BASE + '/chess', { timeout: 120000 }); ok(await until(A, () => !!window.__t && !!document.getElementById('createBtn')), 'the page starts on its menu');
+  const A = await open(), B = await open(null, b2); await on(A);
+  await (await on(A)).goto(BASE + '/chess', { waitUntil: 'commit', timeout: 120000 }); ok(await until(A, () => !!window.__t && !!document.getElementById('createBtn')), 'the page starts on its menu');
   await shot(A, 'menu');
-  await A.click('#createBtn'); ok(await until(A, () => window.__t.code && window.__t.me === 0), 'CREATE A MATCH opens a room and seats you');
-  const code = await A.evaluate(() => window.__t.code);
-  ok(/^[A-Z]{4}$/.test(code || '') && (await A.evaluate(() => location.pathname + location.search)) === '/chess?room=' + code && /waiting for opponent/.test(await A.textContent('#status')), 'its link is /chess?room=' + code + ', and it waits for an opponent');
-  await B.goto(BASE + '/chess?room=' + code, { timeout: 120000 });
+  await (await on(A)).evaluate(() => document.getElementById('createBtn').click()); ok(await until(A, () => window.__t.code && window.__t.me === 0), 'CREATE A MATCH opens a room and seats you');
+  const code = await (await on(A)).evaluate(() => window.__t.code);
+  ok(/^[A-Z]{4}$/.test(code || '') && (await (await on(A)).evaluate(() => location.pathname + location.search)) === '/chess?room=' + code && /waiting for opponent/.test(await (await on(A)).textContent('#status')), 'its link is /chess?room=' + code + ', and it waits for an opponent');
+  await (await on(B)).goto(BASE + '/chess?room=' + code, { waitUntil: 'commit', timeout: 120000 });
   ok(await until(B, () => window.__t.me === 1) && await until(A, () => document.getElementById('status').textContent.startsWith('Your turn')), 'the link seats the second player, and the first is told it is their turn');
-  ok(await people(A) && await people(B), 'the twenty people are drawn as their models on both pages');
-  await shot(A, 'board-player1'); await shot(B, 'board-player2');
+  await people(A);
 
   let s = await st(A); const rogue = s.units.find(u => u.owner === 0 && u.type === 'strider');
-  await tap(A, { kind: 'unit', id: rogue.id }); const picked = await A.evaluate(() => window.__t.selected);
+  await tap(A, { kind: 'unit', id: rogue.id }); const picked = await (await on(A)).evaluate(() => window.__t.selected);
   await tap(A, { kind: 'tile', x: rogue.x, y: rogue.y - 4 });
   ok(picked === rogue.id && await until(A, id => window.__t.state.active && window.__t.state.active.id === id, rogue.id), 'player 1 picks the rogue and moves it four tiles');
   await shot(A, 'move');
   await tap(A, { kind: 'face', dir: 'E' }); await until(B, () => window.__t.state.turn === 1); s = await st(B);
   { const r = s.units.find(u => u.id === rogue.id); ok(s.turn === 1 && r.y === rogue.y - 4 && r.facing === 'E', 'facing east ends the turn, and the other page sees the same board'); }
-  await tap(A, { kind: 'end' }); await A.waitForTimeout(400); ok((await st(A)).turn === 1, 'player 1 cannot end a turn that is not theirs');
+  await tap(A, { kind: 'end' }); await (await on(A)).waitForTimeout(400); ok((await st(A)).turn === 1, 'player 1 cannot end a turn that is not theirs');
   const archer = s.units.filter(u => u.owner === 1 && u.type === 'slinger').find(u => Math.abs(u.x - rogue.x) + Math.abs(u.y - (rogue.y - 4)) <= 5);
   await tap(B, { kind: 'unit', id: archer.id }); await tap(B, { kind: 'unit', id: rogue.id });
   ok(!!archer && await until(B, () => window.__t.state.active && window.__t.state.active.acted), 'player 2\'s archer shoots the rogue');
-  await B.waitForTimeout(350); await shot(B, 'attack');
+  await (await on(B)).waitForTimeout(350); await shot(B, 'attack');
   await tap(B, { kind: 'end' }); await until(A, () => window.__t.state.turn === 0); s = await st(A);
   ok(s.units.find(u => u.id === archer.id).rec === 2, 'the archer rests two turns');
-  await A.reload({ waitUntil: 'commit', timeout: 120000 }); ok(await until(A, () => window.__t && window.__t.me === 0 && window.__t.state && window.__t.state.turnNo === 3), 'a reload comes back to the same seat and the same board');
+  await (await on(A)).reload({ waitUntil: 'commit', timeout: 120000 }); ok(await until(A, () => window.__t && window.__t.me === 0 && window.__t.state && window.__t.state.turnNo === 3), 'a reload comes back to the same seat and the same board');
   await people(A);
-  { const hit = await A.evaluate(() => { const T = window.__t, id = T.state.units.find(u => u.owner === 0 && u.type === 'bulwark').id; let g = null; T.scene.traverse(o => { if (o.userData && o.userData.pick && o.userData.pick.kind === 'unit' && o.userData.pick.id === id) g = o; });
+  { const hit = await (await on(A)).evaluate(() => { const T = window.__t, id = T.state.units.find(u => u.owner === 0 && u.type === 'bulwark').id; let g = null; T.scene.traverse(o => { if (o.userData && o.userData.pick && o.userData.pick.kind === 'unit' && o.userData.pick.id === id) g = o; });
       const p = g.getWorldPosition(T.V(0, 0, 0)); p.y += 0.06; p.project(T.camera); return { id, x: (p.x + 1) / 2 * innerWidth, y: (1 - p.y) / 2 * innerHeight }; });
-    await A.mouse.click(hit.x, hit.y); await A.waitForTimeout(400);
-    ok((await A.evaluate(() => window.__t.selected)) === hit.id, 'a real click on a knight\'s base picks it'); await tap(A, null); }
+    await (await on(A)).mouse.click(hit.x, hit.y); await (await on(A)).waitForTimeout(400);
+    ok((await (await on(A)).evaluate(() => window.__t.selected)) === hit.id, 'a real click on a knight\'s base picks it'); await tap(A, null); }
+
+  ok(await people(A) && await people(B), 'the twenty people are drawn as their models on both pages');
+  await shot(A, 'board-player1'); await shot(B, 'board-player2');
 
   // the rest of the match, played out for both seats over their own sockets (each page's token), the pages watching: every piece that can strike does, the others close in
-  { const tok = async pg => pg.evaluate(() => sessionStorage.getItem('token')), bots = [await seat('room=' + code, { t: 'join', code, token: await tok(A) }), await seat('room=' + code, { t: 'join', code, token: await tok(B) })];
+  { const tok = async pg => (await on(pg)).evaluate(() => sessionStorage.getItem('token')), bots = [await seat('room=' + code, { t: 'join', code, token: await tok(A) }), await seat('room=' + code, { t: 'join', code, token: await tok(B) })];
     await wait(() => bots[0].state && bots[1].state);
     const seated = bots[0].you === 0 && bots[1].you === 1, d = (a, c) => Math.abs(a.x - c.x) + Math.abs(a.y - c.y);
     let turns = 0, refused = 0;
@@ -169,11 +174,11 @@ let halt = () => {};
     for (const o of bots) o.s.close(); }
   ok(errs.length === 0, 'no page errors' + (errs.length ? ': ' + errs.slice(0, 4).join(' | ') : ''));
   ok(miss.length === 0, 'nothing the pages asked for was refused' + (miss.length ? ': ' + [...new Set(miss)].slice(0, 6).join(', ') : ''));
-  await A.context().close(); await B.context().close();
+  await A.context().close(); await B.context().close(); if (b2 !== b) await b2.close();
 
   // ---- an emulated Quest 3: AR, the board in front of you, a controller picks a piece ----
   { const n0 = errs.length, Q = await open(IWER + ';window.xrDevice=new IWER.XRDevice(IWER.metaQuest3);xrDevice.installRuntime({forceInstall:true});xrDevice.position.set(0,1.6,0);');
-    await Q.goto(BASE + '/chess', { timeout: 120000 }); await until(Q, () => !!window.__t); await Q.click('#createBtn'); await until(Q, () => window.__t.code && window.__t.state);
+    await Q.goto(BASE + '/chess', { waitUntil: 'commit', timeout: 120000 }); await until(Q, () => !!window.__t); await Q.evaluate(() => document.getElementById('createBtn').click()); await until(Q, () => window.__t.code && window.__t.state);
     const qc = await Q.evaluate(() => window.__t.code), foe = await seat('room=' + qc, { t: 'join', code: qc, token: 'quest-foe' }); await until(Q, () => document.getElementById('status').textContent.startsWith('Your turn'));
     ok(await until(Q, () => !document.getElementById('arBtn').hidden, null, 20000), 'in a Quest 3 the page offers ENTER AR');
     await Q.evaluate(() => document.getElementById('arBtn').click());
@@ -189,7 +194,7 @@ let halt = () => {};
     ok((await Q.evaluate(() => window.__t.selected)) === kn.id, 'the controller\'s trigger, pointed down at a piece, picks it');
     await tap(Q, { kind: 'tile', x: kn.x, y: kn.y - 2 }); await until(Q, id => window.__t.state.active && window.__t.state.active.id === id, kn.id); await tap(Q, { kind: 'end' });
     ok(await wait(() => foe.state && foe.state.turn === 1 && foe.state.units.find(u => u.id === kn.id).y === kn.y - 2), 'a move made in the headset reaches the other player');
-    await Q.evaluate(() => xrDevice.controllers.right.updateButtonValue('squeeze', 1)); await Q.waitForTimeout(400); await Q.evaluate(() => { const c = xrDevice.controllers.right; c.position.set(c.position.x + 0.2, c.position.y, c.position.z); }); await Q.waitForTimeout(600);
+    await Q.evaluate(() => xrDevice.controllers.right.updateButtonValue('squeeze', 1)); await Q.waitForTimeout(3000); await Q.evaluate(() => { const c = xrDevice.controllers.right; c.position.set(c.position.x + 0.2, c.position.y, c.position.z); }); await until(Q, x => { const w = window.__t.scene.children.find(o => o.isGroup && o.children.length > 3); return Math.abs(w.position.x - x - 0.2) < 0.03; }, bd.x, 20000);
     const moved = await board(); await Q.evaluate(() => xrDevice.controllers.right.updateButtonValue('squeeze', 0));
     ok(Math.abs(moved.x - bd.x - 0.2) < 0.03, 'holding the grip drags the board with the hand');
     if (OUT) await Q.screenshot({ path: path.join(OUT, 'quest3-ar.png'), timeout: 180000 }).catch(() => {});

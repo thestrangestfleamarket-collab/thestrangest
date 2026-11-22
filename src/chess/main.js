@@ -161,6 +161,7 @@ function syncPools() {
   pools.count = list.length; pools.visible = list.length > 0; pools.instanceMatrix.needsUpdate = true; pools.instanceColor.needsUpdate = true;
 }
 function syncUnits() {
+  if (!state) return;   // a board update that was waiting for its effects can come after the match is left
   const alive = new Set();
   need(state.units.flatMap(u => [u.type, G.TYPES[u.type].summon]).filter(Boolean)).catch(() => {});
   syncPools();

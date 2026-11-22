@@ -1,6 +1,9 @@
-// THE CLUBHOUSE: the room you start in. Two doors lead out to the courts; the table games are played where they stand: ping pong (rally.js) and air hockey (airsim.js, THE MARKET's rules)
+// THE CLUBHOUSE: the room you start in. Three doors lead out (basketball, bowling, tennis); the table games are played where they stand: ping pong (rally.js), air hockey (airsim.js, THE MARKET's rules), skee-ball (THE MARKET's cabinet, as it is) and pool (THE LAST CHANCE's table, as it is)
 import { makeRally } from './rally.js';
 import { AIR } from './airsim.js';
+import { SKEE } from '../146yz-skee.js';
+import { buildPool } from '../saloon/pool.js';
+import { G as SG, R as SR } from './shim-saloon.js';
 export function makeRoom(K) {
   const T = K.THREE, V3 = K.V3, O = new V3(0, 0, 300), HX = 7, HZ = 9, H = 3.8, g = new T.Group(); g.position.copy(O); g.visible = false; K.scene.add(g);
   const std = (c, o = {}) => new T.MeshStandardMaterial({ color: c, roughness: .85, ...o }), box = (w, h, d, m, x, y, z, p = g) => { const q = K.shadowOn(new T.Mesh(new T.BoxGeometry(w, h, d), m)); q.position.set(x, y, z); p.add(q); return q; };
@@ -20,7 +23,7 @@ export function makeRoom(K) {
     g.add(new T.HemisphereLight(0xfff0dc, 0x4a3c2c, .9));
     const title = sign('THE CLUBHOUSE', 4.2, .7); title.position.set(0, 3.1, HZ - .02); title.rotation.y = Math.PI; g.add(title); }
   // ---- the doors out to the courts
-  const doors = [['hoops', 'BASKETBALL', -3.4], ['tennis', 'TENNIS', 3.4]].map(([id, name, x]) => { box(1.9, 2.5, .12, std(0x15110e), x, 1.25, -HZ + .05); box(1.6, 2.3, .06, new T.MeshBasicMaterial({ color: 0x0c1a16 }), x, 1.15, -HZ + .1);
+  const doors = [['hoops', 'BASKETBALL', -3.6], ['bowl', 'BOWLING', 0], ['tennis', 'TENNIS', 3.6]].map(([id, name, x]) => { box(1.9, 2.5, .12, std(0x15110e), x, 1.25, -HZ + .05); box(1.6, 2.3, .06, new T.MeshBasicMaterial({ color: 0x0c1a16 }), x, 1.15, -HZ + .1);
     const s = sign(name, 1.9, .5); s.position.set(x, 2.85, -HZ + .12); g.add(s); const mat = new T.Mesh(new T.CircleGeometry(.6, 28).rotateX(-Math.PI / 2), new T.MeshBasicMaterial({ color: 0xffb629, transparent: true, opacity: .35 })); mat.position.set(x, .012, -HZ + 1.1); g.add(mat); return { id, x }; });
   // ---- ping pong: a 9 ft table, the house at the far end
   const PX = -3.4, PZ = .4, PT = .76; { const blue = std(0x1f4f8f, { roughness: .45 }), leg = std(0x1a1a1c, { metalness: .5, roughness: .5 });
@@ -30,6 +33,7 @@ export function makeRoom(K) {
     const nc = K.cv(32, 32), x = nc.getContext('2d'); x.strokeStyle = '#0d0f10'; x.lineWidth = 2; for (let i = 0; i <= 32; i += 8) { x.beginPath(); x.moveTo(i, 0); x.lineTo(i, 32); x.moveTo(0, i); x.lineTo(32, i); x.stroke(); }
     const net = new T.Mesh(new T.PlaneGeometry(1.83, .1525), new T.MeshStandardMaterial({ map: K.tex(nc, { rep: [60, 5] }), transparent: true, side: T.DoubleSide })); net.position.set(PX, PT + .076, PZ); g.add(net);
     for (const sx of [-.915, .915]) box(.02, .17, .02, leg, PX + sx, PT + .08, PZ); }
+  K.solids.push({ x0: O.x + PX - .78, x1: O.x + PX + .78, z0: O.z + PZ - 1.4, z1: O.z + PZ + 1.4 }, { x0: O.x + 3.5 - .66, x1: O.x + 3.5 + .66, z0: O.z + .6 - 1.22, z1: O.z + .6 + 1.22 }, { x0: O.x - 5.4 - .42, x1: O.x - 5.4 + .42, z0: O.z + 5.3 - 1.7, z1: O.z + 5.3 + 1.05 });
   const ppC = K.cv(256, 128), ppT = K.tex(ppC); { const m = new T.Mesh(new T.PlaneGeometry(1.4, .7), new T.MeshStandardMaterial({ map: ppT, emissive: 0xffffff, emissiveMap: ppT, emissiveIntensity: .7 })); m.position.set(-HX + .03, 2.2, PZ); m.rotation.y = Math.PI / 2; g.add(m);
     const s = sign('PING PONG', 1.4, .34); s.position.set(-HX + .03, 2.78, PZ); s.rotation.y = Math.PI / 2; g.add(s); }
   const led = (c, t, a, b) => { const x = c.getContext('2d'); x.fillStyle = '#07090a'; x.fillRect(0, 0, c.width, c.height); x.textAlign = 'center'; x.fillStyle = '#d8d6cc'; x.font = '700 ' + c.height * .16 + 'px Arial'; x.fillText(a, c.width / 2, c.height * .22); x.fillStyle = '#ffb629'; x.font = '700 ' + c.height * .46 + 'px "Courier New",monospace'; x.fillText(b, c.width / 2, c.height * .72); t.needsUpdate = true; };
@@ -61,16 +65,39 @@ export function makeRoom(K) {
           if (air.score[i] >= 7) { air.over = true; air.pause = 1e9; } else { AIR.faceoff(s, e.into); air.pause = 1; } airBoard(); }
       else K.snd(e.k === 'mallet' ? 'catch' : 'step', _p, e.k === 'mallet' ? e.s * 2.5 : e.s * 3, e.k === 'mallet' ? 2.2 : 3); } air.ev.length = 0;
     puck.position.set(AX + s.puck.x, AT + .006, AZ + s.puck.z); puck.visible = s.live || air.pause < 1e8; s.m.forEach((m, i) => mal[i].position.set(AX + m.x, AT, AZ + m.z)); }
+  // ---- skee-ball: THE MARKET's own cabinet and ball physics, stood on a plinth
+  const KX = -5.4, KZ = 5.3, KY = .72, sk = SKEE.make({ lights: false, font: 'bold sans-serif' }), skG = new T.Group(); skG.position.set(KX, KY, KZ); skG.add(sk.group); g.add(skG); box(.8, KY, 2.7, std(0x241a3a), KX, KY / 2, KZ - .3);
+  { const s = sign('SKEE-BALL', 1.4, .34); s.position.set(-HX + .03, 2.72, KZ - .3); s.rotation.y = Math.PI / 2; g.add(s); }
+  sk.on('score', e => { K.flash(e.pts + '!'); K.snd('rim', _p.set(O.x + KX, 1.5, O.z + KZ - 1.4), 4, 1.6); }).on('gutter', () => K.flash('GUTTER')).on('throw', () => K.snd('bounce', _p.set(O.x + KX, KY, O.z + KZ), 3, .8)).on('gameover', e => K.flash('SKEE-BALL ' + e.score));
+  const skee = { t0: -1, prev: new V3(), has: false };
+  function skeeFrame(dt) { const h = K.mode ? (K.hands.find(q => q.src && q.src.handedness === K.racketHand) || K.hands.find(q => q.src)) : null;
+    if (sk.state.mode === 'aim') { if (h) { skG.updateMatrixWorld(true); const l = sk.group.worldToLocal(_p.copy(h.pos)); sk.setAim(l.x, l.z);
+        if (skee.has && dt > 0) { const vz = (l.z - skee.prev.z) / dt, vx = (l.x - skee.prev.x) / dt; if (vz < -1.3 && l.z < 1.0 && l.y < .5) { sk.throwBall(Math.hypot(vx, vz) * 1.15, Math.atan2(vx, -vz)); K.buzz(h, .5, 40); } } skee.prev.copy(l); skee.has = true; }
+      else { K.camera.getWorldPosition(_p); K.camera.getWorldDirection(_d); sk.aimWithRay(new T.Ray(_p.clone(), _d.clone())); } } else skee.has = false; }
+  // ---- pool: THE LAST CHANCE's 8 ft table, its balls' own sums, its cue and its game to eight against the house
+  const QX = 3.4, QZ = 5.4; SR.pool = { x: O.x + QX, z: O.z + QZ }; SG.camera = K.camera; SG.audio = { play: (n, k) => K.snd(n === 'pocket' ? 'step' : 'bounce', _p.set(O.x + QX, .85, O.z + QZ), n === 'pocket' ? 5 : 1.5 + k * 5, n === 'cushion' ? 2.5 : 4.5) };
+  const pool = buildPool(K.scene, { solids: K.solids }), cue = pool.cues[0]; for (const c of pool.cues) { K.scene.add(c.obj); c.obj.visible = false; } pool.group.visible = false; pool.auto = true;
+  const qC = K.cv(256, 128), qT = K.tex(qC); { const m = new T.Mesh(new T.PlaneGeometry(1.2, .6), new T.MeshStandardMaterial({ map: qT, emissive: 0xffffff, emissiveMap: qT, emissiveIntensity: .7 })); m.position.set(HX - .03, 2.2, QZ); m.rotation.y = -Math.PI / 2; g.add(m);
+    const s = sign('POOL', 1.0, .34); s.position.set(HX - .03, 2.72, QZ); s.rotation.y = -Math.PI / 2; g.add(s); }
+  const pq = { held: false, use: false, sig: '' }, hd = { xr: false, use: false, pulse() { }, vs: new V3() };
+  function poolFrame(dt, on) { SG.t = K.t; pool.update(dt); const st = pool.state(), sig = st.on + st.turn + st.you + st.them; if (sig !== pq.sig) { pq.sig = sig; led(qC, qT, st.on ? (st.turn === 'you' ? 'YOUR SHOT' : 'THE HOUSE SHOOTS') : 'FIRST TO 8', st.you + ' - ' + st.them); }
+    if (!on) { if (pq.held) { pq.held = false; cue.goHome(); } return; }
+    if (!pq.held) { pq.held = true; cue.onGrab({ xr: !!K.mode }); if (!st.on) pool.challenge('house', 0, .5); }
+    const h = K.mode ? (K.hands.find(q => q.src && q.src.handedness === K.racketHand) || K.hands.find(q => q.src)) : null; hd.xr = !!h; hd.use = pq.use; hd.pulse = (a, ms) => K.buzz(h, a, ms);
+    if (h) { const o = K.hands.find(q => q !== h && q.src), ob = cue.obj; if (o && o.pos.distanceTo(h.pos) < 1.1 && o.pos.distanceTo(h.pos) > .15) { _d.subVectors(o.pos, h.pos).normalize(); ob.quaternion.setFromUnitVectors(_p.set(0, 0, -1), _d); }   // the other hand is the bridge: the cue lies along the two
+      else h.grip.getWorldQuaternion(ob.quaternion); _d.set(0, 0, 1).applyQuaternion(ob.quaternion); ob.position.copy(h.pos).addScaledVector(_d, .22); }
+    pool.cueHeld(cue, dt, hd); }
   let at = '';
   const near = (hp, x, z, r) => Math.hypot(hp.x - O.x - x, hp.z - O.z - z) < r;
-  return { name: 'Clubhouse', help: 'walk through a door, or up to a table · click or <kbd>Space</kbd> swings the bat', touch: 'Walk through a door or up to a table; tap <b>Shoot</b> to swing.', PP, air, O, doors,
-    action() { if (at === 'pp') PP.action(); else if (at === 'air' && air.over) airStart(); },
+  return { name: 'Clubhouse', help: 'walk through a door, or up to a table · click or <kbd>Space</kbd> plays (hold for power at skee-ball and pool)', touch: 'Walk through a door or up to a table; <b>Swing</b> plays, held for power.', PP, air, O, doors,
+    action() { if (at === 'pp') PP.action(); else if (at === 'air' && air.over) airStart(); else if (at === 'skee') { if (sk.state.mode === 'aim') skee.t0 = K.t; else if (sk.state.balls <= 0) sk.startGame(); } else if (at === 'pool') { pq.use = true; if (!pool.state().on && !pool.busy()) pool.challenge('house', 0, .5); } },
+    release() { if (at === 'skee' && skee.t0 >= 0) { K.camera.getWorldDirection(_d); skG.updateMatrixWorld(true); sk.throwBall(2.5 + 2.2 * Math.min(1, (K.t - skee.t0) / 1.1), 0); skee.t0 = -1; } pq.use = false; }, sk, pool,
     step(hs) { if (at === 'pp') PP.step(hs); }, sim(dt) { if (at === 'pp') PP.sim(dt); }, get at() { return at; },
     frame(t, dt) { const hp = K.headPos(); for (const d of doors) if (near(hp, d.x, -HZ + .9, .75)) { K.setSport(d.id); return; }
-      const want = near(hp, PX, PZ + 2.1, 1.5) ? 'pp' : near(hp, AX, AZ + AIR.L + .45, 1.1) ? 'air' : at === 'pp' && near(hp, PX, PZ + 2.1, 2.4) ? 'pp' : at === 'air' && near(hp, AX, AZ + AIR.L + .45, 1.7) ? 'air' : '';
-      if (want !== at) { if (at === 'pp') PP.setOn(false); at = want; if (at === 'pp') PP.setOn(true); if (at === 'air') { airStart(); K.flash('AIR HOCKEY'); } }
-      if (at === 'pp') PP.frame(t, dt); if (at === 'air') airFrame(dt); },
-    enter() { K.venue = 'room'; g.visible = true; K.BND.cx = O.x; K.BND.cz = O.z; K.BND.x = HX - .4; K.BND.z = HZ - .4; K.rig.position.set(O.x, 0, O.z + 6.2); airBoard(); led(ppC, ppT, 'WALK UP TO PLAY', '0 - 0'); },
-    leave() { g.visible = false; if (at === 'pp') PP.setOn(false); at = ''; },
-    goto(w) { const p = w === 'pp' ? [PX, PZ + 2.0] : [AX, AZ + AIR.L + .4]; K.rig.position.set(O.x + p[0], 0, O.z + p[1]); } };
+      const want = near(hp, PX, PZ + 2.1, 1.5) ? 'pp' : near(hp, AX, AZ + AIR.L + .45, 1.1) ? 'air' : near(hp, KX, KZ + 1.25, .9) ? 'skee' : near(hp, QX, QZ, 2.3) && !near(hp, AX, AZ + AIR.L + .45, 1.1) ? 'pool' : at === 'skee' && near(hp, KX, KZ + 1.25, 1.5) ? 'skee' : at === 'pp' && near(hp, PX, PZ + 2.1, 2.4) ? 'pp' : at === 'air' && near(hp, AX, AZ + AIR.L + .45, 1.7) ? 'air' : '';
+      if (want !== at) { if (at === 'pp') PP.setOn(false); at = want; if (at === 'pp') PP.setOn(true); if (at === 'air') { airStart(); K.flash('AIR HOCKEY'); } if (at === 'skee' && (sk.state.balls <= 0 || sk.state.mode === 'over' || !sk.state.throws)) { sk.startGame(); K.flash('SKEE-BALL'); } if (at === 'pool') K.flash('POOL'); }
+      if (at === 'pp') PP.frame(t, dt); if (at === 'air') airFrame(dt); sk.update(dt); if (at === 'skee') skeeFrame(dt); poolFrame(dt, at === 'pool'); },
+    enter() { K.venue = 'room'; g.visible = true; K.BND.cx = O.x; K.BND.cz = O.z; K.BND.x = HX - .4; K.BND.z = HZ - .4; K.rig.position.set(O.x, 0, O.z + 7.4); pool.group.visible = true; for (const c of pool.cues) c.obj.visible = true; airBoard(); led(ppC, ppT, 'WALK UP TO PLAY', '0 - 0'); },
+    leave() { g.visible = false; pool.group.visible = false; for (const c of pool.cues) c.obj.visible = false; if (at === 'pp') PP.setOn(false); pq.held = false; cue.goHome(); at = ''; },
+    goto(w) { const p = { pp: [PX, PZ + 2.0], air: [AX, AZ + AIR.L + .4], skee: [KX, KZ + 1.3], pool: [QX, QZ + 1.9] }[w]; K.rig.position.set(O.x + p[0], 0, O.z + p[1]); } };
 }

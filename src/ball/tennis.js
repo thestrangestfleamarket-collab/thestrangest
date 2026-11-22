@@ -19,6 +19,9 @@ export function makeTennis(K) {
     racket: { L: .52, a: .16, b: .125, th: .012, grip: .017, e: .72, mu: .22, spin: .28, color: 0x1f6fd0, color2: 0xd03a2f },
     ai: { home: HL + .6, near: 2.5, wide: 1.5, reach: 1.7, high: 2.4, after: .34, hitY: 1.0, T: 1.45, spin: 45, tx: 3.0, tz0: 5.2, tz1: 10.2,
       levels: [{ speed: 4.2, miss: .12, aim: .6, pace: .92 }, { speed: 5.6, miss: .05, aim: .85, pace: 1 }, { speed: 7, miss: .02, aim: 1, pace: 1.1 }] },
+    servePos: [1.4, HL + .3],   // a serve is from your right at an even score, into the box across the net; two tries
+    serveIn: (p, by, even) => Math.abs(p.z) <= SL + .04 && Math.abs(p.x) <= HW + .04 && p.x * (by === 'P' ? -1 : 1) * (even ? 1 : -1) >= -.04 && (by === 'P' ? p.z < 0 : p.z > 0),
+    serveAim: (by, even, want) => { const sx = (by === 'P' ? -1 : 1) * (even ? 1 : -1), x = want == null ? .6 + Math.random() * 2.6 : Math.min(3.4, Math.max(.5, Math.abs(want))); return [sx * x, (by === 'P' ? -1 : 1) * (2.6 + Math.random() * 2.8)]; },
     board: (S, sc) => K.board(['YOU ' + S.games[0] + '   GAMES   ' + S.games[1] + ' HOUSE', sc, S.over ? 'MATCH OVER' : (S.server === 'P' ? 'YOUR SERVE' : 'HOUSE SERVES'), '']) });
   return { name: 'Tennis', help: 'click or <kbd>Space</kbd> swings: the ball goes where you look', touch: 'Tap <b>Shoot</b> to swing.', R, restart: R.restart, action: R.action, step: R.step, frame: R.frame, sim: R.sim,
     enter() { K.venue = 'clearing'; if (!map) map = paint(); K.courtMat.map = map; g.visible = true; K.BND.cx = K.BND.cz = 0; K.BND.x = K.FX - .4; K.BND.z = K.FZ - .4; K.rig.position.set(0, 0, HL + .3); R.setOn(true); },

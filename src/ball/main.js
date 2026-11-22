@@ -5,6 +5,7 @@ import { Hand } from '../cantina/hands.js';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import { makeRoom } from './room.js';
 import { makeTennis } from './tennis.js';
+import { makeBowl } from './bowl.js';
 
 const $=id=>document.getElementById(id);
 const V3=THREE.Vector3;
@@ -466,7 +467,7 @@ const _n=new V3(),_t=new V3(),_c=new V3(),_a=new V3(),_b=new V3(),_d=new V3(),_e
 const _q=new THREE.Quaternion(),_q2=new THREE.Quaternion(),_m4=new THREE.Matrix4(),_f=new V3(),_r=new V3(),_col=new THREE.Color();
 const _eul=new THREE.Euler(), rr2=(a,b)=>a+Math.random()*(b-a);
 let mode=null; // null = browser, 'vr', 'ar'
-let sport='room', venue='room'; const SPORTS={}, BND={cx:0,cz:0,x:FX-.4,z:FZ-.4};
+let sport='room', venue='room'; const SPORTS={}, BND={cx:0,cz:0,x:FX-.4,z:FZ-.4}, SOLIDS=[];
 function headPos(){ return camera.getWorldPosition(_hp); }
 const world={hour:22,wx:'mist',net:'nylon',pref:0};
 function seg(m,a,b){ _d.subVectors(b,a); const L=_d.length()||1e-4; m.position.copy(a); m.quaternion.setFromUnitVectors(UPV,_d.multiplyScalar(1/L)); m.scale.set(1,L,1); }
@@ -802,7 +803,7 @@ document.addEventListener('mousemove',e=>{ if(locked()){ yawT-=e.movementX*.0021
 canvas.addEventListener('mousedown',e=>{ if(locked()&&e.button===0) startCharge(); });
 addEventListener('mouseup',e=>{ if(locked()&&e.button===0) endCharge(); });
 function startCharge(){ initAudio(); if(SPORTS[sport].action){ SPORTS[sport].action(); return; } if(camB){ charging=true; charge=0; $('meter').hidden=false; } else summon(null); }
-function endCharge(){ if(!charging) return; charging=false; $('meter').hidden=true; arc.visible=false; const b=camB; if(!b) return;
+function endCharge(){ if(SPORTS[sport].release) SPORTS[sport].release(); if(!charging) return; charging=false; $('meter').hidden=true; arc.visible=false; const b=camB; if(!b) return;
   camB=null; b.holder=null; shotVel(b.v); camera.getWorldDirection(_a); _a.y=0; _a.normalize(); b.w.crossVectors(_a,_b.set(0,1,0)).multiplyScalar(11); launched(b); }
 function shotVel(out){ camera.getWorldDirection(out); out.y+=.62; out.normalize().multiplyScalar(4.5+charge*8.5); return out; }
 const sb=$('shoot'); sb.addEventListener('pointerdown',e=>{ e.preventDefault(); sb.setPointerCapture(e.pointerId); startCharge(); }); sb.addEventListener('pointerup',endCharge); sb.addEventListener('pointercancel',endCharge);
@@ -846,10 +847,11 @@ function setShadows(){ const size=(mode||coarse)?1024:2048; let on=mode?[0,3]:[0
   lamps.forEach((l,i)=>{ if(l.shadow.mapSize.x!==size){ l.shadow.mapSize.set(size,size); if(l.shadow.map){ l.shadow.map.dispose(); l.shadow.map=null; } } l.castShadow=on.includes(i); });
   mistG.visible=qLevel<2; }
 function applyQuality(){ if(!mode){ renderer.setPixelRatio(Math.max(.6,basePR*[1,.8,.65,.5][qLevel])); resize(); } applyWorld(); }
+function solidPush(){headPos(); for(const q of SOLIDS){ const m=.22, x=_hp.x, z=_hp.z; if(x>q.x0-m&&x<q.x1+m&&z>q.z0-m&&z<q.z1+m){ const a=x-q.x0+m, b=q.x1+m-x, c=z-q.z0+m, d=q.z1+m-z, k=Math.min(a,b,c,d); if(k===a) rig.position.x-=a; else if(k===b) rig.position.x+=b; else if(k===c) rig.position.z-=c; else rig.position.z+=d; _hp.x=1e9; } }   }   // a table is not walked through
 function applyMove(dt,speed,rate){ camera.getWorldDirection(_f); _f.y=0; _f.normalize(); _r.crossVectors(_f,_a.set(0,1,0));
   const m=Math.hypot(inX,inZ); if(m>1){ inX/=m; inZ/=m; }
   _tg.set(0,0,0).addScaledVector(_f,-inZ*speed).addScaledVector(_r,inX*speed);
-  vel.lerp(_tg,1-Math.exp(-rate*dt)); const sp=vel.length(); if(sp<.01) return 0;
+  vel.lerp(_tg,1-Math.exp(-rate*dt)); const sp=vel.length(); if(mode!=='ar') solidPush(); if(sp<.01) return 0;
   rig.position.addScaledVector(vel,dt);
   if(mode!=='ar'){ rig.position.x=THREE.MathUtils.clamp(rig.position.x,BND.cx-BND.x,BND.cx+BND.x); rig.position.z=THREE.MathUtils.clamp(rig.position.z,BND.cz-BND.z,BND.cz+BND.z);
     stride+=sp*dt; if(stride>.74){ stride=0; headPos(); snd('step',_a.set(_hp.x,.05,_hp.z),sp); kickLeaves(_hp.x,_hp.z,.45,sp*.12,vel.x,vel.z); } }
@@ -965,11 +967,11 @@ scene.traverse(o=>{ const m=o.material; if(Array.isArray(m)) m.forEach(patchMat)
 
 // what the other sports' files are handed
 const K={THREE,V3,scene,env,camera,rig,renderer,hands,BND,W,cv,tex,ptex,radial,shadowOn,galv,blackSteel,wood,tube,noBake,patchMat,snd:(...a)=>snd(...a),flash,buzz,headPos:()=>headPos(),setSport:id=>setSport(id),
-  courtMat,courtMap,FX,FZ,stats,drawScore,board:null,racketHand:'right',get mode(){return mode},get t(){return last},get sport(){return sport},set venue(v){venue=v},get coarse(){return coarse},vel};
+  courtMat,courtMap,FX,FZ,stats,drawScore,board:null,racketHand:'right',get mode(){return mode},get t(){return last},get sport(){return sport},set venue(v){venue=v},get coarse(){return coarse},vel,solids:SOLIDS};
 K.board=lines=>{ const x=sbC.getContext('2d'); x.fillStyle='#07090a'; x.fillRect(0,0,512,256); x.strokeStyle='#3a3d40'; x.lineWidth=8; x.strokeRect(4,4,504,248); x.textAlign='center';
   lines.forEach((l,i)=>{ x.fillStyle=i%2?'#ffb629':'#d8d6cc'; x.font=i%2?'700 62px "Courier New",monospace':'700 24px Arial'; x.fillText(l,256,i%2?46+i*52:22+i*56); }); sbT.needsUpdate=true; };
-SPORTS.room=makeRoom(K); SPORTS.tennis=makeTennis(K);
-{ const box=$('sports'); for(const [id,label,go] of [['room','Clubhouse'],['hoops','Basketball'],['tennis','Tennis'],['room','Ping pong','pp'],['room','Air hockey','air']]){ const b=document.createElement('button'); b.textContent=label; if(!go) b.dataset.s=id; b.addEventListener('click',()=>{ initAudio(); setSport(id); if(go) SPORTS.room.goto(go); }); box.appendChild(b); } }
+SPORTS.room=makeRoom(K); SPORTS.tennis=makeTennis(K); SPORTS.bowl=makeBowl(K);
+{ const box=$('sports'); for(const [id,label,go] of [['room','Clubhouse'],['hoops','Basketball'],['tennis','Tennis'],['bowl','Bowling'],['room','Ping pong','pp'],['room','Air hockey','air'],['room','Skee-ball','skee'],['room','Pool','pool']]){ const b=document.createElement('button'); b.textContent=label; if(!go) b.dataset.s=id; b.addEventListener('click',()=>{ initAudio(); setSport(id); if(go) SPORTS.room.goto(go); }); box.appendChild(b); } }
 scene.traverse(o=>{ const m=o.material; if(Array.isArray(m)) m.forEach(patchMat); else patchMat(m); });
 applyMode();
 window.__ball={setSport,SPORTS,K,get sport(){return sport},get ball(){return cur},balls,simulate,game,startGame,endGame,hands,tp,vig,get mode(){return mode},get t(){return last},get yExtra(){return yExtra},rig,stats,camera,renderer,scene,world,applyWorld,hoops,set(y,p){yaw=yawT=y;pitch=pitchT=p},get q(){return qLevel},set q(v){qLevel=v;applyQuality()},launched,THREE,

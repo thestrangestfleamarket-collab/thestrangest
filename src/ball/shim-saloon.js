@@ -1,0 +1,15 @@
+// what THE LAST CHANCE's pool table (src/saloon/pool.js) asks of the saloon, answered for JUNGLE COURT: the game's clock and camera, a tool to hold, plain surfaces, where the table stands
+import * as THREE from 'three';
+import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
+export const G = { t: 0, camera: null, surfaces: [], audio: null, folk: null, story: null }, UP = new THREE.Vector3(0, 1, 0), clamp = (v, a, b) => v < a ? a : v > b ? b : v, PH = { ready: false }, R = { pool: { x: 0, z: 0 } };
+export function mergeStatic(g) { const by = new Map(); g.updateMatrixWorld(true); const inv = new THREE.Matrix4().copy(g.matrixWorld).invert();
+  g.traverse(o => { if (o.isMesh && !Array.isArray(o.material) && o.geometry.attributes.normal && o.geometry.attributes.uv) { if (!by.has(o.material)) by.set(o.material, []); by.get(o.material).push(o); } });
+  for (const [m, list] of by) { if (list.length < 2) continue; const gs = list.map(o => { let q = o.geometry.clone(); if (q.index) q = q.toNonIndexed(); for (const a of Object.keys(q.attributes)) if (a !== 'position' && a !== 'normal' && a !== 'uv') q.deleteAttribute(a); q.applyMatrix4(new THREE.Matrix4().multiplyMatrices(inv, o.matrixWorld)); return q; });
+    const mg = mergeGeometries(gs); if (!mg) continue; const mesh = new THREE.Mesh(mg, m); mesh.castShadow = mesh.receiveShadow = true; for (const o of list) o.removeFromParent(); g.add(mesh); } }
+export class Tool { constructor(kind, obj, o) { this.kind = kind; this.obj = obj; this.o = o; this.center = new THREE.Vector3(); this.home = { pos: new THREE.Vector3(), quat: new THREE.Quaternion() }; this.tool = true; this.held = false; }
+  setHome(p, q) { this.home.pos.copy(p); this.home.quat.copy(q); this.obj.position.copy(p); this.obj.quaternion.copy(q); } goHome() { this.obj.position.copy(this.home.pos); this.obj.quaternion.copy(this.home.quat); } onGrab() { } onRelease() { return true; } }
+export const plain = (color, o = {}) => new THREE.MeshStandardMaterial({ color, roughness: o.rough ?? .8, metalness: o.metal ?? 0, envMapIntensity: o.env ?? .4 });
+export function pbr(name, o = {}) { const m = plain(o.color ?? 0x8a6a4a, o); m.userData.tile = o.tile || 1; return m; }
+export function slab(w, h, d, material, x = 0, y = 0, z = 0, parent) { const m = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), material); m.position.set(x, y, z); m.castShadow = m.receiveShadow = true; if (parent) parent.add(m); return m; }
+export function tube(rt, rb, h, material, x = 0, y = 0, z = 0, parent, seg = 20) { const m = new THREE.Mesh(new THREE.CylinderGeometry(rt, rb, h, seg), material); m.position.set(x, y, z); m.castShadow = m.receiveShadow = true; if (parent) parent.add(m); return m; }
+export function canvasTex(w, h, draw) { const c = document.createElement('canvas'); c.width = w; c.height = h; draw(c.getContext('2d'), w, h); const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = 8; return t; }

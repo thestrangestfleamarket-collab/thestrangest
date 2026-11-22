@@ -137,10 +137,12 @@ function setField(id, own) {
   if (!renderer.xr.isPresenting) resetCamera();
   ambience();
 }
-// The map's standing sounds, where they are in the room: the river, the birds, the leaves.
+// The map's standing sounds, where they are in the room: the river, the birds, the leaves; a world's own bed instead where it has one (look.amb).
 function ambience() {
   if (!field) return;
-  sound.ambience({ river: field.river && worldPos(field.river), birds: field.look && field.look.birds && field.woods ? worldPos(field.woods) : null, leaves: field.woods && worldPos(field.woods) });
+  const own = field.look && field.look.amb, mid = own && worldPos(field.river || V(0, 0.5, 0)), want = {};
+  for (const k of own || []) want[k] = mid;
+  sound.ambience({ river: !own && field.river && worldPos(field.river), birds: !own && field.look && field.look.birds && field.woods ? worldPos(field.woods) : null, leaves: !own && field.woods && worldPos(field.woods), ...want });
 }
 
 // ---------------------------------------------------------------- text helpers
@@ -466,17 +468,23 @@ function deathFx(g) {
   fx.burst({ pos: up(p, 0.3), tex: 'smoke_04', color: 0x555048, count: 8, size: 0.9, life: 1.4, speed: 0.7, up: 1, drag: 1.5, grow: 1, additive: false, opacity: 0.5, spread: 0.4 });
 }
 
-// Footsteps by the ground stepped onto: soft in grass, a rustle in the wood, hollow on the bridge, a splash in the ford.
-const STEP = { '.': [0.82, 0.4], f: [0.78, 0.4], d: [1, 0.5], b: [1.3, 0.6], s: [0.7, 0.3] };
+// Footsteps by what is stepped onto (a ground's `foot` in maps.js, or the map's own bare ground): [the step's pitch, its loudness, what goes with it]:
+// soft in grass, a rustle in the wood, hollow on the bridge, a splash in the ford, a crunch in snow and cinder, a hard tick on ice and stone, a puff in ash.
+const FOOT = { grass: [0.82, 0.4, 'rustle'], leaves: [0.78, 0.4, 'rustle'], moss: [0.7, 0.3, 'rustle'], dirt: [1, 0.5], wood: [1.3, 0.6, 'thud'], water: [0.7, 0.3, 'splash'],
+  snow: [0.7, 0.34, 'crunch'], gravel: [1.05, 0.45, 'crunch'], cinder: [0.95, 0.42, 'crunch'], ice: [1.5, 0.42, 'tick'], stone: [1.22, 0.55, 'tick'], ash: [0.62, 0.26, 'puff'] };
 function moveFx(g, e) {
-  const p = g.position.clone(), wp = worldPos(p), k = field && field.land ? field.ground(e.x, e.y) : null, [rate, vol] = STEP[k] || [1, 0.5];
-  for (let i = 0; i < 3; i++) {
-    sound.play('step*', { pos: wp, vol, rate, delay: i * 0.13 });
-    if (k === 's') sound.whoosh({ pos: wp, dur: 0.22, from: 2600, to: 500, vol: 0.22, q: 0.6, delay: i * 0.13 + 0.03 });
-    else if (k === 'f' || k === '.') sound.whoosh({ pos: wp, dur: 0.12, from: 5000, to: 2500, vol: 0.05, q: 0.5, delay: i * 0.13 });
-    else if (k === 'b') sound.play('thud*', { pos: wp, vol: 0.12, rate: 1.5, delay: i * 0.13 });
+  const p = g.position.clone(), wp = worldPos(p), k = field && field.land ? field.ground(e.x, e.y) : null, own = field && field.look && field.look.foot;
+  const [rate, vol, more] = FOOT[k && ((own && own[k]) || G.TERRAIN[k].foot)] || [1, 0.5];
+  for (let i = 0; i < 3; i++) { const delay = i * 0.13;
+    sound.play('step*', { pos: wp, vol, rate, delay });
+    if (more === 'splash') sound.whoosh({ pos: wp, dur: 0.22, from: 2600, to: 500, vol: 0.22, q: 0.6, delay: delay + 0.03 });
+    else if (more === 'rustle') sound.whoosh({ pos: wp, dur: 0.12, from: 5000, to: 2500, vol: 0.05, q: 0.5, delay });
+    else if (more === 'thud') sound.play('thud*', { pos: wp, vol: 0.12, rate: 1.5, delay });
+    else if (more === 'crunch') sound.whoosh({ pos: wp, dur: 0.16, from: 1500, to: 520, vol: 0.2, q: 0.7, delay: delay + 0.01 });
+    else if (more === 'tick') sound.whoosh({ pos: wp, dur: 0.05, from: 4200, to: 3000, vol: 0.09, q: 2.5, delay });
+    else if (more === 'puff') sound.whoosh({ pos: wp, dur: 0.24, from: 520, to: 240, vol: 0.14, q: 0.5, delay });
   }
-  fx.burst({ pos: up(p, 0.08), tex: 'dirt_02', color: 0x8a7a66, count: 5, size: 0.4, life: 0.6, speed: 0.6, up: 0.5, drag: 2, grow: 0.8, additive: false, opacity: 0.4, spread: 0.2 });
+  fx.burst({ pos: up(p, 0.08), tex: 'dirt_02', color: (field && field.look && field.look.dust) || 0x8a7a66, count: 5, size: 0.4, life: 0.6, speed: 0.6, up: 0.5, drag: 2, grow: 0.8, additive: false, opacity: 0.4, spread: 0.2 });
 }
 
 // Starts the effects for one batch of server events. Returns how long (seconds) the board
@@ -986,7 +994,7 @@ function govern(dt) {
   else { lean = 2; applyQuality(); }
 }
 const ONE = new THREE.Vector3(1, 1, 1), camLocal = new THREE.Vector3(), camPos = new THREE.Vector3(), camDir = new THREE.Vector3(), camUp = new THREE.Vector3();
-let nextCrackle = 0;
+let nextCrackle = 0, nextDrip = 0;
 let lastSecond = 0;
 let lastTime = 0, now = 0;
 renderer.setAnimationLoop(time => {
@@ -1034,6 +1042,10 @@ renderer.setAnimationLoop(time => {
   if (field && field.fires.length && now > nextCrackle) {
     nextCrackle = now + 0.1 + Math.random() * 0.5;
     sound.crackle(worldPos(field.fires[Math.floor(Math.random() * field.fires.length)]));
+  }
+  if (field && field.look && field.look.amb && field.look.amb.includes('drips') && now > nextDrip) {   // a cavern drips, now here, now there
+    nextDrip = now + 1.2 + Math.random() * 4.5;
+    sound.drip(worldPos(V((Math.random() - 0.5) * cols, 0.2, (Math.random() - 0.5) * rows)));
   }
   const viewCam = renderer.xr.isPresenting ? renderer.xr.getCamera() : camera;
   viewCam.getWorldPosition(camPos);

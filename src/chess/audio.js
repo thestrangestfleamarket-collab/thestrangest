@@ -142,7 +142,8 @@ export class Sound {
     src.start(); lfo.start();
   }
 
-  // The map's standing sounds, each at its place in the room (null: silent): a river (shaped noise), birds (a recording), leaves in the wind.
+  // The map's standing sounds, each at its place in the room (null: silent): a river (shaped noise), birds (a recording), leaves in the wind;
+  // and the three worlds' own: a high wind (a recording) over a low one, lava (a recorded fire, slowed, over a rumble), a cavern's hollow air.
   // Called again whenever the board moves; quiet by design.
   ambience(want) {
     this.want = want;
@@ -171,12 +172,17 @@ export class Sound {
     };
     node('river', 0.16, g => { noise(g, 'bandpass', 900, 0.5, 0.11, 0.2); noise(g, 'lowpass', 300, 0.7, 0.07, 0.3); });
     node('leaves', 0.05, g => noise(g, 'highpass', 3200, 0.4, 0.09, 0.7));
-    node('birds', 0.3, g => {
-      fetch('/chess-assets/land/snd/birds.mp3').then(r => r.arrayBuffer()).then(b => ctx.decodeAudioData(b)).then(buf => {
-        const src = ctx.createBufferSource(); src.buffer = buf; src.loop = true; src.connect(g); src.start();
-      }).catch(() => {});
-    });
+    const loop = (g, file, rate = 1) => this.fetch(file).then(buf => { const src = ctx.createBufferSource(); src.buffer = buf; src.loop = true; src.playbackRate.value = rate; src.connect(g); src.start(); }).catch(() => {});
+    node('birds', 0.3, g => loop(g, 'birds'));
+    node('wind', 0.42, g => { loop(g, 'wind'); noise(g, 'lowpass', 220, 0.6, 0.05, 0.4); });
+    node('lava', 0.3, g => { loop(g, 'fire', 0.6); noise(g, 'lowpass', 90, 0.8, 0.04, 0.3); });
+    node('cave', 0.2, g => { noise(g, 'lowpass', 150, 0.9, 0.03, 0.35); noise(g, 'bandpass', 420, 4, 0.05, 0.6); });
+    if (want.drips && !this.buffers.drip) this.fetch('drip').then(buf => { this.buffers.drip = buf; }).catch(() => {});
   }
+  // a landscaped map's own recording (data/chess/land/snd/), fetched when first wanted
+  fetch(name) { return fetch(`/chess-assets/land/snd/${name}.mp3`).then(r => r.arrayBuffer()).then(b => this.ctx.decodeAudioData(b)); }
+  // one drop falling somewhere in a cavern, with a long tail
+  drip(pos) { if (this.ctx && this.ctx.state === 'running' && this.buffers.drip) this.play('drip', { pos, vol: 0.5, rate: 0.8 + Math.random() * 0.5, send: 1.3 }); }
 
   crackle(pos) {
     if (!this.ctx || this.ctx.state !== 'running') return;

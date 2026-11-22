@@ -1,0 +1,122 @@
+{
+ "kiri10": {
+  "kind": "sedan",
+  "len": 4.6,
+  "w": 1.8,
+  "h": 1.52,
+  "mats": 8,
+  "parked": false,
+  "uid": "7fd6e15785fa4aa9bfd6e31eb7c97ba6",
+  "title": "Kiri '10 - Low poly model",
+  "license": "CC Attribution",
+  "author": "DanielZhabotinsky"
+ },
+ "renegade": {
+  "kind": "suv",
+  "len": 4.24,
+  "w": 1.94,
+  "h": 1.93,
+  "mats": 2,
+  "parked": true,
+  "uid": "192f7e81dce84c6780434f692a0f96c5",
+  "title": "Jeep Renegade 2016",
+  "license": "CC Attribution",
+  "author": "pinceladas3d"
+ },
+ "conquer_pickup": {
+  "kind": "pickup",
+  "len": 5.2,
+  "w": 2.07,
+  "h": 2.02,
+  "mats": 7,
+  "parked": false,
+  "uid": "6c48c94be8974dc7a5932f697c0ba68f",
+  "title": "Conquer '89 Pickup - Low poly model",
+  "license": "CC Attribution",
+  "author": "DanielZhabotinsky"
+ },
+ "shvan_van": {
+  "kind": "van",
+  "len": 5.3,
+  "w": 2.54,
+  "h": 2.22,
+  "mats": 8,
+  "parked": false,
+  "uid": "09d718c9cf72401b8534d265a06a803f",
+  "title": "Shvan '92 - Low poly model",
+  "license": "CC Attribution",
+  "author": "DanielZhabotinsky"
+ },
+ "lct_truck": {
+  "kind": "truck",
+  "len": 7.2,
+  "w": 3.02,
+  "h": 3.19,
+  "mats": 11,
+  "parked": false,
+  "uid": "3be03b6a43aa41898c9ca806b8787052",
+  "title": "LCT 3000 '07- Low poly model",
+  "license": "CC Attribution",
+  "author": "DanielZhabotinsky"
+ },
+ "milano95": {
+  "kind": "hatch",
+  "len": 3.9,
+  "w": 1.95,
+  "h": 1.46,
+  "mats": 8,
+  "parked": false,
+  "uid": "122a22d210234596ad23623588d0d166",
+  "title": "Milano '95 - Low poly model",
+  "license": "CC Attribution",
+  "author": "DanielZhabotinsky"
+ },
+ "riverside88": {
+  "kind": "sedan",
+  "len": 4.9,
+  "w": 1.9,
+  "h": 1.33,
+  "mats": 8,
+  "parked": false,
+  "uid": "8509a7f82665442592627940b7a1cfab",
+  "title": "Riverside '88 - Low poly model",
+  "license": "CC Attribution",
+  "author": "DanielZhabotinsky"
+ },
+ "fairheaven_sw": {
+  "kind": "wagon",
+  "len": 5.3,
+  "w": 1.96,
+  "h": 1.49,
+  "mats": 9,
+  "parked": false,
+  "uid": "aa0becb6e854422596cac6b21bf79787",
+  "title": "Fairheaven SW '84 - Low poly model",
+  "license": "CC Attribution",
+  "author": "DanielZhabotinsky"
+ },
+ "cop_cruiser": {
+  "kind": "police",
+  "len": 5.3,
+  "w": 1.92,
+  "h": 1.65,
+  "mats": 8,
+  "parked": false,
+  "uid": "61766c1e6e1e4b2b803c174f33433a74",
+  "title": "Fairheaven LT '80 Cop Cruiser - Low poly model",
+  "license": "CC Attribution",
+  "author": "DanielZhabotinsky"
+ },
+ "lifted_pickup": {
+  "kind": "pickup",
+  "len": 5.2,
+  "w": 2.26,
+  "h": 2.03,
+  "mats": 8,
+  "parked": false,
+  "uid": "67beae18c3d24be68f9c8f0ec382d8e3",
+  "title": "Lightbody Lifted '85 - Low poly model",
+  "license": "CC Attribution",
+  "author": "DanielZhabotinsky"
+ }
+}

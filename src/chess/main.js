@@ -3,9 +3,9 @@ import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import * as G from './game.js';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
-import { makeBoard, makeTable } from './board.js';
+import { makeBoard } from './board.js';
 import { Labels } from './labels.js';
-import { makeDungeon } from './dungeon.js';
+import { makeDungeon, HAZE } from './dungeon.js';
 import { LEVELS } from './ai.js';
 import { CAMPAIGN, nodeOf, budgetFor, isOpen, finished } from './campaign.js';
 import { FX } from './fx.js';
@@ -55,9 +55,8 @@ renderer.shadowMap.type = THREE.PCFShadowMap;
 document.body.appendChild(renderer.domElement);
 
 const scene = new THREE.Scene();
-const BG = new THREE.Color(0x0d0d10), FOG = new THREE.FogExp2(0x0d0d10, 0.014);
+const BG = new THREE.Color(HAZE);   // behind everything: the far air's colour (the place itself is dungeon.js)
 scene.background = BG;
-scene.fog = FOG;
 const camera = new THREE.PerspectiveCamera(50, innerWidth / innerHeight, 0.01, 200);
 camera.position.set(0, 10, 10.5);
 const controls = new OrbitControls(camera, renderer.domElement);
@@ -87,11 +86,11 @@ const pickRoots = [fieldGroup, unitsGroup, arrowsGroup, panel];
 const catcher = new THREE.Mesh(new THREE.PlaneGeometry(1, 1).rotateX(-Math.PI / 2).translate(0, 0.008, 0), new THREE.ShadowMaterial({ opacity: 0.34 }));
 catcher.receiveShadow = true; catcher.raycast = () => {}; catcher.renderOrder = 2;
 world.add(catcher);
-const dungeon = makeDungeon(renderer); // the board's setting: still, baked, three draws
+const dungeon = makeDungeon(renderer); // the board's place: the hall, the mountainside and the far country, baked, five draws
 world.add(dungeon.group);
 
-// The battlefield (maps.js), built when the match's state first names it; on a screen a round table under it (in AR your real table does this job).
-let cols = G.COLS, rows = G.ROWS, field = null, table = null;
+// The battlefield (maps.js), built when the match's state first names it.
+let cols = G.COLS, rows = G.ROWS, field = null;
 const tx = x => x - (cols - 1) / 2;
 const tz = y => y - (rows - 1) / 2;
 const ty = (x, y) => (field ? field.yAt(x, y) : 0);
@@ -99,13 +98,10 @@ function setField(id) {
   if (!G.MAPS[id]) id = 'board';
   if (field && field.id === id) return;
   if (field) field.dispose();
-  if (table) { table.userData.free(); table.removeFromParent(); table.geometry.dispose(); table.material.map.dispose(); table.material.dispose(); }
   const m = G.MAPS[id];
   cols = m.cols; rows = m.rows;
   field = makeBoard(m, { id, renderer });
   fieldGroup.add(field.group);
-  table = makeTable(m, renderer); table.visible = !renderer.xr.isPresenting;
-  world.add(table);
   catcher.scale.set(cols + 0.7, 1, rows + 0.7);
   applyQuality(); placePanel();
   if (!renderer.xr.isPresenting) resetCamera();
@@ -877,8 +873,6 @@ function placeBoardInFront() {
 
 renderer.xr.addEventListener('sessionstart', () => {
   scene.background = null;
-  scene.fog = null;
-  if (table) table.visible = false;
   world.scale.setScalar(arScale);
   slowMs = slowT = lean = 0;
   renderer.xr.setFoveation(0.7);
@@ -891,8 +885,6 @@ renderer.xr.addEventListener('sessionstart', () => {
 });
 renderer.xr.addEventListener('sessionend', () => {
   scene.background = BG;
-  scene.fog = FOG;
-  if (table) table.visible = true;
   world.scale.setScalar(1);
   sound.refDistance = 14;
   lean = 0;
@@ -1148,4 +1140,4 @@ function act(player, action, rand) {
 }
 if (new URLSearchParams(location.search).get('camp')) openCampaign();
 if (new URLSearchParams(location.search).get('show')) show(new URLSearchParams(location.search).get('show'), new URLSearchParams(location.search).get('setup'), new URLSearchParams(location.search).get('full'));
-window.__t = { stage, act, need, typesReady, trisOf, get page() { return page; }, get aim() { return aim; }, tabs3D, chips3D, pools, handlePick, show, world, G, drawUnits, get prog() { return prog; }, get openMatch() { return openMatch; }, openCampaign, CAMPAIGN, get camp() { return camp; }, get inCamp() { return inCamp; }, get unitsReady() { return charactersReady() && !crowdDirty && (!state || typesReady(state.units.map(u => u.type))); }, dungeon, crowd, labels, hemi, get table() { return table; }, get arScale() { return arScale; }, unitMeshes, get campSel() { return campSel; }, get solo() { return solo; }, get campNode() { return campNode; }, saveTeam, loadTeam, get teams() { return teams; }, get held() { return held; }, get ready() { return ready; }, get setupSel() { return setupSel; }, get field() { return field; }, castFx, explode, V, camera, controls, fx, sun, renderer, scene, get state() { return state; }, get me() { return me; }, get code() { return code; }, get selected() { return selected; }, get lean() { return lean; } };
+window.__t = { stage, act, need, typesReady, trisOf, get page() { return page; }, get aim() { return aim; }, tabs3D, chips3D, pools, handlePick, show, world, G, drawUnits, get prog() { return prog; }, get openMatch() { return openMatch; }, openCampaign, CAMPAIGN, get camp() { return camp; }, get inCamp() { return inCamp; }, get unitsReady() { return charactersReady() && !crowdDirty && (!state || typesReady(state.units.map(u => u.type))); }, dungeon, crowd, labels, hemi, get arScale() { return arScale; }, unitMeshes, get campSel() { return campSel; }, get solo() { return solo; }, get campNode() { return campNode; }, saveTeam, loadTeam, get teams() { return teams; }, get held() { return held; }, get ready() { return ready; }, get setupSel() { return setupSel; }, get field() { return field; }, castFx, explode, V, camera, controls, fx, sun, renderer, scene, get state() { return state; }, get me() { return me; }, get code() { return code; }, get selected() { return selected; }, get lean() { return lean; } };

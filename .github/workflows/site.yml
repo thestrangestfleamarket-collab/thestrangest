@@ -64,6 +64,7 @@ jobs:
           k asylum  'src/asylum/|tools/asylum\.cjs|tests/asylum\.cjs'
           k skyaces 'src/fly/|data/fly/|tools/fly\.cjs|tests/skyaces\.cjs'
           k golf    'src/golf/|data/golf/|tools/golf\.cjs|tests/golf\.cjs'
+          k ball    'src/ball/|data/ball/|tools/ball\.cjs|tests/ball\.cjs|src/cantina/hands\.js'
           k cantina 'src/cantina/|data/cantina/|tools/cantina\.cjs|tests/cantina\.cjs|worker/cantina'
           k sushi   'src/sushi/|data/sushi/|tools/sushi\.cjs|tests/sushi\.cjs|worker/sushi'
           k saloon  'src/saloon/|data/saloon/|tools/saloon\.cjs|tests/saloon\.cjs|worker/saloon|src/sushi/(ctx|input|items|physics|fx|pf)\.js'
@@ -71,6 +72,7 @@ jobs:
           k hide    'src/hide/|data/hide/|worker/hide|tools/hide\.cjs|tests/hide\.cjs'
           k zombie  'src/zombie/|data/zombie/|worker/zombie|tools/zombie|tests/zombie\.cjs'
           k holmes  'src/holmes/|data/holmes/|worker/holmes|tools/holmes|tests/holmes\.cjs'
+          k drive   'src/drive/|data/drive/|worker/drive|tools/drive\.cjs|tests/drive\.cjs'
           k jam     'src/jam/|data/jam/|tools/jam\.cjs|tests/jam\.cjs'
           k drums   'src/drums/|data/drums/|data/sniper/(p|m|tex)/|src/sushi/(sky|ephem|air)\.js|tools/drums\.cjs|tests/drums\.cjs|worker/drums|src/jam/(avatars|textures)\.js'
           k shoot   'src/shoot/|tools/shoot\.cjs|tests/shoot\.cjs'
@@ -283,6 +285,10 @@ jobs:
         timeout-minutes: 15
         if: contains(steps.f.outputs.run, ' jam')
         run: node tests/jam.cjs dist/jam.html
+      - name: Night Drive (the driving game at /drive; the room, the page and its files, two linked pages)
+        timeout-minutes: 30
+        if: contains(steps.f.outputs.run, ' drive')
+        run: node tests/drive.cjs
       - name: The Garage (the drum kit at /drums; the keys and a click play it, then the sticks, triggers and grip in an emulated Quest 3)
         timeout-minutes: 30
         if: contains(steps.f.outputs.run, ' drums')
@@ -291,6 +297,10 @@ jobs:
         timeout-minutes: 30
         if: contains(steps.f.outputs.run, ' skyaces')
         run: node tests/skyaces.cjs dist/fly.html
+      - name: Jungle Court (basketball at /ball; a free throw, the bounce, the 60 second game, then an emulated Quest 3)
+        timeout-minutes: 20
+        if: contains(steps.f.outputs.run, ' ball')
+        run: node tests/ball.cjs dist/ball.html
       - name: Halcyon Greens (mini golf at /golf; it loads, a putt rolls, a putt holes out)
         timeout-minutes: 15
         if: contains(steps.f.outputs.run, ' golf')

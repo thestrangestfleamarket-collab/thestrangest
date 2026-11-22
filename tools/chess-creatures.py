@@ -7,9 +7,9 @@ def get(url):
 
 MIRROR = 'https://media.githubusercontent.com/media/series-ai/jam-ready-assets/main/'   # an unchanged copy of Quaternius' packs (the packs' own Google Drive folders refuse downloads)
 LIBS = {'animations': ('quaternius-universal-animation-library/3D/characters/UAL1_Standard.glb',
-                       ['Sword_Idle', 'Idle_Loop', 'Walk_Loop', 'Jog_Fwd_Loop', 'Sword_Attack', 'Punch_Cross', 'Punch_Jab', 'Pistol_Shoot', 'Pistol_Reload', 'Spell_Simple_Shoot', 'Interact', 'Hit_Chest', 'Hit_Head', 'Death01']),
+                       ['Sword_Idle', 'Idle_Loop', 'Walk_Loop', 'Jog_Fwd_Loop', 'Sword_Attack', 'Punch_Jab', 'Pistol_Shoot', 'Spell_Simple_Shoot', 'Interact', 'Hit_Chest', 'Hit_Head', 'Death01']),
         'animations2': ('quaternius-universal-animation-library-2/3D/characters/UAL2_Standard.glb',
-                        ['Idle_Shield_Loop', 'Shield_OneShot', 'Sword_Regular_B', 'Sword_Dash', 'OverhandThrow', 'Zombie_Idle_Loop', 'Zombie_Walk_Fwd_Loop', 'Zombie_Scratch', 'TreeChopping_Loop'])}
+                        ['Idle_Shield_Loop', 'Sword_Regular_B', 'OverhandThrow', 'Zombie_Idle_Loop', 'Zombie_Scratch', 'TreeChopping_Loop'])}
 # our name: (Poly Haven's, which of its pictures)
 TEX = {'stone': 'rock_boulder_cracked', 'bone': 'white_rough_plaster', 'hide': 'leather_white', 'cloth': 'rough_linen', 'fur': 'polar_fleece'}
 DRAGON = 'https://opengameart.org/sites/default/files/dragon_oga.zip'   # "Cethiel's Dragon 3D" (kooow / Drummyfish, after Cethiel's 2D dragon), CC0

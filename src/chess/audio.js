@@ -2,9 +2,8 @@
 const FILES = ['select', 'end', 'turn', 'win', 'lose', 'heal1', 'heal2', 'step0', 'step1', 'step2', 'step3', 'step4',
   'swing1', 'swing2', 'swing3', 'bow', 'drop', 'flesh0', 'flesh1', 'flesh2', 'armor0', 'armor1', 'armor2',
   'block0', 'block1', 'block2', 'thud0', 'thud1', 'fall0', 'fall1', 'boom0', 'boom1', 'rumble', 'snare0', 'snare1',
-  'paw0', 'paw1', 'paw2', 'stone0', 'stone1', 'stone2', 'rock0', 'rock1', 'drag', 'bone0', 'bone1', 'bone2', 'bone3', 'glass0', 'glass1', 'cloth0', 'cloth1', 'drip0', 'drip1', 'drip2', 'woosh0', 'woosh1', 'woosh2', 'woosh3',
-  'chop', 'punch0', 'punch1', 'mace0', 'mace1', 'slam0', 'slam1', 'lute0', 'lute1', 'creak', 'latch', 'scrape', 'growl', 'whine', 'howl', 'roar', 'screech', 'grunt', 'groan', 'wail', 'moan', 'rockfall', 'thunder', 'zap', 'flare', 'burn', 'ice',
-  'xbow', 'arrow', 'bodyfall', 'clash', 'shimmer', 'tone'];
+  'paw0', 'paw1', 'paw2', 'bone0', 'bone1', 'bone2', 'bone3', 'glass0', 'glass1', 'cloth0', 'cloth1', 'drip0', 'drip1', 'drip2', 'woosh0', 'woosh1', 'woosh2', 'woosh3', 'chop', 'punch0', 'punch1', 'scrape',
+  'growl', 'whine', 'roar', 'screech', 'grunt', 'groan', 'wail', 'moan', 'flare', 'burn', 'arrow', 'bodyfall', 'shimmer', 'tone'];
 export const SOUND_FILES = FILES;
 
 export class Sound {

@@ -7,7 +7,7 @@ import { mergeGeometries, mergeVertices } from 'three/addons/utils/BufferGeometr
 import { MeshoptSimplifier } from 'meshoptimizer';
 
 // Quaternius CC0: Modular Character Outfits - Fantasy (bodies), Universal Base Characters (heads, hair). Weapons, shields, hats, capes and the like are simple shapes made here.
-// Four creatures are built on the people's own body and bones, so they stand and move as the people do (BUILD below): the Ogre (a person made big and heavy), the Ghost (a hooded robe with no legs), the Skeleton and the Golem (bones and boulders, each carried by one bone).
+// Three creatures are built on the people's own body and bones, so they stand and move as the people do (BUILD below): the Ogre (a person made big and heavy), the Ghost (a hooded robe with no legs), the Skeleton (bones, each carried by one bone).
 // Two are whole CC0 models with their own bones and clips (CRE): Quaternius' Wolf and the dragon after Cethiel's.
 const SPEC = {
   bulwark:   { body: 'Male_Ranger', hide: ['Head_Hood'], head: 'Male_Head', hair: ['Hair_Buzzed'], hairColor: 0x2a2018, tint: 0x8f98a8, gear: ['sword', 'shield'] },
@@ -17,22 +17,13 @@ const SPEC = {
   ember:     { body: 'Male_Peasant', head: 'Male_Head', hair: ['Hair_Long', 'Hair_Beard'], hairColor: 0xb8b4ac, tint: 0xc04a36, gear: ['staff'] },
   mender:    { body: 'Female_Peasant', head: 'Female_Head', hair: ['Hair_Long'], hairColor: 0xc8a25a, tint: 0xf2efe6, gear: [] },
   hexbinder: { body: 'Female_Peasant', head: 'Female_Head', hair: ['Hair_Buns'], hairColor: 0x1c1a22, tint: 0x7d55c0, gear: ['wand'] },
-  pike:      { body: 'Male_Peasant', head: 'Male_Head', hair: ['Hair_Buzzed'], hairColor: 0x3a2a1c, tint: 0x8a9a4e, gear: ['pike', 'cap'] },
-  warden:    { body: 'Male_Ranger', hide: ['Head_Hood'], head: 'Male_Head', hair: ['Hair_Buzzed', 'Hair_Beard'], hairColor: 0x1c1a18, tint: 0x5c6470, gear: ['mace', 'tower', 'cap'] },
-  arbalest:  { body: 'Male_Peasant', head: 'Male_Head', hair: ['Hair_SimpleParted'], hairColor: 0x5a3a1c, tint: 0x4f6a3a, gear: ['arbalest', 'boltcase'] },
-  assassin:  { body: 'Male_Ranger', hide: ['Pauldron'], head: 'Male_Head', tint: 0x26242e, gear: ['dagger', 'dagger2', 'redcape'] },
-  bard:      { body: 'Male_Peasant', head: 'Male_Head', hair: ['Hair_Long'], hairColor: 0x9a4a22, tint: 0xe2b93a, gear: ['lute', 'hat'] },
   alchemist: { body: 'Female_Peasant', head: 'Female_Head', hair: ['Hair_Buns'], hairColor: 0x6a3a1c, tint: 0x4fa06a, gear: ['flask', 'bandolier', 'pack'] },
-  frost:     { body: 'Female_Peasant', head: 'Female_Head', hair: ['Hair_Long'], hairColor: 0xdfeaf2, tint: 0x7cc4ea, gear: ['froststaff', 'icecape'] },
   necro:     { body: 'Male_Ranger', hide: ['Pauldron'], head: 'Male_Head', hair: ['Hair_Beard'], hairColor: 0x18161a, tint: 0x3d2c52, gear: ['skullstaff', 'purplecape'] },
-  summoner:  { body: 'Female_Ranger', head: 'Female_Head', tint: 0x2f9a94, gear: ['ringstaff', 'peak'] },
-  storm:     { body: 'Male_Peasant', head: 'Male_Head', hair: ['Hair_SimpleParted', 'Hair_Beard'], hairColor: 0xd8d8d0, tint: 0x3450b8, gear: ['forkstaff'] },
   captain:   { body: 'Male_Ranger', hide: ['Head_Hood'], head: 'Male_Head', hair: ['Hair_SimpleParted', 'Hair_Beard'], hairColor: 0x4a3018, tint: 0xa83232, gear: ['sword', 'banner', 'plume', 'goldcape'] },
   // the creatures on the people's bones. k: how much larger than a person; aim: which way what it holds points as it stands in that clip (the figure's left, up, its front); skin: its skin's colour; wear: false for none of the people's own collar and belt; only: the parts of the body kept; build: its own pieces (BUILD); shape: its points moved
   ogre:      { body: 'Male_Peasant', head: 'Male_Head', hair: [], tint: 0x8a6c50, skin: 0xa9b884, k: 1.3, gear: ['club'], aim: ['Idle_Loop', [0.1, 1, 0.12]], build: 'ogre', shape: 'heavy', wear: ['belt'] },
   ghost:     { body: 'Male_Ranger', only: ['Ranger_Body', 'Ranger_Arms', 'Head_Hood'], hide: ['Belt', 'Bracer'], tint: 0xdfe6e6, skin: 0xcfd8d8, cloth: true, gear: [], build: 'ghost', wear: ['collar'], fade: true },
   skeleton:  { body: 'Male_Peasant', only: [], tint: 0xffffff, gear: ['rustsword'], build: 'skeleton', wear: [] },
-  golem:     { body: 'Male_Peasant', only: [], tint: 0xffffff, k: 1.27, gear: [], build: 'golem', wear: [] },
 };
 // A creature of its own: its file(s), how long it is made (metres), how far it is thinned, the surface it is painted with, its tail's bones turned so it is no longer than its square (the wolf's carried low, the dragon's curled round), stride: its walk's leg swings made that many times wider (the dragon's own walk barely leaves the spot), where its collar sits, and the clips kept under the names the page plays.
 const CRE = {
@@ -41,9 +32,9 @@ const CRE = {
 };
 const TRIS = { body: 1570, head: 380, hair: 200 };   // what each part of a figure is thinned to (its collar and belt, 128 triangles, came out of its body's share)
 const FIRST = new Set(['bulwark', 'lancer', 'strider', 'slinger', 'ember', 'mender', 'hexbinder']), LATER = 1370;   // the later people carry more gear: their bodies are thinned a little further, so no team of them costs more to draw than the first seven did
-const CLIPS = ['Sword_Idle', 'Idle_Loop', 'Idle_Shield_Loop', 'Zombie_Idle_Loop', 'Walk_Loop', 'Jog_Fwd_Loop', 'Zombie_Walk_Fwd_Loop', 'Sword_Attack', 'Sword_Regular_B', 'Sword_Dash', 'TreeChopping_Loop', 'Punch_Cross', 'Punch_Jab',
-  'Pistol_Shoot', 'Pistol_Reload', 'Spell_Simple_Shoot', 'Interact', 'OverhandThrow', 'Zombie_Scratch', 'Shield_OneShot', 'Hit_Chest', 'Hit_Head', 'Death01'];
-const WALKS = ['Walk_Loop', 'Jog_Fwd_Loop', 'Zombie_Walk_Fwd_Loop'], STRIKES = ['Sword_Attack', 'Sword_Regular_B', 'Sword_Dash', 'TreeChopping_Loop', 'Punch_Cross', 'Punch_Jab', 'Pistol_Shoot', 'Spell_Simple_Shoot', 'Interact', 'OverhandThrow', 'Zombie_Scratch'], FPS = 15;
+const CLIPS = ['Sword_Idle', 'Idle_Loop', 'Idle_Shield_Loop', 'Zombie_Idle_Loop', 'Walk_Loop', 'Jog_Fwd_Loop', 'Sword_Attack', 'Sword_Regular_B', 'TreeChopping_Loop', 'Punch_Jab',
+  'Pistol_Shoot', 'Spell_Simple_Shoot', 'Interact', 'OverhandThrow', 'Zombie_Scratch', 'Hit_Chest', 'Hit_Head', 'Death01'];
+const WALKS = ['Walk_Loop', 'Jog_Fwd_Loop'], STRIKES = ['Sword_Attack', 'Sword_Regular_B', 'TreeChopping_Loop', 'Punch_Jab', 'Pistol_Shoot', 'Spell_Simple_Shoot', 'Interact', 'OverhandThrow', 'Zombie_Scratch'], FPS = 15;
 // the one picture every figure is drawn from: [x, y, size] of each material's own picture in it; the lower half is the creatures' surfaces
 const W = 1024, H = 1024, CELL = { MI_Peasant: [0, 0, 256], MI_Ranger: [256, 0, 256], MI_Superhero_Male: [512, 0, 256], MI_Superhero_Female: [768, 0, 256], MI_Hair_1: [0, 256, 256], MI_Hair_2: [256, 256, 256],
   MI_Regular_Male: [512, 256, 128], MI_Regular_Female: [640, 256, 128], MI_Eyes: [512, 384, 128], white: [640, 384, 128],
@@ -51,7 +42,7 @@ const W = 1024, H = 1024, CELL = { MI_Peasant: [0, 0, 256], MI_Ranger: [256, 0, 
 // a surface (Poly Haven, data/full/chess/creatures/tex/): how bright it is made, how deep its relief is painted in, how much of its colour is taken out
 const SURF = { stone: [0.6, 1.1, 0.75], bone: [0.86, 1.1, 0.2], hide: [0.7, 0.9, 0], cloth: [0.82, 1, 0.5], fur: [0.78, 1.2, 0.85] };
 
-const CAPE = { redcape: 0x8c1f1f, goldcape: 0xd9b24a, icecape: 0xbfe6ff, purplecape: 0x6a35a0 };
+const CAPE = { goldcape: 0xd9b24a, purplecape: 0x6a35a0 };
 const mat = (color, glow = 0) => ({ color: new THREE.Color(color).multiplyScalar(1 + glow) });
 const TEAM = { color: new THREE.Color(1, 1, 1), trim: true };   // drawn in its side's colour by the page (the point colour's fourth number is 0)
 const steel = mat(0xcfd4dc), darkWood = mat(0x4a3324), leather = mat(0x3a2a20);
@@ -77,55 +68,23 @@ function makeGear(kind) {   // grip at the origin, pointing along +Y
   } else if (kind === 'shield') {
     g.add(part(new THREE.CylinderGeometry(0.34, 0.34, 0.035, 16), TEAM, 0, 0, 0), part(new THREE.SphereGeometry(0.09, 8, 5, 0, Math.PI * 2, 0, Math.PI / 2), steel, 0, 0.015, 0),
       part(new THREE.TorusGeometry(0.34, 0.016, 5, 16), steel, 0, 0, 0).rotateX(Math.PI / 2));
-  } else if (kind === 'dagger2') {
-    g.add(part(new THREE.BoxGeometry(0.055, 0.3, 0.012), steel, 0, 0.25, 0), part(new THREE.BoxGeometry(0.16, 0.03, 0.04), steel, 0, 0.09, 0), part(new THREE.CylinderGeometry(0.018, 0.018, 0.16, 6), leather, 0, 0, 0));
-  } else if (kind === 'pike') {
-    g.add(part(new THREE.CylinderGeometry(0.016, 0.018, 3.0, 6), darkWood, 0, 0.9, 0), part(new THREE.ConeGeometry(0.04, 0.3, 4), steel, 0, 2.55, 0), part(new THREE.BoxGeometry(0.2, 0.025, 0.025), steel, 0, 2.38, 0));
-  } else if (kind === 'mace') {
-    g.add(part(new THREE.CylinderGeometry(0.018, 0.018, 0.5, 6), darkWood, 0, 0.18, 0), part(new THREE.IcosahedronGeometry(0.08, 0), steel, 0, 0.47, 0));
-  } else if (kind === 'arbalest') {
-    g.add(part(new THREE.BoxGeometry(0.06, 0.8, 0.07), darkWood, 0, 0.22, 0), part(new THREE.BoxGeometry(0.8, 0.04, 0.035), steel, 0, 0.5, 0), part(new THREE.TorusGeometry(0.06, 0.012, 4, 8), steel, 0, 0.68, 0),
-      part(new THREE.BoxGeometry(0.014, 0.42, 0.014), mat(0xe8e0c8), 0, 0.34, 0.045));
-  } else if (kind === 'lute') {
-    const body = part(new THREE.SphereGeometry(0.17, 10, 7), mat(0xb5772e), 0, 0.12, 0); body.scale.set(1, 1.25, 0.5);
-    g.add(body, part(new THREE.BoxGeometry(0.04, 0.44, 0.025), darkWood, 0, 0.5, 0), part(new THREE.BoxGeometry(0.1, 0.09, 0.03), darkWood, 0, 0.75, -0.01), part(new THREE.SphereGeometry(0.05, 8, 5), mat(0x2a1a10), 0, 0.14, 0.07));
   } else if (kind === 'flask') {
     g.add(part(new THREE.SphereGeometry(0.09, 9, 7), mat(0x58e06a, 0.2), 0, 0.15, 0), part(new THREE.CylinderGeometry(0.025, 0.03, 0.1, 6), mat(0xcfe8d8), 0, 0.26, 0), part(new THREE.CylinderGeometry(0.032, 0.032, 0.03, 6), darkWood, 0, 0.32, 0));
-  } else if (kind === 'froststaff') {
-    const ice = part(new THREE.OctahedronGeometry(0.12), mat(0x9fe0ff, 0.2), 0, 1.42, 0); ice.scale.y = 1.7;
-    g.add(part(new THREE.CylinderGeometry(0.02, 0.026, 1.7, 6), mat(0xd8e4ec), 0, 0.45, 0), ice, part(new THREE.OctahedronGeometry(0.06), mat(0x9fe0ff, 0.2), 0.13, 1.3, 0), part(new THREE.OctahedronGeometry(0.06), mat(0x9fe0ff, 0.2), -0.13, 1.3, 0));
   } else if (kind === 'skullstaff') {
     g.add(part(new THREE.CylinderGeometry(0.02, 0.026, 1.7, 6), mat(0x1c1820), 0, 0.45, 0), part(new THREE.SphereGeometry(0.1, 9, 7), mat(0xe8e2d0), 0, 1.42, 0), part(new THREE.BoxGeometry(0.11, 0.07, 0.1), mat(0xe8e2d0), 0, 1.32, 0.02),
       part(new THREE.BoxGeometry(0.36, 0.03, 0.03), mat(0x1c1820), 0, 1.22, 0), part(new THREE.SphereGeometry(0.028, 6, 4), mat(0x2bd46a, 0.25), 0.04, 1.44, 0.085), part(new THREE.SphereGeometry(0.028, 6, 4), mat(0x2bd46a, 0.25), -0.04, 1.44, 0.085));
-  } else if (kind === 'ringstaff') {
-    g.add(part(new THREE.CylinderGeometry(0.02, 0.026, 1.6, 6), darkWood, 0, 0.42, 0), part(new THREE.TorusGeometry(0.16, 0.025, 6, 14), mat(0x4fe0d0, 0.2), 0, 1.4, 0), part(new THREE.SphereGeometry(0.055, 8, 6), mat(0xffd65a, 0.2), 0, 1.4, 0));
-  } else if (kind === 'forkstaff') {
-    const l = part(new THREE.BoxGeometry(0.03, 0.34, 0.03), mat(0xffe24a, 0.2), -0.1, 1.4, 0), r = part(new THREE.BoxGeometry(0.03, 0.34, 0.03), mat(0xffe24a, 0.2), 0.1, 1.4, 0); l.rotation.z = 0.4; r.rotation.z = -0.4;
-    g.add(part(new THREE.CylinderGeometry(0.02, 0.026, 1.7, 6), mat(0x2a2f4a), 0, 0.45, 0), l, r, part(new THREE.BoxGeometry(0.03, 0.3, 0.03), mat(0xffe24a, 0.2), 0, 1.47, 0));
-  } else if (kind === 'cap') {   // from here on: things worn, set in the standing figure's own space (WORN)
-    g.add(part(new THREE.SphereGeometry(0.135, 10, 5, 0, Math.PI * 2, 0, Math.PI / 2), steel, 0, 0, 0), part(new THREE.CylinderGeometry(0.19, 0.2, 0.014, 12), steel, 0, 0.005, 0));
-  } else if (kind === 'hat') {
-    const feather = part(new THREE.BoxGeometry(0.02, 0.3, 0.06), mat(0xd83a2a), 0.1, 0.17, -0.05); feather.rotation.x = -0.5;
-    g.add(part(new THREE.CylinderGeometry(0.22, 0.23, 0.014, 12), mat(0x2f6b3a), 0, 0, 0), part(new THREE.ConeGeometry(0.13, 0.22, 8), mat(0x2f6b3a), 0, 0.11, 0), feather);
-  } else if (kind === 'plume') {
+  } else if (kind === 'plume') {   // from here on: things worn, set in the standing figure's own space (WORN)
     g.add(part(new THREE.SphereGeometry(0.135, 10, 5, 0, Math.PI * 2, 0, Math.PI / 2), mat(0xd9b24a), 0, 0, 0), part(new THREE.BoxGeometry(0.035, 0.16, 0.3), mat(0xd83a2a), 0, 0.17, -0.02));
   } else if (CAPE[kind]) {
     g.add(part(new THREE.BoxGeometry(0.58, 1.0, 0.025), mat(CAPE[kind]), 0, -0.5, 0));
-  } else if (kind === 'peak') {
-    g.add(part(new THREE.CylinderGeometry(0.25, 0.26, 0.014, 12), mat(0x35c2b8), 0, 0, 0), part(new THREE.ConeGeometry(0.14, 0.42, 8), mat(0x35c2b8), 0, 0.21, 0), part(new THREE.TorusGeometry(0.135, 0.016, 4, 10), mat(0xffd65a), 0, 0.02, 0).rotateX(Math.PI / 2));
   } else if (kind === 'pack') {
     g.add(part(new THREE.BoxGeometry(0.34, 0.4, 0.16), leather, 0, 0, 0), part(new THREE.CylinderGeometry(0.05, 0.06, 0.26, 7), mat(0x58e06a, 0.2), -0.09, 0.3, 0), part(new THREE.CylinderGeometry(0.05, 0.06, 0.32, 7), mat(0xff8a3a, 0.2), 0.09, 0.33, 0),
       part(new THREE.SphereGeometry(0.06, 7, 5), mat(0x58e06a, 0.2), -0.09, 0.45, 0), part(new THREE.SphereGeometry(0.06, 7, 5), mat(0xff8a3a, 0.2), 0.09, 0.51, 0));
   } else if (kind === 'banner') {
     g.add(part(new THREE.CylinderGeometry(0.014, 0.014, 1.8, 6), darkWood, 0, 0.5, 0), part(new THREE.BoxGeometry(0.5, 0.4, 0.014), TEAM, 0.26, 1.18, 0), part(new THREE.BoxGeometry(0.5, 0.09, 0.02), mat(0xd9b24a), 0.26, 1.18, 0), part(new THREE.ConeGeometry(0.03, 0.1, 4), mat(0xd9b24a), 0, 1.45, 0));
-  } else if (kind === 'boltcase') {
-    g.add(part(new THREE.BoxGeometry(0.11, 0.34, 0.11), leather, 0, 0, 0), part(new THREE.BoxGeometry(0.02, 0.1, 0.02), mat(0xe8e0c8), -0.025, 0.2, 0), part(new THREE.BoxGeometry(0.02, 0.1, 0.02), mat(0xe8e0c8), 0.025, 0.2, 0.02));
   } else if (kind === 'bandolier') {
     const strap = part(new THREE.BoxGeometry(0.46, 0.045, 0.02), leather, 0, 0, 0);
     g.add(strap, part(new THREE.SphereGeometry(0.052, 7, 5), mat(0xff8a3a, 0.2), -0.13, -0.02, 0.04), part(new THREE.SphereGeometry(0.052, 7, 5), mat(0x58e06a, 0.2), 0, -0.02, 0.05), part(new THREE.SphereGeometry(0.052, 7, 5), mat(0xb070ff, 0.2), 0.13, -0.02, 0.04));
-  } else if (kind === 'tower') {
-    g.add(part(new THREE.BoxGeometry(0.64, 1.22, 0.045), TEAM, 0, 0, 0), part(new THREE.BoxGeometry(0.68, 0.05, 0.06), steel, 0, 0.6, 0), part(new THREE.BoxGeometry(0.68, 0.05, 0.06), steel, 0, -0.6, 0),
-      part(new THREE.BoxGeometry(0.05, 1.22, 0.06), steel, 0, 0, 0.005), part(new THREE.SphereGeometry(0.1, 8, 5), steel, 0, 0.1, 0.02));
   } else if (kind === 'club') {
     g.add(part(new THREE.CylinderGeometry(0.05, 0.026, 0.95, 7), darkWood, 0, 0.36, 0), rock(V(0, 0.84, 0), 0.115, 0.13, 0.115, { color: new THREE.Color(0xd8d2c6), lay: 'stone', metres: 0.5, facet: true }, 91, 1, new THREE.Quaternion()), part(new THREE.CylinderGeometry(0.058, 0.058, 0.04, 7), steel, 0, 0.68, 0));
   } else if (kind === 'rustsword') {
@@ -137,14 +96,13 @@ function makeGear(kind) {   // grip at the origin, pointing along +Y
 // How each item sits on its bone: [bone, position, rotation (Euler XYZ)].
 const HOLD = { sword: ['hand_r', [0, 0.09, 0.03], [Math.PI, 0, 0]], dagger: ['hand_r', [0, 0.09, 0.03], [Math.PI, 0, 0]], greataxe: ['hand_r', [0, 0.09, 0.03], [Math.PI, 0, 0]], staff: ['hand_l', [0, 0.09, 0.03], [Math.PI, 0, 0]],
   wand: ['hand_r', [0, 0.09, 0.03], [Math.PI, 0, 0]], crossbow: ['hand_r', [0, 0.09, 0.03], [Math.PI / 2, 0, 0]], shield: ['lowerarm_l', [0, 0.14, -0.07], [Math.PI / 2, 0, 0]],
-  dagger2: ['hand_l', [0, 0.09, 0.03], [Math.PI, 0, 0]], pike: ['hand_r', [0, 0.09, 0.03], [Math.PI, 0, 0]], mace: ['hand_r', [0, 0.09, 0.03], [Math.PI, 0, 0]], arbalest: ['hand_r', [0, 0.09, 0.03], [Math.PI / 2, 0, 0]],
-  lute: ['hand_l', [0, 0.09, 0.03], [Math.PI, 0, 0]], flask: ['hand_r', [0, 0.09, 0.03], [Math.PI, 0, 0]], froststaff: ['hand_l', [0, 0.09, 0.03], [Math.PI, 0, 0]], skullstaff: ['hand_l', [0, 0.09, 0.03], [Math.PI, 0, 0]],
-  ringstaff: ['hand_l', [0, 0.09, 0.03], [Math.PI, 0, 0]], forkstaff: ['hand_l', [0, 0.09, 0.03], [Math.PI, 0, 0]], club: ['hand_r', [0, 0.09, 0.03], [Math.PI, 0, 0]], rustsword: ['hand_r', [0, 0.09, 0.03], [Math.PI, 0, 0]] };
+  flask: ['hand_r', [0, 0.09, 0.03], [Math.PI, 0, 0]], skullstaff: ['hand_l', [0, 0.09, 0.03], [Math.PI, 0, 0]] , club: ['hand_r', [0, 0.09, 0.03], [Math.PI, 0, 0]], rustsword: ['hand_r', [0, 0.09, 0.03], [Math.PI, 0, 0]] };
 // Things worn: [the bone that carries it, where it sits from that bone as the figure stands at rest (the figure's left, up, its front), its turn]. 'top' is the crown of the head.
-const WORN = { cap: ['Head', 'top', [0, -0.07, 0.01], [0, 0, 0]], hat: ['Head', 'top', [0, -0.05, 0.01], [0, 0, 0]], plume: ['Head', 'top', [0, -0.07, 0.01], [0, 0, 0]],
-  redcape: ['spine_03', 'bone', [0, 0.14, -0.17], [0.1, 0, 0]], goldcape: ['spine_03', 'bone', [0, 0.14, -0.17], [0.1, 0, 0]], icecape: ['spine_03', 'bone', [0, 0.14, -0.17], [0.1, 0, 0]], purplecape: ['spine_03', 'bone', [0, 0.14, -0.17], [0.1, 0, 0]],
-  peak: ['Head', 'top', [0, -0.05, 0.01], [0, 0, 0]], pack: ['spine_03', 'bone', [0, -0.08, -0.22], [0, 0, 0]], banner: ['spine_03', 'bone', [-0.1, 0, -0.2], [0, 0, 0]],
-  boltcase: ['pelvis', 'bone', [-0.21, 0.02, -0.06], [0, 0, 0.2]], bandolier: ['spine_02', 'bone', [0, 0.1, 0.16], [0, 0, 0.35]], tower: ['root', 'bone', [0.2, 0.66, 0.4], [0, 0.25, 0]] };
+const WORN = { plume: ['Head', 'top', [0, -0.07, 0.01], [0, 0, 0]],
+  goldcape: ['spine_03', 'bone', [0, 0.14, -0.17], [0.1, 0, 0]], purplecape: ['spine_03', 'bone', [0, 0.14, -0.17], [0.1, 0, 0]],
+  pack: ['spine_03', 'bone', [0, -0.08, -0.22], [0, 0, 0]], banner: ['spine_03', 'bone', [-0.1, 0, -0.2], [0, 0, 0]],
+  bandolier: ['spine_02', 'bone', [0, 0.1, 0.16], [0, 0, 0.35]] };
+
 
 const V = (x = 0, y = 0, z = 0) => new THREE.Vector3(x, y, z);
 const hash = (x, y, z, s = 0) => { const h = Math.sin(x * 127.1 + y * 311.7 + z * 74.7 + s * 13.37) * 43758.5453; return h - Math.floor(h); };
@@ -193,29 +151,6 @@ const BUILD = {
     add(part(new THREE.BoxGeometry(0.21, 0.27, 0.016), RAG, 0, P('pelvis').y - 0.13, P('pelvis').z + 0.075), 'pelvis'); add(part(new THREE.BoxGeometry(0.21, 0.23, 0.016), RAG, 0, P('pelvis').y - 0.11, P('pelvis').z - 0.085), 'pelvis');
     const nk = P('neck_01'); add(ring(V(0, nk.y - 0.005, nk.z), 0.062, 0.03, TEAM, V(0, 1, 0.1), 1, 10), 'spine_03');   // a torn scarf in its side's colour
     add(part(new THREE.BoxGeometry(0.07, 0.24, 0.014), TEAM, 0.03, nk.y - 0.14, nk.z + 0.1), 'spine_03');
-    return out;
-  },
-  golem(P) {
-    const S = { color: new THREE.Color(0xd2d0cc), lay: 'stone', metres: 0.9, facet: true }, EYE = mat(0xf0a23a), out = [], add = (o, bone) => out.push([o, bone]);
-    const s1 = P('spine_01'), s3 = P('spine_03'), nk = P('neck_01'), hp = P('pelvis'), hd = P('Head');
-    add(rock(V(0, (s3.y + nk.y) / 2 + 0.01, s3.z - 0.01), 0.3, 0.2, 0.21, S, 1, 2), 'spine_03');
-    add(rock(V(0, s1.y + 0.05, s1.z + 0.01), 0.21, 0.15, 0.17, S, 2, 1), 'spine_01');
-    add(rock(V(0, hp.y - 0.01, hp.z), 0.23, 0.13, 0.18, S, 3, 1), 'pelvis');
-    add(rock(V(0, hd.y + 0.07, hd.z + 0.025), 0.115, 0.115, 0.125, S, 4, 1), 'Head');
-    add(rock(V(0, hd.y + 0.125, hd.z + 0.09), 0.105, 0.03, 0.05, S, 5, 1), 'Head');   // the brow
-    for (const sx of [-1, 1]) add(part(new THREE.BoxGeometry(0.032, 0.022, 0.02), EYE, sx * 0.045, hd.y + 0.085, hd.z + 0.128), 'Head');
-    const rune = part(new THREE.BoxGeometry(0.15, 0.15, 0.03), TEAM, 0, (s3.y + nk.y) / 2 + 0.02, s3.z + 0.185); rune.rotation.z = Math.PI / 4; add(rune, 'spine_03');
-    for (const [s, sx] of [['l', 1], ['r', -1]]) {
-      const sh = P('upperarm_' + s), el = P('lowerarm_' + s), ha = P('hand_' + s), th = P('thigh_' + s), kn = P('calf_' + s), an = P('foot_' + s), fore = ha.clone().sub(el).normalize();
-      add(rock(sh.clone().add(V(sx * 0.01, 0.03, 0)), 0.135, 0.125, 0.135, S, 10 + sx, 1), 'upperarm_' + s);
-      add(along(sh, el, 0.085, S, 20 + sx, 0.95), 'upperarm_' + s);
-      add(along(el, ha, 0.105, S, 30 + sx, 1.05), 'lowerarm_' + s);
-      add(rock(ha.clone().addScaledVector(fore, 0.07), 0.115, 0.115, 0.115, S, 40 + sx, 1), 'hand_' + s);
-      add(ring(el.clone().lerp(ha, 0.72), 0.108, 0.026, TEAM, fore, 1, 10), 'lowerarm_' + s);
-      add(along(th, kn, 0.118, S, 50 + sx, 1), 'thigh_' + s);
-      add(along(kn, an, 0.105, S, 60 + sx, 1.05), 'calf_' + s);
-      add(rock(V(an.x, 0.066, an.z + 0.06), 0.115, 0.066, 0.17, S, 70 + sx, 1, new THREE.Quaternion()), 'foot_' + s);
-    }
     return out;
   },
   ogre(P) {
@@ -329,15 +264,20 @@ function resample(c, name = c.name) {
   return new THREE.AnimationClip(name, c.duration, tracks).optimize();
 }
 const moving = t => { if (t.name.endsWith('.scale')) return false; if (t.name.endsWith('.position')) { let span = 0; for (let i = 3; i < t.values.length; i++) span = Math.max(span, Math.abs(t.values[i] - t.values[i % 3])); return span > 1e-4; } return true; };   // a bone that never leaves its place keeps the body's own
-// How fast a figure must cross the ground for its walk's feet not to slide (metres a second): the speed its lowest points go backwards at while they are down.
+// How fast a figure must cross the ground for its walk's feet not to slide (metres a second): at each moment the lowest point of its feet is the one bearing it, and the speed that point goes backwards at is the speed the body must go forwards; the middle one of those over the cycle (moments with nothing on the ground left out).
 function stride(root, mesh, clip) {
-  const P = mesh.geometry.attributes.position, bb = mesh.geometry.boundingBox, feet = [], v = V(), mixer = new THREE.AnimationMixer(root), act = mixer.clipAction(clip); act.play();
-  for (let i = 0; i < P.count; i++) if (P.getY(i) < bb.min.y + (bb.max.y - bb.min.y) * 0.06 && P.getX(i) > 0 && P.getZ(i) > (bb.min.z + bb.max.z) / 2 - (bb.max.z - bb.min.z) * 0.12) feet.push(i);
-  const N = 48, at = [];
-  for (let k = 0; k <= N; k++) { mixer.setTime(clip.duration * k / N); root.updateMatrixWorld(true); mesh.skeleton.update(); let y = 0, z = 0; for (const i of feet) { v.fromBufferAttribute(P, i); mesh.applyBoneTransform(i, v); y += v.y; z += v.z; } at.push([y / feet.length, z / feet.length]); }
-  const lo = Math.min(...at.map(a => a[0])), hi = Math.max(...at.map(a => a[0])), zs = at.map(a => a[1]); let sum = 0, n = 0;
-  for (let k = 0; k < N; k++) if (Math.max(at[k][0], at[k + 1][0]) < lo + (hi - lo) * 0.3) { sum += (at[k][1] - at[k + 1][1]) / (clip.duration / N); n++; }
+  const P = mesh.geometry.attributes.position, bb = mesh.geometry.boundingBox, tall = bb.max.y - bb.min.y, feet = [], v = V(), mixer = new THREE.AnimationMixer(root), act = mixer.clipAction(clip); act.play();
+  for (let i = 0; i < P.count; i++) if (P.getY(i) < bb.min.y + tall * 0.06) feet.push(i);
+  const N = 96, at = [];
+  for (let k = 0; k <= N; k++) { mixer.setTime(clip.duration * k / N); root.updateMatrixWorld(true); mesh.skeleton.update(); at.push(feet.map(i => { v.fromBufferAttribute(P, i); mesh.applyBoneTransform(i, v); return [v.y, v.z]; })); }
+  const floor = Math.min(...at.map(f => Math.min(...f.map(q => q[0])))), vel = [];
+  for (let k = 0; k < N; k++) { let j = 0; for (let i = 1; i < feet.length; i++) if (at[k][i][0] < at[k][j][0]) j = i; if (at[k][j][0] < floor + tall * 0.02 && at[k + 1][j][0] < floor + tall * 0.02) vel.push((at[k][j][1] - at[k + 1][j][1]) / (clip.duration / N)); }
   act.stop(); mixer.uncacheRoot(root); mixer.setTime(0); root.updateMatrixWorld(true); mesh.skeleton.update();
+  vel.sort((a, b) => a - b);
+  if (vel.length >= N / 8 && vel[vel.length >> 1] > 0) return +vel[vel.length >> 1].toFixed(3);
+  // a bounding gait is hardly ever on the ground at its lowest: the mean speed its low points go backwards at instead
+  const lo = at.map(f => f.reduce((m, q) => Math.min(m, q[0]), 1e9)), top = Math.max(...at.map(f => Math.max(...f.map(q => q[0])))); let sum = 0, n = 0;
+  for (let k = 0; k < N; k++) for (let i = 0; i < feet.length; i++) { const d = (at[k][i][1] - at[k + 1][i][1]) / (clip.duration / N); if (d > 0 && Math.max(at[k][i][0], at[k + 1][i][0]) < floor + (top - floor) * 0.3) { sum += d; n++; } }
   return n ? +(sum / n).toFixed(3) : 0;
 }
 

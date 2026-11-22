@@ -9,8 +9,8 @@ const HUMAN = { walk: 'Walk_Loop', hit: 'Hit_Chest', death: 'Death01' }, OWN = {
 const sword = { idle: 'Sword_Idle', attack: 'Sword_Attack', ...HUMAN }, cast = { idle: 'Idle_Loop', attack: 'Spell_Simple_Shoot', ...HUMAN }, shoot = { idle: 'Idle_Loop', attack: 'Pistol_Shoot', ...HUMAN }, fist = { idle: 'Idle_Loop', attack: 'Punch_Cross', ...HUMAN };
 const SPEC = {
   bulwark: sword, lancer: sword, strider: fist, slinger: shoot, ember: cast, mender: cast, hexbinder: cast,
-  pike: sword, warden: sword, arbalest: shoot, assassin: fist, bard: cast, alchemist: cast, frost: cast, necro: cast, summoner: cast, storm: cast, captain: sword,
-  wolf: OWN, ogre: OWN, skeleton: OWN, ghost: OWN, whelp: OWN, golem: OWN,
+  alchemist: cast, necro: cast, captain: sword,
+  wolf: OWN, ogre: OWN, skeleton: OWN, ghost: OWN, whelp: OWN,
 };
 const SCALE = 0.78;   // board units to a metre: a figure, 1.8 m, stands 1.4 tiles high
 const TEAM = [0x3fa497, 0xd58a4a], REST = 0.5, MAX = 64;

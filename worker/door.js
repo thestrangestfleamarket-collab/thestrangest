@@ -40,7 +40,7 @@ const SPCA = /^\/space-assets\/((m|snd)\/[A-Za-z0-9_-]+\.(glb|mp3)|tex\/[a-z0-9_
 const JAMA = /^\/jam-assets\/[a-z0-9_-]+\.(glb|json|mp3)$/, JAMT = { glb: "model/gltf-binary", json: "application/json", mp3: "audio/mpeg" };   // STADIUM JAM's avatars, hands and samples: to anyone
 const DRUMA = /^\/drums-assets\/(?:(?:tex|m|p)\/)?[A-Za-z0-9_-]+\.(glb|json|mp3|jpg|webp)$/, DRUMT = { glb: "model/gltf-binary", json: "application/json", mp3: "audio/mpeg", jpg: "image/jpeg", webp: "image/webp" };   // THE GARAGE's recorded kit, models and surfaces: to anyone
 const SAYNO = new Map();
-const GOLFA = /^\/(vr|fly|golf|duel|cantina|hide|zombie|sushi|tank|saloon|turret|chess)-assets\/(?!.*\.\.)[A-Za-z0-9_.\/-]+\.(jpg|json|txt|glb|mp3|hdr|fbx|webp|mp4|bin|png)$/;   // HALCYON GREENS' pictures and models, AR DUEL's pictures, THE CANTINA's models and pictures, DEAD END's pictures, models and sounds, EYES DOWN's pictures and models, HULL DOWN's sky, surfaces, models and sounds, RAMEN's, SKIRMISH TABLE's people, sprites and sounds: to anyone
+const GOLFA = /^\/(vr|fly|golf|ball|duel|cantina|hide|zombie|sushi|tank|saloon|turret|chess)-assets\/(?!.*\.\.)[A-Za-z0-9_.\/-]+\.(jpg|json|txt|glb|mp3|hdr|fbx|webp|mp4|bin|png)$/;   // HALCYON GREENS' pictures and models, AR DUEL's pictures, THE CANTINA's models and pictures, DEAD END's pictures, models and sounds, EYES DOWN's pictures and models, HULL DOWN's sky, surfaces, models and sounds, RAMEN's, SKIRMISH TABLE's people, sprites and sounds: to anyone
 const BOOK = /^\/book\/(\d{1,6})\.txt$/, FILM = /^\/film\/([A-Za-z0-9_.-]{1,80})\/([A-Za-z0-9_.-]{1,120}\.mp4)$/, IA = /^\/ia\/([A-Za-z0-9_.-]{1,80})\.jpg$/, YT = /^\/yt\/([A-Za-z0-9_-]{11})\.jpg$/, BLANK = "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYGD4DwABBAEAHnOcQAAAAABJRU5ErkJggg==";
 const SKYJD = () => { const d = new Date(); return Date.UTC(1985, d.getUTCMonth(), d.getUTCDate()) / 864e5 + 2440587.5; },   // the sky's year is 1985 (src/134b DN.YEAR): that year's comets
    SBDB = "https://ssd-api.jpl.nasa.gov/sbdb_query.api?", SWPC = "https://services.swpc.noaa.gov/";
@@ -160,6 +160,9 @@ export default {
     // SENSOR TAG (src/tag/): its own page at /tag, to anyone with the link; its one public room is the Tag Durable Object
     if ((request.method === "GET" || request.method === "HEAD") && p === "/tag") return page(env, url, "/tag", request, "no-cache");
     if (p === "/tag/") return Response.redirect(url.origin + "/tag" + url.search, 301);
+    // JUNGLE COURT (src/ball/): its own page at /ball, to anyone with the link; its surfaces under /ball-assets/
+    if ((request.method === "GET" || request.method === "HEAD") && p === "/ball") return page(env, url, "/ball", request, "no-cache");
+    if (p === "/ball/") return Response.redirect(url.origin + "/ball" + url.search, 301);
     // AR DUEL (src/duel/): its own page at /duel, to anyone with the link; its pictures under /duel-assets/
     if ((request.method === "GET" || request.method === "HEAD") && p === "/duel") return page(env, url, "/duel", request, "no-cache");
     if (p === "/duel/") return Response.redirect(url.origin + "/duel" + url.search, 301);

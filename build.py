@@ -122,6 +122,7 @@ subprocess.run(['node', 'tools/shoot.cjs'], check=True)   # BREACHLINE (src/shoo
 subprocess.run(['node', 'tools/fly.cjs'], check=True)   # SKY ACES (src/fly/): its own page, dist/fly.html, and its models, pictures and sounds, dist/fly-assets/
 subprocess.run(['node', 'tools/golf.cjs'], check=True)   # HALCYON GREENS (src/golf/): its own page, dist/golf.html, and its pictures, dist/golf-assets/
 subprocess.run(['node', 'tools/crumbs.cjs'], check=True)   # MIDNIGHT CRUMBS (src/crumbs/): its own page, dist/crumbs.html, its creatures from data/pets/
+subprocess.run(['node', 'tools/ball.cjs'], check=True)   # JUNGLE COURT (src/ball/): its own page, dist/ball.html, and its surfaces, dist/ball-assets/
 subprocess.run(['node', 'tools/duel.cjs'], check=True)   # AR DUEL (src/duel/): its own page, dist/duel.html, and its pictures, dist/duel-assets/
 subprocess.run(['node', 'tools/qzar.cjs'], check=True)   # SLOWFIRE DUEL (src/qzar/): its own page, dist/qzar.html
 subprocess.run(['node', 'tools/laser.cjs'], check=True)   # LASER TAG (src/laser/): its own page, dist/laser.html

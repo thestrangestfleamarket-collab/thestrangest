@@ -14,7 +14,7 @@ function puffTexture() { // eroded-noise cloud puff: soft core, wispy broken edg
 
 export class Clouds {
   constructor(scene, quality = 1) {
-    const NC = Math.round(170 * quality), per = 14; const max = NC * per; this.count = max;
+    const NC = Math.round(170 * quality), per = 20; this.per = per; const max = NC * per; this.count = max;
     this.base = new Float32Array(max * 4); this.par = new Float32Array(max * 4); let n = 0;
     for (let c = 0; c < NC; c++) {
       const cx = (hash(c * 3.1) - 0.5) * 110000, cz = (hash(c * 7.7 + 1) - 0.5) * 110000, cy = 1500 + hash(c * 5.3 + 2) * 1300, big = 0.6 + hash(c + 0.5) * 1.3;
@@ -25,13 +25,13 @@ export class Clouds {
     const g = new THREE.InstancedBufferGeometry(); g.setAttribute('position', new THREE.Float32BufferAttribute([-1, -1, 0, 1, -1, 0, 1, 1, 0, -1, 1, 0], 3)); g.setIndex([0, 1, 2, 0, 2, 3]);
     this.aBase = new THREE.InstancedBufferAttribute(new Float32Array(max * 4), 4); this.aPar = new THREE.InstancedBufferAttribute(new Float32Array(max * 4), 4); this.aBase.setUsage(THREE.DynamicDrawUsage); this.aPar.setUsage(THREE.DynamicDrawUsage);
     g.setAttribute('iBase', this.aBase); g.setAttribute('iPar', this.aPar); g.instanceCount = max;
-    this.mat = new THREE.ShaderMaterial({ uniforms: { ...atmo, tPuff: { value: puffTexture() } }, transparent: true, depthWrite: false, fog: false, blending: THREE.CustomBlending, blendSrc: THREE.OneFactor, blendDst: THREE.OneMinusSrcAlphaFactor,
-      vertexShader: /* glsl */`attribute vec4 iBase, iPar; varying vec2 vUv; varying vec3 vW; varying float vH, vA, vOp;
-        void main(){ vec3 c = iBase.xyz; vec3 toC = cameraPosition - c; float d = length(toC);
+    this.mat = new THREE.ShaderMaterial({ uniforms: { ...atmo, tPuff: { value: puffTexture() }, uGrow: { value: 1 } }, transparent: true, depthWrite: false, fog: false, blending: THREE.CustomBlending, blendSrc: THREE.OneFactor, blendDst: THREE.OneMinusSrcAlphaFactor,
+      vertexShader: /* glsl */`attribute vec4 iBase, iPar; uniform float uGrow; varying vec2 vUv; varying vec3 vW; varying float vH, vA, vOp;
+        void main(){ vec3 c = iBase.xyz; float sz = iBase.w * uGrow; vec3 toC = cameraPosition - c; float d = length(toC);
           vec3 f = toC / d; vec3 r = normalize(cross(vec3(0.0, 1.0, 0.0), f)); vec3 u = cross(f, r);
           float cs = cos(iPar.y), sn = sin(iPar.y); vec2 q = mat2(cs, -sn, sn, cs) * position.xy;
-          vec3 p = c + (r * q.x + u * q.y) * iBase.w; vW = p; vUv = position.xy * 0.5 + 0.5; vH = iPar.x + q.y * 0.35; vOp = iPar.z;
-          vA = smoothstep(iBase.w * 0.35, iBase.w * 1.6, d);        // fade when the camera enters a puff (no hard clipping, low overdraw)
+          vec3 p = c + (r * q.x + u * q.y) * sz; vW = p; vUv = position.xy * 0.5 + 0.5; vH = iPar.x + q.y * 0.35; vOp = iPar.z;
+          vA = smoothstep(sz * 0.2, sz * 1.1, d);        // fade when the camera enters a puff (no hard clipping, low overdraw)
           gl_Position = projectionMatrix * viewMatrix * vec4(p, 1.0); if (vA < 0.004) gl_Position = vec4(2.0, 2.0, 2.0, 1.0); }`,
       fragmentShader: ATMO_GLSL + /* glsl */`uniform sampler2D tPuff; varying vec2 vUv; varying vec3 vW; varying float vH, vA, vOp;
         void main(){ float a = texture2D(tPuff, vUv).a * vA * vOp; if (a < 0.006) discard;
@@ -53,8 +53,8 @@ export class Clouds {
     this.order.sort((a, c) => d[c] - d[a]); const A = this.aBase.array, P = this.aPar.array, pa = this.par;
     for (let i = 0; i < n; i++) { const s = this.order[i] * 4, t = i * 4; A[t] = b[s]; A[t + 1] = b[s + 1]; A[t + 2] = b[s + 2]; A[t + 3] = b[s + 3]; P[t] = pa[s]; P[t + 1] = pa[s + 1]; P[t + 2] = pa[s + 2]; }
     this.aBase.needsUpdate = true; this.aPar.needsUpdate = true; }
-  setQuality(q) { this.mesh.geometry.instanceCount = Math.floor(this.count * (q < 1 ? 0.6 : 1) / 14) * 14; this.limit = this.mesh.geometry.instanceCount; }
-  update(dt, cam) { this.timer -= dt; if (this.timer <= 0) { this.timer = 0.4; this.sort(cam); } }
+  setQuality(q) { this.mesh.geometry.instanceCount = Math.floor(this.count * (q < 1 ? 0.6 : 1) / this.per) * this.per; this.limit = this.mesh.geometry.instanceCount; }
+  update(dt, cam) { this.timer -= dt; if (this.timer <= 0) { this.timer = 0.25; this.sort(cam); const b = this.base, d = this.dist, g = this.mat.uniforms.uGrow.value; let m = 0; for (let i = 0; i < this.count; i++) { const s = b[i * 4 + 3] * g * 0.75; if (d[i] < s * s) m = Math.max(m, 1 - Math.sqrt(d[i]) / s); } this.inside = Math.min(1, m * 1.8); } }
 }
 
 // ---------- particles ----------

@@ -35,6 +35,8 @@ export function makeRally(K, C) {
   function predict(side, after) { pb.p.copy(ball.p); pb.v.copy(ball.v); pb.w.copy(ball.w); let hit = -1, bad = false, t = 0; const hs = 1 / 120;
     for (let i = 0; i < 480; i++) { t += hs; fly(pb, hs, (k, d) => { if (k === 'bounce' && hit < 0) { if (d.inb && d.side === side) hit = t; else bad = true; } if (k === 'net') bad = true; }); if (bad) return null; if (hit >= 0 && t >= hit + after) return { x: pb.p.x, y: pb.p.y, z: pb.p.z, t }; } return null; }
   // a shot from where the ball is to a spot on the far side, by the sums, raised until it clears the net
+  // in passthrough you cannot run: the house plays the ball to where you stand
+  function toYou(t) { if (K.mode !== 'ar' || !C.arNear) return t; const hp = L(K.headPos()); return [hp.x + (K.racketHand === 'right' ? .55 : -.55) + (Math.random() - .5) * .4, Math.max(1, hp.z - C.arNear[0] - Math.random() * (C.arNear[1] - C.arNear[0]))]; }
   function shoot(tx, tz, T0, spin) { const p = ball.p, dx = tx - p.x, dz = tz - p.z, d = Math.hypot(dx, dz); let Tm = T0;
     for (let i = 0; i < 12; i++) { const k = 1 + C.kd * d * .55, vx = dx / Tm * k, vz = dz / Tm * k, vy = (C.y0 + R - p.y) / Tm + .5 * G * Tm, tn = -p.z / vz, yn = p.y + vy * tn - .5 * G * tn * tn;
       ball.v.set(vx, vy, vz); if (tn < 0 || tn > Tm || yn > C.y0 + netH(p.x + vx * tn) + R + C.clear) break; Tm += C.dT; }
@@ -49,7 +51,7 @@ export function makeRally(K, C) {
   function serve() { S.state = 'live'; S.last = null; S.bounces = 0; S.sinceB = 0; S.t = 0; AI.plan = null; ball.w.set(0, 0, 0);
     if (C.servePos && K.mode !== 'ar') { const even = (S.pts[0] + S.pts[1]) % 2 === 0; if (S.server === 'P') { K.rig.position.set(C.O.x + (even ? 1 : -1) * C.servePos[0], K.rig.position.y, C.O.z + C.servePos[1]); K.rig.updateMatrixWorld(true); K.camera.updateMatrixWorld(true); } else AI.x = (even ? -1 : 1) * C.servePos[0]; }
     if (S.server === 'P') { S.hover = true; K.headPos(); const hp = L(K.headPos()); ball.p.set(hp.x + (K.racketHand === 'right' ? .3 : -.3), C.table ? C.y0 + .28 : Math.max(1.1, hp.y - .45), C.table ? C.hl - .12 : hp.z - .6); ball.v.set(0, 0, 0); }
-    else { S.hover = false; ball.p.set(AI.x + .3, C.y0 + C.ai.hitY, AI.z + .3); S.last = 'A'; S.serving = true; const sv = C.serveAim ? C.serveAim('A', (S.pts[0] + S.pts[1]) % 2 === 0) : [(Math.random() * 2 - 1) * C.ai.tx, C.ai.tz0 + Math.random() * (C.ai.tz1 - C.ai.tz0)]; shoot(sv[0], sv[1], C.ai.T * 1.15, C.ai.spin * .5); AI.swing = 1; hitSound(8); moveYou(); } }
+    else { S.hover = false; ball.p.set(AI.x + .3, C.y0 + C.ai.hitY, AI.z + .3); S.last = 'A'; S.serving = true; const sv = C.serveAim ? C.serveAim('A', (S.pts[0] + S.pts[1]) % 2 === 0) : [(Math.random() * 2 - 1) * C.ai.tx, C.ai.tz0 + Math.random() * (C.ai.tz1 - C.ai.tz0)]; const s2 = toYou(sv); shoot(s2[0], s2[1], C.ai.T * 1.15, C.ai.spin * .5); AI.swing = 1; hitSound(8); moveYou(); } }
   const hitSound = sp => K.snd('bounce', _b.copy(ball.p).add(C.O), sp, C.pitch);
   // tennis only: you are stood where the ball is coming, on your racket's side
   function moveYou() { if (!C.autoMove || K.mode === 'ar') return; const q = predict('P', C.autoAfter); if (!q) return; const hp = L(K.headPos()), sd = K.racketHand === 'right' ? -1 : 1;
@@ -99,7 +101,7 @@ export function makeRally(K, C) {
     if (S.state === 'live' && S.last === 'P' && ball.p.z < 0 && (S.bounces === 1 ? S.sinceB >= A.after : (!C.table && ball.p.z < AI.z + 1.2 && ball.p.y < 2.2 && ball.p.y > .5))) {
       const rx = ball.p.x - (AI.x + .35), rz = ball.p.z - AI.z; if (Math.hypot(rx, rz) < A.reach && ball.p.y - C.y0 < A.high) { AI.swing = 1;
         if (Math.random() < lv.miss) { S.last = 'P'; AI.plan = null; S.bounces = 1; S.sinceB = -9; }
-        else { shoot((Math.random() * 2 - 1) * A.tx * lv.aim, A.tz0 + Math.random() * (A.tz1 - A.tz0), A.T * (0.9 + Math.random() * .25) / lv.pace, A.spin); hitSound(ball.v.length()); struck('A'); } } }
+        else { const tg = toYou([(Math.random() * 2 - 1) * A.tx * lv.aim, A.tz0 + Math.random() * (A.tz1 - A.tz0)]); shoot(tg[0], tg[1], A.T * (0.9 + Math.random() * .25) / lv.pace, A.spin); hitSound(ball.v.length()); struck('A'); } } }
     if (S.state === 'dead') { S.dead -= dt; if (S.dead <= 0) { if (S.over) { S.state = 'idle'; } else serve(); } }
     if (S.state === 'live') { S.t += dt; S.sinceB += dt; if (!S.hover && (S.t > 14 || ball.p.y < -2 || Math.abs(ball.p.x) > 40 || Math.abs(ball.p.z) > 40)) point(S.last === 'P' ? 'A' : 'P'); }
   }

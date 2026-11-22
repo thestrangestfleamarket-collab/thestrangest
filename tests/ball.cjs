@@ -1,4 +1,4 @@
-// THE BALL CHECK: node tests/ball.cjs [dist/ball.html] [folder for screenshots]. JUNGLE COURT starts in its clubhouse; ping pong and air hockey are played at their tables, a door leads to tennis (a point is played out) and another to basketball, where the ball is in hand; a free throw goes in, a dropped ball rebounds as a regulation one, two balls knock, the 60 second game counts a streak and ends, the sky and weather change; then an emulated Quest 3: a controller takes the ball and throws it, the stick teleports, tracked hands show, and the frame's cost is held.
+// THE BALL CHECK: node tests/ball.cjs [dist/ball.html] [folder for screenshots]. JUNGLE COURT starts in its clubhouse; ping pong and air hockey are played at their tables, a door leads to tennis (a point is played out) and another to basketball, where the ball is in hand; a free throw goes in, a dropped ball rebounds as a regulation one, two balls knock, the 60 second game counts a streak and ends, the sky and weather change; then an emulated Quest 3: a controller takes the ball and throws it, the stick teleports, tracked hands show, the frame's cost is held; then passthrough, each game alone.
 const { chromium } = require('playwright'), path = require('path'), fs = require('fs');
 const fails = [], ok = (c, m) => { if (!c) { fails.push(m); console.log((process.env.GITHUB_ACTIONS ? '::error title=ball::' : 'FAIL ') + m); } else console.log('ok   ' + m); };
 const PAGE = path.resolve(process.argv[2] || 'dist/ball.html'), ROOT = path.dirname(PAGE), OUT = process.argv[3]; if (OUT) fs.mkdirSync(OUT, { recursive: true });
@@ -71,6 +71,16 @@ const srv = require('http').createServer((q, r) => { const f = path.join(ROOT, d
   ok(cost.calls > 0 && cost.calls < 520 && cost.tris < 1500000, 'a frame in the headset: ' + cost.calls + ' draws and ' + cost.tris + ' triangles, shadows and both eyes (under 520 and 1,500,000)'); await shot(vr, '03-vr');
   await vr.evaluate(() => { __xrd.primaryInputMode = 'hand'; });
   ok(await till(vr, () => __ball.hands.some(h => h.isHand)), 'with the controllers down the hands are tracked');
+  await vr.close();
+  // passthrough: the game you were at stands alone in your room
+  const ar = await b.newPage({ viewport: { width: 320, height: 180 } }); watch(ar);
+  await ar.addInitScript(fs.readFileSync(require.resolve('iwer/build/iwer.min.js'), 'utf8') + ';window.__xrd=new IWER.XRDevice(IWER.metaQuest3);window.__xrd.installRuntime({forceInstall:true});window.__xrd.position.set(0,1.7,0);');
+  await ar.goto(FILE); await till(ar, () => window.__ball && __ball.t > .2 && __ball.SPORTS.room.furnished); ok(await ar.evaluate(() => __ball.SPORTS.room.hall.children.length > 60), 'the clubhouse is furnished with the market\'s chairs, shelves, lamps and jukebox, a television in the corner');
+  await ar.evaluate(() => __ball.SPORTS.room.goto('pool')); await till(ar, () => __ball.SPORTS.room.at === 'pool'); await till(ar, () => !document.getElementById('btnAR').hidden); await ar.evaluate(() => document.getElementById('btnAR').click());
+  ok(await till(ar, () => __ball.renderer.xr.isPresenting && __ball.mode === 'ar') && await ar.evaluate(() => { const c = __ball, R = c.SPORTS.room; return c.sport === 'room' && !R.hall.visible && R.pool.group.visible && !c.env.visible && !c.hoops[0].g.visible; }), 'ENTER AR from the pool table shows the pool table alone: no room, no court');
+  const each = await ar.evaluate(async () => { const c = __ball, o = {}, fr = () => new Promise(r => requestAnimationFrame(r)); for (const id of ['hoops', 'tennis', 'bowl', 'pp', 'air', 'skee']) { c.K.arPick = id; c.setSport(c.SPORTS[id] ? id : 'room'); await fr(); await fr(); const R = c.SPORTS.room;
+      o[id] = !c.env.visible && (c.SPORTS[id] ? !R.hall.parent.visible : !R.hall.visible) && (id === 'hoops') === c.hoops[0].g.visible && !c.hoops[1].g.visible && (c.SPORTS[id] ? c.sport === id : R.at === id); } return o; });
+  ok(Object.values(each).every(Boolean), 'and each other game stands alone in passthrough the same way (' + Object.keys(each).filter(k => !each[k]).join(' ') + ')');
   ok(errs.length === 0, 'no page errors' + (errs.length ? ': ' + errs.join(' | ') : ''));
   await b.close(); srv.close(); if (fails.length) { console.log(fails.length + ' failed'); process.exit(1); } console.log('all ok');
 })();

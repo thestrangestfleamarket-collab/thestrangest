@@ -10,7 +10,7 @@ import { LEVELS } from './ai.js';
 import { CAMPAIGN, nodeOf, budgetFor, isOpen, finished } from './campaign.js';
 import { FX } from './fx.js';
 import { Sound } from './audio.js';
-import { loadCharacters, makeCharacter, charactersReady, Crowd } from './characters.js';
+import { loadCharacters, makeCharacter, charactersReady, typeReady, typesReady, trisOf, need, Crowd } from './characters.js';
 
 const $ = id => document.getElementById(id);
 const AR_SCALE = 0.06; // one tile = 6 cm on your real table
@@ -22,6 +22,7 @@ let started = false, present = [false, false], deadline = null, skew = 0;
 let selected = null, inspected = null, inspectedTile = null;
 let solo = null, campNode = null, camp = { done: [] }, company = [], inCamp = false, campSel = null, companyTried = false, afterShown = false;
 let prog = { xp: {}, ups: {} }, openMatch = false, gained = null;
+let aim = false, page = 'fighter'; // aim: the picked unit's power is pointed at empty ground; page: the group of unit types the table's chips show
 let held = null, setupSel = null, ready = [false, false], seated = [false, false], teams = [], teamAt = -1, setupNote = '', signedIn = false;
 
 function getToken() {
@@ -134,7 +135,7 @@ function buildUnit(u) {
 // A piece's bones and clips, made the first time it has to move.
 function rigOf(g) {
   const d = g.userData;
-  if (!d.ch && charactersReady()) { d.ch = makeCharacter(d.type); d.ch.mesh.visible = false; crowd.tint(d.ch.mesh, d.rested); g.add(d.ch.mesh); }
+  if (!d.ch && typeReady(d.type)) { d.ch = makeCharacter(d.type); d.ch.mesh.visible = false; crowd.tint(d.ch.mesh, d.rested); g.add(d.ch.mesh); }
   return d.ch;
 }
 
@@ -144,17 +145,34 @@ function clearUnits() {
   for (const g of unitMeshes.values()) unitsGroup.remove(g);
   unitMeshes.clear(); labels.clear(); crowdDirty = true;
 }
+// Ground that burns for a while (state.pools): one still glow a tile, all in one draw.
+const pools = (() => {
+  const c = document.createElement('canvas'); c.width = c.height = 64;
+  const x = c.getContext('2d'), g = x.createRadialGradient(32, 32, 4, 32, 32, 32); g.addColorStop(0, 'rgba(255,255,255,1)'); g.addColorStop(0.6, 'rgba(255,255,255,0.55)'); g.addColorStop(1, 'rgba(255,255,255,0)'); x.fillStyle = g; x.fillRect(0, 0, 64, 64);
+  const m = new THREE.InstancedMesh(new THREE.PlaneGeometry(1.05, 1.05).rotateX(-Math.PI / 2), new THREE.MeshBasicMaterial({ map: new THREE.CanvasTexture(c), transparent: true, opacity: 0.5, depthWrite: false }), 48);
+  m.count = 0; m.frustumCulled = false; m.raycast = () => {}; m.renderOrder = 1; m.visible = false; m.setColorAt(0, new THREE.Color(1, 1, 1));
+  world.add(m); return m;
+})();
+const POOL_COLOR = { fire: 0xe8782a, pitch: 0x9a4a1c };
+function syncPools() {
+  const list = (state && state.pools) || [], M = new THREE.Matrix4(), C = new THREE.Color();
+  list.forEach((p, i) => { pools.setMatrixAt(i, M.makeTranslation(tx(p.x), ty(p.x, p.y) + 0.02, tz(p.y))); pools.setColorAt(i, C.setHex(POOL_COLOR[p.k] || POOL_COLOR.fire)); });
+  pools.count = list.length; pools.visible = list.length > 0; pools.instanceMatrix.needsUpdate = true; pools.instanceColor.needsUpdate = true;
+}
 function syncUnits() {
   const alive = new Set();
+  need(state.units.flatMap(u => [u.type, G.TYPES[u.type].summon]).filter(Boolean)).catch(() => {});
+  syncPools();
   for (const u of state.units) {
     alive.add(u.id);
     let g = unitMeshes.get(u.id);
     if (g && g.userData.type !== u.type) { unitsGroup.remove(g); unitMeshes.delete(u.id); g = null; }
     if (!g) { g = buildUnit(u); unitMeshes.set(u.id, g); unitsGroup.add(g); }
     const d = g.userData, t = G.stats(u), stars = u.up ? Object.keys(u.up).length : 0, rested = u.rec > 0 || u.snare > 0;
+    const tag = [u.snare > 0 ? `snared ${u.snare}` : u.rec > 0 ? `resting ${u.rec}` : '', u.frozen > 0 ? `frozen ${u.frozen}` : '', u.empty ? 'unloaded' : '', u.life > 0 ? `fades in ${u.life}` : ''].filter(Boolean).join(', ');
     d.target.set(tx(u.x), ty(u.x, u.y), tz(u.y));
     d.angle = FACE_ANGLE[u.facing]; d.owner = u.owner;
-    labels.set(u.id, { name: t.name + (stars ? ' ' + '★'.repeat(Math.min(3, stars)) : ''), hp: u.hp / t.hp, owner: u.owner, tag: u.snare > 0 ? `snared ${u.snare}` : u.rec > 0 ? `resting ${u.rec}` : '' });
+    labels.set(u.id, { name: t.name + (stars ? ' ' + '★'.repeat(Math.min(3, stars)) : ''), hp: u.hp / t.hp, owner: u.owner, tag });
     if (rested !== d.rested) { d.rested = rested; if (d.ch) crowd.tint(d.ch.mesh, rested); }
   }
   for (const [id, g] of unitMeshes) {
@@ -207,8 +225,12 @@ const fight3D = makeButton('FIGHT', '#3f8656', -1.3, 'fight'), after3D = makeBut
 fight3D.visible = after3D.visible = false;
 const recenterButton3D = makeButton('RECENTER', '#3d434e', 1.3, 'recenter');
 // Setting out, in the headset: a chip a unit type, then REMOVE, DEFAULT, SAVED (the next saved team) and READY.
-const chips3D = Object.keys(G.TYPES).map((type, i) => makeButton('', '#3d434e', (i - 3) * 1.0, { kind: 'chip', type }, 0.95, 2.2));
-const setup3D = [['remove', 'REMOVE'], ['default', 'DEFAULT'], ['saved', 'SAVED'], ['ready', 'READY']].map(([act, text], i) => makeButton(text, '#3d434e', (i - 1.5) * 1.75, { kind: 'setup', act }, 1.65, 3.15));
+// The unit types are shown a group at a time (the tabs), five chips to a row.
+const GROUP_KEYS = Object.keys(G.GROUPS), typesIn = k => Object.keys(G.TYPES).filter(t => G.TYPES[t].group === k);
+const tabs3D = GROUP_KEYS.map((k, i) => makeButton(G.GROUPS[k].toUpperCase(), '#3d434e', (i - 1.5) * 1.75, { kind: 'page', page: k }, 1.65, 2.2));
+const chips3D = GROUP_KEYS.flatMap(k => typesIn(k).map((type, i, a) => makeButton('', '#3d434e', (i % 5 - (Math.min(5, a.length - Math.floor(i / 5) * 5) - 1) / 2) * 1.4, { kind: 'chip', type }, 1.34, 3.15 + Math.floor(i / 5) * 0.95)));
+const setup3D = [['remove', 'REMOVE'], ['default', 'DEFAULT'], ['saved', 'SAVED'], ['ready', 'READY']].map(([act, text], i) => makeButton(text, '#3d434e', (i - 1.5) * 1.75, { kind: 'setup', act }, 1.65, 5.05));
+for (const b of tabs3D) b.visible = false;
 // The campaign's battles, in the headset: a button each, two abreast.
 const nodes3D = CAMPAIGN.nodes.map((n, i) => makeButton('', '#3d434e', (i % 2 ? 1.72 : -1.72), { kind: 'node', id: n.id }, 3.3, 2.2 + Math.floor(i / 2) * 0.95));
 for (const b of nodes3D) b.visible = false;
@@ -261,7 +283,7 @@ const V = (x, y, z) => new THREE.Vector3(x, y, z);
 const up = (v, h) => v.clone().setY(v.y + h); // a point this high above the ground under v
 const worldPos = local => world.localToWorld(local.clone()); // board space -> room space, for 3D audio
 const later = (t, fn) => (t > 0 ? setTimeout(fn, t * 1000) : fn());
-const IMPACT_DELAY = { melee: 0.16, line: 0.18, ranged: 0.4, blast: 0.5, heal: 0.25, snare: 0.3 };
+const IMPACT_DELAY = { melee: 0.16, line: 0.18, ranged: 0.4, blast: 0.5, heal: 0.25, snare: 0.3, bolt: 0.3, chain: 0.14, cone: 0.32, flask: 0.5, summon: 0.3, reload: 0 };
 
 function explode(t) {
   const wp = worldPos(t);
@@ -275,14 +297,16 @@ function explode(t) {
 }
 
 // With animated characters the effect waits for the wind-up of the attack animation.
-const LEAD = { melee: 0.3, line: 0.4, ranged: 0.3, blast: 0.4, heal: 0.35, snare: 0.4 };
-const leadTime = (kind, g) => (g && g.userData.ch ? LEAD[kind] : 0);
+const LEAD = { melee: 0.3, line: 0.4, ranged: 0.3, blast: 0.4, heal: 0.35, snare: 0.4, bolt: 0.4, chain: 0.4, cone: 0.35, flask: 0.4, summon: 0.4, reload: 0 };
+const leadTime = (kind, g) => (g && g.userData.ch ? LEAD[kind] || 0 : 0);
+// lightning: one quick pale streak from a point to a point, no flash
+const streak = (from, to) => fx.projectile({ from, to, arc: 0.05, dur: 0.12, tex: 'trace_01', color: 0xcfdcff, size: 0.42, trailTex: 'spark_05', trailColor: 0xb4c6f4, trailSize: 0.2 });
 
 function castFx(kind, g, a, t) {
   const dir = t.clone().sub(a).setY(0);
   if (g && dir.lengthSq() > 0) g.userData.angle = Math.atan2(-dir.x, -dir.z);
   const ch = g && rigOf(g);
-  if (ch) ch.once('attack');
+  if (ch && kind !== 'reload') ch.once('attack');
   later(leadTime(kind, g), () => castFxNow(kind, g, a, t));
 }
 
@@ -314,6 +338,43 @@ function castFxNow(kind, g, a, t) {
       fx.burst({ pos: up(t, 0.2), tex: 'star_06', color: 0x8fdcaa, count: 8, size: 0.28, life: 1.0, speed: 0.6, up: 2.2, drag: 1, spread: 0.4 });
       fx.flash({ pos: up(t, 0.6), tex: 'twirl_01', color: 0x8fdcaa, size: 1.4, life: 0.9, spin: 1.6 });
     });
+  } else if (kind === 'bolt') {
+    sound.play('snare*', { pos: wp, vol: 0.6, rate: 1.5 });
+    fx.projectile({ from: up(a, 1.1), to: up(t, 0.7), arc: 0.2, dur: 0.3, tex: 'star_06', color: 0xa8dcff, size: 0.45, trailTex: 'circle_05', trailColor: 0x8cc8f0, trailSize: 0.22,
+      onHit: () => {
+        fx.flash({ pos: up(t, 0.6), tex: 'star_06', color: 0xbfe6ff, size: 1.5, life: 0.9, grow: 0.3, opacity: 0.5 });
+        fx.burst({ pos: up(t, 0.5), tex: 'spark_05', color: 0xcfeaff, count: 8, size: 0.22, life: 1.0, speed: 0.9, up: 0.3, drag: 2, spread: 0.4, opacity: 0.6 });
+      } });
+  } else if (kind === 'chain') {
+    sound.whoosh({ pos: wp, dur: 0.25, from: 2400, to: 700, vol: 0.4, q: 1.2 });
+    sound.play('thud*', { pos: worldPos(t), vol: 0.5, rate: 0.7, delay: 0.14 });
+    fx.flash({ pos: up(a, 1.3), tex: 'flare_01', color: 0xbfd0ff, size: 0.9, life: 0.4, opacity: 0.5 });
+    streak(up(a, 1.3), up(t, 0.8));
+  } else if (kind === 'cone') {
+    sound.whoosh({ pos: wp, dur: 0.6, from: 300, to: 1100, vol: 0.5, q: 0.7 });
+    const side = V(-dir.z, 0, dir.x);
+    [t.clone(), a.clone().addScaledVector(dir, 2), a.clone().addScaledVector(dir, 2).add(side), a.clone().addScaledVector(dir, 2).sub(side)].forEach((p, i) => fx.projectile({ from: up(a, 1.1), to: up(p, 0.35), arc: 0.12, dur: 0.3 + i * 0.03, tex: 'fire_01', color: 0xf2a25a, size: 0.6, trailTex: 'flame_05', trailColor: 0xe87c40, trailSize: 0.34,
+      onHit: () => fx.burst({ pos: up(p, 0.25), tex: 'fire_01', color: 0xee9058, count: 4, size: 0.6, life: 0.6, speed: 0.8, up: 0.8, drag: 3, grow: 0.6, spread: 0.3, opacity: 0.5 }) }));
+  } else if (kind === 'flask') {
+    sound.whoosh({ pos: wp, dur: 0.4, from: 900, to: 500, vol: 0.25 });
+    fx.projectile({ from: up(a, 1.2), to: up(t, 0.1), arc: 1.6, dur: 0.5, tex: 'circle_05', color: 0x7ae08a, size: 0.3, trailTex: 'circle_05', trailColor: 0x58c06a, trailSize: 0.1,
+      onHit: () => {
+        sound.play('drop', { pos: worldPos(t), vol: 0.5, rate: 1.6 });
+        fx.burst({ pos: up(t, 0.2), tex: 'fire_01', color: 0xee9058, count: 7, size: 0.6, life: 0.7, speed: 1.2, up: 0.8, drag: 3, grow: 0.7, spread: 0.4, opacity: 0.5 });
+        fx.burst({ pos: up(t, 0.2), tex: 'smoke_07', color: 0x34302c, count: 3, size: 0.9, life: 1.4, speed: 0.5, up: 1.1, drag: 1, grow: 1, additive: false, opacity: 0.35, spread: 0.5 });
+      } });
+  } else if (kind === 'summon') {
+    const c = g && g.userData.type === 'necro' ? 0xa8e07a : 0x9adfd6;
+    sound.play('heal*', { pos: worldPos(t), vol: 0.6, rate: 0.7 });
+    fx.flash({ pos: up(a, 1.2), tex: 'magic_05', color: c, size: 0.9, life: 0.5 });
+    later(0.15, () => {
+      fx.flash({ pos: up(t, 0.5), tex: 'twirl_01', color: c, size: 1.8, life: 1.1, spin: 1.4, opacity: 0.6 });
+      fx.burst({ pos: up(t, 0.1), tex: 'magic_03', color: c, count: 9, size: 0.3, life: 1.1, speed: 0.5, up: 1.6, drag: 1, spread: 0.4 });
+    });
+  } else if (kind === 'reload') {
+    sound.play('select', { pos: wp, vol: 0.5, rate: 0.7 });
+    sound.play('drop', { pos: wp, vol: 0.3, rate: 1.8, delay: 0.2 });
+    if (g) floatText(g.position, 'Reloaded', '#e6e2d8');
   } else if (kind === 'snare') {
     sound.play('snare*', { pos: worldPos(t), vol: 0.7 });
     fx.projectile({ from: up(a, 1.1), to: up(t, 0.7), arc: 0.4, dur: 0.3, tex: 'magic_05', color: 0xc0a0ea, size: 0.5, trailTex: 'magic_03', trailColor: 0xa684de, trailSize: 0.3,
@@ -327,14 +388,15 @@ function castFxNow(kind, g, a, t) {
 function hitFx(g, e, kind, a) {
   if (!g || !g.parent) return;
   const p = g.position.clone(), wp = worldPos(p);
-  const away = p.clone().sub(a).setY(0);
+  const away = a ? p.clone().sub(a).setY(0) : V(0, 0, 0);
   if (away.lengthSq() > 0) away.normalize();
   g.position.addScaledVector(away, 0.22);
   const ch = rigOf(g);
   if (!(ch && ch.once('hit'))) g.scale.setScalar(1.14);
   floatText(p, `-${e.dmg}`, '#e88f80');
   const armored = G.TYPES[g.userData.type].armor > 0;
-  if (kind === 'blast') { sound.play('flesh*', { pos: wp, vol: 0.5 }); return; }
+  if (kind === 'burn') fx.burst({ pos: up(p, 0.3), tex: 'fire_01', color: 0xee9058, count: 4, size: 0.5, life: 0.6, speed: 0.6, up: 0.9, drag: 3, grow: 0.6, spread: 0.3, opacity: 0.5 });
+  if (kind === 'blast' || kind === 'cone' || kind === 'flask' || kind === 'chain' || kind === 'bolt' || kind === 'burn') { sound.play('flesh*', { pos: wp, vol: 0.5 }); return; }
   sound.play(armored ? 'armor*' : kind === 'ranged' ? 'thud*' : 'flesh*', { pos: wp, vol: 1 });
   fx.flash({ pos: up(p, 0.7), tex: 'spark_05', color: armored ? 0xf0e4c0 : 0xe0705e, size: 0.85, life: 0.28, grow: 0.8 });
   if (armored) fx.burst({ pos: up(p, 0.7), tex: 'spark_01', color: 0xf0d8a4, count: 6, size: 0.16, life: 0.6, speed: 3.5, up: 0.8, gravity: 9, drag: 0.8 });
@@ -381,9 +443,18 @@ function moveFx(g, e) {
 // Starts the effects for one batch of server events. Returns how long (seconds) the board
 // should wait before showing the result (health bars, removed units).
 function playEvents(events) {
-  let impact = 0, kind = null, a = null, wait = 0;
+  let impact = 0, kind = 'burn', a = null, wait = 0;   // a wound with no act before it is the ground's fire
+  const say = (g, at, text, color) => later(at, () => g && g.parent && floatText(g.position, text, color));
   for (const e of events) {
     const g = unitMeshes.get(e.id);
+    if (e.t === 'brace') { say(g, Math.max(0, impact - 0.2), 'Braced', '#e6e2d8'); const ch = g && rigOf(g); if (ch) ch.once('attack'); }
+    else if (e.t === 'immune') say(g, impact, 'No effect', '#b9bec8');
+    else if (e.t === 'frozen') say(g, impact, 'Frozen', '#a8dcff');
+    else if (e.t === 'arc') { const f = V(tx(e.fx), ty(e.fx, e.fy), tz(e.fy)); impact += 0.16; const at = impact - 0.12; later(at, () => g && g.parent && streak(up(f, 0.8), up(g.position, 0.8))); wait = impact + 0.1; }
+    else if (e.t === 'summon') wait = Math.max(wait, impact + 0.35);
+    else if (e.t === 'fade') say(g, 0, 'Fades', '#9adfd6');
+    else if (e.t === 'rout') later(impact + 0.6, () => floatText(V(0, 0.4, 0), 'Leaderless', '#e6c36c'));
+    else if (e.t === 'skip') later(wait + 0.5, () => floatText(V(0, 0.4, 0), 'Turn lost', '#e6c36c'));
     if (e.t === 'move') { if (g) moveFx(g, e); }
     else if (e.t === 'act') {
       kind = e.kind;
@@ -450,9 +521,9 @@ function refresh() {
   const setup = inSetup();
   const sel = setup ? setupSel && G.unitById(state, setupSel) : selected && G.unitById(state, selected);
   const usable = !setup && sel && G.canUse(state, me, sel);
-  const moves = usable && !(state.active && state.active.moved) ? G.reachable(state, sel) : [];
-  const hits = usable && !(state.active && state.active.acted) ? G.targets(state, sel) : [];
-  const heal = sel && G.TYPES[sel.type].kind === 'heal';
+  if (!usable) aim = false;
+  const { moves, hits } = usable ? options(sel) : { moves: [], hits: [] };
+  const heal = sel && (kindly(G.TYPES[sel.type].kind) || sel.empty);
   field.clear();
   if (setup && !ready[me] && (held || sel)) for (let y = 0; y < rows; y++) for (let x = 0; x < cols; x++) if (G.inZone(state, me, y) && !G.ground(state, x, y).solid && !G.unitAt(state, x, y)) field.mark(x, y, 'move');
   for (const p of moves) field.mark(p.x, p.y, 'move');
@@ -460,7 +531,7 @@ function refresh() {
   if (sel) field.mark(sel.x, sel.y, 'sel');
   field.flush();
   if (!renderer.xr.isPresenting) field.aim(inspectedTile ? inspectedTile.x : null, inspectedTile && inspectedTile.y);
-  arrowsGroup.visible = !!usable;
+  arrowsGroup.visible = !!usable && !(sel.frozen > 0);
   if (usable) arrowsGroup.position.set(tx(sel.x), ty(sel.x, sel.y), tz(sel.y));
   endButton3D.visible = myTurn();
   drawSetup(setup);
@@ -474,9 +545,15 @@ function refresh() {
   const ht = setup && held && G.TYPES[held];
   $('info').innerHTML = ht ? `<b>${ht.name}</b> - ${ht.cost} points, at most ${ht.limit}: HP ${ht.hp}, power ${ht.pow}, armour ${ht.armor}%, block ${ht.block}%, move ${ht.move}, rest ${ht.rec}. ${ht.info}` : u ? `<b>${G.TYPES[u.type].name}</b> - ${l2.split(': ')[1]}. ${G.TYPES[u.type].info}` : inspectedTile && G.mapOf(state.map).tiles ? l2 :
     setup ? (ready[me] ? 'You are ready. Stand down to change your team.' : 'Pick a unit type, then a tile on your own rows to place it. Tap a placed unit to move or remove it. READY when done.') :
-    (myTurn() ? 'Pick one of your units, move (blue), act (red), then tap a yellow arrow to choose its facing and end the turn.' : '');
+    (myTurn() ? (usable && GROUND(G.TYPES[sel.type].kind) && !(state.active && state.active.acted) ? (aim ? 'Aiming: tap a marked tile, or tap the unit again to move instead.' : 'Tap the unit again to aim its power at empty ground.') + ' ' : usable && sel.empty ? 'Tap the unit again to reload. ' : '') + 'Pick one of your units, move (blue), act (red), then tap a yellow arrow to choose its facing and end the turn.' : '');
 }
 
+// What the picked unit may do now. A power that lands on empty ground (a flask, a summons, a breath of fire) shows its empty tiles only while aiming (tap the unit again), or once the unit has moved, so a tile is never both a move and a target.
+const GROUND = k => k === 'flask' || k === 'summon' || k === 'cone', kindly = k => k === 'heal' || k === 'summon';
+function options(sel) {
+  const moves = aim || (state.active && state.active.moved) ? [] : G.reachable(state, sel), all = state.active && state.active.acted ? [] : G.targets(state, sel);
+  return { moves, hits: all.filter(p => aim || !moves.length || G.unitAt(state, p.x, p.y)) };
+}
 // ---------------------------------------------------------------- input
 function sendAction(action) { if (ws && ws.readyState === 1) ws.send(JSON.stringify({ t: 'act', action })); }
 
@@ -500,9 +577,12 @@ function handlePick(p) {
   const u = G.unitAt(state, x, y);
   const sel = selected && G.unitById(state, selected);
   if (sel && G.canUse(state, me, sel)) {
-    if (!(state.active && state.active.acted) && has(G.targets(state, sel), x, y)) return sendAction({ type: 'act', unit: sel.id, x, y });
-    if (!u && !(state.active && state.active.moved) && has(G.reachable(state, sel), x, y)) return sendAction({ type: 'move', unit: sel.id, x, y });
+    const o = options(sel);
+    if (has(o.hits, x, y)) { aim = false; return sendAction({ type: 'act', unit: sel.id, x, y }); }
+    if (u && u.id === sel.id && GROUND(G.TYPES[sel.type].kind) && !(state.active && state.active.acted)) { aim = !aim; sound.play('select', { vol: 0.4 }); return refresh(); }
+    if (!u && has(o.moves, x, y)) return sendAction({ type: 'move', unit: sel.id, x, y });
   }
+  aim = false;
   inspectedTile = u ? null : { x, y };
   if (u) {
     inspected = u.id;
@@ -536,6 +616,7 @@ function setupAct(act) {
 }
 function setupPick(p) {
   if (p && p.kind === 'setup') return setupAct(p.act);
+  if (p && p.kind === 'page') { if (page !== p.page) sound.play('select', { vol: 0.4 }); page = p.page; return refresh(); }
   if (ready[me]) return;
   if (!p) { held = null; setupSel = null; return refresh(); }
   if (p.kind === 'chip') { if (held !== p.type) sound.play('select', { vol: 0.4 }); held = held === p.type ? null : p.type; setupSel = null; return refresh(); }
@@ -589,7 +670,8 @@ function saveTeam(name) {
   if (i >= 0) teams[i] = t; else { if (teams.length >= 12) teams.shift(); teams.push(t); }
   keepTeams(); return true;
 }
-for (const [type, t] of Object.entries(G.TYPES)) { const b = document.createElement('button'); b.className = 'secondary chip'; b.dataset.type = type; b.onclick = () => handlePick({ kind: 'chip', type }); $('roster').appendChild(b); b.title = t.info; }
+for (const k of GROUP_KEYS) { const h = document.createElement('h3'); h.textContent = G.GROUPS[k]; $('roster').appendChild(h);
+  for (const type of typesIn(k)) { const b = document.createElement('button'); b.className = 'secondary chip'; b.dataset.type = type; b.onclick = () => handlePick({ kind: 'chip', type }); $('roster').appendChild(b); b.title = G.TYPES[type].info; } }
 $('removeBtn').onclick = () => setupAct('remove');
 $('defaultBtn').onclick = () => setupAct('default');
 $('readyBtn').onclick = () => { sound.init(); setupAct('ready'); };
@@ -600,14 +682,16 @@ loadTeams();
 // The setting-out panel (the page's on a screen, the table's in the headset) as the state stands.
 function drawSetup(on) {
   $('setup').hidden = !on || renderer.xr.isPresenting;
-  for (const b of [...chips3D, ...setup3D]) b.visible = on;
+  for (const b of [...tabs3D, ...setup3D]) b.visible = on;
+  for (const b of chips3D) b.visible = on && G.TYPES[b.userData.pick.type].group === page;
   $('copyBtn').hidden = !!solo;
   if (!on) return;
   const mine = state.units.filter(u => u.owner === me), cost = G.teamCost(mine), rd = ready[me];
   $('budget').textContent = `${cost} / ${state.budget ?? G.BUDGET} points - ${mine.length} unit${mine.length === 1 ? '' : 's'}`;
-  for (const b of $('roster').children) { const t = G.TYPES[b.dataset.type], n = mine.filter(u => u.type === b.dataset.type).length;
+  for (const b of $('roster').querySelectorAll('button')) { const t = G.TYPES[b.dataset.type], n = mine.filter(u => u.type === b.dataset.type).length;
     b.textContent = `${t.name} - ${t.cost} pts - ${n}/${t.limit}`; b.classList.toggle('held', held === b.dataset.type); b.disabled = rd; }
-  chips3D.forEach(b => { const type = b.userData.pick.type, t = G.TYPES[type], n = mine.filter(u => u.type === type).length; b.userData.label(`${t.name}\n${t.cost} pts  ${n}/${t.limit}`, held === type ? '#9a7a2c' : '#3d434e'); });
+  chips3D.forEach(b => { const type = b.userData.pick.type, t = G.TYPES[type], n = mine.filter(u => u.type === type).length; if (b.visible) b.userData.label(`${t.name}\n${t.cost} pts  ${n}/${t.limit}`, held === type ? '#9a7a2c' : '#3d434e'); });
+  tabs3D.forEach(b => b.userData.label(G.GROUPS[b.userData.pick.page].toUpperCase(), b.userData.pick.page === page ? '#9a7a2c' : '#3d434e'));
   setup3D[3].userData.label(rd ? 'STAND DOWN' : 'READY', rd ? '#8a4040' : '#3f8656');
   setup3D[2].userData.label(teams.length ? (teamAt >= 0 ? teams[teamAt].name.toUpperCase().slice(0, 9) : 'SAVED') : 'NO SAVED', '#3d434e');
   $('readyBtn').textContent = rd ? 'Stand down' : 'Ready'; $('readyBtn').className = rd ? 'danger' : '';
@@ -621,7 +705,7 @@ for (const n of CAMPAIGN.nodes) { const b = document.createElement('button'); b.
 function drawCamp() {
   const n = campSel && nodeOf(campSel), open = n && isOpen(n.id, camp.done), won = n && camp.done.includes(n.id), total = CAMPAIGN.nodes.length, ar = renderer.xr.isPresenting;
   $('camp').hidden = !inCamp || ar; $('setup').hidden = true;
-  for (const b of [...chips3D, ...setup3D, endButton3D]) b.visible = false;
+  for (const b of [...chips3D, ...tabs3D, ...setup3D, endButton3D]) b.visible = false;
   fight3D.visible = !!open; arrowsGroup.visible = false;
   CAMPAIGN.nodes.forEach((q, i) => {
     const w = camp.done.includes(q.id), o = isOpen(q.id, camp.done), text = (w ? '✓ ' : '') + q.name + (q.optional ? ' (side)' : ''), b = $('campList').children[i];
@@ -843,8 +927,9 @@ function resetCamera() {
 }
 // The skinned pieces' shader is made ready before the first piece moves, so that move does not stall a frame.
 function warm() {
-  if (!charactersReady()) return;
-  const ch = makeCharacter('bulwark');
+  const any = Object.keys(G.TYPES).find(typeReady);
+  if (!any) return;
+  const ch = makeCharacter(any);
   for (const rested of [false, true]) { crowd.tint(ch.mesh, rested); renderer.compile(ch.mesh, camera, scene); }
 }
 
@@ -940,7 +1025,7 @@ renderer.setAnimationLoop(time => {
   fx.update(dt, eyeR, eyeU);
   dungeon.tick(now);
   named.clear(); if (selected) named.add(selected); if (inspected) named.add(inspected); if (setupSel) named.add(setupSel); if (aimedUnit) named.add(aimedUnit);
-  labels.update(placeOf, camLocal, charsFailed ? true : named, renderer.xr.isPresenting ? null : eyeR, renderer.xr.isPresenting ? 1.5 : 1);
+  labels.update(placeOf, camLocal, charsFailed || window.__names ? true : named, renderer.xr.isPresenting ? null : eyeR, renderer.xr.isPresenting ? 1.5 : 1);
 
   const sec = Math.floor(Date.now() / 1000);
   if (sec !== lastSecond) { lastSecond = sec; refresh(); } // keeps the turn clock ticking
@@ -987,6 +1072,7 @@ function connect(first) {
       if (state.winner !== null && me >= 0) setTimeout(showAfter, wait * 1000 + 1200);
       ready = m.ready || [true, true]; seated = m.seated || present;
       if (state.phase !== 'setup') { held = null; setupSel = null; }
+      if (turnChanged) aim = false;
       if (state.active && myTurn()) selected = state.active.id;
       else if (turnChanged || state.winner !== null) selected = null;
       if (wait > 0) setTimeout(() => { syncUnits(); refresh(); }, wait * 1000); // let the hit land first
@@ -1026,7 +1112,8 @@ if (roomParam) { $('codeInput').value = roomParam.toUpperCase(); $('joinBtn').cl
 
 // The people load in the background; until they arrive a piece is its base and its bar.
 let charsFailed = false;
-loadCharacters(renderer).then(() => { warm(); crowdDirty = true; }).catch(err => { charsFailed = true; console.warn('Character models failed to load; pieces are shown as their bases and names.', err); });
+let warmed = false;
+loadCharacters(renderer, () => { crowdDirty = true; if (!warmed && Object.keys(G.TYPES).some(typeReady)) { warmed = true; warm(); } }).then(() => { crowdDirty = true; }).catch(err => { charsFailed = true; console.warn('Character models failed to load; pieces are shown as their bases and names.', err); });
 
 // Hooks for automated tests.
 // A map on the table with no match behind it (for pictures and checks): ?show=river, or __t.show('river').
@@ -1042,6 +1129,23 @@ function show(id, setup, full) {
   clearUnits();
   setField(state.map); syncUnits(); refresh();
 }
+// Any pieces on the plain board with no match behind them (for pictures and checks): [{ type, owner, x, y, facing?, ...what a piece carries }]; play: it is that side's turn.
+function stage(units, play) {
+  state = G.newGame('board'); me = 0; code = 'SHOW'; started = play !== undefined; ready = [false, false]; present = [true, true];
+  state.units = units.map((u, i) => ({ id: i + 1, facing: u.owner ? 'S' : 'N', hp: G.TYPES[u.type].hp, rec: 0, snare: 0, ...u }));
+  if (play !== undefined) { state.turn = play; me = play; }
+  $('lobby').style.display = 'none'; $('hud').style.display = 'flex';
+  clearUnits(); selected = inspected = null; aim = false;
+  setField(state.map); syncUnits(); refresh();
+  return need(units.map(u => u.type));
+}
+// A rule played on a staged board, as a match would show it: the action judged, its events played, the board brought up to date.
+function act(player, action, rand) {
+  const r = G.apply(state, player, action, rand); if (!r.ok) return r;
+  const wait = playEvents(r.events);
+  setTimeout(() => { syncUnits(); refresh(); }, wait * 1000);
+  return r;
+}
 if (new URLSearchParams(location.search).get('camp')) openCampaign();
 if (new URLSearchParams(location.search).get('show')) show(new URLSearchParams(location.search).get('show'), new URLSearchParams(location.search).get('setup'), new URLSearchParams(location.search).get('full'));
-window.__t = { handlePick, show, world, G, drawUnits, get prog() { return prog; }, get openMatch() { return openMatch; }, openCampaign, CAMPAIGN, get camp() { return camp; }, get inCamp() { return inCamp; }, get unitsReady() { return charactersReady() && !crowdDirty; }, dungeon, crowd, labels, hemi, get table() { return table; }, get arScale() { return arScale; }, unitMeshes, get campSel() { return campSel; }, get solo() { return solo; }, get campNode() { return campNode; }, saveTeam, loadTeam, get teams() { return teams; }, get held() { return held; }, get ready() { return ready; }, get setupSel() { return setupSel; }, get field() { return field; }, castFx, explode, V, camera, controls, fx, sun, renderer, scene, get state() { return state; }, get me() { return me; }, get code() { return code; }, get selected() { return selected; }, get lean() { return lean; } };
+window.__t = { stage, act, need, typesReady, trisOf, get page() { return page; }, get aim() { return aim; }, tabs3D, chips3D, pools, handlePick, show, world, G, drawUnits, get prog() { return prog; }, get openMatch() { return openMatch; }, openCampaign, CAMPAIGN, get camp() { return camp; }, get inCamp() { return inCamp; }, get unitsReady() { return charactersReady() && !crowdDirty && (!state || typesReady(state.units.map(u => u.type))); }, dungeon, crowd, labels, hemi, get table() { return table; }, get arScale() { return arScale; }, unitMeshes, get campSel() { return campSel; }, get solo() { return solo; }, get campNode() { return campNode; }, saveTeam, loadTeam, get teams() { return teams; }, get held() { return held; }, get ready() { return ready; }, get setupSel() { return setupSel; }, get field() { return field; }, castFx, explode, V, camera, controls, fx, sun, renderer, scene, get state() { return state; }, get me() { return me; }, get code() { return code; }, get selected() { return selected; }, get lean() { return lean; } };

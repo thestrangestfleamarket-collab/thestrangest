@@ -26,6 +26,12 @@ export const TERRAIN = {
   k: { name: 'Cinder', foot: 'cinder' },
   v: { name: 'Steam vent', cover: 0.5, foot: 'cinder', info: 'Arrows do half damage to whoever stands in the steam.' },
 };
+// What is poured or lit on a tile for a while lies over its ground (game.js `ground`): the same properties as above, and
+//   burn   whoever stands there when their side's turn ends takes this much, through no armour (nothing, if spells do not touch them)
+export const POOLS = {
+  fire: { name: 'Burning ground', burn: 6, info: 'Whoever stands here when their turn ends takes 6 damage.' },
+  pitch: { name: 'Burning pitch', burn: 6, cost: 2, slip: 0.5, info: 'Whoever stands here when their turn ends takes 6 damage; two move points to enter; poor footing halves block.' },
+};
 // Height: stepping up a level costs one more move point, two levels at once cannot be climbed,
 // and anything that works at range reaches one tile further at targets below it.
 export const CLIMB = 1, REACH = 1;

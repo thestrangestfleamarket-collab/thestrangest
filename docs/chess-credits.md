@@ -1,9 +1,17 @@
 # Skirmish Table: credits
 
-- People (`data/chess/units/`, baked by `tools/chess-bake.cjs` from the originals in `data/full/chess/characters/`): Quaternius (quaternius.com), CC0: Modular Character Outfits - Fantasy (the free Standard tier: ranger and peasant outfits), Universal Base Characters (heads, hair), Universal Animation Library (animations); each unit type joined into one mesh, thinned to about three thousand triangles, on one shared 1024 by 512 picture; nine clips kept.
+- People (`data/chess/units/`, baked by `tools/chess-bake.cjs` from the originals in `data/full/chess/characters/`): Quaternius (quaternius.com), CC0: Modular Character Outfits - Fantasy (the free Standard tier: ranger and peasant outfits), Universal Base Characters (heads, hair), Universal Animation Library (animations); each unit type joined into one mesh, thinned to about two and a half thousand triangles, on one shared 1024 by 512 picture; nine clips kept. The eleven later people (22 Nov 2026) are the same bodies, heads and hair in other colours with other gear.
+- Creatures (22 Nov 2026; `data/chess/units/`, baked the same way from the originals in `data/full/chess/creatures/`, each one mesh of 2,000 to 2,600 triangles with five clips of its own), all CC0, each licence read on its maker's page (its text is beside the originals):
+  - Wolf: Quaternius, Ultimate Animated Animals (quaternius.com/packs/ultimateanimatedanimals.html), `Wolf.gltf`.
+  - Ogre: Quaternius, Ultimate Monsters (quaternius.com/packs/ultimatemonsters.html), `Big/Orc.gltf`.
+  - Ghost: the same pack, `Flying/Ghost.gltf`, its colours turned pale at the bake.
+  - Dragon Whelp: the same pack, `Flying/Dragon.gltf`.
+  - Golem: a stand-in. No CC0 golem was to hand; it is the same pack's `Big/Yeti.gltf` with every colour turned to stone at the bake.
+  - Skeleton: KayKit (Kay Lousberg, kaylousberg.com), Character Pack: Skeletons 1.0, `Skeleton_Minion.glb`, from its public repository.
+  - The Quaternius files were fetched from an unchanged copy of the packs (the `series-ai/jam-ready-assets` repository on GitHub, which names the same source and licence), because the packs' own Google Drive folders refused downloads that day.
 - Sprites (`data/chess/fx/`) and sounds (`data/chess/sfx/`): Kenney (kenney.nl), CC0: Particle Pack, Impact Sounds, RPG Audio, Sci-Fi Sounds, Interface Sounds; sounds as mono MP3, sprites at 256 px.
 - The dungeon (`data/chess/dungeon/`, fetched by `tools/chess-dungeon.py` into `data/full/chess/dungeon/`, baked by `tools/chess-bake.cjs dungeon`), all CC0. Poly Haven (polyhaven.com): surfaces medieval_blocks_03 (the board's flagstones), castle_brick_broken_06 (the brick wall and towers), mossy_stone_wall (the low walls), rock_wall_08 (the moat's sides), mossy_rock (the bank and the cavern floor), medieval_blocks_05; models rock_face_01, rock_face_02, namaqualand_boulder_02, rock_moss_set_01, stone_fire_pit, large_iron_gate, treasure_chest, each thinned. ambientCG (ambientcg.com): Lava001 (the lava, its emission picture), LeafSet029 (the ivy's leaves).
-- Everything else (how the dungeon is laid out and lit, the labels, weapons and shields, reverb, footsteps and whooshes) is made in the page or its bake.
+- Everything else (how the dungeon is laid out and lit, the labels, weapons, shields, hats, capes, banners and flasks, reverb, footsteps and whooshes) is made in the page or its bake. The later types' effects and sounds reuse the Kenney sprites and sounds above; no file was added for them.
 
 Set aside in `archive/chess-levels/` (22 Nov 2026), not on the website:
 - The landscaped maps' ground (`data/chess/land/tex/`): Poly Haven (polyhaven.com), CC0: leafy_grass, forrest_ground_01, brown_mud_leaves_01, rock_boulder_dry, river_small_rocks, weathered_brown_planks, castle_wall_slates; resized to 512 px. Their mossy rocks (`land/m/rocks.glb`): Poly Haven rock_moss_set_01, CC0.

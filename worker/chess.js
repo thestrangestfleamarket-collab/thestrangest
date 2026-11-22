@@ -93,6 +93,7 @@ const CHESS = {
           } else if (typeof m.solo === "string" && Object.hasOwn(AI.LEVELS, m.solo)) ai = { level: m.solo };
           const state = G.newGame(map, { setup: true, budget });
           if (n) G.placeTeam(state, 1, n.enemy.map(([type, x, y]) => ({ type, x, y })));
+          else if (ai) G.placeTeam(state, 1, AI.muster(state, 1));   // the computer fields a mix of its own
           if (budget < G.BUDGET) { const t = G.defaultTeam(map, 0); while (G.teamCost(t) > budget) t.pop(); G.setTeam(state, 0, t); }
           // a duel is fair unless its host opens it: upgrades count only in an open match, or against the computer
           this.host.room = { code, state, tokens: [null, ai ? "computer" : null], ready: [false, !!ai], deadline: null, ai, camp: n ? n.id : null, ids: ["", ""], open: !!m.open && !ai, ups: [null, null] };

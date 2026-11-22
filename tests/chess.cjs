@@ -242,7 +242,7 @@ let halt = () => {};
     // every file the page's code names: the people, the sprites, the sounds
     const src = f => fs.readFileSync(path.join(ROOT, 'src/chess', f), 'utf8'), names = (f, re) => [...new Set([...src(f).matchAll(re)].map(m => m[1]))];
     const sfx = eval(/const FILES = (\[[\s\S]*?\]);/.exec(src('audio.js'))[1]), glb = [...Object.keys(G.TYPES), 'anim'], png = fs.readdirSync(path.join(ROOT, 'data/chess/fx')).map(f => f.replace('.png', ''));
-    const land = ['units/atlas.jpg'];
+    const land = ['units/atlas.jpg', ...['dungeon.glb', 'atlas.jpg', 'ivy.png', 'flag.jpg', 'floor.jpg', 'lava.jpg'].map(f => 'dungeon/' + f)];
     const urls = [...sfx.map(n => 'sfx/' + n + '.mp3'), ...glb.map(n => 'units/' + n + '.glb'), ...png.map(n => 'fx/' + n + '.png'), ...land], bad = [], types = {};
     for (const u of urls) { const q = await fetch(BASE + '/chess-assets/' + u, { method: 'HEAD' }); if (q.status !== 200) bad.push(u + ' ' + q.status); else types[u.split('.').pop()] = q.headers.get('content-type'); }
     ok(sfx.length >= 30 && glb.length >= 8 && png.length >= 10 && !bad.length, 'every file it fetches is handed out (' + sfx.length + ' mp3, ' + glb.length + ' glb, ' + png.length + ' png)' + (bad.length ? ': ' + bad.join(', ') : ''));
@@ -447,7 +447,7 @@ let halt = () => {};
     ok(await until(Q, () => window.__t.renderer.xr.isPresenting && window.__t.scene.background === null), 'it starts a passthrough session: no sky, no table, the room shows through');
     const board = () => Q.evaluate(() => { const T = window.__t, w = T.scene.children.find(o => o.isGroup && o.children.length > 3); return { s: w.scale.x, x: w.position.x, y: w.position.y, z: w.position.z }; });
     await until(Q, () => { const w = window.__t.scene.children.find(o => o.isGroup && o.children.length > 3); return w.position.z < -0.3; }, null, 30000);
-    const bd = await board(); ok(Math.abs(bd.s - 0.06) < 1e-6 && Math.abs(bd.z + 0.55) < 0.05 && Math.abs(bd.y - 1.1) < 0.05, 'the board is set at table size (a tile 6 cm) half a metre in front of you: ' + JSON.stringify(bd));
+    const bd = await board(); ok(Math.abs(bd.s - 0.06) < 1e-6 && Math.abs(bd.z + 0.62) < 0.05 && Math.abs(bd.y - 1.1) < 0.05, 'the board is set at table size (a tile 6 cm) a little over half a metre in front of you: ' + JSON.stringify(bd));
     await people(Q);
     // the checks below step by drawn frames, however slow they are
     await Q.evaluate(() => { const T = window.__t, R = T.renderer, draw = R.render; window.__after = null; R.render = (s, c) => { draw.call(R, s, c); const f = window.__after; if (f) f(); };
@@ -500,7 +500,7 @@ let halt = () => {};
     ok(errs.length === n0, 'no page errors in the headset' + (errs.length > n0 ? ': ' + errs.slice(n0, n0 + 4).join(' | ') : '')); foe.s.close(); }
   // ---- what the board costs to draw in the headset, with twelve a side: the budget, no shadow pass, nothing that varies ----
   { const n0 = errs.length, F = await open(IWER + ';window.xrDevice=new IWER.XRDevice(IWER.metaQuest3);xrDevice.installRuntime({forceInstall:true});xrDevice.position.set(0,1.6,0);'); cur = null;
-    await F.goto(BASE + '/chess?show=board&full=1', { waitUntil: 'commit', timeout: 120000 }); await until(F, () => !!window.__t && !!window.__t.field && window.__t.unitsReady, null, 180000);
+    await F.goto(BASE + '/chess?show=board&full=1', { waitUntil: 'commit', timeout: 120000 }); await until(F, () => !!window.__t && !!window.__t.field && window.__t.unitsReady && window.__t.dungeon.ready, null, 180000);
     await until(F, () => !document.getElementById('arBtn').hidden, null, 20000); await F.evaluate(() => document.getElementById('arBtn').click());
     await until(F, () => window.__t.renderer.xr.isPresenting && window.__t.world.position.z < -0.3, null, 30000);
     const m = await F.evaluate(async () => { const T = window.__t, R = T.renderer, I = R.info, draw = R.render; let after = null; R.render = (s, c) => { draw.call(R, s, c); const f = after; if (f) f(); };
@@ -513,10 +513,12 @@ let halt = () => {};
       for (let i = 0; i < 40 && !(walk && walk.skinned); i++) walk = await drawn(cost);
       const ember = T.state.units.find(u => u.owner === 0 && u.type === 'ember'), eg = T.unitMeshes.get(ember.id); T.castFx('blast', eg, eg.position.clone(), T.V(0, 0, -1)); let spell = { calls: 0 };
       for (let i = 0; i < 30; i++) { const c = await drawn(cost); if (c.calls > spell.calls) spell = c; }
-      return { rest, walk, spell, steady: seen.size, units: T.state.units.length, fov: R.xr.getFoveation(), map: !!T.sun.shadow.map, tone: R.toneMapping, eyes: R.xr.getCamera().cameras.length }; });
+      const D = T.dungeon, dm = []; D.group.traverse(o => { if (o.isMesh) dm.push(o.material.type); if (o.isLight) dm.push('light'); }); const t0 = D.lava.material.uniforms.t.value; await drawn(() => 0);
+      return { dun: { kinds: dm.sort().join(), tris: D.tris, flows: D.lava.material.uniforms.t.value > t0, wall: D.group.children.some(o => o.name === 'dungeon'), ivy: D.group.children.some(o => o.name === 'ivy') }, rest, walk, spell, steady: seen.size, units: T.state.units.length, fov: R.xr.getFoveation(), map: !!T.sun.shadow.map, tone: R.toneMapping, eyes: R.xr.getCamera().cameras.length }; });
     ok(m.units === 24 && m.eyes === 2 && m.rest.calls < 60 && m.rest.tris < 150000 && m.rest.skinned === 0, 'twelve a side at rest in the headset, both eyes: ' + m.rest.calls + ' draws and ' + m.rest.tris + ' triangles a frame (under 60 and 150,000), no piece with bones');
     ok(m.rest.lights === 2 && m.rest.casting === 0 && !m.map && m.walk.casting === 0, 'one sun and the sky\'s fill, and no shadow pass: no light casts, no shadow map was ever made');
     ok(m.steady === 1, 'nothing in the fire or the light varies from frame to frame: the lights, the board, its glow and its marks are the same over fourteen frames');
+    ok(m.dun.wall && m.dun.ivy && m.dun.kinds === 'MeshBasicMaterial,MeshBasicMaterial,ShaderMaterial' && m.dun.tris < 12500 && m.dun.flows, 'the dungeon round the board is three draws, unlit, with no lamp: its walls, rock and bank one baked mesh, its ivy one, its lava one that drifts (' + m.dun.tris + ' triangles)');
     ok(m.walk && m.walk.skinned === 1 && m.walk.calls < 60 && m.spell.calls < 60 && m.spell.casting === 0, 'only the piece that walks has bones (' + m.walk.calls + ' draws then), and a fire burst at its fullest is ' + m.spell.calls + ' draws');
     ok(m.fov > 0 && m.tone === 0, 'the view\'s edges are drawn coarser (fixed foveation ' + m.fov + '), with no tone curve or post pass over the picture');
     if (OUT) await F.screenshot({ path: path.join(OUT, 'quest3-full.png'), timeout: 180000 }).catch(() => {});

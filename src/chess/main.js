@@ -5,6 +5,7 @@ import * as G from './game.js';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import { makeBoard, makeTable } from './board.js';
 import { Labels } from './labels.js';
+import { makeDungeon } from './dungeon.js';
 import { LEVELS } from './ai.js';
 import { CAMPAIGN, nodeOf, budgetFor, isOpen, finished } from './campaign.js';
 import { FX } from './fx.js';
@@ -85,6 +86,8 @@ const pickRoots = [fieldGroup, unitsGroup, arrowsGroup, panel];
 const catcher = new THREE.Mesh(new THREE.PlaneGeometry(1, 1).rotateX(-Math.PI / 2).translate(0, 0.008, 0), new THREE.ShadowMaterial({ opacity: 0.34 }));
 catcher.receiveShadow = true; catcher.raycast = () => {}; catcher.renderOrder = 2;
 world.add(catcher);
+const dungeon = makeDungeon(renderer); // the board's setting: still, baked, three draws
+world.add(dungeon.group);
 
 // The battlefield (maps.js), built when the match's state first names it; on a screen a round table under it (in AR your real table does this job).
 let cols = G.COLS, rows = G.ROWS, field = null, table = null;
@@ -95,7 +98,7 @@ function setField(id) {
   if (!G.MAPS[id]) id = 'board';
   if (field && field.id === id) return;
   if (field) field.dispose();
-  if (table) { table.removeFromParent(); table.geometry.dispose(); table.material.map.dispose(); table.material.dispose(); }
+  if (table) { table.userData.free(); table.removeFromParent(); table.geometry.dispose(); table.material.map.dispose(); table.material.dispose(); }
   const m = G.MAPS[id];
   cols = m.cols; rows = m.rows;
   field = makeBoard(m, { id, renderer });
@@ -783,7 +786,7 @@ function placeBoardInFront() {
   dir.y = 0;
   if (dir.lengthSq() < 1e-6) dir.set(0, 0, -1);
   dir.normalize();
-  world.position.copy(pos).addScaledVector(dir, 0.55);
+  world.position.copy(pos).addScaledVector(dir, 0.62);
   world.position.y = Math.max(0.4, pos.y - 0.5);
   world.rotation.y = Math.atan2(-dir.x, -dir.z) + (me === 1 ? Math.PI : 0); // your own rows end up nearest you
 }
@@ -935,6 +938,7 @@ renderer.setAnimationLoop(time => {
   tmpQ.copy(world.quaternion).invert();
   eyeU.copy(camUp).applyQuaternion(tmpQ); eyeR.set(1, 0, 0).applyQuaternion(viewCam.quaternion).applyQuaternion(tmpQ);
   fx.update(dt, eyeR, eyeU);
+  dungeon.tick(now);
   named.clear(); if (selected) named.add(selected); if (inspected) named.add(inspected); if (setupSel) named.add(setupSel); if (aimedUnit) named.add(aimedUnit);
   labels.update(placeOf, camLocal, charsFailed ? true : named, renderer.xr.isPresenting ? null : eyeR, renderer.xr.isPresenting ? 1.5 : 1);
 
@@ -1040,4 +1044,4 @@ function show(id, setup, full) {
 }
 if (new URLSearchParams(location.search).get('camp')) openCampaign();
 if (new URLSearchParams(location.search).get('show')) show(new URLSearchParams(location.search).get('show'), new URLSearchParams(location.search).get('setup'), new URLSearchParams(location.search).get('full'));
-window.__t = { handlePick, show, world, G, drawUnits, get prog() { return prog; }, get openMatch() { return openMatch; }, openCampaign, CAMPAIGN, get camp() { return camp; }, get inCamp() { return inCamp; }, get unitsReady() { return charactersReady() && !crowdDirty; }, crowd, labels, hemi, get table() { return table; }, get arScale() { return arScale; }, unitMeshes, get campSel() { return campSel; }, get solo() { return solo; }, get campNode() { return campNode; }, saveTeam, loadTeam, get teams() { return teams; }, get held() { return held; }, get ready() { return ready; }, get setupSel() { return setupSel; }, get field() { return field; }, castFx, explode, V, camera, controls, fx, sun, renderer, scene, get state() { return state; }, get me() { return me; }, get code() { return code; }, get selected() { return selected; }, get lean() { return lean; } };
+window.__t = { handlePick, show, world, G, drawUnits, get prog() { return prog; }, get openMatch() { return openMatch; }, openCampaign, CAMPAIGN, get camp() { return camp; }, get inCamp() { return inCamp; }, get unitsReady() { return charactersReady() && !crowdDirty; }, dungeon, crowd, labels, hemi, get table() { return table; }, get arScale() { return arScale; }, unitMeshes, get campSel() { return campSel; }, get solo() { return solo; }, get campNode() { return campNode; }, saveTeam, loadTeam, get teams() { return teams; }, get held() { return held; }, get ready() { return ready; }, get setupSel() { return setupSel; }, get field() { return field; }, castFx, explode, V, camera, controls, fx, sun, renderer, scene, get state() { return state; }, get me() { return me; }, get code() { return code; }, get selected() { return selected; }, get lean() { return lean; } };

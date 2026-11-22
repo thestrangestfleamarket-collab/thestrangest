@@ -53,7 +53,7 @@ const HOLD = { sword: ['hand_r', [0, 0.09, 0.03], [Math.PI, 0, 0]], dagger: ['ha
   wand: ['hand_r', [0, 0.09, 0.03], [Math.PI, 0, 0]], crossbow: ['hand_r', [0, 0.09, 0.03], [Math.PI / 2, 0, 0]], shield: ['lowerarm_l', [0, 0.14, -0.07], [Math.PI / 2, 0, 0]] };
 
 const log = [], say = (...a) => log.push(a.join(' '));
-const b64 = buf => { const u = new Uint8Array(buf); let s = ''; for (let i = 0; i < u.length; i += 0x8000) s += String.fromCharCode.apply(null, u.subarray(i, i + 0x8000)); return btoa(s); };
+export const b64 = buf => { const u = new Uint8Array(buf); let s = ''; for (let i = 0; i < u.length; i += 0x8000) s += String.fromCharCode.apply(null, u.subarray(i, i + 0x8000)); return btoa(s); };
 const files = {}, loader = new GLTFLoader(), raw = {};
 const load = async name => { raw[name] = raw[name] || await (await fetch('/full/' + name + '.glb')).arrayBuffer(); return loader.parseAsync(raw[name].slice(0), ''); };
 
@@ -87,7 +87,7 @@ function piece(geo, world, cell, color, skin) {
   return g;
 }
 // fewer triangles, and only the points they still use
-function thin(g, tris) {
+export function thin(g, tris) {
   { // points at one place with one place in the picture become one point (its normal their sum): the models are faceted, which would stop the thinning
     const P = g.attributes.position.array, U = g.attributes.uv.array, N = g.attributes.normal.array, seen = new Map(), to = new Uint32Array(P.length / 3);
     for (let i = 0; i < to.length; i++) { const k = Math.round(P[i * 3] * 2e4) + ',' + Math.round(P[i * 3 + 1] * 2e4) + ',' + Math.round(P[i * 3 + 2] * 2e4) + ',' + Math.round(U[i * 2] * 4096) + ',' + Math.round(U[i * 2 + 1] * 4096);
@@ -102,7 +102,7 @@ function thin(g, tris) {
   o.setIndex(ni);
   return o;
 }
-const exportGlb = (scene, animations = []) => new Promise((res, rej) => new GLTFExporter().parse(scene, res, rej, { binary: true, animations }));
+export const exportGlb = (scene, animations = []) => new Promise((res, rej) => new GLTFExporter().parse(scene, res, rej, { binary: true, animations }));
 
 async function unit(type) {
   const spec = SPEC[type], body = (await load(spec.body)).scene;

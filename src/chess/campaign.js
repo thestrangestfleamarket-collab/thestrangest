@@ -32,7 +32,7 @@ export const CAMPAIGN = {
       '000000000000000',
       '000000000000000',
       '000000000000000'],
-    look: { hour: 'morning', flow: [1, 0.1], mist: 0.6, birds: 3, butterflies: 5, wind: 1 },
+    look: { hour: 'morning', flow: [1, 0.1], mist: 0.6, birds: 3, butterflies: 5, wind: 1, scale: 0.6 },   // a map of a country: everything on it at six tenths, taller than its banners
     props: [{ k: 'camp', x: 0.6, y: 9.4 }, { k: 'torch', x: 11.5, y: 0.6 }, { k: 'wall', x: 12, y: 1.5, r: 1 }, { k: 'log', x: 7.5, y: 6.5, r: 0.8 }],
   },
   nodes: [

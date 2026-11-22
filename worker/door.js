@@ -166,6 +166,7 @@ export default {
     if ((request.method === "GET" || request.method === "HEAD") && (p === "/plane" || p === "/plane/")) return Response.redirect("https://claude.ai/artifact/8MkBS3cu92B3GZ5sxAoJ48", 302);   // owner, 20 Nov 2026: /plane leads to his artifact
     // SLOWFIRE DUEL (src/qzar/): its own page at /qzar, to anyone with the link
     if ((request.method === "GET" || request.method === "HEAD") && (p === "/qzar" || p === "/qzar/")) return Response.redirect("https://claude.ai/artifact/9inZsDMyTHoZaQ9J1v2BQL", 302);   // owner, 19 Nov 2026: /qzar leads to his artifact; SLOWFIRE DUEL's page is still built, at no address
+    if ((request.method === "GET" || request.method === "HEAD") && (p === "/drive" || p === "/drive/")) return Response.redirect("https://claude.ai/code/cshk_0116sxFV4rvTjamf4X9tWsFjNRS5eLnaEQhRYYM3Kkmyiv", 302);   // owner, 22 Nov 2026
     if ((request.method === "GET" || request.method === "HEAD") && (p === "/grass" || p === "/grass/")) return Response.redirect("https://claude.ai/artifact/DgtShGVpUWjCPRxaqLofZE", 302);   // owner, 21 Nov 2026: /grass leads to his artifact
     // DEAD END (src/hide/): its own page at /hide, to anyone with the link; its pictures, models and sounds under /hide-assets/; the thing's mind and voice (POST /hide/mind, /hide/say) to anyone who plays
     if ((request.method === "GET" || request.method === "HEAD") && p === "/hide") return page(env, url, "/hide", request, "no-cache");

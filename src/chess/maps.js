@@ -229,7 +229,7 @@ export const MAPS = {
       { k: 'glow', x: 5.5, y: 5.5, c: 0xffa858, s: 6, h: 1.3 }, { k: 'glow', x: 9.4, y: 2.2, c: 0xb070ff, s: 5 }, { k: 'glow', x: 1.6, y: 8.8, c: 0xb070ff, s: 5 },
       { k: 'cart', x: 7.4, y: -0.95, r: 1.75 }, { k: 'cart', x: 3.6, y: 11.95, r: 4.89 },
       { k: 'crates', x: 9.3, y: -0.8, r: 0.3 }, { k: 'crates', x: 1.7, y: 11.8, r: 3.44 },
-      { k: 'bones', x: 6.95, y: 4.45, r: 1.75, s: 0.55 }, { k: 'bones', x: 4.05, y: 6.55, r: 4.89, s: 0.55 },
+      { k: 'bones', x: 6.85, y: 4.45, r: 4.89, s: 0.5 }, { k: 'bones', x: 4.15, y: 6.55, r: 1.75, s: 0.5 },
       { k: 'pillar', x: -0.9, y: 2.2, r: 0.4 }, { k: 'pillar', x: 11.9, y: 8.8, r: 3.5 }, { k: 'pillar', x: 11.8, y: 1.3, r: 2, down: 1 }, { k: 'pillar', x: -0.8, y: 9.7, r: 5.1, down: 1 },
     ],
   },

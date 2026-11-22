@@ -106,14 +106,14 @@ export function makeWorld(c) {
       crate(lx, gy, lz, s0, r); let [x, z] = rel(s0 * 0.5 + s1 * 0.62, 0.08); crate(x, sample(x + cols / 2, z + rows / 2).h, z, s1, r + 0.4);
       crate(lx + 0.03, gy + s0, lz - 0.02, s2, r + 0.7); [x, z] = rel(-s0 * 1.2, s0 * 0.6); crate(x, sample(x + cols / 2, z + rows / 2).h, z, s2, r + 1.9, 0.5);
     } else if (p.k === 'bones') {   // what is left of something big: a spine, its ribs standing, a horned skull
-      const k = p.s || 1, tall = note('rib', m(SIZES.rib) * k), Rr = tall / 1.77, len = tall * 2.1, tube = 0.03 * k + 0.012;
-      put(bone, rod(tube * 1.6, tube * 0.8, len, 6), lx, gy + tube, lz, r, Math.PI / 2, 0);
+      const k = p.s || 1, tall = note('rib', m(SIZES.rib) * k), Rr = tall / 1.77, len = tall * 2.1, tube = 0.03 * k + 0.012, by = Math.max(gy, -0.06) - gy;   // in a lake or in lava it lies at the sheet's level
+      put(bone, rod(tube * 1.6, tube * 0.8, len, 6), lx, gy + by + tube, lz, r, Math.PI / 2, 0);
       for (let n = 0; n < 6; n++) { const f = n / 5, kk = 0.62 + 0.38 * Math.sin(f * 2.6 + 0.45), [x, z] = rel(0, (f - 0.45) * len * 0.8);
         for (const sd of [0, Math.PI]) { if (n === 4 && sd) continue;   // one has fallen
-          const g = new THREE.TorusGeometry(Rr * kk, tube, 5, 9, 2.35); g.rotateZ(-Math.PI / 2); g.translate(0, Rr * kk, 0); put(bone, g, x, gy - 0.03, z, r + sd, 0, 0); } }
-      { const [x, z] = rel(0, -len * 0.62), g = new THREE.SphereGeometry(0.2 * k + 0.06, 7, 5); g.scale(0.85, 0.72, 1.45); put(bone, g, x, gy + 0.1 * k + 0.03, z, r, -0.15, 0);
-        for (const sd of [-1, 1]) { const [hx, hz] = rel(sd * (0.17 * k + 0.05), -len * 0.56); put(bone, new THREE.ConeGeometry(0.045 * k + 0.012, 0.5 * k + 0.1, 6), hx, gy + 0.3 * k + 0.08, hz, r, -0.5, -sd * 0.7); } }
-      { const [x, z] = rel(Rr * 0.9, len * 0.28), g = new THREE.TorusGeometry(Rr * 0.9, tube, 5, 9, 2.35); put(bone, g, x, gy + tube, z, r + 0.6, Math.PI / 2, 0); }
+          const g = new THREE.TorusGeometry(Rr * kk, tube, 5, 9, 2.35); g.rotateZ(-Math.PI / 2); g.translate(0, Rr * kk, 0); put(bone, g, x, gy + by - 0.03, z, r + sd, 0, 0); } }
+      { const [x, z] = rel(0, -len * 0.62), g = new THREE.SphereGeometry(0.2 * k + 0.06, 7, 5); g.scale(0.85, 0.72, 1.45); put(bone, g, x, gy + by + 0.1 * k + 0.03, z, r, -0.15, 0);
+        for (const sd of [-1, 1]) { const [hx, hz] = rel(sd * (0.17 * k + 0.05), -len * 0.56); put(bone, new THREE.ConeGeometry(0.045 * k + 0.012, 0.5 * k + 0.1, 6), hx, gy + by + 0.3 * k + 0.08, hz, r, -0.5, -sd * 0.7); } }
+      { const [x, z] = rel(Rr * 0.9, len * 0.28), g = new THREE.TorusGeometry(Rr * 0.9, tube, 5, 9, 2.35); put(bone, g, x, gy + by + tube, z, r + 0.6, Math.PI / 2, 0); }
     } else if (p.k === 'pillar') {   // a fluted column of something older: standing broken, or fallen in its drums
       const W = m(SIZES.pillar.wide), T = m(SIZES.pillar.tall);
       if (p.down) { let v = -T * 0.42; for (let n = 0; n < 3; n++) { const l = T * (0.2 + R() * 0.1), [x, z] = rel((R() - 0.5) * 0.12, v + l / 2); put(stone, rod(W * 0.45, W * 0.45, l, 10), x, sample(x + cols / 2, z + rows / 2).h + W * 0.32, z, r + (R() - 0.5) * 0.3, Math.PI / 2 + (R() - 0.5) * 0.1, 0); v += l + 0.1 + R() * 0.12; } }
@@ -164,7 +164,7 @@ export function makeWorld(c) {
   if (look.shrooms) {
     const st = paint(rod(0.16, 0.11, 0.62, 5).toNonIndexed().translate(0, 0.31, 0), 0.3, 0.34, 0.34), cp = paint(lathe([[0.4, 0.6], [0.5, 0.72], [0.3, 0.93], [0, 1]], 6).toNonIndexed(), 1, 1, 1);
     for (const g of [st, cp]) g.deleteAttribute('uv');
-    const list = [], GL = [0x4fffd0, 0x38e8c0, 0x7ffff0, 0x5cc8ff, 0xc890ff];
+    const list = [], GL = [0x2fc8a4, 0x24b094, 0x48c8c0, 0x3c90c8, 0x9460c8];
     for (let tries = 0; tries < 900 && list.length < look.shrooms; tries++) {
       const x = -B + 0.2 + R() * (cols + 2 * B - 0.4), z = -B + 0.2 + R() * (rows + 2 * B - 0.4), s = sample(x, z), w = s.w;
       if (s.h < -0.04 || !(w[1] > 0.3 || (w[3] > 0.06 && w[3] < 0.4) || (s.out > 0.25 && s.out < 1.4) || R() < 0.05)) continue;

@@ -1,4 +1,4 @@
-// THE BALL CHECK: node tests/ball.cjs [dist/ball.html] [folder for screenshots]. JUNGLE COURT loads with the ball in hand; a free throw goes in, a dropped ball rebounds as a regulation one, two balls knock, the 60 second game counts a streak and ends, the sky and weather change; then an emulated Quest 3: a controller takes the ball and throws it, the stick teleports, tracked hands show, and the frame's cost is held.
+// THE BALL CHECK: node tests/ball.cjs [dist/ball.html] [folder for screenshots]. JUNGLE COURT starts in its clubhouse; ping pong and air hockey are played at their tables, a door leads to tennis (a point is played out) and another to basketball, where the ball is in hand; a free throw goes in, a dropped ball rebounds as a regulation one, two balls knock, the 60 second game counts a streak and ends, the sky and weather change; then an emulated Quest 3: a controller takes the ball and throws it, the stick teleports, tracked hands show, and the frame's cost is held.
 const { chromium } = require('playwright'), path = require('path'), fs = require('fs');
 const fails = [], ok = (c, m) => { if (!c) { fails.push(m); console.log((process.env.GITHUB_ACTIONS ? '::error title=ball::' : 'FAIL ') + m); } else console.log('ok   ' + m); };
 const PAGE = path.resolve(process.argv[2] || 'dist/ball.html'), ROOT = path.dirname(PAGE), OUT = process.argv[3]; if (OUT) fs.mkdirSync(OUT, { recursive: true });
@@ -17,9 +17,20 @@ const srv = require('http').createServer((q, r) => { const f = path.join(ROOT, d
 
   const pg = await b.newPage({ viewport: { width: 640, height: 360 } }); watch(pg);
   const t0 = Date.now(); await pg.goto(FILE); const up = await till(pg, () => window.__ball && __ball.t > .2);
-  ok(up && await pg.evaluate(() => __ball.ball.holder === 'cam' && __ball.balls.length === 4 && __ball.balls.filter(q => q.rest).length === 3), 'the page starts with a ball in hand and three on the rack (' + ((Date.now() - t0) / 1000).toFixed(0) + ' s)');
+  ok(up && await pg.evaluate(() => __ball.sport === 'room' && !__ball.hoops[0].g.visible), 'the page starts in the clubhouse (' + ((Date.now() - t0) / 1000).toFixed(0) + ' s)');
   if (!up) { console.log(errs.join(' | ')); await b.close(); srv.close(); process.exit(1); }
-  await pg.evaluate(() => { __ball.q = 2; }); await shot(pg, '01-court');
+  await pg.evaluate(() => { __ball.q = 2; }); await shot(pg, '00-clubhouse');
+  // a point played out: you serve by a click, the house answers or misses, and with no second swing the point is given
+  const POINT = `(()=>{const c=__ball,R=c.sport==='tennis'?c.SPORTS.tennis.R:c.SPORTS.room.PP;R.restart();c.camera.updateMatrixWorld(true);R.action();const hit=R.S.last==='P';c.simulate(9);return {hit,pts:R.S.pts[0]+R.S.pts[1]+R.S.games[0]+R.S.games[1],rallies:R.S.rallies,mine:R.S.pts[0]};})()`;
+  await pg.evaluate(() => { __ball.SPORTS.room.goto('pp'); __ball.set(0, -.3); }); ok(await till(pg, () => __ball.SPORTS.room.at === 'pp' && __ball.SPORTS.room.PP.S.hover), 'walking up to the ping pong table starts a game, your serve');
+  const pp = await pg.evaluate(t => eval(t), POINT); ok(pp.hit && pp.pts >= 1 && (pp.rallies >= 2 || pp.mine >= 1), 'ping pong: a served ball crosses the net, the house returns it or misses, and the point is counted (' + JSON.stringify(pp) + ')');
+  await pg.evaluate(() => { __ball.SPORTS.room.goto('air'); __ball.set(0, -.9); }); await till(pg, () => __ball.SPORTS.room.at === 'air' && __ball.SPORTS.room.air.s.live && __ball.SPORTS.room.air.pause <= 0); await pg.evaluate(() => __ball.set(0, -.55));
+  ok(await pg.waitForFunction(() => { const a = __ball.SPORTS.room.air; return Math.hypot(a.s.puck.vx, a.s.puck.vz) > .1 || a.score[0] + a.score[1] > 0; }, null, { timeout: 60000 }).then(() => true).catch(() => false), 'air hockey: your mallet follows where you look and strikes the puck'); await shot(pg, '00-air');
+  await pg.evaluate(() => { const c = __ball, R = c.SPORTS.room; c.rig.position.set(R.O.x + R.doors[1].x, 0, R.O.z - 8.1); }); ok(await till(pg, () => __ball.sport === 'tennis'), 'the TENNIS door leads out to the tennis court');
+  const tn = await pg.evaluate(t => eval(t), POINT); ok(tn.hit && tn.pts >= 1 && (tn.rallies >= 2 || tn.mine >= 1), 'tennis: a serve over the net, the house runs it down and returns or misses, and the point is counted (' + JSON.stringify(tn) + ')');
+  ok(await pg.evaluate(() => { const c = __ball, R = c.SPORTS.tennis.R; R.restart(); R.S.hover = false; R.ball.p.set(0, .5, 6); R.ball.v.set(0, 1, -14); R.struck('P'); const h0 = R.S.pts[1]; c.simulate(4); return R.S.pts[1] === h0 + 1; }), 'tennis: a ball driven into the net is the house\'s point'); await shot(pg, '00-tennis');
+  await pg.evaluate(() => __ball.setSport('room')); await pg.evaluate(() => { const c = __ball, R = c.SPORTS.room; c.rig.position.set(R.O.x + R.doors[0].x, 0, R.O.z - 8.1); });
+  ok(await till(pg, () => __ball.sport === 'hoops') && await pg.evaluate(() => __ball.ball.holder === 'cam' && __ball.balls.length === 4 && __ball.balls.filter(q => q.rest).length === 3 && __ball.hoops[0].g.visible), 'the BASKETBALL door leads to the court: a ball in hand and three on the rack'); await shot(pg, '01-court');
   ok(await pg.evaluate(t => { eval(t); const s = __ball.stats; return s.made === 1 && s.pts === 2 && s.shots === 1; }, THROW), 'a free throw from the line drops through the net for two');
   const peak = await pg.evaluate(() => { const c = __ball, B = c.ball; c.free(B); B.p.set(3, 1.8 + .1194, 0); B.v.set(0, 0, 0); B.w.set(0, 0, 0); let up = false, pk = 0; for (let i = 0; i < 400; i++) { c.simulate(.01); const y = B.p.y - .1194; if (B.v.y > 0) up = true; if (up) { pk = Math.max(pk, y); if (B.v.y < 0) break; } } return pk; });
   ok(peak > 1.15 && peak < 1.45, 'dropped from 1.8 m the ball comes back to ' + peak.toFixed(2) + ' m (a regulation ball: 1.2 to 1.4)');
@@ -34,7 +45,9 @@ const srv = require('http').createServer((q, r) => { const f = path.join(ROOT, d
   await vr.addInitScript(fs.readFileSync(require.resolve('iwer/build/iwer.min.js'), 'utf8') + ';window.__xrd=new IWER.XRDevice(IWER.metaQuest3);window.__xrd.installRuntime({forceInstall:true});window.__xrd.position.set(0,1.7,0);');
   await vr.goto(FILE); await till(vr, () => window.__ball && __ball.t > .2); await till(vr, () => !document.getElementById('btnVR').hidden); await vr.click('#btnVR');
   ok(await till(vr, () => __ball.renderer.xr.isPresenting && __ball.mode === 'vr' && __ball.hands.some(h => h.src)), 'ENTER VR starts the headset session with its controllers');
-  await vr.evaluate(() => { __ball.q = 2; }); await frames(vr, 3);
+  await vr.evaluate(() => { __ball.q = 2; __ball.setSport('tennis'); }); await frames(vr, 3);
+  ok(await vr.evaluate(async () => { const R = __ball.SPORTS.tennis.R, c0 = R.rk.C.clone(), P = __xrd.controllers.right; P.position.set(.3, 1.3, -.3); for (let i = 0; i < 3; i++) await new Promise(r => requestAnimationFrame(r)); return R.rk.has && R.rk.g.visible && R.rk.C.distanceTo(c0) > .05; }), 'in the headset the racket is in your hand and follows it');
+  await vr.evaluate(() => { __ball.setSport('hoops'); }); await frames(vr, 3);
   await vr.evaluate(() => { const c = __ball, B = c.ball, R = __xrd.controllers.right; R.position.set(B.p.x - c.rig.position.x, B.p.y, B.p.z - c.rig.position.z + .08); R.updateButtonValue('squeeze', 1); });
   ok(await till(vr, () => __ball.hands.some(h => h.ball)), 'a grip beside the ball takes it in the hand');
   const flew = await vr.evaluate(async () => { const c = __ball, R = __xrd.controllers.right, H = c.hands.find(h => h.ball), B = H.ball, p0 = { x: R.position.x, y: R.position.y, z: R.position.z }, fr = () => new Promise(r => requestAnimationFrame(r));

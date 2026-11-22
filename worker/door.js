@@ -2,6 +2,7 @@ import { DurableObject } from "cloudflare:workers";
 import { getServerByName, routePartykitRequest, Server } from "partyserver";
 import { DISH, DISHK } from "./dish.js";
 import { JAM } from "./jam.js";
+import { DRIVE } from "./drive.js";
 import { LASER } from "./laser.js";
 import { TAG } from "./tag.js";
 import { TANK } from "./tank.js";
@@ -37,6 +38,7 @@ const EDMAP = /^\/edmap\/t\d{1,2}_\d{1,2}\.jpg$/;
 const SCAREA = /^\/scare-assets\/[a-z0-9_-]+\.glb$/;   // VESPER WARD's models: to anyone
 const SNIPA = /^\/sniper-assets\/(sky|tex|m|snd|p)\/[A-Za-z0-9_-]+\.(glb|json|mp3|jpg|webp)$/, SNIPT = { glb: "model/gltf-binary", json: "application/json", mp3: "audio/mpeg", jpg: "image/jpeg", webp: "image/webp" };   // COLD BORE's skies, surfaces, models and sounds: to anyone
 const SPCA = /^\/space-assets\/((m|snd)\/[A-Za-z0-9_-]+\.(glb|mp3)|tex\/[a-z0-9_]+\.jpg|stars\.json)$/;   // SPACE FLEET's models, sky and sounds: to anyone
+const DRIVEA = /^\/drive-assets\/(?:[a-z]+\/)?[A-Za-z0-9_-]+\.(glb|json|jpg|png|webp|hdr|bin|ogg|mp3)$/, DRIVET = { glb: "model/gltf-binary", json: "application/json", jpg: "image/jpeg", png: "image/png", webp: "image/webp", hdr: "application/octet-stream", bin: "application/octet-stream", ogg: "audio/ogg", mp3: "audio/mpeg" };   // SAVANO LANE NIGHT DRIVE's files: to anyone
 const JAMA = /^\/jam-assets\/[a-z0-9_-]+\.(glb|json|mp3)$/, JAMT = { glb: "model/gltf-binary", json: "application/json", mp3: "audio/mpeg" };   // STADIUM JAM's avatars, hands and samples: to anyone
 const DRUMA = /^\/drums-assets\/(?:(?:tex|m|p)\/)?[A-Za-z0-9_-]+\.(glb|json|mp3|jpg|webp)$/, DRUMT = { glb: "model/gltf-binary", json: "application/json", mp3: "audio/mpeg", jpg: "image/jpeg", webp: "image/webp" };   // THE GARAGE's recorded kit, models and surfaces: to anyone
 const SAYNO = new Map();
@@ -169,7 +171,17 @@ export default {
     if ((request.method === "GET" || request.method === "HEAD") && (p === "/plane" || p === "/plane/")) return Response.redirect("https://claude.ai/artifact/8MkBS3cu92B3GZ5sxAoJ48", 302);   // owner, 20 Nov 2026: /plane leads to his artifact
     // SLOWFIRE DUEL (src/qzar/): its own page at /qzar, to anyone with the link
     if ((request.method === "GET" || request.method === "HEAD") && (p === "/qzar" || p === "/qzar/")) return Response.redirect("https://claude.ai/artifact/9inZsDMyTHoZaQ9J1v2BQL", 302);   // owner, 19 Nov 2026: /qzar leads to his artifact; SLOWFIRE DUEL's page is still built, at no address
-    if ((request.method === "GET" || request.method === "HEAD") && (p === "/drive" || p === "/drive/")) return Response.redirect("https://claude.ai/code/cshk_0116sxFV4rvTjamf4X9tWsFjNRS5eLnaEQhRYYM3Kkmyiv", 302);   // owner, 22 Nov 2026
+    // SAVANO LANE NIGHT DRIVE (src/drive/): its own page at /drive, to anyone with the link; its map, cars, people, surfaces and sounds under /drive-assets/
+    if ((request.method === "GET" || request.method === "HEAD") && p === "/drive") return page(env, url, "/drive", request, "no-cache");
+    if (p === "/drive/") return Response.redirect(url.origin + "/drive" + url.search, 301);
+    if ((request.method === "GET" || request.method === "HEAD") && DRIVEA.test(p)) {
+      const r = await env.ASSETS.fetch(new Request(url.origin + p)); if (!r.ok) return new Response("not found", { status: 404 });
+      const rg = /^bytes=(\d*)-(\d*)$/.exec(request.headers.get("Range") || ""); let out;
+      if (rg && (rg[1] || rg[2]) && r.status === 200 && p.endsWith(".mp3") && request.method === "GET") {   // the assets binding sends the whole file: the radio's station is cut here, so it can start mid-song
+        const buf = await r.arrayBuffer(), n = buf.byteLength, a = rg[1] ? +rg[1] : Math.max(0, n - +rg[2]), b = rg[1] && rg[2] ? Math.min(n - 1, +rg[2]) : n - 1;
+        if (a > b || a >= n) return new Response(null, { status: 416, headers: { "content-range": "bytes */" + n } });
+        out = new Response(buf.slice(a, b + 1), { status: 206, headers: { "content-range": "bytes " + a + "-" + b + "/" + n, "accept-ranges": "bytes" } }); }
+      else { out = new Response(r.body, r); if (p.endsWith(".mp3")) out.headers.set("accept-ranges", "bytes"); } out.headers.set("content-type", DRIVET[p.split(".").pop()]); out.headers.set("cache-control", "public, max-age=86400"); out.headers.set("x-robots-tag", "noindex"); return out; }
     if ((request.method === "GET" || request.method === "HEAD") && (p === "/grass" || p === "/grass/")) return Response.redirect("https://claude.ai/artifact/DgtShGVpUWjCPRxaqLofZE", 302);   // owner, 21 Nov 2026: /grass leads to his artifact
     // DEAD END (src/hide/): its own page at /hide, to anyone with the link; its pictures, models and sounds under /hide-assets/; the thing's mind and voice (POST /hide/mind, /hide/say) to anyone who plays
     if ((request.method === "GET" || request.method === "HEAD") && p === "/hide") return page(env, url, "/hide", request, "no-cache");
@@ -267,10 +279,11 @@ export default {
       return skyFeed(sky[1], request); }
     if (p.startsWith("/parties/")) return (await routePartykitRequest(request, env, {
       onBeforeConnect: async (req, { party, name }) => {
-        const room = party === "block" || party === "jam" || party === "crumbs" ? ROOM.test(name) : party === "laser" || party === "tag" || party === "tank" || party === "space" ? name === "public" : party === "dish" && name === "petri";   // the dish: one for the whole market, the arcade's PETRI; LASER TAG: one public room
+        const room = party === "block" || party === "jam" || party === "crumbs" || party === "drive" ? ROOM.test(name) : party === "laser" || party === "tag" || party === "tank" || party === "space" ? name === "public" : party === "dish" && name === "petri";   // the dish: one for the whole market, the arcade's PETRI; LASER TAG: one public room
         if (!room || (request.headers.get("Origin") !== url.origin && !dev)) return new Response("not found", { status: 404 });
         if (party === "laser" || party === "tag" || party === "tank" || party === "space") { const r = new Request(req); r.headers.set("x-partykit-room", name); return r; }   // LASER TAG's room: to anyone with the link, like its page
         if (party === "crumbs") { const r = new Request(req); r.headers.set("x-partykit-room", name); return r; }   // MIDNIGHT CRUMBS' houses: to anyone with the link, like its page
+        if (party === "drive") { const r = new Request(req); r.headers.set("x-partykit-room", name); return r; }   // the drive's rooms: to anyone with the link, like its page
         if (party === "jam") { const r = new Request(req); r.headers.set("x-partykit-room", name); return r; }   // STADIUM JAM's rooms: to anyone with the link, like its page
         const id = await who(env, request, dev); if (!id) return new Response("login", { status: 401 });
         const r = new Request(req); r.headers.set("x-tsfm-id", id); r.headers.set("x-partykit-room", name); if (dev) r.headers.set("x-tsfm-dev", "1"); return r; },
@@ -1220,6 +1233,30 @@ export class Jam extends Server {
     if (out.t === "state") c.setState({ ...c.state, inst: out.inst, tone: out.tone, ky: out.ky });
     out.id = c.id; this.broadcast(JSON.stringify(out), [c.id]); }
   onClose(c) { if (c.state) this.broadcast(JSON.stringify({ t: "peer-leave", id: c.id }), [c.id]); }
+  onError(c) { this.onClose(c); }
+}
+
+// SAVANO LANE NIGHT DRIVE's roads: one per room code; it passes each driver's state and events to the others and says who sits where (worker/drive.js)
+export class Drive extends Server {
+  static options = { hibernate: false };
+  n = 0; seats = {};
+  all(msg, not) { for (const o of this.getConnections()) if (o.state && o !== not) o.send(msg); }
+  onMessage(c, raw) {
+    if (typeof raw !== "string" || raw.length > 4096) return; let m; try { m = JSON.parse(raw); } catch (e) { return; }
+    const now = Date.now(), rl = c.rl || (c.rl = { t: now, n: 0 }); if (now - rl.t > 1000) { rl.t = now; rl.n = 0; } if (++rl.n > 80) return;
+    if (m && m.t === "join") { if (c.state) return; const peers = [...this.getConnections()].filter(o => o.state);
+      if (peers.length >= DRIVE.MAX) return c.close(4002, "full");
+      const st = { id: ++this.n, slot: DRIVE.slot(peers.map(q => q.state.slot)), name: DRIVE.name(m.name), color: DRIVE.color(m.color) }; c.setState(st); this.seats[st.id] = [null, null, null, null];
+      c.send(JSON.stringify({ t: "welcome", id: st.id, slot: st.slot, now, players: peers.map(q => ({ ...q.state, state: q.last || null })), seats: this.seats }));
+      return this.all(JSON.stringify({ t: "joined", ...st }), c); }
+    if (!c.state || !m) return; const id = c.state.id;
+    if (m.t === "s") { if (!m.s || typeof m.s !== "object") return; c.last = m.s; return this.all(JSON.stringify({ t: "s", id, s: m.s, ts: now }), c); }
+    if (m.t === "ping") return c.send(JSON.stringify({ t: "pong", c: m.c, now }));
+    if (m.t === "sit") { const ok = DRIVE.sit(this.seats, id, m.car, m.seat); return this.all(JSON.stringify({ t: "seats", seats: this.seats, req: m.req, by: id, ok })); }
+    if (m.t === "ev") return this.all(JSON.stringify({ t: "ev", id, e: m.e }), c); }
+  onClose(c) { if (!c.state) return; const id = c.state.id; c.setState(null); delete this.seats[id];
+    for (const k in this.seats) for (let i = 0; i < 4; i++) if (this.seats[k][i] === id) this.seats[k][i] = null;
+    this.all(JSON.stringify({ t: "left", id, seats: this.seats })); }
   onError(c) { this.onClose(c); }
 }
 

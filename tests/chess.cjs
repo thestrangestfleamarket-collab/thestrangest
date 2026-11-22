@@ -498,6 +498,52 @@ let halt = () => {};
     ok(a0.sel === 1 && !a0.aim && a1.at === '4,8' && a2.aim && thrown && a3.pools === 1 && a3.drawn === 1 && a3.acted, 'a flask at empty ground: the first tap picks the alchemist, a second aims; thrown, the tile burns and its glow is drawn');
     ok(errs.length === n0, 'no page errors picking a team' + (errs.length > n0 ? ': ' + errs.slice(n0, n0 + 4).join(' | ') : '')); await T.context().close(); }
 
+  // ---- every unit type: it keeps to its own square, has every clip it plays, is heard at every act (each sound a recording that decodes, is not silent and does not clip); a walk's feet stay where they are put ----
+  { const n0 = errs.length, U = await open(); cur = null; const VO = await import(pathToFileURL(path.join(ROOT, 'src/chess/voices.js'))), AU = await import(pathToFileURL(path.join(ROOT, 'src/chess/audio.js')));
+    await U.goto(BASE + '/chess?show=board', { waitUntil: 'commit', timeout: 120000 }); await until(U, () => !!window.__t && !!window.__t.field && window.__t.unitsReady, null, 180000);
+    const r = await U.evaluate(async () => { const T = window.__t, types = Object.keys(T.G.TYPES); await T.need(types); for (let i = 0; i < 600 && !T.typesReady(types); i++) await new Promise(r => setTimeout(r, 100));
+      return Object.fromEntries(types.map(t => [t, { size: T.sizeOf(t), clips: T.clipsOf(t) }])); });
+    const types = Object.keys(r), CRE = ['wolf', 'ogre', 'skeleton', 'ghost', 'whelp'], person = r.strider.size.tall, EDGE = 0.92, across = z => Math.max(z.wide, z.deep), f = v => v.toFixed(2);
+    const out = types.filter(t => across(r[t].size) > EDGE), big = CRE.filter(t => across(r[t].size.all) > EDGE || r[t].size.all.tall > person * 1.4), widest = types.slice().sort((a, b) => across(r[b].size) - across(r[a].size))[0];
+    ok(types.length === 15 && !out.length && !big.length, 'every one of the fourteen types and the Skeleton stands inside its own square: no body is more than ' + EDGE + ' of a tile across, standing on its middle (the widest, the ' + widest + ', ' + f(across(r[widest].size)) + '); the five creatures with all they carry too, none taller than 1.4 of a person (' + CRE.map(t => t + ' ' + f(r[t].size.all.wide) + ' by ' + f(r[t].size.all.deep) + ', ' + f(r[t].size.all.tall / person) + ' of a person tall').join('; ') + ')' + (out.length || big.length ? ' BUT ' + [...out, ...big].join() : ''));
+    const lack = types.filter(t => { const c = r[t].clips; return ['idle', 'walk', 'attack', 'hit', 'death'].some(k => !c[k] || !c.have.includes(c[k])) || (c.run && !c.have.includes(c.run)); });
+    ok(!lack.length && CRE.filter(t => r[t].clips.own).join() === 'wolf,whelp', 'every type has a clip to stand in, walk, strike, be struck and fall with (the people and the three creatures on their bones from the shared library, the wolf and the dragon their own five)' + (lack.length ? ': not ' + lack.join() : ''));
+    const snd = await U.evaluate(async () => { const S = window.__t.sound; S.init(); await S.loaded; const o = {}; for (const [k, b] of Object.entries(S.buffers)) { const d = b.getChannelData(0); let pk = 0, sq = 0; for (let i = 0; i < d.length; i++) { const a = Math.abs(d[i]); if (a > pk) pk = a; sq += a * a; } o[k] = [b.duration, pk, Math.sqrt(sq / d.length)]; } return o; });
+    const want = new Set(AU.SOUND_FILES), bad = AU.SOUND_FILES.filter(k => !snd[k] || !(snd[k][0] > 0.005 && snd[k][0] < 11) || !(snd[k][1] > 0.02 && snd[k][1] <= 1.2) || !(snd[k][2] > 0.001)), named = VO.NAMED.filter(n => !(n.endsWith('*') ? AU.SOUND_FILES.some(k => k.startsWith(n.slice(0, -1))) : want.has(n)));
+    const loud = AU.SOUND_FILES.filter(k => snd[k]).sort((a, b) => snd[b][1] - snd[a][1])[0];
+    ok(!bad.length && !named.length && AU.SOUND_FILES.length >= 70, 'all ' + AU.SOUND_FILES.length + ' sounds are there and decode, none silent (the loudest peak, ' + loud + ', ' + (20 * Math.log10(snd[loud][1])).toFixed(1) + ' dB), from ' + Math.min(...Object.values(snd).map(v => v[0])).toFixed(2) + ' to ' + Math.max(...Object.values(snd).map(v => v[0])).toFixed(1) + ' s; every file the units\' sounds name exists' + (bad.length || named.length ? ' BUT ' + [...bad, ...named].join() : ''));
+    const heard = await U.evaluate(async types => { const T = window.__t, S = T.sound, wait = ms => new Promise(r => setTimeout(r, ms)), o = {};
+      for (const type of types) { await T.stage([{ type, owner: 0, x: 4, y: 6 }, { type: 'bulwark', owner: 1, x: 4, y: 5 }], 0); for (let i = 0; i < 400 && !T.unitsReady; i++) await wait(50);
+        const kind = T.G.TYPES[type].kind, part = async (ev, ms) => { S.heard = []; T.playEvents(ev); await wait(ms); return S.heard; };
+        o[type] = { step: await part([{ t: 'move', id: 1, x: 4, y: 7 }], 50), strike: await part([{ t: 'act', id: 1, kind, x: 4, y: 5 }], 3300), hurt: await part([{ t: 'hit', id: 1, dmg: 1 }], 250), fall: await part([{ t: 'die', id: 1 }], 450) }; }
+      S.heard = null; return o; }, types);
+    const mute = []; for (const t of types) { const w = VO.heardOf(t); for (const k of ['step', 'strike', 'hurt', 'fall']) for (const n of w[k]) if (!heard[t][k].includes(n)) mute.push(t + ' ' + k + ' ' + n); }
+    ok(!mute.length, 'every type is heard when it walks (by its body: ' + ['bulwark', 'wolf', 'ogre', 'skeleton', 'ghost'].map(t => t + ' ' + VO.heardOf(t).step[0]).join(', ') + '), strikes, is struck and falls: each of its own sounds is asked for at that moment' + (mute.length ? ' BUT not ' + mute.slice(0, 8).join('; ') : ''));
+    // a foot that is down stays where it was put: each gait stepped sixty times a second at the speed the page moves that piece, how far the point bearing it slips along the ground as a share of the way gone
+    const slide = await U.evaluate(async list => { const T = window.__t, wait = ms => new Promise(r => setTimeout(r, ms)), o = {};
+      for (const [type, tiles] of list) { await T.stage([{ type, owner: 0, x: 0, y: 6, facing: 'E' }], 0); for (let i = 0; i < 400 && !T.unitsReady; i++) await wait(50);
+        const ch = T.rigOf(T.unitMeshes.get(1)), mesh = ch.mesh, P = mesh.geometry.attributes.position, v = T.V(0, 0, 0), speed = ch.pick(tiles) / 0.78, dt = 1 / 60; mesh.geometry.computeBoundingBox();   // metres a second, as the figure is modelled
+        const bb = mesh.geometry.boundingBox, feet = []; for (let i = 0; i < P.count; i++) if (P.getY(i) < bb.min.y + (bb.max.y - bb.min.y) * 0.05) feet.push(i);
+        const pose = () => { mesh.skeleton.update(); return feet.map(i => { v.fromBufferAttribute(P, i); mesh.applyBoneTransform(i, v); return [v.x, v.y, v.z]; }); };
+        ch.setMoving(true, 1); for (let i = 0; i < 40; i++) ch.update(dt);
+        const run = []; for (let i = 0; i < 150; i++) { ch.update(dt); run.push(pose()); }
+        const floor = Math.min(...run.map(f => Math.min(...f.map(q => q[1])))), near = floor + (bb.max.y - bb.min.y) * 0.02; let slip = 0, went = 0, n = 0;
+        for (let k = 1; k < run.length; k++) { let j = 0; for (let i = 1; i < feet.length; i++) if (run[k - 1][i][1] < run[k - 1][j][1]) j = i; const a = run[k - 1][j], b = run[k][j]; if (a[1] < near && b[1] < near) { slip += Math.hypot(b[0] - a[0], b[2] - a[2] + speed * dt); went += speed * dt; n++; } }   // the point bearing it at each step
+        ch.setMoving(false); o[type + ' ' + tiles] = { share: went ? slip / went : 9, n, speed: speed * 0.78 }; }
+      return o; }, [['bulwark', 2], ['bulwark', 5], ['strider', 4], ['skeleton', 2], ['ogre', 2], ['whelp', 3]]);   // not the wolf: its gallop is off the ground most of the time, so there is no bearing point to follow
+    const slid = Object.entries(slide).filter(([, v]) => !(v.share < 0.35 && v.n > 20));
+    ok(!slid.length, 'a walking piece crosses the board at its stride\'s own speed, so the feet that are down stay put (how far they slip, as a share of the way gone: ' + Object.entries(slide).map(([k, v]) => k + ' tiles ' + v.share.toFixed(2) + ' at ' + v.speed.toFixed(1) + ' tiles a second').join(', ') + '; under 0.35 wanted, a piece pushed along without its stride would be 1)' + (slid.length ? ' BUT ' + JSON.stringify(slid) : ''));
+    // no arms-out moment: from a strike or a blow back to standing, the clips make up the whole pose at every step
+    const whole = await U.evaluate(async list => { const T = window.__t, wait = ms => new Promise(r => setTimeout(r, ms)), o = {};
+      for (const type of list) { await T.stage([{ type, owner: 0, x: 0, y: 6 }], 0); for (let i = 0; i < 400 && !T.unitsReady; i++) await wait(50);
+        const ch = T.rigOf(T.unitMeshes.get(1)); let low = 1, n = 0;
+        for (const what of ['attack', 'hit', 'attack']) { ch.once(what); for (let i = 0; i < 400 && (ch.busy || i < 3); i++) { ch.update(1 / 60); low = Math.min(low, ch.weight); n++; } }
+        o[type] = [low, n]; }
+      return o; }, ['bulwark', 'lancer', 'mender', 'alchemist', 'ogre', 'ghost', 'skeleton', 'wolf', 'whelp']);
+    const part = Object.entries(whole).filter(([, v]) => !(v[0] > 0.99 && v[1] > 30));
+    ok(!part.length, 'striking, struck and back to standing, a piece never shows the pose it was modelled in (arms out): its clips make up the whole pose at every sixtieth of a second (the least, ' + Math.min(...Object.values(whole).map(v => v[0])).toFixed(3) + ' of it)' + (part.length ? ' BUT ' + JSON.stringify(part) : ''));
+    ok(errs.length === n0, 'no page errors with the units' + (errs.length > n0 ? ': ' + errs.slice(n0, n0 + 4).join(' | ') : '')); await U.context().close(); }
+
   // ---- the campaign on the page: the overland map, a banner a battle, a battle against the computer, back to the map ----
   { const n0 = errs.length, C = await open(), N = CAMP.CAMPAIGN.nodes.length; cur = null;
     await C.goto(BASE + '/chess', { waitUntil: 'commit', timeout: 120000 }); await until(C, () => !!window.__t && !!document.getElementById('campBtn'));
@@ -622,7 +668,7 @@ let halt = () => {};
       const look = () => { const a = []; T.scene.traverse(o => { if (o.isLight) a.push(o.intensity, o.color.getHex()); }); T.field.group.traverse(o => { if (o.isMesh && o.material.visible !== false) { a.push(o.material.opacity, o.material.color.getHex(), o.matrixWorld.elements.join()); const p = o.geometry.attributes.position; a.push(p.version, p.array[0], p.array[p.array.length - 1]); if (o.material.map) a.push(o.material.map.version); } }); return a.join('|'); };
       for (let i = 0; i < 8; i++) await drawn(() => 0);
       const rest = await drawn(cost), seen = new Set(); for (let i = 0; i < 14; i++) seen.add(await drawn(look));
-      const u = T.state.units.find(u => u.owner === 0), g = T.unitMeshes.get(u.id); g.userData.target.z -= 3; let walk = null;
+      const u = T.state.units.find(u => u.owner === 0), g = T.unitMeshes.get(u.id); T.playEvents([{ t: 'move', id: u.id, x: u.x, y: u.y - 3 }]); let walk = null;
       for (let i = 0; i < 40 && !(walk && walk.skinned); i++) walk = await drawn(cost);
       const ember = T.state.units.find(q => q.owner === 0 && q.id !== u.id), eg = T.unitMeshes.get(ember.id); T.castFx('blast', eg, eg.position.clone(), T.V(0, 0, -1)); let spell = { calls: 0 };
       for (let i = 0; i < 30; i++) { const c = await drawn(cost); if (c.calls > spell.calls) spell = c; }
@@ -631,7 +677,7 @@ let halt = () => {};
       const D = T.dungeon, dm = []; D.group.traverse(o => { if (o.isMesh) dm.push(o.material.type); if (o.isLight) dm.push('light'); }); const t0 = D.lava.material.uniforms.t.value; await drawn(() => 0);
       return { dun: { kinds: dm.sort().join(), tris: D.tris, flows: D.lava.material.uniforms.t.value > t0, wall: D.group.children.some(o => o.name === 'dungeon'), ivy: D.group.children.some(o => o.name === 'ivy') }, rest, walk, spell, many, kinds: new Set(T.state.units.map(q => q.type)).size, steady: seen.size, units: T.state.units.length, fov: R.xr.getFoveation(), map: !!T.sun.shadow.map, tone: R.toneMapping, eyes: R.xr.getCamera().cameras.length }; });
     ok(worst.legal && worst.cost <= 40 && m.eyes === 2 && m.rest.calls < 60 && m.rest.tris < 150000 && m.rest.skinned === 0, 'the worst legal match at rest in the headset, both eyes (each side the twelve with the most triangles that 40 points and the limits allow: ' + worst.team + ', ' + worst.tris + ' triangles a side; a type is ' + worst.least + ' to ' + worst.most + '): ' + m.rest.calls + ' draws and ' + m.rest.tris + ' triangles a frame (under 60 and 150,000), no piece with bones');
-    ok(m.kinds === 15 && m.many.calls <= m.rest.calls && m.many.calls < 60 && m.many.tris < 150000 && m.many.skinned === 0, 'the number of types costs no draws: with all fourteen and the Skeleton on the board at once it is ' + m.many.calls + ' draws and ' + m.many.tris + ' triangles, every standing piece of every type in one batched draw an eye');
+    ok(m.kinds === 15 && m.many.calls <= m.rest.calls + 2 && m.many.calls < 60 && m.many.tris < 150000 && m.many.skinned === 0, 'the number of types costs no draws: with all fourteen and the Skeleton on the board at once it is ' + m.many.calls + ' draws and ' + m.many.tris + ' triangles, every standing piece of every type in one batched draw an eye (and the Ghost, seen through, in one of its own)');
     ok(m.rest.lights === 2 && m.rest.casting === 0 && !m.map && m.walk.casting === 0, 'one sun and the sky\'s fill, and no shadow pass: no light casts, no shadow map was ever made');
     ok(m.steady === 1, 'nothing in the fire or the light varies from frame to frame: the lights, the board, its glow and its marks are the same over fourteen frames');
     ok(m.dun.wall && m.dun.ivy && m.dun.kinds === 'MeshBasicMaterial,MeshBasicMaterial,ShaderMaterial' && m.dun.tris < 12500 && m.dun.flows, 'the dungeon round the board is three draws, unlit, with no lamp: its walls, rock and bank one baked mesh, its ivy one, its lava one that drifts (' + m.dun.tris + ' triangles)');

@@ -1,4 +1,4 @@
-// SKIRMISH TABLE's labels: a thin health bar over every piece and the name of the one picked or pointed at, all one mesh on one picture; each turns to the eye from where the head is, never with the head's turning, so none swims
+// SKIRMISH TABLE's labels: a thin health bar over every piece and the name of the one picked or pointed at (names that would overlap are stepped up), all one mesh on one picture; each turns to the eye from where the head is, never with the head's turning, so none swims
 import * as THREE from 'three';
 
 const COLS = 4, ROWS = 8, CW = 256, CH = 128, MAX = COLS * ROWS;   // one cell a piece: its name and state above (92 dots), its bar below
@@ -22,14 +22,14 @@ export class Labels {
   // a piece's cell, drawn again only when what it says changes: { name, hp (0 to 1), owner, tag }
   set(id, d) {
     let s = this.slots.get(id);
-    if (!s) { if (!this.free.length) return; s = { i: this.free.pop(), key: '', tag: false }; this.slots.set(id, s); }
+    if (!s) { if (!this.free.length) return; s = { i: this.free.pop(), key: '', tag: false, w: 1 }; this.slots.set(id, s); }
     const key = d.name + '|' + d.hp.toFixed(3) + '|' + d.owner + '|' + d.tag;
     if (key === s.key) return;
     s.key = key; s.tag = !!d.tag;
     const c = this.ctx, x = (s.i % COLS) * CW, y = Math.floor(s.i / COLS) * CH;
-    c.clearRect(x, y, CW, CH);
+    c.clearRect(x, y, CW, CH); s.w = 0;
     c.textAlign = 'center'; c.textBaseline = 'middle';
-    const plate = (py, h, text, color, font) => { c.font = font; const w = Math.min(CW - 8, c.measureText(text).width + 28); c.fillStyle = 'rgba(24,26,31,0.78)'; c.beginPath(); c.roundRect(x + (CW - w) / 2, y + py, w, h, 10); c.fill(); c.fillStyle = color; c.fillText(text, x + CW / 2, y + py + h / 2 + 2, CW - 24); };
+    const plate = (py, h, text, color, font) => { c.font = font; const w = Math.min(CW - 8, c.measureText(text).width + 28); s.w = Math.max(s.w, w / CW); c.fillStyle = 'rgba(24,26,31,0.78)'; c.beginPath(); c.roundRect(x + (CW - w) / 2, y + py, w, h, 10); c.fill(); c.fillStyle = color; c.fillText(text, x + CW / 2, y + py + h / 2 + 2, CW - 24); };
     plate(4, 44, d.name, '#ece8df', '600 30px system-ui, sans-serif');
     if (d.tag) plate(52, 36, d.tag, d.tag[0] === 's' ? '#cdb2ea' : '#e6cf8e', '600 24px system-ui, sans-serif');
     c.fillStyle = 'rgba(24,26,31,0.82)'; c.beginPath(); c.roundRect(x + 28, y + 98, 200, 24, 8); c.fill();
@@ -52,13 +52,19 @@ export class Labels {
     const f = this.f.set(eye.x, eye.y - 1.75, eye.z).normalize(), r = right ? this.r.set(right.x, 0, right.z) : this.r.set(f.z, 0, -f.x);
     if (r.lengthSq() < 1e-4) r.set(1, 0, 0); r.normalize();
     const u = this.u.crossVectors(f, r);
+    const names = [];
     for (const [id, s] of this.slots) {
       const at = where(id); if (!at) continue;
       const c = this.c.copy(at); c.y += 1.75;
       const x = (s.i % COLS) * CW, y = Math.floor(s.i / COLS) * CH, name = named === true || named.has(id);
       this.quad(s.i * 2, c, r, u, 0.86, 0.103, x + 28, y + 98, x + 228, y + 122);
-      if (name || s.tag) { const top = name ? 0 : 50, h = 92 - top, w = 1.24 * big; c.addScaledVector(u, 0.09 + h / 256 * w / 2); this.quad(s.i * 2 + 1, c, r, u, w, h / 256 * w, x, y + top, x + CW, y + 92); }
+      if (name || s.tag) { const d = Math.max(0.5, eye.dot(f) - c.dot(f)); names.push({ s, x, y, top: name ? 0 : 50, cx: c.x, cy: c.y, cz: c.z, d, a: (c.dot(r) - eye.dot(r)) / d, b: (c.dot(u) - eye.dot(u)) / d, w: 1.24 * big, lift: 0 }); }
     }
+    // names that would lie over one another as the eye sees them (a far one is smaller) are stepped up, one above the next, so every one can be read
+    names.sort((p, q) => p.a - q.a || p.b - q.b);
+    for (let i = 0; i < names.length; i++) { const e = names[i], h = (92 - e.top) / 256 * e.w, row = 50 / 256 * e.w;
+      for (let k = 0, hit = true; hit && k < 10; k++) { hit = false; for (let j = 0; j < i; j++) { const p = names[j]; if (Math.abs(e.a - p.a) < (e.s.w * e.w / e.d + p.s.w * p.w / p.d) / 2 + 0.004 && Math.abs(e.b + e.lift - p.b - p.lift) < (row / e.d + row / p.d) / 2 * 0.96) { e.lift = p.b + p.lift - e.b + (row / e.d + row / p.d) / 2; hit = true; } } }
+      this.quad(e.s.i * 2 + 1, this.c.set(e.cx, e.cy, e.cz).addScaledVector(u, 0.09 + h / 2 + e.lift * e.d), r, u, e.w, h, e.x, e.y + e.top, e.x + CW, e.y + 92); }
     this.mesh.geometry.attributes.position.needsUpdate = true; this.mesh.geometry.attributes.uv.needsUpdate = true;
   }
 }

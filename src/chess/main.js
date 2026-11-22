@@ -10,7 +10,8 @@ import { LEVELS } from './ai.js';
 import { CAMPAIGN, nodeOf, budgetFor, isOpen, finished } from './campaign.js';
 import { FX } from './fx.js';
 import { Sound } from './audio.js';
-import { loadCharacters, makeCharacter, charactersReady, typeReady, typesReady, trisOf, need, Crowd } from './characters.js';
+import { loadCharacters, makeCharacter, charactersReady, typeReady, typesReady, trisOf, sizeOf, clipsOf, need, Crowd } from './characters.js';
+import { stepSound, strikeSound, abilitySound, hitSound, fallSound, shatterSound } from './voices.js';
 
 const $ = id => document.getElementById(id);
 const AR_SCALE = 0.06; // one tile = 6 cm on your real table
@@ -135,7 +136,7 @@ function buildUnit(u) {
 // A piece's bones and clips, made the first time it has to move.
 function rigOf(g) {
   const d = g.userData;
-  if (!d.ch && typeReady(d.type)) { d.ch = makeCharacter(d.type); d.ch.mesh.visible = false; crowd.tint(d.ch.mesh, d.rested); g.add(d.ch.mesh); }
+  if (!d.ch && typeReady(d.type)) { d.ch = makeCharacter(d.type); d.ch.mesh.visible = false; crowd.tint(d.ch.mesh, d.rested, d.owner); g.add(d.ch.mesh); }
   return d.ch;
 }
 
@@ -173,7 +174,7 @@ function syncUnits() {
     d.target.set(tx(u.x), ty(u.x, u.y), tz(u.y));
     d.angle = FACE_ANGLE[u.facing]; d.owner = u.owner;
     labels.set(u.id, { name: t.name + (stars ? ' ' + '★'.repeat(Math.min(3, stars)) : ''), hp: u.hp / t.hp, owner: u.owner, tag });
-    if (rested !== d.rested) { d.rested = rested; if (d.ch) crowd.tint(d.ch.mesh, rested); }
+    if (rested !== d.rested) { d.rested = rested; if (d.ch) crowd.tint(d.ch.mesh, rested, d.owner); }
   }
   for (const [id, g] of unitMeshes) {
     if (alive.has(id)) continue;
@@ -298,7 +299,7 @@ function explode(t) {
 
 // With animated characters the effect waits for the wind-up of the attack animation.
 const LEAD = { melee: 0.3, line: 0.4, ranged: 0.3, blast: 0.4, heal: 0.35, snare: 0.4, bolt: 0.4, chain: 0.4, cone: 0.35, flask: 0.4, summon: 0.4, reload: 0 };
-const leadTime = (kind, g) => (g && g.userData.ch ? LEAD[kind] || 0 : 0);
+const leadTime = (kind, g) => (g && g.userData.ch && kind !== 'reload' ? g.userData.ch.lead || LEAD[kind] || 0 : 0);   // each strike's own moment (the bake found where its clip reaches furthest)
 // lightning: one quick pale streak from a point to a point, no flash
 const streak = (from, to) => fx.projectile({ from, to, arc: 0.05, dur: 0.12, tex: 'trace_01', color: 0xcfdcff, size: 0.42, trailTex: 'spark_05', trailColor: 0xb4c6f4, trailSize: 0.2 });
 
@@ -306,7 +307,7 @@ function castFx(kind, g, a, t) {
   const dir = t.clone().sub(a).setY(0);
   if (g && dir.lengthSq() > 0) g.userData.angle = Math.atan2(-dir.x, -dir.z);
   const ch = g && rigOf(g);
-  if (ch && kind !== 'reload') ch.once('attack');
+  if (ch) ch.once(kind === 'reload' ? 'reload' : 'attack');
   later(leadTime(kind, g), () => castFxNow(kind, g, a, t));
 }
 
@@ -314,69 +315,55 @@ function castFxNow(kind, g, a, t) {
   const dir = t.clone().sub(a).setY(0);
   if (dir.lengthSq() > 0) dir.normalize();
   const wp = worldPos(a);
+  strikeSound(sound, g ? g.userData.type : '', kind, wp);
   if (kind === 'melee' || kind === 'line') {
     if (g) g.position.addScaledVector(dir, g.userData.ch ? 0.25 : 0.45); // lunge; the unit springs back on its own
-    sound.play('swing*', { pos: wp, vol: 0.9 });
-    sound.whoosh({ pos: wp, dur: 0.18, from: 900, to: 3000, vol: 0.25 });
     if (kind === 'melee') {
       fx.flash({ pos: up(a, 0.7).addScaledVector(dir, 0.7), tex: 'slash_02', color: 0xe8e4da, size: 1.2, life: 0.3, grow: 0.4, rotation: Math.random() * 6.28 });
     } else {
       for (const d of [1, 2]) fx.flash({ pos: up(a, 0.65).addScaledVector(dir, d), tex: 'flare_01', color: 0xdfe4ee, size: 0.9, life: 0.28 + d * 0.05, grow: 0.8 });
     }
   } else if (kind === 'ranged') {
-    sound.play('bow', { pos: wp, vol: 0.8, rate: 1.4 });
-    sound.whoosh({ pos: wp, dur: 0.38, from: 1500, to: 600, vol: 0.3 });
     fx.projectile({ from: up(a, 0.9), to: up(t, 0.6), arc: 1.1, dur: 0.4, tex: 'spark_05', color: 0xf0e4c0, size: 0.35, trailTex: 'circle_05', trailColor: 0xc4cce6, trailSize: 0.12 });
   } else if (kind === 'blast') {
-    sound.whoosh({ pos: wp, dur: 0.5, from: 200, to: 1200, vol: 0.6, q: 0.8 });
     fx.flash({ pos: up(a, 1.1), tex: 'flare_01', color: 0xee8a48, size: 1.1, life: 0.36 });
     fx.projectile({ from: up(a, 1.1), to: up(t, 0.3), arc: 2.2, dur: 0.5, tex: 'fire_01', color: 0xf2a25a, size: 0.75, trailTex: 'flame_05', trailColor: 0xe87c40, trailSize: 0.42, onHit: () => explode(t) });
   } else if (kind === 'heal') {
-    sound.play('heal*', { pos: worldPos(t), vol: 0.8 });
     fx.flash({ pos: up(a, 1.0), tex: 'light_01', color: 0x8fdcaa, size: 1, life: 0.5 });
     later(0.2, () => {
       fx.burst({ pos: up(t, 0.2), tex: 'star_06', color: 0x8fdcaa, count: 8, size: 0.28, life: 1.0, speed: 0.6, up: 2.2, drag: 1, spread: 0.4 });
       fx.flash({ pos: up(t, 0.6), tex: 'twirl_01', color: 0x8fdcaa, size: 1.4, life: 0.9, spin: 1.6 });
     });
   } else if (kind === 'bolt') {
-    sound.play('snare*', { pos: wp, vol: 0.6, rate: 1.5 });
     fx.projectile({ from: up(a, 1.1), to: up(t, 0.7), arc: 0.2, dur: 0.3, tex: 'star_06', color: 0xa8dcff, size: 0.45, trailTex: 'circle_05', trailColor: 0x8cc8f0, trailSize: 0.22,
       onHit: () => {
         fx.flash({ pos: up(t, 0.6), tex: 'star_06', color: 0xbfe6ff, size: 1.5, life: 0.9, grow: 0.3, opacity: 0.5 });
         fx.burst({ pos: up(t, 0.5), tex: 'spark_05', color: 0xcfeaff, count: 8, size: 0.22, life: 1.0, speed: 0.9, up: 0.3, drag: 2, spread: 0.4, opacity: 0.6 });
       } });
   } else if (kind === 'chain') {
-    sound.whoosh({ pos: wp, dur: 0.25, from: 2400, to: 700, vol: 0.4, q: 1.2 });
-    sound.play('thud*', { pos: worldPos(t), vol: 0.5, rate: 0.7, delay: 0.14 });
     fx.flash({ pos: up(a, 1.3), tex: 'flare_01', color: 0xbfd0ff, size: 0.9, life: 0.4, opacity: 0.5 });
     streak(up(a, 1.3), up(t, 0.8));
   } else if (kind === 'cone') {
-    sound.whoosh({ pos: wp, dur: 0.6, from: 300, to: 1100, vol: 0.5, q: 0.7 });
     const side = V(-dir.z, 0, dir.x);
     [t.clone(), a.clone().addScaledVector(dir, 2), a.clone().addScaledVector(dir, 2).add(side), a.clone().addScaledVector(dir, 2).sub(side)].forEach((p, i) => fx.projectile({ from: up(a, 1.1), to: up(p, 0.35), arc: 0.12, dur: 0.3 + i * 0.03, tex: 'fire_01', color: 0xf2a25a, size: 0.6, trailTex: 'flame_05', trailColor: 0xe87c40, trailSize: 0.34,
       onHit: () => fx.burst({ pos: up(p, 0.25), tex: 'fire_01', color: 0xee9058, count: 4, size: 0.6, life: 0.6, speed: 0.8, up: 0.8, drag: 3, grow: 0.6, spread: 0.3, opacity: 0.5 }) }));
   } else if (kind === 'flask') {
-    sound.whoosh({ pos: wp, dur: 0.4, from: 900, to: 500, vol: 0.25 });
     fx.projectile({ from: up(a, 1.2), to: up(t, 0.1), arc: 1.6, dur: 0.5, tex: 'circle_05', color: 0x7ae08a, size: 0.3, trailTex: 'circle_05', trailColor: 0x58c06a, trailSize: 0.1,
       onHit: () => {
-        sound.play('drop', { pos: worldPos(t), vol: 0.5, rate: 1.6 });
+        shatterSound(sound, worldPos(t));
         fx.burst({ pos: up(t, 0.2), tex: 'fire_01', color: 0xee9058, count: 7, size: 0.6, life: 0.7, speed: 1.2, up: 0.8, drag: 3, grow: 0.7, spread: 0.4, opacity: 0.5 });
         fx.burst({ pos: up(t, 0.2), tex: 'smoke_07', color: 0x34302c, count: 3, size: 0.9, life: 1.4, speed: 0.5, up: 1.1, drag: 1, grow: 1, additive: false, opacity: 0.35, spread: 0.5 });
       } });
   } else if (kind === 'summon') {
     const c = g && g.userData.type === 'necro' ? 0xa8e07a : 0x9adfd6;
-    sound.play('heal*', { pos: worldPos(t), vol: 0.6, rate: 0.7 });
     fx.flash({ pos: up(a, 1.2), tex: 'magic_05', color: c, size: 0.9, life: 0.5 });
     later(0.15, () => {
       fx.flash({ pos: up(t, 0.5), tex: 'twirl_01', color: c, size: 1.8, life: 1.1, spin: 1.4, opacity: 0.6 });
       fx.burst({ pos: up(t, 0.1), tex: 'magic_03', color: c, count: 9, size: 0.3, life: 1.1, speed: 0.5, up: 1.6, drag: 1, spread: 0.4 });
     });
   } else if (kind === 'reload') {
-    sound.play('select', { pos: wp, vol: 0.5, rate: 0.7 });
-    sound.play('drop', { pos: wp, vol: 0.3, rate: 1.8, delay: 0.2 });
     if (g) floatText(g.position, 'Reloaded', '#e6e2d8');
   } else if (kind === 'snare') {
-    sound.play('snare*', { pos: worldPos(t), vol: 0.7 });
     fx.projectile({ from: up(a, 1.1), to: up(t, 0.7), arc: 0.4, dur: 0.3, tex: 'magic_05', color: 0xc0a0ea, size: 0.5, trailTex: 'magic_03', trailColor: 0xa684de, trailSize: 0.3,
       onHit: () => {
         fx.flash({ pos: up(t, 0.6), tex: 'twirl_01', color: 0xb294e4, size: 1.7, life: 1.0, spin: -1.8 });
@@ -396,8 +383,8 @@ function hitFx(g, e, kind, a) {
   floatText(p, `-${e.dmg}`, '#e88f80');
   const armored = G.TYPES[g.userData.type].armor > 0;
   if (kind === 'burn') fx.burst({ pos: up(p, 0.3), tex: 'fire_01', color: 0xee9058, count: 4, size: 0.5, life: 0.6, speed: 0.6, up: 0.9, drag: 3, grow: 0.6, spread: 0.3, opacity: 0.5 });
-  if (kind === 'blast' || kind === 'cone' || kind === 'flask' || kind === 'chain' || kind === 'bolt' || kind === 'burn') { sound.play('flesh*', { pos: wp, vol: 0.5 }); return; }
-  sound.play(armored ? 'armor*' : kind === 'ranged' ? 'thud*' : 'flesh*', { pos: wp, vol: 1 });
+  hitSound(sound, g.userData.type, kind, armored, wp);
+  if (kind === 'blast' || kind === 'cone' || kind === 'flask' || kind === 'chain' || kind === 'bolt' || kind === 'burn') return;
   fx.flash({ pos: up(p, 0.7), tex: 'spark_05', color: armored ? 0xf0e4c0 : 0xe0705e, size: 0.85, life: 0.28, grow: 0.8 });
   if (armored) fx.burst({ pos: up(p, 0.7), tex: 'spark_01', color: 0xf0d8a4, count: 6, size: 0.16, life: 0.6, speed: 3.5, up: 0.8, gravity: 9, drag: 0.8 });
   else fx.burst({ pos: up(p, 0.7), tex: 'dirt_02', color: 0x9c3a30, count: 5, size: 0.3, life: 0.5, speed: 1.6, up: 0.8, gravity: 6, additive: false, opacity: 0.8 });
@@ -416,8 +403,7 @@ function blockFx(g) {
 function deathFx(g) {
   if (!g) return;
   const p = g.position.clone(), wp = worldPos(p);
-  sound.play('fall*', { pos: wp, vol: 1 });
-  sound.play('drop', { pos: wp, vol: 0.5, delay: 0.25 });
+  fallSound(sound, g.userData.type, wp);
   fx.burst({ pos: up(p, 0.3), tex: 'smoke_04', color: 0x555048, count: 5, size: 0.9, life: 1.4, speed: 0.7, up: 1, drag: 1.5, grow: 1, additive: false, opacity: 0.5, spread: 0.4 });
 }
 
@@ -426,19 +412,24 @@ function deathFx(g) {
 const FOOT = { grass: [0.82, 0.4, 'rustle'], leaves: [0.78, 0.4, 'rustle'], moss: [0.7, 0.3, 'rustle'], dirt: [1, 0.5], wood: [1.3, 0.6, 'thud'], water: [0.7, 0.3, 'splash'],
   snow: [0.7, 0.34, 'crunch'], gravel: [1.05, 0.45, 'crunch'], cinder: [0.95, 0.42, 'crunch'], ice: [1.5, 0.42, 'tick'], stone: [1.22, 0.55, 'tick'], ash: [0.62, 0.26, 'puff'] };
 function moveFx(g, e) {
-  const p = g.position.clone(), wp = worldPos(p), m = G.mapOf(state.map), k = m.tiles ? m.tiles[e.y][e.x] : null, own = m.look && m.look.foot;
+  const p = g.position.clone(), wp = worldPos(p), m = G.mapOf(state.map), k = m.tiles ? m.tiles[e.y][e.x] : null, own = m.look && m.look.foot, d = g.userData;
   const [rate, vol, more] = FOOT[k && ((own && own[k]) || G.TERRAIN[k].foot)] || [1, 0.5];
-  for (let i = 0; i < 3; i++) { const delay = i * 0.13;
-    sound.play('step*', { pos: wp, vol, rate, delay });
+  // it walks there at its own stride's speed (a long way a little quicker, the stride quickened with it), so its feet do not slide
+  d.target.set(tx(e.x), ty(e.x, e.y), tz(e.y));
+  const ch = rigOf(g), far = Math.hypot(p.x - d.target.x, p.z - d.target.z), pace = ch ? ch.pick(far) : 3;
+  d.hurry = Math.min(1.5, Math.max(1, far / pace / 1.5)); d.pace = pace * d.hurry; d.walk = far > 0.05;
+  const secs = far / d.pace, steps = stepSound(sound, d.type, wp, secs, [rate, vol]);
+  for (let i = 0; i < steps; i++) { const delay = (i + 0.3) * secs / steps;
     if (more === 'splash') sound.whoosh({ pos: wp, dur: 0.22, from: 2600, to: 500, vol: 0.22, q: 0.6, delay: delay + 0.03 });
     else if (more === 'rustle') sound.whoosh({ pos: wp, dur: 0.12, from: 5000, to: 2500, vol: 0.05, q: 0.5, delay });
     else if (more === 'thud') sound.play('thud*', { pos: wp, vol: 0.12, rate: 1.5, delay });
     else if (more === 'crunch') sound.whoosh({ pos: wp, dur: 0.16, from: 1500, to: 520, vol: 0.2, q: 0.7, delay: delay + 0.01 });
-    else if (more === 'tick') sound.whoosh({ pos: wp, dur: 0.05, from: 4200, to: 3000, vol: 0.09, q: 2.5, delay });
     else if (more === 'puff') sound.whoosh({ pos: wp, dur: 0.24, from: 520, to: 240, vol: 0.14, q: 0.5, delay });
   }
   fx.burst({ pos: up(p, 0.08), tex: 'dirt_02', color: 0x8a7a66, count: 4, size: 0.4, life: 0.6, speed: 0.6, up: 0.5, drag: 2, grow: 0.8, additive: false, opacity: 0.4, spread: 0.2 });
 }
+// how long until a walking piece is on its tile (seconds)
+const arrives = g => { const d = g && g.userData; if (!d || !d.walk) return 0; return Math.min(3, Math.hypot(g.position.x - d.target.x, g.position.z - d.target.z) / (d.pace || 3)); };
 
 // Starts the effects for one batch of server events. Returns how long (seconds) the board
 // should wait before showing the result (health bars, removed units).
@@ -447,7 +438,7 @@ function playEvents(events) {
   const say = (g, at, text, color) => later(at, () => g && g.parent && floatText(g.position, text, color));
   for (const e of events) {
     const g = unitMeshes.get(e.id);
-    if (e.t === 'brace') { say(g, Math.max(0, impact - 0.2), 'Braced', '#e6e2d8'); const ch = g && rigOf(g); if (ch) ch.once('attack'); }
+    if (e.t === 'brace') { say(g, Math.max(0, impact - 0.2), 'Braced', '#e6e2d8'); const ch = g && rigOf(g); if (ch) ch.once('ability'); if (g) abilitySound(sound, g.userData.type, worldPos(g.position)); }
     else if (e.t === 'immune') say(g, impact, 'No effect', '#b9bec8');
     else if (e.t === 'frozen') say(g, impact, 'Frozen', '#a8dcff');
     else if (e.t === 'arc') { const f = V(tx(e.fx), ty(e.fx, e.fy), tz(e.fy)); impact += 0.16; const at = impact - 0.12; later(at, () => g && g.parent && streak(up(f, 0.8), up(g.position, 0.8))); wait = impact + 0.1; }
@@ -460,8 +451,10 @@ function playEvents(events) {
       kind = e.kind;
       const t = V(tx(e.x), ty(e.x, e.y), tz(e.y));
       a = g ? g.userData.target.clone() : t.clone();
-      castFx(kind, g, a, t);
-      impact = leadTime(kind, g) + IMPACT_DELAY[kind]; wait = impact + 0.1;
+      const lag = arrives(g);   // a piece still walking strikes when it is there
+      if (g) rigOf(g);
+      if (lag) later(lag, () => castFx(kind, g, a, t)); else castFx(kind, g, a, t);
+      impact = lag + leadTime(kind, g) + IMPACT_DELAY[kind]; wait = impact + 0.1;
     }
     else if (e.t === 'hit') later(impact, () => hitFx(g, e, kind, a));
     else if (e.t === 'block') later(impact, () => blockFx(g));
@@ -930,7 +923,7 @@ function warm() {
   const any = Object.keys(G.TYPES).find(typeReady);
   if (!any) return;
   const ch = makeCharacter(any);
-  for (const rested of [false, true]) { crowd.tint(ch.mesh, rested); renderer.compile(ch.mesh, camera, scene); }
+  for (const owner of [0, 1]) for (const rested of [false, true]) { crowd.tint(ch.mesh, rested, owner); renderer.compile(ch.mesh, camera, scene); }
 }
 
 // In the headset a late frame is a jump in the room (a drawn frame is only turned to follow the head, never moved),
@@ -961,11 +954,17 @@ renderer.setAnimationLoop(time => {
     const d = g.userData, t = d.target, far = Math.hypot(g.position.x - t.x, g.position.z - t.z);
     let a = d.angle - g.rotation.y;
     a = Math.atan2(Math.sin(a), Math.cos(a));
-    if (far > 0.003 || Math.abs(a) > 0.003 || Math.abs(g.scale.x - 1) > 0.003 || Math.abs(g.position.y - t.y) > 0.003) { g.position.lerp(t, k); g.scale.lerp(ONE, k); g.rotation.y += a * k; d.rest = false; crowdDirty = true; }
+    if (d.walk) {   // walking to its tile, facing the way it goes, as fast as its stride covers the ground
+      const step = (d.pace || 3) * dt;
+      if (far <= step || !far) { g.position.x = t.x; g.position.z = t.z; d.walk = false; }
+      else { let w = Math.atan2(-(t.x - g.position.x), -(t.z - g.position.z)) - g.rotation.y; w = Math.atan2(Math.sin(w), Math.cos(w)); g.rotation.y += w * Math.min(1, k * 1.6); g.position.x += (t.x - g.position.x) / far * step; g.position.z += (t.z - g.position.z) / far * step; }
+      g.position.y += (t.y - g.position.y) * k; g.scale.lerp(ONE, k); d.rest = false; crowdDirty = true;
+    }
+    else if (far > 0.003 || Math.abs(a) > 0.003 || Math.abs(g.scale.x - 1) > 0.003 || Math.abs(g.position.y - t.y) > 0.003) { g.position.lerp(t, k); g.scale.lerp(ONE, k); g.rotation.y += a * k; d.rest = false; crowdDirty = true; }
     else if (!d.rest) { d.rest = true; g.position.copy(t); g.scale.copy(ONE); g.rotation.y = d.angle; crowdDirty = true; }
-    const ch = far > 0.12 ? rigOf(g) : d.ch;
+    const ch = d.walk ? rigOf(g) : d.ch;
     if (!ch) continue;
-    ch.setMoving(far > 0.12);
+    ch.setMoving(!!d.walk, d.hurry || 1);
     if (ch.busy) ch.update(dt);
     if (ch.busy !== d.live) { d.live = ch.busy; ch.mesh.visible = d.live; crowdDirty = true; }
   }
@@ -1148,4 +1147,4 @@ function act(player, action, rand) {
 }
 if (new URLSearchParams(location.search).get('camp')) openCampaign();
 if (new URLSearchParams(location.search).get('show')) show(new URLSearchParams(location.search).get('show'), new URLSearchParams(location.search).get('setup'), new URLSearchParams(location.search).get('full'));
-window.__t = { stage, act, need, typesReady, trisOf, get page() { return page; }, get aim() { return aim; }, tabs3D, chips3D, pools, handlePick, show, world, G, drawUnits, get prog() { return prog; }, get openMatch() { return openMatch; }, openCampaign, CAMPAIGN, get camp() { return camp; }, get inCamp() { return inCamp; }, get unitsReady() { return charactersReady() && !crowdDirty && (!state || typesReady(state.units.map(u => u.type))); }, dungeon, crowd, labels, hemi, get table() { return table; }, get arScale() { return arScale; }, unitMeshes, get campSel() { return campSel; }, get solo() { return solo; }, get campNode() { return campNode; }, saveTeam, loadTeam, get teams() { return teams; }, get held() { return held; }, get ready() { return ready; }, get setupSel() { return setupSel; }, get field() { return field; }, castFx, explode, V, camera, controls, fx, sun, renderer, scene, get state() { return state; }, get me() { return me; }, get code() { return code; }, get selected() { return selected; }, get lean() { return lean; } };
+window.__t = { stage, act, need, typesReady, trisOf, sizeOf, clipsOf, sound, rigOf, playEvents, get page() { return page; }, get aim() { return aim; }, tabs3D, chips3D, pools, handlePick, show, world, G, drawUnits, get prog() { return prog; }, get openMatch() { return openMatch; }, openCampaign, CAMPAIGN, get camp() { return camp; }, get inCamp() { return inCamp; }, get unitsReady() { return charactersReady() && !crowdDirty && (!state || typesReady(state.units.map(u => u.type))); }, dungeon, crowd, labels, hemi, get table() { return table; }, get arScale() { return arScale; }, unitMeshes, get campSel() { return campSel; }, get solo() { return solo; }, get campNode() { return campNode; }, saveTeam, loadTeam, get teams() { return teams; }, get held() { return held; }, get ready() { return ready; }, get setupSel() { return setupSel; }, get field() { return field; }, castFx, explode, V, camera, controls, fx, sun, renderer, scene, get state() { return state; }, get me() { return me; }, get code() { return code; }, get selected() { return selected; }, get lean() { return lean; } };

@@ -532,6 +532,43 @@ let halt = () => {};
     ok(a0.sel === 1 && !a0.aim && a1.at === '4,8' && a2.aim && thrown && a3.pools === 1 && a3.drawn === 1 && a3.acted, 'a flask at empty ground: the first tap picks the alchemist, a second aims; thrown, the tile burns and its glow is drawn');
     ok(errs.length === n0, 'no page errors picking a team' + (errs.length > n0 ? ': ' + errs.slice(n0, n0 + 4).join(' | ') : '')); await T.context().close(); }
 
+  // ---- every unit type: it keeps to its own square, has every clip it plays, is heard at every act (each sound a recording that decodes, is not silent and does not clip); a walk's feet stay where they are put ----
+  { const n0 = errs.length, U = await open(); cur = null; const VO = await import(pathToFileURL(path.join(ROOT, 'src/chess/voices.js'))), AU = await import(pathToFileURL(path.join(ROOT, 'src/chess/audio.js')));
+    await U.goto(BASE + '/chess?show=board', { waitUntil: 'commit', timeout: 120000 }); await until(U, () => !!window.__t && !!window.__t.field && window.__t.unitsReady, null, 180000);
+    const r = await U.evaluate(async () => { const T = window.__t, types = Object.keys(T.G.TYPES); await T.need(types); for (let i = 0; i < 600 && !T.typesReady(types); i++) await new Promise(r => setTimeout(r, 100));
+      return Object.fromEntries(types.map(t => [t, { size: T.sizeOf(t), clips: T.clipsOf(t) }])); });
+    const types = Object.keys(r), CRE = ['wolf', 'ogre', 'skeleton', 'ghost', 'whelp', 'golem'], person = r.strider.size.tall, EDGE = 0.92, across = z => Math.max(z.wide, z.deep), f = v => v.toFixed(2);
+    const out = types.filter(t => across(r[t].size) > EDGE), big = CRE.filter(t => across(r[t].size.all) > EDGE || r[t].size.all.tall > person * 1.4), widest = types.slice().sort((a, b) => across(r[b].size) - across(r[a].size))[0];
+    ok(types.length === 24 && !out.length && !big.length, 'every one of the 24 types stands inside its own square: no body is more than ' + EDGE + ' of a tile across, standing on its middle (the widest, the ' + widest + ', ' + f(across(r[widest].size)) + '); the six creatures with all they carry too, none taller than 1.4 of a person (' + CRE.map(t => t + ' ' + f(r[t].size.all.wide) + ' by ' + f(r[t].size.all.deep) + ', ' + f(r[t].size.all.tall / person) + ' of a person tall').join('; ') + ')' + (out.length || big.length ? ' BUT ' + [...out, ...big].join() : ''));
+    const lack = types.filter(t => { const c = r[t].clips; return ['idle', 'walk', 'attack', 'hit', 'death'].some(k => !c[k] || !c.have.includes(c[k])) || ['run', 'ability', 'reload'].some(k => c[k] && !c.have.includes(c[k])); });
+    ok(!lack.length && CRE.filter(t => r[t].clips.own).join() === 'wolf,whelp', 'every type has a clip to stand in, walk, strike, be struck and fall with (the people and the four creatures on their bones from the shared library, the wolf and the dragon their own five)' + (lack.length ? ': not ' + lack.join() : ''));
+    const snd = await U.evaluate(async () => { const S = window.__t.sound; S.init(); await S.loaded; const o = {}; for (const [k, b] of Object.entries(S.buffers)) { const d = b.getChannelData(0); let pk = 0, sq = 0; for (let i = 0; i < d.length; i++) { const a = Math.abs(d[i]); if (a > pk) pk = a; sq += a * a; } o[k] = [b.duration, pk, Math.sqrt(sq / d.length)]; } return o; });
+    const want = new Set(AU.SOUND_FILES), bad = AU.SOUND_FILES.filter(k => !snd[k] || !(snd[k][0] > 0.04 && snd[k][0] < 11) || !(snd[k][1] > 0.02 && snd[k][1] <= 1) || !(snd[k][2] > 0.001)), named = VO.NAMED.filter(n => !(n.endsWith('*') ? AU.SOUND_FILES.some(k => k.startsWith(n.slice(0, -1))) : want.has(n)));
+    const loud = AU.SOUND_FILES.filter(k => snd[k]).sort((a, b) => snd[b][1] - snd[a][1])[0];
+    ok(!bad.length && !named.length && AU.SOUND_FILES.length >= 90, 'all ' + AU.SOUND_FILES.length + ' sounds are there and decode: none silent, none clipped (the loudest peak, ' + loud + ', ' + (20 * Math.log10(snd[loud][1])).toFixed(1) + ' dB), from ' + Math.min(...Object.values(snd).map(v => v[0])).toFixed(2) + ' to ' + Math.max(...Object.values(snd).map(v => v[0])).toFixed(1) + ' s; every file the units\' sounds name exists' + (bad.length || named.length ? ' BUT ' + [...bad, ...named].join() : ''));
+    const heard = await U.evaluate(async types => { const T = window.__t, S = T.sound, wait = ms => new Promise(r => setTimeout(r, ms)), o = {};
+      for (const type of types) { await T.stage([{ type, owner: 0, x: 4, y: 6 }, { type: 'bulwark', owner: 1, x: 4, y: 5 }], 0); for (let i = 0; i < 400 && !T.unitsReady; i++) await wait(50);
+        const kind = T.G.TYPES[type].kind, part = async (ev, ms) => { S.heard = []; T.playEvents(ev); await wait(ms); return S.heard; };
+        o[type] = { step: await part([{ t: 'move', id: 1, x: 4, y: 7 }], 50), strike: await part([{ t: 'act', id: 1, kind, x: 4, y: 5 }], 3300), hurt: await part([{ t: 'hit', id: 1, dmg: 1 }], 250), fall: await part([{ t: 'die', id: 1 }], 450) }; }
+      S.heard = null; return o; }, types);
+    const mute = []; for (const t of types) { const w = VO.heardOf(t); for (const k of ['step', 'strike', 'hurt', 'fall']) for (const n of w[k]) if (!heard[t][k].includes(n)) mute.push(t + ' ' + k + ' ' + n); }
+    ok(!mute.length, 'every type is heard when it walks (by its body: ' + ['bulwark', 'wolf', 'golem', 'skeleton', 'ghost'].map(t => t + ' ' + VO.heardOf(t).step[0]).join(', ') + '), strikes, is struck and falls: each of its own sounds is asked for at that moment' + (mute.length ? ' BUT not ' + mute.slice(0, 8).join('; ') : ''));
+    // a foot that is down stays where it was put: over a walk, how far the points on the ground move across it, as a share of how far the piece went
+    const slide = await U.evaluate(async list => { const T = window.__t, wait = ms => new Promise(r => setTimeout(r, ms)), frame = () => new Promise(r => requestAnimationFrame(r)), o = {};
+      for (const [type, tiles] of list) { await T.stage([{ type, owner: 0, x: 0, y: 6, facing: 'E' }], 0); for (let i = 0; i < 400 && !T.unitsReady; i++) await wait(50);
+        const g = T.unitMeshes.get(1); T.playEvents([{ t: 'move', id: 1, x: tiles, y: 6 }]); const mesh = g.userData.ch.mesh, P = mesh.geometry.attributes.position, v = T.V(0, 0, 0), y0 = g.position.y; mesh.geometry.computeBoundingBox();
+        const bb = mesh.geometry.boundingBox, feet = []; for (let i = 0; i < P.count; i++) if (P.getY(i) < bb.min.y + (bb.max.y - bb.min.y) * 0.05) feet.push(i);
+        let prev = null, px = g.position.x, slip = 0, went = 0, n = 0, t0 = performance.now(), frames = 0;
+        while (g.userData.walk && frames < 600) { await frame(); frames++; mesh.updateWorldMatrix(true, false);
+          const now = feet.map(i => { v.fromBufferAttribute(P, i); mesh.applyBoneTransform(i, v); v.applyMatrix4(mesh.matrixWorld); return [v.x, v.y - y0, v.z]; }), dx = Math.abs(g.position.x - px); px = g.position.x;
+          if (prev && frames > 4 && dx > 0) for (let k = 0; k < now.length; k++) if (now[k][1] < 0.035 && prev[k][1] < 0.035) { slip += Math.hypot(now[k][0] - prev[k][0], now[k][2] - prev[k][2]); went += dx; n++; }
+          prev = now; }
+        o[type + ' ' + tiles] = { share: went ? slip / went : 9, n, frames, secs: (performance.now() - t0) / 1000, there: Math.abs(g.position.x - g.userData.target.x) < 0.01 }; }
+      return o; }, [['bulwark', 2], ['bulwark', 5], ['skeleton', 2], ['ogre', 2], ['golem', 2], ['wolf', 4], ['whelp', 3]]);
+    const slid = Object.entries(slide).filter(([, v]) => !(v.share < 0.3 && v.n > 20 && v.there));
+    ok(!slid.length, 'a walking piece crosses the board at its stride\'s own speed, so the feet that are down stay put (how far they slip, as a share of the way gone: ' + Object.entries(slide).map(([k, v]) => k + ' tiles ' + v.share.toFixed(2)).join(', ') + '; under 0.3 wanted, a piece pushed along without its stride would be 1)' + (slid.length ? ' BUT ' + JSON.stringify(slid) : ''));
+    ok(errs.length === n0, 'no page errors with the units' + (errs.length > n0 ? ': ' + errs.slice(n0, n0 + 4).join(' | ') : '')); await U.context().close(); }
+
   // ---- the campaign on the page: the overland map, a banner a battle, a battle against the computer, back to the map ----
   { const n0 = errs.length, C = await open(), N = CAMP.CAMPAIGN.nodes.length; cur = null;
     await C.goto(BASE + '/chess', { waitUntil: 'commit', timeout: 120000 }); await until(C, () => !!window.__t && !!document.getElementById('campBtn'));
@@ -656,7 +693,7 @@ let halt = () => {};
       const look = () => { const a = []; T.scene.traverse(o => { if (o.isLight) a.push(o.intensity, o.color.getHex()); }); T.field.group.traverse(o => { if (o.isMesh && o.material.visible !== false) { a.push(o.material.opacity, o.material.color.getHex(), o.matrixWorld.elements.join()); const p = o.geometry.attributes.position; a.push(p.version, p.array[0], p.array[p.array.length - 1]); if (o.material.map) a.push(o.material.map.version); } }); return a.join('|'); };
       for (let i = 0; i < 8; i++) await drawn(() => 0);
       const rest = await drawn(cost), seen = new Set(); for (let i = 0; i < 14; i++) seen.add(await drawn(look));
-      const u = T.state.units.find(u => u.owner === 0), g = T.unitMeshes.get(u.id); g.userData.target.z -= 3; let walk = null;
+      const u = T.state.units.find(u => u.owner === 0), g = T.unitMeshes.get(u.id); T.playEvents([{ t: 'move', id: u.id, x: u.x, y: u.y - 3 }]); let walk = null;
       for (let i = 0; i < 40 && !(walk && walk.skinned); i++) walk = await drawn(cost);
       const ember = T.state.units.find(q => q.owner === 0 && q.id !== u.id), eg = T.unitMeshes.get(ember.id); T.castFx('blast', eg, eg.position.clone(), T.V(0, 0, -1)); let spell = { calls: 0 };
       for (let i = 0; i < 30; i++) { const c = await drawn(cost); if (c.calls > spell.calls) spell = c; }

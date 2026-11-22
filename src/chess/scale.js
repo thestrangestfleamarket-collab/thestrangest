@@ -4,7 +4,8 @@ export const METRE = 0.78;   // board units to a metre: a figure, 1.8 m, stands 
 export const SIZES = {
   figure: 1.8,
   // a tree's height, and its crown's width as a share of that height
-  tree: { birch: { tall: [8, 11], spread: 0.55 }, oak: { tall: [9, 13], spread: 0.62 }, fir: { tall: [10, 15], spread: 0.42 } },
+  tree: { birch: { tall: [8, 11], spread: 0.55 }, oak: { tall: [9, 13], spread: 0.62 }, fir: { tall: [10, 15], spread: 0.42 },
+    fungus: { tall: [2.6, 3.8], spread: 0.5 }, puffcap: { tall: [1.2, 1.7], spread: 0.9 }, snag: { tall: [5, 8], spread: 0.5 } },   // a cavern's giant fungus, a burnt tree
   log: 3.6,                                                     // a fallen tree's length
   grass: { field: [0.12, 0.28], meadow: [0.3, 0.6] },           // grazed short where pieces stand, knee-high round the edge
   reed: { field: [0.5, 0.9], bank: [1.2, 2] },
@@ -13,5 +14,15 @@ export const SIZES = {
   rock: { solid: { wide: [1.15, 1.25], tall: [1.3, 1.7] }, crag: { wide: [1.15, 1.25], tall: [1.5, 2] }, scree: [0.3, 0.55], bank: [0.13, 0.4], boulder: [0.3, 1.1] },
   camp: { ring: 0.8, stone: [0.14, 0.18], stick: 0.5, flame: 0.7 },
   torch: { tall: 2.1, flame: 0.45 },
+  // the three worlds' own things
+  crystal: { tall: [1.3, 2.7], wide: [0.28, 0.5], shard: [0.2, 0.7] },
+  stalagmite: { tall: [1.5, 3.3], wide: [0.5, 0.85], small: [0.3, 1.1] },
+  column: { tall: [1.1, 2.5], wide: 0.42 },                    // basalt, six-sided
+  shroom: [0.08, 0.3],
+  lantern: { tall: 1.6, glass: 0.16 },
+  cart: { long: 1.5, wide: 0.9, tall: 1 }, crate: [0.45, 0.7],
+  rib: 2.3, pillar: { tall: 3.4, wide: 0.75 },
+  banner: { tall: 3.2, cloth: [0.55, 1.2] }, sledge: { long: 2.4, wide: 0.9 }, cairn: 1.2,
+  flake: 0.05,
   bird: 0.8, butterfly: 0.1,                                    // wing tip to wing tip
 };

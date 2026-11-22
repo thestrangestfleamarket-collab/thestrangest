@@ -5,6 +5,8 @@ import * as THREE from 'three';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import * as SkeletonUtils from 'three/addons/utils/SkeletonUtils.js';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
+import { METRE } from './scale.js';
+import { shade } from './clouds.js';
 
 const SPEC = {
   bulwark:   { body: 'Male_Ranger', hide: ['Head_Hood'], head: 'Male_Head', hair: ['Hair_Buzzed'], hairColor: 0x2a2018, tint: 0x8f98a8, metal: 0.55, idle: 'Sword_Idle', attack: 'Sword_Attack', gear: ['sword', 'shield'] },
@@ -15,7 +17,7 @@ const SPEC = {
   mender:    { body: 'Female_Peasant', head: 'Female_Head', hair: ['Hair_Long'], hairColor: 0xc8a25a, tint: 0xf2efe6, idle: 'Idle_Loop', attack: 'Spell_Simple_Shoot', gear: [] },
   hexbinder: { body: 'Female_Peasant', head: 'Female_Head', hair: ['Hair_Buns'], hairColor: 0x1c1a22, tint: 0x7d55c0, idle: 'Idle_Loop', attack: 'Spell_Simple_Shoot', gear: ['wand'] },
 };
-const SCALE = 0.78; // models are ~1.8 m tall; a unit should stand about one tile high
+const SCALE = METRE; // the models are made 1.8 m tall
 const models = {};
 let clips = [];
 let ready = false;
@@ -120,6 +122,7 @@ function staticClone(name, hairColor) {
     if (!m.isMesh) return;
     m.castShadow = true; m.raycast = () => {};
     if (m.material.name.includes('Hair')) { m.material = m.material.clone(); m.material.color.setHex(hairColor); }
+    shade(m.material);
   });
   return o;
 }
@@ -141,7 +144,7 @@ export function makeCharacter(type) {
         if (spec.tint) m.color.multiply(new THREE.Color(spec.tint));
         if (spec.metal) { m.metalness = spec.metal; m.roughness = 0.45; m.metalnessMap = null; }
       }
-      mats.set(o.material, m);
+      mats.set(o.material, shade(m));
     }
     o.material = mats.get(o.material);
     o.castShadow = true;

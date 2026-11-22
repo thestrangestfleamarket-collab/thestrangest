@@ -5,6 +5,7 @@ import * as G from './game.js';
 import { makeWood, makeEnvironment, makeBackdrop } from './procedural.js';
 import { makeBoard } from './board.js';
 import { makeLand } from './land.js';
+import { CLOUD } from './clouds.js';
 import { LEVELS } from './ai.js';
 import { CAMPAIGN, nodeOf, budgetFor, isOpen, finished } from './campaign.js';
 import { FX } from './fx.js';
@@ -108,24 +109,14 @@ table.raycast = () => {};
 world.add(table);
 
 const HALL = { sun: [0xffe2c0, 3.0], dir: [8, 9, 1], hemi: [0x8fa0c0, 0x2a2018, 0.25], fog: [0x0a0b0e, 0.018], exposure: 1.05, env: 0.28, mote: 0xffd9a0 };
-function skyBackdrop(stops) {
-  const canvas = document.createElement('canvas');
-  canvas.width = 16; canvas.height = 256;
-  const ctx = canvas.getContext('2d'), g = ctx.createLinearGradient(0, 0, 0, 256);
-  g.addColorStop(0, stops[0]); g.addColorStop(0.5, stops[1]); g.addColorStop(0.68, stops[2]); g.addColorStop(0.8, '#2a2622'); g.addColorStop(1, '#0c0b0a');
-  ctx.fillStyle = g; ctx.fillRect(0, 0, 16, 256);
-  const tex = new THREE.CanvasTexture(canvas);
-  tex.colorSpace = THREE.SRGBColorSpace;
-  return tex;
-}
-// The hour's light for the map on the table: sun, sky light, haze and backdrop.
+// The hour's light for the map on the table: sun, sky light and haze (a landscaped map draws its own sky: land.js).
 function applyLook() {
   const L = (field && field.look) || HALL, land = !!(field && field.land), ar = renderer.xr.isPresenting;
   sun.color.setHex(L.sun[0]); sun.intensity = L.sun[1];
   sun.position.set(...L.dir); if (land) sun.position.normalize().multiplyScalar(18);
   hemi.color.setHex(L.hemi[0]); hemi.groundColor.setHex(L.hemi[1]); hemi.intensity = L.hemi[2];
   FOG.color.setHex(L.fog[0]); FOG.density = L.fog[1];
-  BG = land ? skyBackdrop(L.sky) : HALL_BG;
+  BG = land ? new THREE.Color(L.fog[0]) : HALL_BG;
   scene.background = ar ? null : BG;
   renderer.toneMappingExposure = L.exposure;
   scene.environmentIntensity = L.env;
@@ -530,7 +521,7 @@ function applyQuality() {
   const high = quality === 'high';
   sun.castShadow = high && lean < 2;
   motes.visible = high && !renderer.xr.isPresenting;
-  if (field) field.setDetail(high, renderer.xr.isPresenting);
+  if (field) field.setDetail(high, renderer.xr.isPresenting, lean);
   if (!renderer.xr.isPresenting) renderer.setPixelRatio(high ? Math.min(devicePixelRatio, 2) : 1);
   $('qualityBtn').textContent = `Quality: ${quality}`;
 }
@@ -584,6 +575,7 @@ function refresh() {
   field.flush();
   for (const u of state.units) keep.push(u.x + ',' + u.y);
   field.cut(keep);
+  if (field.aim && !renderer.xr.isPresenting) field.aim(inspectedTile ? inspectedTile.x : null, inspectedTile && inspectedTile.y);
   arrowsGroup.visible = !!usable;
   if (usable) arrowsGroup.position.set(tx(sel.x), ty(sel.x, sel.y), tz(sel.y));
   endButton3D.visible = myTurn();
@@ -783,6 +775,7 @@ function openCampaign() {
   unitMeshes.clear();
   $('lobby').style.display = 'none'; $('hud').style.display = 'flex'; $('after').hidden = true; after3D.visible = false;
   setField('@camp', CAMPAIGN.map); me = 0; resetCamera(); me = -1;
+  field.cut(CAMPAIGN.nodes.map(n => n.at[0] + ',' + n.at[1]));   // no tree hides a banner
   drawNodes(); drawCamp();
   history.replaceState(null, '', location.pathname + '?camp=1');
 }
@@ -990,7 +983,7 @@ function govern(dt) {
   if (slowT < 2) return;
   slowT = 0;
   if (lean === 0 && hz > 72 && ses.updateTargetFrameRate) { lean = 1; ses.updateTargetFrameRate(72).catch(() => {}); }
-  else { lean = 2; sun.castShadow = false; }
+  else { lean = 2; applyQuality(); }
 }
 const ONE = new THREE.Vector3(1, 1, 1), camLocal = new THREE.Vector3(), camPos = new THREE.Vector3(), camDir = new THREE.Vector3(), camUp = new THREE.Vector3();
 let nextCrackle = 0;
@@ -1053,12 +1046,15 @@ renderer.setAnimationLoop(time => {
     xrFrames++;
     if (needPlace && xrFrames > 10) { placeBoardInFront(); needPlace = false; }
     if (grab) { grab.c.updateMatrixWorld(); world.position.copy(tmpV.setFromMatrixPosition(grab.c.matrixWorld)).add(grab.offset); }
+    let aimed = null;
     for (const c of controllers) {
       rayFromController(c);
       const hit = pickFromRay();
+      if (hit && hit.pick && hit.pick.kind === 'tile') aimed = hit.pick;
       c.userData.dot.visible = !!hit;
       if (hit) c.userData.dot.position.copy(hit.point);
     }
+    if (field && field.aim) field.aim(aimed ? aimed.x : null, aimed && aimed.y);
   } else {
     controls.update();
     if (shake > 0) { // explosion rattles the table (flat view only)
@@ -1167,4 +1163,4 @@ function show(id, setup) {
 }
 if (new URLSearchParams(location.search).get('camp')) openCampaign();
 if (new URLSearchParams(location.search).get('show')) show(new URLSearchParams(location.search).get('show'), new URLSearchParams(location.search).get('setup'));
-window.__t = { handlePick, show, world, G, drawUnits, get prog() { return prog; }, get openMatch() { return openMatch; }, openCampaign, CAMPAIGN, get camp() { return camp; }, get overland() { return overland; }, get campSel() { return campSel; }, get solo() { return solo; }, get campNode() { return campNode; }, saveTeam, loadTeam, get teams() { return teams; }, get held() { return held; }, get ready() { return ready; }, get setupSel() { return setupSel; }, get field() { return field; }, castFx, explode, V, camera, controls, fx, sun, renderer, scene, get state() { return state; }, get me() { return me; }, get code() { return code; }, get selected() { return selected; }, get lean() { return lean; } };
+window.__t = { handlePick, show, world, G, drawUnits, get prog() { return prog; }, get openMatch() { return openMatch; }, openCampaign, CAMPAIGN, get camp() { return camp; }, get overland() { return overland; }, get campSel() { return campSel; }, get solo() { return solo; }, get campNode() { return campNode; }, saveTeam, loadTeam, get teams() { return teams; }, get held() { return held; }, get ready() { return ready; }, get setupSel() { return setupSel; }, get field() { return field; }, get cloud() { return CLOUD.uCl.value.w; }, castFx, explode, V, camera, controls, fx, sun, renderer, scene, get state() { return state; }, get me() { return me; }, get code() { return code; }, get selected() { return selected; }, get lean() { return lean; } };

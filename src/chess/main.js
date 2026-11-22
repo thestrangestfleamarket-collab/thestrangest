@@ -169,7 +169,7 @@ function syncUnits() {
     if (g && g.userData.type !== u.type) { unitsGroup.remove(g); unitMeshes.delete(u.id); g = null; }
     if (!g) { g = buildUnit(u); unitMeshes.set(u.id, g); unitsGroup.add(g); }
     const d = g.userData, t = G.stats(u), stars = u.up ? Object.keys(u.up).length : 0, rested = u.rec > 0 || u.snare > 0;
-    const tag = [u.snare > 0 ? `snared ${u.snare}` : u.rec > 0 ? `resting ${u.rec}` : '', u.frozen > 0 ? `frozen ${u.frozen}` : '', u.empty ? 'unloaded' : '', u.life > 0 ? `fades in ${u.life}` : ''].filter(Boolean).join(', ');
+    const tag = u.snare > 0 ? `snared ${u.snare}` : u.rec > 0 ? `resting ${u.rec}` : '';
     d.target.set(tx(u.x), ty(u.x, u.y), tz(u.y));
     d.angle = FACE_ANGLE[u.facing]; d.owner = u.owner;
     labels.set(u.id, { name: t.name + (stars ? ' ' + '★'.repeat(Math.min(3, stars)) : ''), hp: u.hp / t.hp, owner: u.owner, tag });
@@ -225,11 +225,11 @@ const fight3D = makeButton('FIGHT', '#3f8656', -1.3, 'fight'), after3D = makeBut
 fight3D.visible = after3D.visible = false;
 const recenterButton3D = makeButton('RECENTER', '#3d434e', 1.3, 'recenter');
 // Setting out, in the headset: a chip a unit type, then REMOVE, DEFAULT, SAVED (the next saved team) and READY.
-// The unit types are shown a group at a time (the tabs), five chips to a row.
-const GROUP_KEYS = Object.keys(G.GROUPS), typesIn = k => Object.keys(G.TYPES).filter(t => G.TYPES[t].group === k);
+// The unit types are shown a group at a time (the tabs), five chips to a row; the buttons under them sit below the longest group.
+const GROUP_KEYS = Object.keys(G.GROUPS), typesIn = k => G.PICK.filter(t => G.TYPES[t].group === k), CHIP_ROWS = Math.max(...GROUP_KEYS.map(k => Math.ceil(typesIn(k).length / 5)));
 const tabs3D = GROUP_KEYS.map((k, i) => makeButton(G.GROUPS[k].toUpperCase(), '#3d434e', (i - 1.5) * 1.75, { kind: 'page', page: k }, 1.65, 2.2));
 const chips3D = GROUP_KEYS.flatMap(k => typesIn(k).map((type, i, a) => makeButton('', '#3d434e', (i % 5 - (Math.min(5, a.length - Math.floor(i / 5) * 5) - 1) / 2) * 1.4, { kind: 'chip', type }, 1.34, 3.15 + Math.floor(i / 5) * 0.95)));
-const setup3D = [['remove', 'REMOVE'], ['default', 'DEFAULT'], ['saved', 'SAVED'], ['ready', 'READY']].map(([act, text], i) => makeButton(text, '#3d434e', (i - 1.5) * 1.75, { kind: 'setup', act }, 1.65, 5.05));
+const setup3D = [['remove', 'REMOVE'], ['default', 'DEFAULT'], ['saved', 'SAVED'], ['ready', 'READY']].map(([act, text], i) => makeButton(text, '#3d434e', (i - 1.5) * 1.75, { kind: 'setup', act }, 1.65, 3.15 + CHIP_ROWS * 0.95));
 for (const b of tabs3D) b.visible = false;
 // The campaign's battles, in the headset: a button each, two abreast.
 const nodes3D = CAMPAIGN.nodes.map((n, i) => makeButton('', '#3d434e', (i % 2 ? 1.72 : -1.72), { kind: 'node', id: n.id }, 3.3, 2.2 + Math.floor(i / 2) * 0.95));
@@ -283,7 +283,7 @@ const V = (x, y, z) => new THREE.Vector3(x, y, z);
 const up = (v, h) => v.clone().setY(v.y + h); // a point this high above the ground under v
 const worldPos = local => world.localToWorld(local.clone()); // board space -> room space, for 3D audio
 const later = (t, fn) => (t > 0 ? setTimeout(fn, t * 1000) : fn());
-const IMPACT_DELAY = { melee: 0.16, line: 0.18, ranged: 0.4, blast: 0.5, heal: 0.25, snare: 0.3, bolt: 0.3, chain: 0.14, cone: 0.32, flask: 0.5, summon: 0.3, reload: 0 };
+const IMPACT_DELAY = { melee: 0.16, line: 0.18, ranged: 0.4, blast: 0.5, heal: 0.25, snare: 0.3, cone: 0.32, flask: 0.5, summon: 0.3 };
 
 function explode(t) {
   const wp = worldPos(t);
@@ -297,16 +297,14 @@ function explode(t) {
 }
 
 // With animated characters the effect waits for the wind-up of the attack animation.
-const LEAD = { melee: 0.3, line: 0.4, ranged: 0.3, blast: 0.4, heal: 0.35, snare: 0.4, bolt: 0.4, chain: 0.4, cone: 0.35, flask: 0.4, summon: 0.4, reload: 0 };
+const LEAD = { melee: 0.3, line: 0.4, ranged: 0.3, blast: 0.4, heal: 0.35, snare: 0.4, cone: 0.35, flask: 0.4, summon: 0.4 };
 const leadTime = (kind, g) => (g && g.userData.ch ? LEAD[kind] || 0 : 0);
-// lightning: one quick pale streak from a point to a point, no flash
-const streak = (from, to) => fx.projectile({ from, to, arc: 0.05, dur: 0.12, tex: 'trace_01', color: 0xcfdcff, size: 0.42, trailTex: 'spark_05', trailColor: 0xb4c6f4, trailSize: 0.2 });
 
 function castFx(kind, g, a, t) {
   const dir = t.clone().sub(a).setY(0);
   if (g && dir.lengthSq() > 0) g.userData.angle = Math.atan2(-dir.x, -dir.z);
   const ch = g && rigOf(g);
-  if (ch && kind !== 'reload') ch.once('attack');
+  if (ch) ch.once('attack');
   later(leadTime(kind, g), () => castFxNow(kind, g, a, t));
 }
 
@@ -338,18 +336,6 @@ function castFxNow(kind, g, a, t) {
       fx.burst({ pos: up(t, 0.2), tex: 'star_06', color: 0x8fdcaa, count: 8, size: 0.28, life: 1.0, speed: 0.6, up: 2.2, drag: 1, spread: 0.4 });
       fx.flash({ pos: up(t, 0.6), tex: 'twirl_01', color: 0x8fdcaa, size: 1.4, life: 0.9, spin: 1.6 });
     });
-  } else if (kind === 'bolt') {
-    sound.play('snare*', { pos: wp, vol: 0.6, rate: 1.5 });
-    fx.projectile({ from: up(a, 1.1), to: up(t, 0.7), arc: 0.2, dur: 0.3, tex: 'star_06', color: 0xa8dcff, size: 0.45, trailTex: 'circle_05', trailColor: 0x8cc8f0, trailSize: 0.22,
-      onHit: () => {
-        fx.flash({ pos: up(t, 0.6), tex: 'star_06', color: 0xbfe6ff, size: 1.5, life: 0.9, grow: 0.3, opacity: 0.5 });
-        fx.burst({ pos: up(t, 0.5), tex: 'spark_05', color: 0xcfeaff, count: 8, size: 0.22, life: 1.0, speed: 0.9, up: 0.3, drag: 2, spread: 0.4, opacity: 0.6 });
-      } });
-  } else if (kind === 'chain') {
-    sound.whoosh({ pos: wp, dur: 0.25, from: 2400, to: 700, vol: 0.4, q: 1.2 });
-    sound.play('thud*', { pos: worldPos(t), vol: 0.5, rate: 0.7, delay: 0.14 });
-    fx.flash({ pos: up(a, 1.3), tex: 'flare_01', color: 0xbfd0ff, size: 0.9, life: 0.4, opacity: 0.5 });
-    streak(up(a, 1.3), up(t, 0.8));
   } else if (kind === 'cone') {
     sound.whoosh({ pos: wp, dur: 0.6, from: 300, to: 1100, vol: 0.5, q: 0.7 });
     const side = V(-dir.z, 0, dir.x);
@@ -364,17 +350,13 @@ function castFxNow(kind, g, a, t) {
         fx.burst({ pos: up(t, 0.2), tex: 'smoke_07', color: 0x34302c, count: 3, size: 0.9, life: 1.4, speed: 0.5, up: 1.1, drag: 1, grow: 1, additive: false, opacity: 0.35, spread: 0.5 });
       } });
   } else if (kind === 'summon') {
-    const c = g && g.userData.type === 'necro' ? 0xa8e07a : 0x9adfd6;
+    const c = 0xa8e07a;
     sound.play('heal*', { pos: worldPos(t), vol: 0.6, rate: 0.7 });
     fx.flash({ pos: up(a, 1.2), tex: 'magic_05', color: c, size: 0.9, life: 0.5 });
     later(0.15, () => {
       fx.flash({ pos: up(t, 0.5), tex: 'twirl_01', color: c, size: 1.8, life: 1.1, spin: 1.4, opacity: 0.6 });
       fx.burst({ pos: up(t, 0.1), tex: 'magic_03', color: c, count: 9, size: 0.3, life: 1.1, speed: 0.5, up: 1.6, drag: 1, spread: 0.4 });
     });
-  } else if (kind === 'reload') {
-    sound.play('select', { pos: wp, vol: 0.5, rate: 0.7 });
-    sound.play('drop', { pos: wp, vol: 0.3, rate: 1.8, delay: 0.2 });
-    if (g) floatText(g.position, 'Reloaded', '#e6e2d8');
   } else if (kind === 'snare') {
     sound.play('snare*', { pos: worldPos(t), vol: 0.7 });
     fx.projectile({ from: up(a, 1.1), to: up(t, 0.7), arc: 0.4, dur: 0.3, tex: 'magic_05', color: 0xc0a0ea, size: 0.5, trailTex: 'magic_03', trailColor: 0xa684de, trailSize: 0.3,
@@ -396,7 +378,7 @@ function hitFx(g, e, kind, a) {
   floatText(p, `-${e.dmg}`, '#e88f80');
   const armored = G.TYPES[g.userData.type].armor > 0;
   if (kind === 'burn') fx.burst({ pos: up(p, 0.3), tex: 'fire_01', color: 0xee9058, count: 4, size: 0.5, life: 0.6, speed: 0.6, up: 0.9, drag: 3, grow: 0.6, spread: 0.3, opacity: 0.5 });
-  if (kind === 'blast' || kind === 'cone' || kind === 'flask' || kind === 'chain' || kind === 'bolt' || kind === 'burn') { sound.play('flesh*', { pos: wp, vol: 0.5 }); return; }
+  if (kind === 'blast' || kind === 'cone' || kind === 'flask' || kind === 'burn') { sound.play('flesh*', { pos: wp, vol: 0.5 }); return; }
   sound.play(armored ? 'armor*' : kind === 'ranged' ? 'thud*' : 'flesh*', { pos: wp, vol: 1 });
   fx.flash({ pos: up(p, 0.7), tex: 'spark_05', color: armored ? 0xf0e4c0 : 0xe0705e, size: 0.85, life: 0.28, grow: 0.8 });
   if (armored) fx.burst({ pos: up(p, 0.7), tex: 'spark_01', color: 0xf0d8a4, count: 6, size: 0.16, life: 0.6, speed: 3.5, up: 0.8, gravity: 9, drag: 0.8 });
@@ -447,12 +429,8 @@ function playEvents(events) {
   const say = (g, at, text, color) => later(at, () => g && g.parent && floatText(g.position, text, color));
   for (const e of events) {
     const g = unitMeshes.get(e.id);
-    if (e.t === 'brace') { say(g, Math.max(0, impact - 0.2), 'Braced', '#e6e2d8'); const ch = g && rigOf(g); if (ch) ch.once('attack'); }
-    else if (e.t === 'immune') say(g, impact, 'No effect', '#b9bec8');
-    else if (e.t === 'frozen') say(g, impact, 'Frozen', '#a8dcff');
-    else if (e.t === 'arc') { const f = V(tx(e.fx), ty(e.fx, e.fy), tz(e.fy)); impact += 0.16; const at = impact - 0.12; later(at, () => g && g.parent && streak(up(f, 0.8), up(g.position, 0.8))); wait = impact + 0.1; }
+    if (e.t === 'immune') say(g, impact, 'No effect', '#b9bec8');
     else if (e.t === 'summon') wait = Math.max(wait, impact + 0.35);
-    else if (e.t === 'fade') say(g, 0, 'Fades', '#9adfd6');
     else if (e.t === 'rout') later(impact + 0.6, () => floatText(V(0, 0.4, 0), 'Leaderless', '#e6c36c'));
     else if (e.t === 'skip') later(wait + 0.5, () => floatText(V(0, 0.4, 0), 'Turn lost', '#e6c36c'));
     if (e.t === 'move') { if (g) moveFx(g, e); }
@@ -523,7 +501,7 @@ function refresh() {
   const usable = !setup && sel && G.canUse(state, me, sel);
   if (!usable) aim = false;
   const { moves, hits } = usable ? options(sel) : { moves: [], hits: [] };
-  const heal = sel && (kindly(G.TYPES[sel.type].kind) || sel.empty);
+  const heal = sel && kindly(G.TYPES[sel.type].kind);
   field.clear();
   if (setup && !ready[me] && (held || sel)) for (let y = 0; y < rows; y++) for (let x = 0; x < cols; x++) if (G.inZone(state, me, y) && !G.ground(state, x, y).solid && !G.unitAt(state, x, y)) field.mark(x, y, 'move');
   for (const p of moves) field.mark(p.x, p.y, 'move');
@@ -531,7 +509,7 @@ function refresh() {
   if (sel) field.mark(sel.x, sel.y, 'sel');
   field.flush();
   if (!renderer.xr.isPresenting) field.aim(inspectedTile ? inspectedTile.x : null, inspectedTile && inspectedTile.y);
-  arrowsGroup.visible = !!usable && !(sel.frozen > 0);
+  arrowsGroup.visible = !!usable;
   if (usable) arrowsGroup.position.set(tx(sel.x), ty(sel.x, sel.y), tz(sel.y));
   endButton3D.visible = myTurn();
   drawSetup(setup);
@@ -545,7 +523,7 @@ function refresh() {
   const ht = setup && held && G.TYPES[held];
   $('info').innerHTML = ht ? `<b>${ht.name}</b> - ${ht.cost} points, at most ${ht.limit}: HP ${ht.hp}, power ${ht.pow}, armour ${ht.armor}%, block ${ht.block}%, move ${ht.move}, rest ${ht.rec}. ${ht.info}` : u ? `<b>${G.TYPES[u.type].name}</b> - ${l2.split(': ')[1]}. ${G.TYPES[u.type].info}` : inspectedTile && G.mapOf(state.map).tiles ? l2 :
     setup ? (ready[me] ? 'You are ready. Stand down to change your team.' : 'Pick a unit type, then a tile on your own rows to place it. Tap a placed unit to move or remove it. READY when done.') :
-    (myTurn() ? (usable && GROUND(G.TYPES[sel.type].kind) && !(state.active && state.active.acted) ? (aim ? 'Aiming: tap a marked tile, or tap the unit again to move instead.' : 'Tap the unit again to aim its power at empty ground.') + ' ' : usable && sel.empty ? 'Tap the unit again to reload. ' : '') + 'Pick one of your units, move (blue), act (red), then tap a yellow arrow to choose its facing and end the turn.' : '');
+    (myTurn() ? (usable && GROUND(G.TYPES[sel.type].kind) && !(state.active && state.active.acted) ? (aim ? 'Aiming: tap a marked tile, or tap the unit again to move instead.' : 'Tap the unit again to aim its power at empty ground.') + ' ' : '') + 'Pick one of your units, move (blue), act (red), then tap a yellow arrow to choose its facing and end the turn.' : '');
 }
 
 // What the picked unit may do now. A power that lands on empty ground (a flask, a summons, a breath of fire) shows its empty tiles only while aiming (tap the unit again), or once the unit has moved, so a tile is never both a move and a target.
@@ -651,6 +629,8 @@ async function loadTeams() {
   else { try { const p = JSON.parse(localStorage.getItem('chess-prog')); if (p && typeof p === 'object') prog = { xp: p.xp || {}, ups: G.tidyUps(p.ups, p.xp || {}) }; } catch { /* storage blocked */ }
     try { teams = JSON.parse(localStorage.getItem('chess-teams')) || []; company = JSON.parse(localStorage.getItem('chess-company')) || []; camp = JSON.parse(localStorage.getItem('chess-camp')) || { done: [] }; } catch { teams = []; } }
   if (!Array.isArray(camp.done)) camp = { done: [] };
+  const fit = list => (Array.isArray(list) ? list : []).filter(u => u && G.PICK.includes(u.type));   // a saved unit of a type no longer picked is dropped
+  teams = (Array.isArray(teams) ? teams : []).map(t => ({ ...t, units: fit(t && t.units) })).filter(t => t.name && t.units.length); company = fit(company);
   drawTeams();
   if (inCamp) drawCamp();
 }
@@ -746,8 +726,8 @@ function keepProg() {
 // The upgrade trees: a row a unit type, its level and experience, the upgrades it may take.
 function drawUnits() {
   const box = $('unitRows'); box.innerHTML = '';
-  for (const [type, t] of Object.entries(G.TYPES)) {
-    const xp = prog.xp[type] || 0, lvl = G.levelOf(xp), mine = prog.ups[type] || [], next = G.LEVELS_XP[lvl], row = document.createElement('div');
+  for (const type of Object.keys(G.UPGRADES)) {
+    const t = G.TYPES[type], xp = prog.xp[type] || 0, lvl = G.levelOf(xp), mine = prog.ups[type] || [], next = G.LEVELS_XP[lvl], row = document.createElement('div');
     row.className = 'urow'; row.dataset.type = type;
     row.innerHTML = `<div class="uhead"><b>${t.name}</b> level ${lvl} <span>${next ? xp + ' / ' + next + ' experience' : xp + ' experience (highest level)'}</span> <i>${lvl - mine.length} point${lvl - mine.length === 1 ? '' : 's'} to spend</i></div>`;
     for (const u of G.UPGRADES[type]) {

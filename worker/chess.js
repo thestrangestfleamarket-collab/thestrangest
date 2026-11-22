@@ -5,7 +5,7 @@ import { CAMPAIGN, nodeOf, budgetFor, isOpen } from "../src/chess/campaign.js";
 
 const LETTERS = "ABCDEFGHJKLMNPQRSTUVWXYZ", IDLE_MS = 2 * 3600e3;   // a room nobody has used for two hours is forgotten
 // a login's own record (Home, by /chess/save and /chess/load): saved teams [{ name, units: [{ type, dx, r }] }], each unit by its place from the middle column and the back row
-const tidyTeams = a => (Array.isArray(a) ? a : []).slice(0, 12).map(t => ({ name: String((t && t.name) || "").replace(/[^\w '.-]/g, "").trim().slice(0, 24), units: (Array.isArray(t && t.units) ? t.units : []).slice(0, G.TEAM_MAX).filter(u => u && Object.hasOwn(G.TYPES, u.type) && Number.isInteger(u.dx) && Number.isInteger(u.r) && Math.abs(u.dx) <= 12 && u.r >= 0 && u.r < 8).map(u => ({ type: u.type, dx: u.dx, r: u.r })) })).filter(t => t.name && t.units.length);
+const tidyTeams = a => (Array.isArray(a) ? a : []).slice(0, 12).map(t => ({ name: String((t && t.name) || "").replace(/[^\w '.-]/g, "").trim().slice(0, 24), units: (Array.isArray(t && t.units) ? t.units : []).slice(0, G.TEAM_MAX).filter(u => u && G.PICK.includes(u.type) && Number.isInteger(u.dx) && Number.isInteger(u.r) && Math.abs(u.dx) <= 12 && u.r >= 0 && u.r < 8).map(u => ({ type: u.type, dx: u.dx, r: u.r })) })).filter(t => t.name && t.units.length);
 const tidyXp = x => { const o = {}; for (const k of Object.keys(G.UPGRADES)) { const n = Math.floor(+(x && x[k]) || 0); if (n > 0) o[k] = Math.min(999, n); } return o; };
 const tidyDone = a => [...new Set((Array.isArray(a) ? a : []).filter(id => typeof id === "string" && nodeOf(id)))];
 const CHESS = {

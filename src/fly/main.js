@@ -11,6 +11,7 @@ import { Cockpit } from './cockpit.js';
 import { Input } from './input.js';
 import { Audio } from './audio.js';
 import { canvasTex, MS2KT, M2FT } from './displays.js';
+import { Post } from './post.js';
 
 const $ = id => document.getElementById(id), clamp = (x, a, b) => x < a ? a : x > b ? b : x;
 const _v = new THREE.Vector3(), _v2 = new THREE.Vector3(), _v3 = new THREE.Vector3(), _q = new THREE.Quaternion(), _m = new THREE.Matrix4(), _ray = new THREE.Ray(), _e = new THREE.Euler();
@@ -24,7 +25,7 @@ const HELP = `<table><tr><td><b>W/S, ↑/↓</b></td><td>pitch</td><td><b>A/D, �
 <div style="margin-top:6px"><b>Quest 3:</b> right stick pitch/roll · left stick throttle/rudder · right trigger guns · A rocket · B weapon · X view · Y respawn (hold: next plane) · squeeze right grip to grab the stick, left grip the throttle · touch switches with your fingertip or point the left hand and pull the trigger.</div>`;
 
 class Game {
-  constructor() { this.aircraft = []; this.rockets = []; this.player = null; this.cockpit = null; this.state = 'menu'; this.view = 'cockpit'; this.kills = 0; this.wave = 1; this.night = 0; this.camPos = new THREE.Vector3(0, 1500, 0); this.time = 0; this.msgs = []; this.aiFocusPlayer = 1; this.opts = { enemies: 2, wing: 0, skill: 0.6, start: 'air', markers: true, time: 'day', quality: 1, comfort: 1 }; this.respawnT = -1; this.waveT = -1; this.fps = 60; this.score = 0; this.sunDir = new THREE.Vector3(0, 1, 0); }
+  constructor() { this.aircraft = []; this.rockets = []; this.player = null; this.cockpit = null; this.state = 'menu'; this.view = 'cockpit'; this.kills = 0; this.wave = 1; this.night = 0; this.camPos = new THREE.Vector3(0, 1500, 0); this.time = 0; this.msgs = []; this.aiFocusPlayer = 1; this.opts = { enemies: 2, wing: 0, skill: 0.6, start: 'air', markers: true, time: 'day', quality: 1, comfort: 1, handling: 'easy' }; this.respawnT = -1; this.waveT = -1; this.fps = 60; this.score = 0; this.sunDir = new THREE.Vector3(0, 1, 0); }
 
   async init() {
     const canvas = $('view'); const R = this.renderer = new THREE.WebGLRenderer({ canvas, antialias: true, powerPreference: 'high-performance' });
@@ -46,7 +47,7 @@ class Game {
     this.clock = new THREE.Clock(); R.setAnimationLoop(() => this.frame());
   }
   applyQuality() { const q = this.opts.quality; if (q === this._q) return; this._q = q; this.world.setQuality(q); this.sky.sun.shadow.mapSize.set(q < 1 ? 1024 : 2048, q < 1 ? 1024 : 2048); this.sky.sun.shadow.map?.dispose(); this.sky.sun.shadow.map = null; this.clouds.setQuality(q); if (!this.renderer.xr.isPresenting) this.renderer.setPixelRatio(Math.min(devicePixelRatio, q < 1 ? 1 : 1.5)); }
-  setTime(key) { this.opts.time = key; this.sky.setTime(key, this.renderer); this.night = this.sky.t.night; this.sunDir = atmo.uSunDir.value; this.renderer.toneMappingExposure = key === 'night' ? 1.5 : key === 'dusk' ? 1.2 : 1.0; }
+  setTime(key) { this.opts.time = key; this.sky.setTime(key, this.renderer); if (this.clouds) this.clouds.mat.uniforms.uGrow.value = this.sky.t.cover ? 1.7 : 1; this.night = this.sky.t.night; this.sunDir = atmo.uSunDir.value; this.renderer.toneMappingExposure = key === 'night' ? 1.5 : key === 'dusk' ? 1.2 : key === 'overcast' ? 0.9 : 1.0; }
 
   // ---------- menu ----------
   buildMenu() {
@@ -57,7 +58,7 @@ class Game {
     for (const era of ERAS) { const d = document.createElement('div'); d.className = 'era'; d.innerHTML = `<h2>${era}</h2><div class="planes"></div>`; for (const p of PLANES.filter(p => p.era === era)) { const b = document.createElement('button'); b.className = 'plane'; b.dataset.id = p.id; b.innerHTML = `<b>${p.name}</b><small>${p.year} · ${p.nation}</small>`; b.onclick = () => show(p.id); d.lastChild.appendChild(b); } list.appendChild(d); }
     show(sel); $('helpInline').innerHTML = HELP; $('help').innerHTML = HELP;
     $('oTime').onchange = e => this.setTime(e.target.value);
-    const read = () => { this.opts.enemies = +$('oEnemies').value; this.opts.wing = +$('oWing').value; this.opts.skill = +$('oSkill').value; this.opts.start = $('oStart').value; this.opts.markers = $('oMarkers').value === '1'; this.opts.comfort = +$('oComfort').value; this.opts.quality = +$('oQuality').value; };
+    const read = () => { this.opts.enemies = +$('oEnemies').value; this.opts.wing = +$('oWing').value; this.opts.skill = +$('oSkill').value; this.opts.start = $('oStart').value; this.opts.markers = $('oMarkers').value === '1'; this.opts.comfort = +$('oComfort').value; this.opts.handling = $('oHandling').value; this.opts.quality = +$('oQuality').value; };
     $('fly').onclick = async () => { read(); await this.audio.init(); this.start(this.selected); };
     $('vr').onclick = async () => { read(); this.opts.quality = Math.min(this.opts.quality, 0.6); this.audio.init(); try { const s = await navigator.xr.requestSession('immersive-vr', { optionalFeatures: ['local-floor'] }); this.renderer.xr.setFramebufferScaleFactor?.(0.85); await this.renderer.xr.setSession(s); s.addEventListener('end', () => { this.inXR = false; }); this.inXR = true; this.start(this.selected); } catch (err) { $('status').textContent = 'Could not start VR: ' + err.message; } };
   }
@@ -67,6 +68,7 @@ class Game {
     const o = this.panel = canvasTex(1024, 256); const m = new THREE.Mesh(new THREE.PlaneGeometry(0.9, 0.225), new THREE.MeshBasicMaterial({ map: o.t, transparent: true, depthTest: false, depthWrite: false, toneMapped: false, fog: false })); m.position.set(0, -0.33, -1.3); m.renderOrder = 50; this.camera.add(m); this.panelMesh = m;
     const vg = this.vignette = new THREE.Mesh(new THREE.PlaneGeometry(0.8, 0.8), new THREE.ShaderMaterial({ uniforms: { uA: { value: 0 }, uC: { value: new THREE.Color(0, 0, 0) } }, transparent: true, depthTest: false, depthWrite: false, vertexShader: 'varying vec2 vU; void main(){ vU = uv * 2.0 - 1.0; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }', fragmentShader: 'uniform float uA; uniform vec3 uC; varying vec2 vU; void main(){ float r = length(vU); gl_FragColor = vec4(uC, clamp(smoothstep(1.0 - uA * 1.15, 1.25 - uA * 0.9, r * 1.6) * min(uA * 2.0, 1.0), 0.0, 1.0)); }' }));
     vg.position.z = -1.5; vg.scale.setScalar(12.5); vg.renderOrder = 60; this.camera.add(vg); this.gEff = 0;
+    const wo = this.whiteout = new THREE.Mesh(new THREE.PlaneGeometry(12, 12), new THREE.MeshBasicMaterial({ transparent: true, opacity: 0, depthTest: false, depthWrite: false, fog: false })); wo.position.z = -1.45; wo.renderOrder = 55; wo.visible = false; this.camera.add(wo); this.inCloud = 0;
   }
   buildMarkers() { const c = document.createElement('canvas'); c.width = c.height = 64; const g = c.getContext('2d'); g.strokeStyle = '#fff'; g.lineWidth = 5; for (const [x, y, dx, dy] of [[6, 6, 1, 1], [58, 6, -1, 1], [6, 58, 1, -1], [58, 58, -1, -1]]) { g.beginPath(); g.moveTo(x + dx * 16, y); g.lineTo(x, y); g.lineTo(x, y + dy * 16); g.stroke(); }
     const t = new THREE.CanvasTexture(c); this.markers = []; for (let i = 0; i < 12; i++) { const s = new THREE.Sprite(new THREE.SpriteMaterial({ map: t, depthTest: false, depthWrite: false, sizeAttenuation: false, transparent: true, fog: false, toneMapped: false })); s.scale.setScalar(0.045); s.visible = false; s.renderOrder = 30; this.scene.add(s); this.markers.push(s); } }
@@ -161,7 +163,7 @@ class Game {
       else if (e === 'autopilot') { fm.autopilot = !fm.autopilot; fm.apAlt = fm.alt; this.say(fm.autopilot ? 'Autopilot: altitude hold' : 'Autopilot off', 2); }
       else if (e === 'respawn') { if (!pl.alive || pl.removed) this.respawn(); else if (this.inXR) { this.recenter(); this.say('View recentered', 2); } }
       else if (e === 'nextPlane') { const i = PLANES.findIndex(p => p.id === this.selected); this.start(PLANES[(i + 1) % PLANES.length].id); return; }
-      else if (e === 'time') { const k = ['day', 'golden', 'dusk', 'night']; this.setTime(k[(k.indexOf(this.opts.time) + 1) % 4]); this.say(this.sky.t.label, 2); this.cockpit.sys.panelLight = this.night > 0.3; this.cockpit.sys.flood = this.night > 0.8; }
+      else if (e === 'time') { const k = ['day', 'golden', 'overcast', 'dusk', 'night']; this.setTime(k[(k.indexOf(this.opts.time) + 1) % 5]); this.say(this.sky.t.label, 2); this.cockpit.sys.panelLight = this.night > 0.3; this.cockpit.sys.flood = this.night > 0.8; }
       else if (e === 'markers') this.opts.markers = !this.opts.markers;
       else if (e === 'help') $('help').style.display = $('help').style.display === 'block' ? 'none' : 'block';
       else if (e === 'menu') this.toMenu();
@@ -197,7 +199,12 @@ class Game {
     this.glows.begin();
     if (this.state === 'fly' && pl) {
       const c = pl.fm.ctl, x = xr ? this.xrCtl : null;
-      if (pl.alive && !pl.ai) { c.pitch = clamp(inp.pitch + (x ? x.pitch : 0), -1, 1); c.roll = clamp(inp.roll + (x ? x.roll : 0), -1, 1); c.yaw = clamp(inp.yaw + (x ? x.yaw : 0), -1, 1); if (this.opts.comfort >= 2) { c.pitch *= 0.55; c.roll *= 0.5; if (Math.abs(c.roll) < 0.08 && !pl.fm.onGround) c.roll = clamp(-Math.atan2(-pl.right.y, pl.up.y) * 1.2, -0.4, 0.4); } c.throttle = inp.throttle; c.brake = inp.brake; pl.firing = (inp.fire || (x && x.fire)) && pl.weapon === 'gun'; if ((inp.fire || (x && x.fire)) && pl.weapon === 'rocket' && !this._rk) pl.fireRocket(); this._rk = inp.fire || (x && x.fire); }
+      if (pl.alive && !pl.ai) { c.pitch = clamp(inp.pitch + (x ? x.pitch : 0), -1, 1); c.roll = clamp(inp.roll + (x ? x.roll : 0), -1, 1); c.yaw = clamp(inp.yaw + (x ? x.yaw : 0), -1, 1); if (this.opts.handling !== 'real') { const bank = Math.atan2(-pl.right.y, pl.up.y), att = Math.asin(clamp(pl.fwd.y, -1, 1)), air = !pl.fm.onGround;
+          c.roll *= 0.42; c.pitch *= c.pitch > 0 ? 0.55 : 0.4;
+          if (air && Math.abs(c.roll) < 0.03) c.roll = clamp(-bank * 0.5, -0.2, 0.2);
+          if (air) { if (c.roll * bank > 0) c.roll *= clamp((1.05 - Math.abs(bank)) / 0.45, 0, 1); if (Math.abs(bank) > 1.1) c.roll = clamp(-bank * 0.8, -0.5, 0.5);
+            if (c.pitch > 0) c.pitch *= clamp((0.6 - att) / 0.3, 0, 1); else c.pitch *= clamp((0.6 + att) / 0.3, 0, 1); if (att > 0.7) c.pitch = Math.min(c.pitch, -0.25); if (Math.abs(bank) > 1.45) c.pitch = Math.min(c.pitch, 0); } }
+        if (this.opts.comfort >= 2) { c.pitch *= 0.55; c.roll *= 0.5; if (Math.abs(c.roll) < 0.08 && !pl.fm.onGround) c.roll = clamp(-Math.atan2(-pl.right.y, pl.up.y) * 1.2, -0.4, 0.4); } c.throttle = inp.throttle; c.brake = inp.brake; pl.firing = (inp.fire || (x && x.fire)) && pl.weapon === 'gun'; if ((inp.fire || (x && x.fire)) && pl.weapon === 'rocket' && !this._rk) pl.fireRocket(); this._rk = inp.fire || (x && x.fire); }
       for (const a of this.aircraft) a.update(dt);
       for (const r of this.rockets) r.update(dt); this.rockets = this.rockets.filter(r => r.alive);
       this.tracers.update(dt, (i, x0, y0, z0, x1, y1, z1) => { if (y1 < this.world.ground(x1, z1)) { if (Math.random() < 0.3) this.particles.spawn(x1, y1 + 0.5, z1, 0, 4, 0, 0.8, 0.5, 3, y1 < 0.2 ? 0.9 : 0.5, y1 < 0.2 ? 0.95 : 0.42, y1 < 0.2 ? 1 : 0.3, 0.6); return true; }
@@ -216,7 +223,7 @@ class Game {
     this.updateCamera(dt, xr);
     if (this.cockpit && pl) this.cockpit.update(dt, this.state === 'fly');
     this.local.updateMatrixWorld(); this.camera.getWorldPosition(this.camPos);
-    this.world.update(this.camPos, dt); this.clouds.update(dt, this.camPos); this.birds.update(dt, this.camPos, pl ? pl.fwd : _v.set(0, 0, -1)); this.sky.update(this.camPos, pl ? pl.fm.pos : this.camPos); this.sunDir = atmo.uSunDir.value;
+    this.world.update(this.camPos, dt); this.clouds.update(dt, this.camPos); { const t = this.clouds.inside || 0; this.inCloud += (t - this.inCloud) * Math.min(1, dt * 2.5); const k = this.inCloud, wo = this.whiteout; atmo.uFogDensity.value = (this.sky.fog0 || atmo.uFogDensity.value) * (1 + 40 * k); wo.visible = k > 0.02; wo.material.opacity = Math.min(0.93, k * 1.1); wo.material.color.copy(atmo.uSkyAmb.value).multiplyScalar(1.15).addScalar(0.12); if (pl && k > 0.3 && pl.alive) pl.fm.omega.x += (Math.random() - 0.5) * k * 0.02; } this.birds.update(dt, this.camPos, pl ? pl.fwd : _v.set(0, 0, -1)); this.sky.update(this.camPos, pl ? pl.fm.pos : this.camPos); this.sunDir = atmo.uSunDir.value;
     if (pl) { const sc = this.sky.sun.shadow.camera, s = this.view === 'cockpit' ? 3.4 : Math.max(pl.span, pl.len) * 0.75; if (sc.right !== s) { sc.left = sc.bottom = -s; sc.right = sc.top = s; sc.updateProjectionMatrix(); } }
     this.updateMarkers(); this.updateOverlay(dt, xr);
     if (pl && this.state === 'fly') this.audio.update(dt, pl, this.view === 'cockpit', this.aircraft, this.camPos);
@@ -250,10 +257,13 @@ class Game {
   }
 
   render(xr) {
-    const R = this.renderer, cam = this.camera; const cams = xr ? R.xr.getCamera().cameras : [cam];
+    const R = this.renderer, cam = this.camera; const cams = xr ? R.xr.getCamera().cameras : [cam]; const post = !xr && this.opts.quality >= 1 && this.post !== false;
+    if (post) { if (!this.post) this.post = new Post(R); this.post.fit(); R.setRenderTarget(this.post.rt); }
     R.clear(); for (const c of cams) setNearFar(c, NEAR_W, FAR_W); if (!xr) setNearFar(cam, NEAR_W, FAR_W);
     R.shadowMap.autoUpdate = false; R.render(this.scene, cam);
     R.clearDepth(); for (const c of cams) setNearFar(c, NEAR_L, FAR_L); R.shadowMap.needsUpdate = true; R.render(this.local, cam);
+    if (post) { setNearFar(cam, NEAR_W, FAR_W); const s = _v.copy(this.camPos).addScaledVector(atmo.uSunDir.value, 1e5).project(cam), f = cam.getWorldDirection(_v2).dot(atmo.uSunDir.value);
+      this.post.end(_v2.set(s.x * 0.5 + 0.5, s.y * 0.5 + 0.5, 0), clamp((f - 0.2) / 0.5, 0, 1) * (1 - this.night) * (1 - (atmo.uCover.value || 0) * 0.85) * (1 - this.inCloud) * 0.9); }
   }
 }
 

@@ -28,6 +28,12 @@ const IDS = ['camel', 'dr1', 'spitfire', 'bf109', 'p51', 'zero', 'f86', 'mig15',
     ok(to.parked[2] && to.parked[1] < 1 && to.parked[0] > 0.1 && to.parked[0] < 0.3, 'parked, a Spitfire sits on its tail wheel and stays put');
     ok(to.alive && !to.ground && to.agl > 20, 'full throttle, then the stick back: it takes off (' + to.agl.toFixed(0) + ' m up at ' + (to.ias * 3.6).toFixed(0) + ' km/h)');
     if (OUT) { await ev(() => { game.setView('chase'); game.simulate(1); }); await pg.waitForTimeout(3000); await pg.screenshot({ path: path.join(OUT, '01-airborne.png') }); }
+    // the easy handling: the stick hard over, then hard back
+    const easy = await ev(async () => { game.opts.start = 'air'; await game.start('spitfire'); const p = game.player; let mb = 0, mp = -9, inv = false; game.input.keys.KeyD = true; for (let i = 0; i < 80; i++) { game.simulate(0.1); mb = Math.max(mb, Math.abs(Math.atan2(-p.right.y, p.up.y))); if (p.up.y < 0) inv = true; } game.input.keys.KeyD = false; game.simulate(6); const lvl = Math.abs(Math.atan2(-p.right.y, p.up.y));
+      game.input.keys.KeyS = true; for (let i = 0; i < 120; i++) { game.simulate(0.1); mp = Math.max(mp, Math.asin(p.fwd.y)); if (p.up.y < 0) inv = true; } game.input.keys.KeyS = false; return { mb, mp, inv, lvl, alive: p.alive }; });
+    ok(easy.alive && !easy.inv && easy.mb < 1.25 && easy.mp < 0.8, 'EASY handling never rolls over or loops (bank to ' + (easy.mb * 57.3).toFixed(0) + ', nose to ' + (easy.mp * 57.3).toFixed(0) + ' degrees)'); ok(easy.lvl < 0.35, 'and levels its wings when you let go');
+    const fx = await ev(async () => { const c = game.clouds, p = game.player; p.fm.autopilot = true; p.fm.pos.set(c.base[0], c.base[1], c.base[2]); p.fm.apAlt = c.base[1]; game.simulate(1.5); const inC = game.inCloud, wo = game.whiteout.visible; game.setTime('overcast'); const cov = game.sky.t.cover; game.setTime('day'); await new Promise(r => setTimeout(r, 3000)); return { inC, wo, cov, post: !!game.post, err: !!game._err }; });
+    ok(fx.inC > 0.4 && fx.wo, 'inside a cloud the world goes white (' + fx.inC.toFixed(2) + ')'); ok(fx.cov === 1 && fx.post && !fx.err, 'OVERCAST is a sky to choose; the picture goes through its lens on a screen');
     // gear, flaps, a stall, the autopilot
     const sys = await ev(async () => { await game.start('f15'); const p = game.player, fm = p.fm, c = n => game.cockpit.controls.find(k => k.name === n); c('GEAR').press(); game.simulate(4); const down = fm.gearPos; c('GEAR').press(); game.simulate(4);
       c('A/P').press(); fm.apAlt = fm.alt; game.input.setThrottle(0.9); game.simulate(40); const hold = Math.abs(fm.alt - fm.apAlt); c('A/P').press(); const arm0 = p.masterArm; c('GUNS').press(); const arm1 = p.masterArm; c('GUNS').press();
@@ -56,7 +62,7 @@ const IDS = ['camel', 'dr1', 'spitfire', 'bf109', 'p51', 'zero', 'f86', 'mig15',
     const head = await ev(() => { const c = game.camera.getWorldPosition(game.camPos.clone()), e = game.cockpit.group.localToWorld(game.cockpit.eye.clone().set(0, 0, 0)); return c.distanceTo(e); });
     ok(head < 0.08, 'Y puts your head on the pilot\'s eye point wherever you sit (' + head.toFixed(3) + ' m off)');
     await ev(() => xrDevice.controllers.right.updateAxes('thumbstick', 0.8, 0.6)); await frames(4); const st = await ev(() => ({ p: game.player.fm.ctl.pitch, r: game.player.fm.ctl.roll })); await ev(() => xrDevice.controllers.right.updateAxes('thumbstick', 0, 0));
-    ok(st.p > 0.3 && st.r > 0.4, 'the right stick is the control column (pitch ' + st.p.toFixed(2) + ', roll ' + st.r.toFixed(2) + ')');
+    ok(st.p > 0.2 && st.r > 0.2, 'the right stick is the control column (pitch ' + st.p.toFixed(2) + ', roll ' + st.r.toFixed(2) + ')');
     const a0 = await ev(() => game.player.ammo); await ev(() => xrDevice.controllers.right.updateButtonValue('trigger', 1)); await frames(5); await ev(() => xrDevice.controllers.right.updateButtonValue('trigger', 0)); await frames(2);
     ok((await ev(() => game.player.ammo)) < a0, 'the right trigger fires the gun');
     const t0 = await ev(() => game.input.throttle); await ev(() => xrDevice.controllers.left.updateAxes('thumbstick', 0, 1)); await frames(5); await ev(() => xrDevice.controllers.left.updateAxes('thumbstick', 0, 0));
@@ -65,7 +71,7 @@ const IDS = ['camel', 'dr1', 'spitfire', 'bf109', 'p51', 'zero', 'f86', 'mig15',
     await tap('left', 'x-button'); ok(await ev(() => game.view === 'chase'), 'X steps outside the aircraft'); await tap('left', 'x-button');
     ok(await ev(() => game.view === 'cockpit' && !game._err), 'and back in');
     await ev(() => { game.setView('chase'); }); await frames(4); const snap = await ev(() => game.rig.rotation.y / (Math.PI / 6)); ok(Math.abs(snap - Math.round(snap)) < 0.01, 'outside, the view turns in steps of thirty degrees');
-    await ev(() => { game.setView('cockpit', true); game.player.fm.autopilot = false; xrDevice.controllers.right.updateAxes('thumbstick', 1, 0); }); await frames(6); const vg = await ev(() => game.vignette.material.uniforms.uA.value); await ev(() => xrDevice.controllers.right.updateAxes('thumbstick', 0, 0));
+    await ev(() => { game.setView('cockpit', true); game.opts.handling = 'real'; game.player.fm.autopilot = false; xrDevice.controllers.right.updateAxes('thumbstick', 1, 0); }); await frames(6); const vg = await ev(() => game.vignette.material.uniforms.uA.value); await ev(() => xrDevice.controllers.right.updateAxes('thumbstick', 0, 0));
     ok(vg > 0.1, 'a hard roll narrows the view (' + vg.toFixed(2) + ')');
     await ev(() => { game.opts.comfort = 2; }); await tap('left', 'x-button'); ok(await ev(() => game.view === 'cockpit'), 'MOST COMFORTABLE keeps you in the cockpit');
     ok(errs.length === 0, 'no page errors in the headset' + (errs.length ? ': ' + errs.slice(0, 3).join(' | ') : '')); await pg.close(); }

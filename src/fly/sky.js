@@ -6,12 +6,12 @@ export const atmo = {
   uSunDir: { value: new THREE.Vector3(0.3, 0.8, 0.5).normalize() },
   uSunCol: { value: new THREE.Color() }, uZenith: { value: new THREE.Color() }, uHorizon: { value: new THREE.Color() },
   uHorizonSun: { value: new THREE.Color() }, uSkyAmb: { value: new THREE.Color() }, uGroundAmb: { value: new THREE.Color() },
-  uSunGlow: { value: new THREE.Color() }, uFogDensity: { value: 1 / 42000 }, uTime: { value: 0 }, uNoise: { value: null }, uNight: { value: 0 },
+  uSunGlow: { value: new THREE.Color() }, uFogDensity: { value: 1 / 42000 }, uTime: { value: 0 }, uNoise: { value: null }, uNight: { value: 0 }, uCover: { value: 0 },
 };
 
 export const ATMO_GLSL = /* glsl */`
 uniform vec3 uSunDir, uSunCol, uZenith, uHorizon, uHorizonSun, uSkyAmb, uGroundAmb, uSunGlow;
-uniform float uFogDensity, uTime, uNight;
+uniform float uFogDensity, uTime, uNight, uCover;
 uniform sampler2D uNoise;
 vec3 skyColor(vec3 d){
   float y = max(d.y, 0.0); float sd = max(dot(d, uSunDir), 0.0);
@@ -42,6 +42,7 @@ export const TIMES = {
   day: { label: 'Midday', elev: 52, az: 140, sun: [1.0, 0.95, 0.86, 3.1], zen: [0.085, 0.22, 0.62], hor: [0.5, 0.66, 0.9], horSun: [0.62, 0.72, 0.9], skyAmb: [0.34, 0.46, 0.66], gndAmb: [0.13, 0.12, 0.1], glow: [1.0, 0.9, 0.75], fog: 1 / 46000, night: 0 },
   golden: { label: 'Golden hour', elev: 11, az: 250, sun: [1.0, 0.63, 0.34, 2.6], zen: [0.07, 0.16, 0.42], hor: [0.5, 0.47, 0.5], horSun: [1.1, 0.58, 0.22], skyAmb: [0.4, 0.43, 0.56], gndAmb: [0.17, 0.13, 0.11], glow: [1.2, 0.62, 0.25], fog: 1 / 36000, night: 0 },
   dusk: { label: 'Dusk', elev: 1.5, az: 265, sun: [1.0, 0.4, 0.16, 0.9], zen: [0.022, 0.045, 0.14], hor: [0.2, 0.17, 0.24], horSun: [0.95, 0.36, 0.1], skyAmb: [0.17, 0.19, 0.3], gndAmb: [0.07, 0.06, 0.07], glow: [1.0, 0.4, 0.12], fog: 1 / 34000, night: 0.55 },
+  overcast: { label: 'Overcast', elev: 40, az: 150, sun: [0.9, 0.93, 1.0, 0.75], zen: [0.3, 0.33, 0.38], hor: [0.42, 0.45, 0.5], horSun: [0.48, 0.5, 0.54], skyAmb: [0.5, 0.54, 0.6], gndAmb: [0.16, 0.16, 0.15], glow: [0.25, 0.25, 0.25], fog: 1 / 16000, night: 0, cover: 1 },
   night: { label: 'Moonlit night', elev: 38, az: 200, sun: [0.55, 0.68, 1.0, 0.16], zen: [0.0035, 0.007, 0.02], hor: [0.012, 0.02, 0.04], horSun: [0.014, 0.024, 0.048], skyAmb: [0.018, 0.026, 0.05], gndAmb: [0.006, 0.007, 0.01], glow: [0.1, 0.13, 0.2], fog: 1 / 38000, night: 1 },
 };
 
@@ -65,13 +66,13 @@ export class Sky {
           vec3 d = normalize(vDir);
           vec3 c = skyColor(d);
           float sd = dot(d, uSunDir);
-          c += uSunCol * smoothstep(0.99985, 0.99996, sd) * 14.0 * (1.0 - uNight * 0.6);       // sun / moon disc
+          c += uSunCol * smoothstep(0.99985, 0.99996, sd) * 14.0 * (1.0 - uNight * 0.6) * (1.0 - uCover);       // sun / moon disc
           // high cirrus sheet
           if (d.y > 0.01) { vec2 uv = d.xz / (d.y + 0.08) * 0.34 + vec2(uTime * 0.0006, 0.0);
             float n = texture2D(uNoise, uv).r * 0.6 + texture2D(uNoise, uv * 3.1).g * 0.4; n *= 0.55 + 0.9 * texture2D(uNoise, uv * vec2(0.31, 0.47) + 0.4).b;
-            float a = smoothstep(0.46, 0.9, n) * smoothstep(0.01, 0.2, d.y) * 0.55;
+            float a = smoothstep(0.46, 0.9, n) * smoothstep(0.01, 0.2, d.y) * 0.55; a = max(a, uCover * smoothstep(-0.02, 0.09, d.y) * (0.82 + 0.18 * n));
             vec3 cc = uSkyAmb * 1.1 + uSunCol * (0.16 + 0.25 * pow(max(sd, 0.0), 6.0));
-            cc += uSunGlow * (pow(max(sd, 0.0), 10.0) * 0.5 + pow(max(sd, 0.0), 60.0) * 0.6); c = mix(c, max(cc, c * 1.04), a); }
+            cc += uSunGlow * (pow(max(sd, 0.0), 10.0) * 0.5 + pow(max(sd, 0.0), 60.0) * 0.6); cc = mix(cc, uSkyAmb * (0.95 + 0.5 * n) + uSunCol * 0.1 * pow(max(sd, 0.0), 3.0), uCover); c = mix(c, mix(max(cc, c * 1.04), cc, uCover), a); }
           // stars
           if (uNight > 0.8) { vec3 p = d * 190.0, g = floor(p); float h = hash(g); vec3 o = vec3(hash(g + 1.3), hash(g + 2.7), hash(g + 4.1)) * 0.6 + 0.2; float r = length(p - g - o); c += vec3(1.0, 0.95, 0.85) * step(0.994, h) * (0.3 + (h - 0.994) * 280.0) * smoothstep(0.22, 0.0, r) * smoothstep(0.02, 0.3, d.y); }
           if (d.y < 0.0) c = mix(c, skyColor(vec3(d.x, 0.0, d.z)) * 0.9, smoothstep(0.0, -0.05, d.y));
@@ -91,7 +92,7 @@ export class Sky {
     atmo.uSunCol.value.setRGB(t.sun[0] * t.sun[3], t.sun[1] * t.sun[3], t.sun[2] * t.sun[3]);
     atmo.uZenith.value.fromArray(t.zen); atmo.uHorizon.value.fromArray(t.hor); atmo.uHorizonSun.value.fromArray(t.horSun);
     atmo.uSkyAmb.value.fromArray(t.skyAmb); atmo.uGroundAmb.value.fromArray(t.gndAmb); atmo.uSunGlow.value.fromArray(t.glow);
-    atmo.uFogDensity.value = t.fog; atmo.uNight.value = t.night;
+    atmo.uFogDensity.value = t.fog; this.fog0 = t.fog; atmo.uNight.value = t.night; atmo.uCover.value = t.cover || 0;
     this.sun.color.setRGB(t.sun[0], t.sun[1], t.sun[2]); this.sun.intensity = t.sun[3];
     this.hemi.color.fromArray(t.skyAmb); this.hemi.groundColor.fromArray(t.gndAmb); this.hemi.intensity = 2.2;
     this.sunW.color.copy(this.sun.color); this.sunW.intensity = t.sun[3]; this.sunW.position.copy(atmo.uSunDir.value); this.hemiW.color.copy(this.hemi.color); this.hemiW.groundColor.copy(this.hemi.groundColor); this.hemiW.intensity = 2.2;

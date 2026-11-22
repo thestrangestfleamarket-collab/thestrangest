@@ -1,0 +1,380 @@
+{
+ "motor_whine": {
+  "file": "motor_whine.ogg",
+  "loop": true,
+  "duration": 4.019,
+  "title": "Electric Scooter",
+  "author": "IENBA",
+  "license": "CC0",
+  "source": "https://freesound.org/people/IENBA/sounds/697379/",
+  "notes": "Electric scooter hub motor free-spinning at steady speed (real EV motor whine; no clean CC0 isolated car-motor recording was found). Strongest partials ~74, 334, 371, 1114, 1485 Hz at playbackRate 1. Crossfaded seamless loop."
+ },
+ "ev_accel": {
+  "file": "ev_accel.ogg",
+  "loop": false,
+  "duration": 5.15,
+  "title": "Acceleration of an electric car",
+  "author": "justVova",
+  "license": "CC0",
+  "source": "https://freesound.org/people/justVova/sounds/761685/",
+  "notes": "Bonus: real electric car accelerating (exterior, rising inverter whine + tyre/wind noise). One-shot, not loopable."
+ },
+ "road_roll": {
+  "file": "road_roll.ogg",
+  "loop": true,
+  "duration": 8.03,
+  "title": "Highway drive interior",
+  "author": "gecop",
+  "license": "CC0",
+  "source": "https://freesound.org/people/gecop/sounds/521766/",
+  "notes": "Car interior at steady highway speed (Belgian highway). Combustion car, so some low engine rumble is present under the tyre roar; low-pass/high-pass to taste. Equal-power crossfaded loop."
+ },
+ "wind": {
+  "file": "wind.ogg",
+  "loop": true,
+  "duration": 8.018,
+  "title": "Wind-inside car-091007.wav",
+  "author": "ra_gun",
+  "license": "CC0",
+  "source": "https://freesound.org/people/ra_gun/sounds/82267/",
+  "notes": "Heavy wind heard from inside a car. Steady section, equal-power crossfaded loop."
+ },
+ "tire_skid": {
+  "file": "tire_skid.ogg",
+  "loop": true,
+  "duration": 1.926,
+  "title": "Chrysler LHS tire squeal 04 (04-25-2009).wav",
+  "author": "audible-edge",
+  "license": "CC0",
+  "source": "https://freesound.org/people/audible-edge/sounds/71739/",
+  "notes": "Sustained tyre squeal (Chrysler LHS). Short 1.9 s crossfaded loop; squeal texture varies slightly so vary playbackRate a little to hide repetition."
+ },
+ "indicator_tick": {
+  "file": "indicator_tick.ogg",
+  "loop": false,
+  "duration": 0.124,
+  "title": "VEHCar_NISSAN SENTRA-TURNING SIGNAL_MP.wav",
+  "author": "MPierluissi",
+  "license": "CC0",
+  "source": "https://freesound.org/people/MPierluissi/sounds/446322/",
+  "notes": "Turn-signal relay 'tick' (Nissan Sentra). Original cadence: tick and tock ~0.35 s apart, full period 0.698 s."
+ },
+ "indicator_tock": {
+  "file": "indicator_tock.ogg",
+  "loop": false,
+  "duration": 0.124,
+  "title": "VEHCar_NISSAN SENTRA-TURNING SIGNAL_MP.wav",
+  "author": "MPierluissi",
+  "license": "CC0",
+  "source": "https://freesound.org/people/MPierluissi/sounds/446322/",
+  "notes": "Turn-signal relay 'tock', same gain as indicator_tick."
+ },
+ "indicator_loop": {
+  "file": "indicator_loop.ogg",
+  "loop": true,
+  "duration": 0.698,
+  "title": "VEHCar_NISSAN SENTRA-TURNING SIGNAL_MP.wav",
+  "author": "MPierluissi",
+  "license": "CC0",
+  "source": "https://freesound.org/people/MPierluissi/sounds/446322/",
+  "notes": "One full tick+tock period (0.698 s) with silence between; loops exactly at the real cadence (~86 blinks/min)."
+ },
+ "switch_click": {
+  "file": "switch_click.ogg",
+  "loop": false,
+  "duration": 0.31,
+  "title": "VEHCar_NISSAN SENTRA-TURNING SIGNAL_MP.wav",
+  "author": "MPierluissi",
+  "license": "CC0",
+  "source": "https://freesound.org/people/MPierluissi/sounds/446322/",
+  "notes": "Indicator stalk being pushed on (clunk)."
+ },
+ "switch_click_off": {
+  "file": "switch_click_off.ogg",
+  "loop": false,
+  "duration": 0.297,
+  "title": "VEHCar_NISSAN SENTRA-TURNING SIGNAL_MP.wav",
+  "author": "MPierluissi",
+  "license": "CC0",
+  "source": "https://freesound.org/people/MPierluissi/sounds/446322/",
+  "notes": "Indicator stalk cancelling/returning (clunk)."
+ },
+ "night_ambience": {
+  "file": "night_ambience.ogg",
+  "loop": true,
+  "duration": 15.009,
+  "title": "DMP010037 CRICKETS TEXAS .wav",
+  "author": "martypinso",
+  "license": "CC0",
+  "source": "https://freesound.org/people/martypinso/sounds/22604/",
+  "notes": "Stereo. Dense night crickets recorded in Texas; faint water/owl in the original background. No traffic in it. 15 s crossfaded loop."
+ },
+ "rain_on_car": {
+  "file": "rain_on_car.ogg",
+  "loop": true,
+  "duration": 8.03,
+  "title": "Heavy Rain Inside a Car",
+  "author": "robotjay",
+  "license": "CC0",
+  "source": "https://freesound.org/people/robotjay/sounds/518466/",
+  "notes": "Heavy rain heard inside a small sedan; steady section before the thunder. Crossfaded loop."
+ },
+ "wiper": {
+  "file": "wiper.ogg",
+  "loop": false,
+  "duration": 1.7,
+  "title": "Windshield Wipers On.wav",
+  "author": "NHumphrey",
+  "license": "CC0",
+  "source": "https://freesound.org/people/NHumphrey/sounds/200975/",
+  "notes": "One full wiper sweep cycle (1.7 s), cut cycle-to-cycle so it can also be looped/retriggered every 1.7 s."
+ },
+ "door_open": {
+  "file": "door_open.ogg",
+  "loop": false,
+  "duration": 1.45,
+  "title": "Car Door open and close 3.wav",
+  "author": "NachtmahrTV",
+  "license": "CC0",
+  "source": "https://freesound.org/people/NachtmahrTV/sounds/556690/",
+  "notes": "Car door handle + door opening."
+ },
+ "door_close": {
+  "file": "door_close.ogg",
+  "loop": false,
+  "duration": 0.85,
+  "title": "Car Door open and close 3.wav",
+  "author": "NachtmahrTV",
+  "license": "CC0",
+  "source": "https://freesound.org/people/NachtmahrTV/sounds/556690/",
+  "notes": "Car door closing, solid thunk (same door as door_open)."
+ },
+ "trunk_close": {
+  "file": "trunk_close.ogg",
+  "loop": false,
+  "duration": 0.55,
+  "title": "CarBootClose.wav",
+  "author": "jmdh",
+  "license": "CC0",
+  "source": "https://freesound.org/people/jmdh/sounds/136535/",
+  "notes": "Car boot/trunk lid slam."
+ },
+ "horn": {
+  "file": "horn.ogg",
+  "loop": false,
+  "duration": 1.1,
+  "title": "JM_TRANSPORT_EXT_Horn 01c - Car_Very long_Mini Countryman.wav",
+  "author": "Julien_Matthey",
+  "license": "CC0",
+  "source": "https://freesound.org/people/Julien_Matthey/sounds/436587/",
+  "notes": "Mini Countryman horn (small car), ~0.55 s of sustain plus the natural release tail. Tones ~394 + 498 Hz."
+ },
+ "horn_loop": {
+  "file": "horn_loop.ogg",
+  "loop": true,
+  "duration": 1.029,
+  "title": "JM_TRANSPORT_EXT_Horn 01c - Car_Very long_Mini Countryman.wav",
+  "author": "Julien_Matthey",
+  "license": "CC0",
+  "source": "https://freesound.org/people/Julien_Matthey/sounds/436587/",
+  "notes": "Sustained middle of the same Mini horn, phase-aligned crossfade (correlation 0.94). Play looped while the horn is held, then play 'horn' or fade out ~30 ms on release."
+ },
+ "horn_alt_skoda": {
+  "file": "horn_alt_skoda.ogg",
+  "loop": false,
+  "duration": 0.65,
+  "title": "Car Horn Skoda Fabia",
+  "author": "innov8_Music",
+  "license": "CC0",
+  "source": "https://freesound.org/people/innov8_Music/sounds/871628/",
+  "notes": "Alternative short single beep, Skoda Fabia horn (small car), natural attack and release."
+ },
+ "button_click": {
+  "file": "button_click.ogg",
+  "loop": false,
+  "duration": 0.257,
+  "title": "Click_Button_BatteryRechargerFlashlight.wav",
+  "author": "sweet_niche",
+  "license": "CC0",
+  "source": "https://freesound.org/people/sweet_niche/sounds/617587/",
+  "notes": "Small plastic push-button press + release (flashlight/charger button, stands in for a dashboard button)."
+ },
+ "start_chime": {
+  "file": "start_chime.ogg",
+  "loop": false,
+  "duration": 1.02,
+  "title": "Acura Chime Startup 2022",
+  "author": "EggoJRs",
+  "license": "CC0",
+  "source": "https://freesound.org/people/EggoJRs/sounds/580592/",
+  "notes": "One repetition of the 2022 Acura (Honda group) startup chime."
+ },
+ "warning_beep": {
+  "file": "warning_beep.ogg",
+  "loop": false,
+  "duration": 0.95,
+  "title": "sfx_seatbelt warning_auto.wav",
+  "author": "bajko",
+  "license": "CC0",
+  "source": "https://freesound.org/people/bajko/sounds/384967/",
+  "notes": "One beep of a car seatbelt warning; original repeats every 1.0 s (retrigger at 1 s intervals)."
+ },
+ "window_motor": {
+  "file": "window_motor.ogg",
+  "loop": false,
+  "duration": 3.44,
+  "title": "Car window down.WAV",
+  "author": "Sandermotions",
+  "license": "CC0",
+  "source": "https://freesound.org/people/Sandermotions/sounds/276293/",
+  "notes": "Complete electric window travel, down (3.4 s) including start and end stop."
+ },
+ "window_motor_loop": {
+  "file": "window_motor_loop.ogg",
+  "loop": true,
+  "duration": 1.8,
+  "title": "Car window down.WAV",
+  "author": "Sandermotions",
+  "license": "CC0",
+  "source": "https://freesound.org/people/Sandermotions/sounds/276293/",
+  "notes": "Steady middle section of the same window motor, crossfaded loop."
+ },
+ "seatbelt_click": {
+  "file": "seatbelt_click.ogg",
+  "loop": false,
+  "duration": 0.297,
+  "title": "car seatbelt clicking.wav",
+  "author": "RutgerMuller",
+  "license": "CC0",
+  "source": "https://freesound.org/people/RutgerMuller/sounds/50900/",
+  "notes": "Seatbelt buckle latch click."
+ },
+ "handbrake": {
+  "file": "handbrake.ogg",
+  "loop": false,
+  "duration": 0.6,
+  "title": "Handbrake.wav",
+  "author": "ninebilly",
+  "license": "CC0",
+  "source": "https://freesound.org/people/ninebilly/sounds/173007/",
+  "notes": "Mechanical handbrake lever ratchet being pulled. (The Honda e has an electric parking brake, so this is optional flavour.)"
+ },
+ "footstep_1": {
+  "file": "footstep_1.ogg",
+  "loop": false,
+  "duration": 0.42,
+  "title": "footsteps shoes walk road asphalt hard.flac",
+  "author": "kyles",
+  "license": "CC0",
+  "source": "https://freesound.org/people/kyles/sounds/637556/",
+  "notes": "Single shoe footstep on asphalt road. Source recording is quiet, so noise floor is ~-45 dB below the step after normalising."
+ },
+ "footstep_2": {
+  "file": "footstep_2.ogg",
+  "loop": false,
+  "duration": 0.42,
+  "title": "footsteps shoes walk road asphalt hard.flac",
+  "author": "kyles",
+  "license": "CC0",
+  "source": "https://freesound.org/people/kyles/sounds/637556/",
+  "notes": "Single footstep on asphalt (variation)."
+ },
+ "footstep_3": {
+  "file": "footstep_3.ogg",
+  "loop": false,
+  "duration": 0.42,
+  "title": "footsteps shoes walk road asphalt hard.flac",
+  "author": "kyles",
+  "license": "CC0",
+  "source": "https://freesound.org/people/kyles/sounds/637556/",
+  "notes": "Single footstep on asphalt (variation)."
+ },
+ "footstep_4": {
+  "file": "footstep_4.ogg",
+  "loop": false,
+  "duration": 0.42,
+  "title": "footsteps shoes walk road asphalt hard.flac",
+  "author": "kyles",
+  "license": "CC0",
+  "source": "https://freesound.org/people/kyles/sounds/637556/",
+  "notes": "Single footstep on asphalt (variation)."
+ },
+ "crash_light": {
+  "file": "crash_light.ogg",
+  "loop": false,
+  "duration": 0.6,
+  "title": "Body Thud.wav",
+  "author": "Kane53126",
+  "license": "CC0",
+  "source": "https://freesound.org/people/Kane53126/sounds/257928/",
+  "notes": "Dull body thud; use for light bumps/impacts."
+ },
+ "crash_medium": {
+  "file": "crash_medium.ogg",
+  "loop": false,
+  "duration": 1.3,
+  "title": "S37-14 Two cars crash foley; good metallic bump.wav",
+  "author": "craigsmith",
+  "license": "CC0",
+  "source": "https://freesound.org/people/craigsmith/sounds/675466/",
+  "notes": "Bonus: two-cars foley metallic bump (vintage sound-effects library transfer)."
+ },
+ "crash_heavy": {
+  "file": "crash_heavy.ogg",
+  "loop": false,
+  "duration": 3.1,
+  "title": "Car Crash",
+  "author": "squareal",
+  "license": "CC0",
+  "source": "https://freesound.org/people/squareal/sounds/237375/",
+  "notes": "Car crash with metal crunch and debris tail (3.1 s)."
+ },
+ "curb_bump": {
+  "file": "curb_bump.ogg",
+  "loop": false,
+  "duration": 0.55,
+  "title": "found matress hit.wav",
+  "author": "apinasaundi",
+  "license": "CC0",
+  "source": "https://freesound.org/people/apinasaundi/sounds/405705/",
+  "notes": "Low padded thud (mattress hit); use as tyre/kerb/suspension thump, pitch down for heavier hits."
+ },
+ "footstep_asphalt": {
+  "files": [
+   "footstep_1.ogg",
+   "footstep_2.ogg",
+   "footstep_3.ogg",
+   "footstep_4.ogg"
+  ],
+  "loop": false,
+  "title": "footsteps shoes walk road asphalt hard.flac",
+  "author": "kyles",
+  "license": "CC0",
+  "source": "https://freesound.org/people/kyles/sounds/637556/",
+  "notes": "Group entry: pick one of the four files at random per step."
+ },
+ "city": {
+  "file": "city.mp3",
+  "loop": true,
+  "title": "Paris by night (distant traffic hum)",
+  "author": "Joseph Sardin (BigSoundBank)",
+  "license": "CC0",
+  "source": "https://bigsoundbank.com/paris-by-night-s0680.html"
+ },
+ "birds": {
+  "file": "birds.mp3",
+  "loop": true,
+  "title": "Birdsong",
+  "author": "Joseph Sardin (BigSoundBank)",
+  "license": "CC0",
+  "source": "https://bigsoundbank.com"
+ },
+ "thunder": {
+  "file": "thunder.mp3",
+  "loop": false,
+  "title": "Thunder 2",
+  "author": "Joseph Sardin (BigSoundBank)",
+  "license": "CC0",
+  "source": "https://bigsoundbank.com/thunder-2-s3113.html"
+ }
+}

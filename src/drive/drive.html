@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="robots" content="noindex">
+<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+<title>Savano Lane Night Drive</title>
+<style>
+  html, body { margin: 0; height: 100%; background: #05070c; color: #e8edf3; font: 14px/1.45 -apple-system, "Segoe UI", Helvetica, Arial, sans-serif; overflow: hidden; }
+  canvas#gl { position: fixed; inset: 0; width: 100%; height: 100%; display: block; }
+  #overlay { position: fixed; inset: 0; display: flex; align-items: center; justify-content: center; background: radial-gradient(ellipse at 50% 30%, #101826 0%, #05070c 70%); z-index: 10; overflow: auto; }
+  #panel { width: min(680px, calc(100vw - 32px)); padding: 28px; box-sizing: border-box; }
+  h1 { font-weight: 300; font-size: 34px; margin: 0 0 4px; letter-spacing: 0.5px; }
+  .sub { color: #8fa0b3; margin-bottom: 22px; }
+  .row { display: flex; gap: 12px; margin-bottom: 12px; flex-wrap: wrap; }
+  label { display: flex; flex-direction: column; gap: 4px; color: #8fa0b3; font-size: 12px; flex: 1 1 140px; }
+  input, select { background: #0e141d; border: 1px solid #263242; color: #e8edf3; border-radius: 8px; padding: 9px 10px; font: inherit; }
+  input[type=color] { padding: 2px; height: 38px; }
+  button { background: #2f7de1; color: #fff; border: 0; border-radius: 10px; padding: 12px 22px; font: 600 15px inherit; cursor: pointer; }
+  button:disabled { background: #263242; color: #6c7b8c; cursor: default; }
+  #bar { height: 4px; background: #172130; border-radius: 2px; overflow: hidden; margin: 16px 0 6px; }
+  #bar i { display: block; height: 100%; width: 0; background: #2f7de1; transition: width .2s; }
+  #status { color: #8fa0b3; font-size: 12px; min-height: 18px; }
+  .keys { display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: 4px 18px; margin-top: 18px; color: #a9b6c4; font-size: 12.5px; }
+  .keys b { color: #fff; font-weight: 600; display: inline-block; min-width: 62px; }
+  #hud { position: fixed; inset: 0; pointer-events: none; z-index: 5; display: none; }
+  #dot { position: absolute; left: 50%; top: 50%; width: 5px; height: 5px; margin: -2.5px; border-radius: 50%; background: rgba(255,255,255,.7); box-shadow: 0 0 2px #000; }
+  #hint { position: absolute; left: 50%; top: calc(50% + 22px); transform: translateX(-50%); background: rgba(8,12,18,.78); padding: 5px 11px; border-radius: 7px; white-space: nowrap; display: none; }
+  #toast { position: absolute; left: 50%; bottom: 12%; transform: translateX(-50%); background: rgba(8,12,18,.78); padding: 8px 14px; border-radius: 8px; opacity: 0; transition: opacity .3s; text-align: center; max-width: 80vw; }
+  #speedo { position: absolute; right: 22px; bottom: 18px; text-align: right; text-shadow: 0 1px 3px #000; display: none; }
+  #speedo .n { font: 300 54px/1 Helvetica, Arial, sans-serif; }
+  #players { position: absolute; left: 14px; top: 12px; color: #c9d3de; text-shadow: 0 1px 2px #000; font-size: 12.5px; }
+  #help { position: absolute; right: 14px; top: 12px; color: #8fa0b3; text-shadow: 0 1px 2px #000; font-size: 12px; text-align: right; }
+  #fps { position: absolute; left: 14px; bottom: 10px; color: #6c7b8c; font-size: 11px; }
+  #vr { position: fixed; z-index: 6; right: 16px; bottom: 96px; display: none; pointer-events: auto; }
+  #touch { position: fixed; inset: 0; z-index: 4; display: none; }
+  #touch div { position: absolute; bottom: 18px; width: 86px; height: 86px; border-radius: 50%; background: rgba(255,255,255,.12); border: 1px solid rgba(255,255,255,.25); display: flex; align-items: center; justify-content: center; font-weight: 600; user-select: none; touch-action: none; }
+</style>
+</head>
+<body>
+<canvas id="gl"></canvas>
+<div id="hud">
+  <div id="dot"></div><div id="hint"></div><div id="toast"></div>
+  <div id="speedo"><div class="n" id="spd">0</div><div id="gearTxt">P · mph</div></div>
+  <div id="players"></div><div id="help">F1 help · Esc menu</div><div id="fps"></div>
+</div>
+<button id="vr">Enter VR</button>
+<div id="touch"><div id="tL" style="left:18px">◀</div><div id="tR" style="left:118px">▶</div><div id="tB" style="right:118px">BRAKE</div><div id="tG" style="right:18px">GO</div></div>
+<div id="overlay"><div id="panel">
+  <h1>Savano Lane Night Drive</h1>
+  <div class="sub">A true-scale 5 km × 5 km piece of north Fort Worth (76244) and a fully operable 2021 Honda e.</div>
+  <div class="row">
+    <label>Name<input id="name" maxlength="20" value="Driver"></label>
+    <label>Room (share to drive together)<input id="room" maxlength="32" value="main"></label>
+    <label style="flex:0 0 80px">Paint<input id="color" type="color" value="#f2f1ec"></label>
+  </div>
+  <div class="row">
+    <label>Graphics<select id="quality"><option value="high">High (desktop GPU)</option><option value="medium">Medium (laptop)</option><option value="low">Low (Quest 3 / phone)</option></select></label>
+    <label>Time<select id="time"><option value="night">Night</option><option value="dawn">Dawn</option><option value="day">Day</option><option value="dusk">Dusk</option><option value="live">Real time in Fort Worth</option></select></label>
+  </div>
+  <div id="bar"><i></i></div><div id="status">Loading…</div>
+  <div class="row" style="margin-top:14px"><button id="start" disabled>Loading…</button></div>
+  <div class="keys">
+    <div><b>W / S</b> accelerate / brake</div><div><b>A / D</b> steer</div><div><b>Mouse</b> look · click to operate</div><div><b>I</b> power on/off</div>
+    <div><b>1 2 3 4</b> P R N D</div><div><b>Space</b> parking brake</div><div><b>Q / E</b> turn signals</div><div><b>X</b> hazards</div>
+    <div><b>L / K</b> headlights / high beam</div><div><b>H</b> horn</div><div><b>V</b> wipers</div><div><b>O</b> cabin light</div>
+    <div><b>F</b> get in / out</div><div><b>C</b> camera</div><div><b>B</b> seat belt</div><div><b>R</b> reset to road</div>
+    <div><b>T / Y</b> time of day / weather</div><div><b>U</b> time-lapse</div><div><b>N</b> radio station</div><div><b>Wheel</b> zoom</div><div><b>Gamepad</b> triggers + left stick</div><div><b>Quest</b> triggers, left stick, grip = touch</div>
+  </div>
+</div></div>
+<script type="module">__DRIVE__</script>
+</body>
+</html>

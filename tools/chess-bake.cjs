@@ -1,12 +1,12 @@
 // bakes SKIRMISH TABLE's dungeon: PWCHROME=/opt/pw-browsers/chromium node tools/chess-bake.cjs dungeon  ->  data/chess/dungeon/ (the surround and its ivy, dungeon.glb; their one picture, atlas.jpg; the tiles', the floor's and the lava's pictures) from data/full/chess/dungeon/ (tools/chess-dungeon.py)
-// and its people: PWCHROME=/opt/pw-browsers/chromium node tools/chess-bake.cjs  ->  data/chess/units/ (each unit type one thinned skinned mesh, <type>.glb; the one picture they share, atlas.jpg; their clips, anim.glb) from the originals in data/full/chess/characters/
+// and its people: PWCHROME=/opt/pw-browsers/chromium node tools/chess-bake.cjs  ->  data/chess/units/ (each unit type one thinned skinned mesh, <type>.glb; the one picture they share, atlas.jpg; their clips, anim.glb) from the originals in data/full/chess/characters/ (people) and data/full/chess/creatures/ (each creature one mesh with its own clips)
 const es = require('esbuild'), fs = require('fs'), http = require('http'), path = require('path'), { chromium } = require('playwright');
 const DUN = process.argv[2] === 'dungeon', SRC = path.resolve(DUN ? 'data/full/chess/dungeon' : 'data/full/chess/characters'), OUT = DUN ? 'data/chess/dungeon' : 'data/chess/units';
 const js = es.buildSync({ entryPoints: [DUN ? 'tools/chess-dungeon.page.js' : 'tools/chess-bake.page.js'], bundle: true, format: 'esm', target: 'es2022', write: false, logLevel: 'error' }).outputFiles[0].text;
 const srv = http.createServer((q, r) => {
   if (q.url === '/') { r.writeHead(200, { 'content-type': 'text/html' }); return r.end('<!doctype html><script type="module">' + js.replace(/<\/script/gi, '<\\/script') + '</script>'); }
-  const f = path.join(SRC, q.url.slice(6));
-  if (!q.url.startsWith('/full/') || q.url.includes('..') || !fs.existsSync(f)) { r.writeHead(404); return r.end(); }
+  const cre = q.url.startsWith('/creatures/'), f = cre ? path.join(path.resolve('data/full/chess/creatures'), q.url.slice(11)) : path.join(SRC, q.url.slice(6));
+  if (!(cre || q.url.startsWith('/full/')) || q.url.includes('..') || !fs.existsSync(f)) { r.writeHead(404); return r.end(); }
   r.writeHead(200, { 'content-type': f.endsWith('.jpg') ? 'image/jpeg' : 'model/gltf-binary' }); fs.createReadStream(f).pipe(r);
 });
 (async () => {

@@ -1153,7 +1153,7 @@ export class Laser extends Server {
 export class Chess extends DurableObject {
   get turnSeconds() { return +this.env.CHESS_TURN_SECONDS || 0; }   // only the check sets it (its software-drawn pages are slower than a turn)
   constructor(ctx, env) { super(ctx, env); this.room = null; this.match = new CHESS.Match(this);
-    ctx.blockConcurrencyWhile(async () => { this.room = (await ctx.storage.get("room")) || null; }); }
+    ctx.blockConcurrencyWhile(async () => { this.room = (await ctx.storage.get("room")) || null; if (this.room && !CHESS.G.MAPS[this.room.state.map]) this.room = null; }); }   // a room kept from a battlefield since set aside is let go
   save() { this.ctx.storage.put("room", this.room); this.ctx.storage.setAlarm(Date.now() + CHESS.IDLE_MS); }
   store(pid) { const H = homeOf(this.env); return { get: () => H.botGet("chess:" + pid), put: v => H.botPut("chess:" + pid, v) }; }
   async alarm() { if (this.match.sockets.size) { this.ctx.storage.setAlarm(Date.now() + CHESS.IDLE_MS); return; } this.room = null; await this.ctx.storage.deleteAll(); }

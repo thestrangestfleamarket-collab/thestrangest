@@ -43,6 +43,9 @@ let halt = () => {};
     ok(s.winner === 0 && !G.apply(s, 0, { type: 'end' }).ok, 'a surrender gives the other the win; nothing after the end'); }
   { const s = G.newGame(); for (let i = 0; i < G.MAX_PASSES; i++) G.apply(s, s.turn, { type: 'end' }); ok(s.winner === -1, 'four passes in a row is a draw'); }
   // ---- the ground (src/chess/maps.js): every map the same from both seats, every rule the same for every piece ----
+  const LV = (await import(pathToFileURL(path.join(ROOT, 'archive/chess-levels/src/levels.js')))).LEVELS;
+  ok(Object.keys(G.MAPS).join() === 'board' && Object.keys(LV).length === 8 && !fs.existsSync(path.join(ROOT, 'src/chess/land.js')) && !fs.existsSync(path.join(ROOT, 'data/chess/land')), 'the plain board is the only battlefield; the eight landscaped ones, their drawing and their files are set aside in archive/chess-levels/');
+  Object.assign(G.MAPS, LV);   // back as data for the checks of the ground rules below (the terrain table is still the game's own): taken out again before the room and the page are tried
   { const land = Object.entries(G.MAPS).filter(([, m]) => m.tiles), turned = m => m.tiles.every((r, y) => [...r].every((c, x) => c === m.tiles[m.rows - 1 - y][m.cols - 1 - x] && m.high[y][x] === m.high[m.rows - 1 - y][m.cols - 1 - x]));
     ok(land.length >= 3 && land.every(([, m]) => m.tiles.length === m.rows && m.high.length === m.rows && m.tiles.every(r => r.length === m.cols && [...r].every(c => G.TERRAIN[c])) && turned(m)), 'the landscaped maps (' + land.map(([id]) => id).join(', ') + ') are whole and read the same from both seats');
     ok(G.newGame().map === 'board' && G.newGame('nowhere').map === 'board' && !G.MAPS.board.tiles && G.newGame().cols === 9 && G.newGame().rows === 11, 'the plain board is still a map, with no ground, and the one a match gets when none is named');
@@ -157,9 +160,9 @@ let halt = () => {};
   { const C = CAMP.CAMPAIGN, ids = C.nodes.map(n => n.id), bad = [];
     for (const n of C.nodes) { const m = G.MAPS[n.map], seen = new Set(); if (!m) { bad.push(n.id + ' map'); continue; }
       for (const [type, x, y] of n.enemy) { const k = x + ',' + y; if (!G.TYPES[type] || x < 0 || x >= m.cols || y < 0 || y >= m.zone || (m.tiles && G.TERRAIN[m.tiles[y][x]].solid) || seen.has(k)) bad.push(n.id + ' ' + type + ' ' + k); seen.add(k); }
-      if (!n.needs.every(q => ids.includes(q)) || !n.text || !n.won || !AI.LEVELS[n.level] || G.TERRAIN[C.map.tiles[n.at[1]][n.at[0]]].solid) bad.push(n.id + ' node'); }
+      if (!n.needs.every(q => ids.includes(q)) || !n.text || !n.won || !AI.LEVELS[n.level] || n.map !== 'board') bad.push(n.id + ' node'); }
     const order = []; let grew = true; while (grew) { grew = false; for (const n of C.nodes) if (!order.includes(n.id) && CAMP.isOpen(n.id, order)) { order.push(n.id); grew = true; } }
-    ok(bad.length === 0 && C.nodes.length >= 6 && C.nodes.filter(n => n.optional).length >= 2 && C.nodes.filter(n => n.last).length === 1 && new Set(ids).size === ids.length && C.map.tiles.length === C.map.rows && C.map.tiles.every(r => r.length === C.map.cols), 'the campaign is whole: ' + C.nodes.length + ' battles (' + C.nodes.filter(n => n.optional).length + ' to the side, one last), each on a map the game has with its enemy on open ground in its own rows' + (bad.length ? ': ' + bad.join('; ') : ''));
+    ok(bad.length === 0 && C.nodes.length >= 6 && C.nodes.filter(n => n.optional).length >= 2 && C.nodes.filter(n => n.last).length === 1 && new Set(ids).size === ids.length && !C.map, 'the campaign is whole: ' + C.nodes.length + ' battles (' + C.nodes.filter(n => n.optional).length + ' to the side, one last), each on the plain board with its enemy in its own rows' + (bad.length ? ': ' + bad.join('; ') : ''));
     ok(order.length === ids.length && CAMP.isOpen(ids[0], []) && !CAMP.isOpen(C.nodes.find(n => n.last).id, []) && CAMP.budgetFor([]) === C.start && CAMP.budgetFor(ids) === C.start + C.nodes.reduce((a, n) => a + n.gain, 0) && CAMP.budgetFor(['toll', 'toll', 'nope', 7]) === C.start + 3 && CAMP.finished(ids) && !CAMP.finished(['toll']), 'its battles open in order from the first to the last, and each win adds to the points you may field (' + C.start + ' to ' + CAMP.budgetFor(ids) + ')'); }
   { let bad = 0;
     for (let g = 0; g < 200; g++) { const s = G.newGame();
@@ -169,6 +172,7 @@ let halt = () => {};
         if (s.winner === null && !G.apply(s, p, { type: 'end', unit: u && u.id, facing: u ? 'NESW'[Math.floor(Math.random() * 4)] : undefined }).ok) bad++; }
       if (new Set(s.units.map(u => u.x + ',' + u.y)).size !== s.units.length) bad++; }
     ok(bad === 0, 'two hundred random games: every move the rules offer is taken, no two pieces share a tile'); }
+  for (const k of Object.keys(LV)) delete G.MAPS[k];
 
   // ---- the match room, no network ----
   { const { CHESS } = await import(pathToFileURL(path.join(ROOT, 'worker/chess.js')));
@@ -221,7 +225,7 @@ let halt = () => {};
       ok(JSON.stringify(su.find(u => u.owner === 0 && u.type === 'bulwark').up) === '{"hp":8}' && Object.keys(su.find(u => u.owner === 0 && u.type === 'lancer').up).join() === 'hp,max,leech' && !su.find(u => u.owner === 0 && u.type === 'slinger').up && !su.some(u => u.owner === 1 && u.up) && last(own.a, 'state').open, 'against the computer anyone not signed in brings the upgrades their own browser holds, cut to what its experience allows');
       await CHESS.save(store('cy'), { ups: { bulwark: ['plate'] }, xp: { bulwark: 999 } }); ok(!(await CHESS.load(store('cy'))).rec.ups.bulwark && !(await CHESS.load(store('cy'))).rec.xp.bulwark, 'the page cannot write experience, and upgrades it saves are cut to the experience the website holds'); }
     const mk = map => { const h = { room: null, save() {} }, m = new CHESS.Match(h), w = sock(); m.open(w); m.message(w, 'WXYZ', JSON.stringify({ t: 'create', token: 't', map })); clearTimeout(m.timer); return h.room.state; };
-    ok(mk('river').map === 'river' && mk('river').cols === 11 && mk('nowhere').map === 'board' && mk(7).map === 'board' && mk(undefined).map === 'board', 'the host names the map when the room is made; one the server does not know is the plain board'); }
+    ok(mk('river').map === 'board' && mk('river').cols === 9 && mk('nowhere').map === 'board' && mk(7).map === 'board' && mk(undefined).map === 'board', 'the host names the map when the room is made; one the server does not know is the plain board'); }
 
   // ---- the website's worker and its Chess Durable Object ----
   const CFG = path.join(ROOT, '.site-wrangler.jsonc'); fs.writeFileSync(CFG, fs.readFileSync(path.join(ROOT, 'wrangler.jsonc'), 'utf8').replace(/^\s*"ai"\s*:\s*\{[^}]*\},?\s*$/m, '')); process.on('exit', () => { try { fs.unlinkSync(CFG); } catch (e) {} });
@@ -237,13 +241,9 @@ let halt = () => {};
     ok(r.status === 200 && /<title>Skirmish Table<\/title>/.test(t) && h.status === 404 && sl.status === 301, '/chess is SKIRMISH TABLE, to anyone, no login');
     // every file the page's code names: the people, the sprites, the sounds
     const src = f => fs.readFileSync(path.join(ROOT, 'src/chess', f), 'utf8'), names = (f, re) => [...new Set([...src(f).matchAll(re)].map(m => m[1]))];
-    const sfx = eval(/const FILES = (\[[\s\S]*?\]);/.exec(src('audio.js'))[1]), glb = [...names('characters.js', /'((?:Male|Female|Hair)_[A-Za-z]+)'/g), 'animations'], png = fs.readdirSync(path.join(ROOT, 'data/chess/fx')).map(f => f.replace('.png', ''));
-    const land = fs.readdirSync(path.join(ROOT, 'data/chess/land')).flatMap(d => fs.readdirSync(path.join(ROOT, 'data/chess/land', d)).map(f => 'land/' + d + '/' + f));
-    ok(land.length >= 15 && [...src('land.js').matchAll(/tex\('(\w+)'/g)].every(m => land.includes('land/tex/' + m[1] + '.jpg')) && [...src('land.js').matchAll(/model\('(\w+)'\)/g)].every(m => land.includes('land/m/' + m[1] + '.glb')), 'every picture and model the landscape names is in data/chess/land/ (' + land.length + ' files)');
-    { const want = new Set(['land/snd/wind.mp3', 'land/snd/fire.mp3', 'land/snd/drip.mp3']); for (const m of Object.values(G.MAPS)) for (const [k, n] of Object.entries((m.look && m.look.tex) || {})) { want.add('land/tex/' + n + '_d.jpg'); if (k === 'base' || k === 'rock') want.add('land/tex/' + n + '_n.jpg'); }
-      const miss = [...want].filter(f => !land.includes(f)), size = fs.readdirSync(path.join(ROOT, 'data/chess/land/tex')).concat(['../snd/wind.mp3', '../snd/fire.mp3', '../snd/drip.mp3']).filter(f => /^(snow|cave|ash|scorch)_|snd/.test(f)).reduce((n, f) => n + fs.statSync(path.join(ROOT, 'data/chess/land/tex', f)).size, 0);
-      ok(!miss.length && size < 1.5e6, 'the three worlds\' ground and sounds are there (' + want.size + ' files named by the maps), ' + Math.round(size / 1024) + ' KB new in all' + (miss.length ? ': missing ' + miss.join(', ') : '')); }
-    const urls = [...sfx.map(n => 'sfx/' + n + '.mp3'), ...glb.map(n => 'characters/' + n + '.glb'), ...png.map(n => 'fx/' + n + '.png'), ...land], bad = [], types = {};
+    const sfx = eval(/const FILES = (\[[\s\S]*?\]);/.exec(src('audio.js'))[1]), glb = [...Object.keys(G.TYPES), 'anim'], png = fs.readdirSync(path.join(ROOT, 'data/chess/fx')).map(f => f.replace('.png', ''));
+    const land = ['units/atlas.jpg'];
+    const urls = [...sfx.map(n => 'sfx/' + n + '.mp3'), ...glb.map(n => 'units/' + n + '.glb'), ...png.map(n => 'fx/' + n + '.png'), ...land], bad = [], types = {};
     for (const u of urls) { const q = await fetch(BASE + '/chess-assets/' + u, { method: 'HEAD' }); if (q.status !== 200) bad.push(u + ' ' + q.status); else types[u.split('.').pop()] = q.headers.get('content-type'); }
     ok(sfx.length >= 30 && glb.length >= 8 && png.length >= 10 && !bad.length, 'every file it fetches is handed out (' + sfx.length + ' mp3, ' + glb.length + ' glb, ' + png.length + ' png)' + (bad.length ? ': ' + bad.join(', ') : ''));
     ok(/audio\/mpeg/.test(types.mp3) && /gltf-binary/.test(types.glb) && /image\/png/.test(types.png) && /image\/jpeg/.test(types.jpg), 'each as its kind: ' + JSON.stringify(types));
@@ -278,15 +278,11 @@ let halt = () => {};
     ok(back && a.got.some(m => m.t === 'state' && m.solo === 'easy' && m.started && m.deadline === null) && a.got.filter(m => m.t === 'state' && m.events.some(e => ['move', 'act', 'face', 'turn'].includes(e.t))).length >= 2, 'against the computer in the Durable Object: READY starts it, and it answers your turn with its own (turn ' + (a.state && a.state.turnNo) + ')');
     const b = await seat('create=1', { t: 'create', token: 'camp-b', camp: 'pass', done: [] }, false); await wait(() => b.err.length);
     const c = await seat('create=1', { t: 'create', token: 'camp-c', camp: 'toll', done: [] }, false); await wait(() => c.state);
-    ok(/not open/.test(b.err[0] || '') && c.state && c.state.map === 'river' && c.state.budget === 28 && c.got.some(m => m.camp === 'toll'), 'and a battle of the campaign there: a closed one is refused, the first is set on its map with the campaign\'s points');
+    ok(/not open/.test(b.err[0] || '') && c.state && c.state.map === 'board' && c.state.budget === 28 && c.got.some(m => m.camp === 'toll'), 'and a battle of the campaign there: a closed one is refused, the first is set on its map with the campaign\'s points');
     for (const o of [a, b, c]) o.s.close(); }
-  { const a = await seat('create=1', { t: 'create', token: 'map-a', map: 'river' }); await wait(() => a.code);
-    const b = await seat('room=' + a.code, { t: 'join', code: a.code, token: 'map-b' }); await wait(() => b.state && a.state && b.got.some(m => m.t === 'state' && m.started));
-    const k = a.state.units.find(u => u.owner === 0 && u.type === 'bulwark' && u.x === 4), e0 = a.err.length;
-    a.act({ type: 'move', unit: k.id, x: 4, y: 5 }); await wait(() => a.err.length > e0); const wet = a.err.length > e0;
-    a.act({ type: 'move', unit: k.id, x: 4, y: 6 }); await wait(() => b.state.active);
-    ok(a.state.map === 'river' && b.state.map === 'river' && b.state.cols === 11 && wet && b.state.units.find(u => u.id === k.id).y === 6, 'a match made on Millford Crossing is judged by its ground in the Durable Object: no step into the river, the step to its bank goes through');
-    for (const o of [a, b]) o.s.close(); }
+  { const a = await seat('create=1', { t: 'create', token: 'map-a', map: 'river' }); await wait(() => a.state);
+    ok(a.state && a.state.map === 'board' && a.state.cols === 9 && a.state.rows === 11, 'a match asked for on a battlefield that is set aside is made on the plain board, in the Durable Object too');
+    a.s.close(); }
 
   // ---- two pages, one match ----
   const launch = () => chromium.launch({ ...(process.env.PWCHROME ? { executablePath: process.env.PWCHROME } : {}), args: OUT ? ['--use-gl=angle', '--use-angle=swiftshader', '--enable-unsafe-swiftshader', '--ignore-gpu-blocklist'] : ['--use-gl=swiftshader', '--enable-unsafe-swiftshader', '--ignore-gpu-blocklist'] });
@@ -303,7 +299,7 @@ let halt = () => {};
   const until = async (pg, fn, arg, ms = OUT ? 240000 : 60000) => { await on(pg); await pg.waitForFunction(() => !!window.__t, null, { timeout: ms }).catch(() => {}); return pg.waitForFunction(fn, arg, { timeout: ms }).then(() => true, () => false); };
   const soon = async (pg, fn, arg, ms = 12000) => { const t = Date.now(); while (Date.now() - t < ms) { if (await pg.evaluate(fn, arg).catch(() => false)) return true; await nap(250); } return false; };   // asked of the page directly, not on its next frame: a software-drawn frame can outlast the wait
   const shot = async (pg, name) => { if (OUT) { await on(pg); await pg.waitForTimeout(1500); await pg.screenshot({ path: path.join(OUT, name + '.png'), timeout: 240000 }).catch(e => ok(false, 'the picture ' + name + ': ' + e.message.split('\n')[0])); } };
-  const people = pg => until(pg, () => { let n = 0; window.__t.scene.traverse(o => { if (o.isSkinnedMesh) n++; }); return n >= 20; }, null, 180000);
+  const people = pg => until(pg, () => { const T = window.__t; return T.unitsReady && Object.values(T.crowd.types).reduce((n, m) => n + m.count, 0) + [...T.unitMeshes.values()].filter(g => g.userData.live).length >= 20; }, null, 180000);
   const A = await open(), B = await open(null, b2); await on(A);
   await (await on(A)).goto(BASE + '/chess', { waitUntil: 'commit', timeout: 120000 }); ok(await until(A, () => !!window.__t && !!document.getElementById('createBtn')), 'the page starts on its menu');
   await shot(A, 'menu');
@@ -383,66 +379,35 @@ let halt = () => {};
   ok(miss.length === 0, 'nothing the pages asked for was refused' + (miss.length ? ': ' + [...new Set(miss)].slice(0, 6).join(', ') : ''));
   await A.context().close(); await B.context().close(); if (b2 !== b) await b2.close();
 
-  // ---- the landscaped maps on the page: built from the map's data, a piece stands on its ground, a click finds its tile ----
-  { const n0 = errs.length, L = await open(); cur = null;
-    for (const id of ['river', 'pass', 'keep'].filter(id => G.MAPS[id])) { const m = G.MAPS[id];   // a river, high ground, walls at dusk; the others are checked as data above
-
-      await L.goto(BASE + '/chess?show=' + id, { waitUntil: 'commit', timeout: 120000 }); await until(L, () => !!window.__t && !!window.__t.field && window.__t.field.land);
-      await until(L, () => window.__t.field.stats().draws > 20, null, 120000);
-      const f = await L.evaluate(() => { const T = window.__t, F = T.field, st = F.stats(); let off = 0; T.scene.traverse(o => { const p = o.userData && o.userData.pick; if (p && p.kind === 'unit') { const u = T.state.units.find(u => u.id === p.id); if (u && Math.abs(o.userData.target.y - F.yAt(u.x, u.y)) > 1e-6) off++; } }); return { id: F.id, cols: F.cols, rows: F.rows, st, off, lights: F.lights.length, bg: !!T.scene.background }; });
-      ok(f.id === id && f.cols === m.cols && f.rows === m.rows && f.off === 0 && f.bg && f.lights <= 2, m.name + ' is built from its data, every piece standing on its own tile\'s ground');
-      ok(f.st.tris > 20000 && f.st.tris < 260000 && f.st.draws < 90, 'its cost on the low setting: ' + f.st.draws + ' draws, ' + f.st.tris + ' triangles, ' + f.st.blades + ' blades of grass, ' + f.st.trees + ' trees');
-      { const S = (await import(pathToFileURL(path.join(ROOT, 'src/chess/scale.js')))).SIZES, kinds = Object.values(S.tree), lo = Math.min(...kinds.map(k => k.tall[0])), hi = Math.max(...kinds.map(k => k.tall[1]));
-        const z = await L.evaluate(() => { const T = window.__t, F = T.field, s = F.sizes(), sky = !!(F.sky && F.sky.visible), cloud = T.cloud; F.setDetail(false, true, 2); const ar = { sky: F.sky.visible, st: F.stats() }; F.setDetail(localStorage.getItem('quality') !== 'low', false, 0); return { s, sky, cloud, ar, st: F.stats() }; });
-        ok(z.s.figure === 1.8 && z.s.tree && z.s.tree[0] >= lo - 0.01 && z.s.tree[1] <= hi + 0.01 && z.s.tree[0] > 4 * z.s.figure && Math.abs(z.s.wall - S.wall.tall) < 0.01 && z.s.wall > z.s.figure && Math.abs(z.s.bridge[1] - S.bridge.rail) < 0.01 && z.s.bridge[1] > 0.5 * z.s.figure && z.s.bridge[1] < 0.65 * z.s.figure && z.s.bridge[0] > 0.6 && (!z.s.rock || z.s.rock[1] < 2 * z.s.figure) && z.s.camp < z.s.figure,
-          'everything on it is the size the scale table gives it beside a 1.8 m figure: trees ' + z.s.tree.map(v => v.toFixed(1)).join(' to ') + ' m, a wall ' + z.s.wall.toFixed(1) + ' m, a bridge rail ' + z.s.bridge[1].toFixed(1) + ' m');
-        ok(z.sky && z.cloud > 0 && !z.ar.sky && z.ar.st.draws < z.st.draws, 'clouds over it: a sky on a screen and their shade on the ground (' + z.cloud + '); in the headset no sky, and fewer trees once it has eased (' + z.ar.st.draws + ' draws against ' + z.st.draws + ')'); }
-      const taken = new Set(G.newGame(id).units.map(u => u.x + ',' + u.y)), tile = (() => { for (let y = m.rows - 1; y >= 0; y--) for (let x = 0; x < m.cols; x++) if (m.tiles[y][x] === 'f' && !taken.has(x + ',' + y) && G.MAPS[id].high[y][x] >= (G.MAPS[id].high[Math.min(m.rows - 1, y + 1)][x])) return { x, y }; })();   // the forest tile nearest the seat with nobody on it and nothing higher in front
-      const at = await L.evaluate(t => { const T = window.__t, p = T.V(t.x - (T.field.cols - 1) / 2, T.field.yAt(t.x, t.y), t.y - (T.field.rows - 1) / 2); p.project(T.camera); return { x: (p.x + 1) / 2 * innerWidth, y: (1 - p.y) / 2 * innerHeight }; }, tile);
-      await L.mouse.click(at.x, at.y); await soon(L, () => /^Forest/.test(document.getElementById('info').textContent));
-      ok(/^Forest/.test(await L.textContent('#info')), 'a real click on a forest tile there says what the ground is: ' + (await L.textContent('#info')).slice(0, 60));
-      const u = (await st(L)).units.find(u => u.owner === 0 && u.type === 'strider'); await tap(L, { kind: 'unit', id: u.id });
-      const marks = await L.evaluate(() => { const T = window.__t, G = T.G, s = T.state, u = s.units.find(u => u.id === T.selected); return { n: G.reachable(s, u).length, solid: G.reachable(s, u).filter(p => G.ground(s, p.x, p.y).solid).length }; });
-      ok(marks.n > 4 && marks.solid === 0, 'the rogue\'s moves are marked over the ground (' + marks.n + ' tiles, none of them water or rock)');
-      await shot(L, 'map-' + id); await tap(L, null); }
-    // the three worlds on the page: each built from its data with its own sheet, sky, lamps and air, at a cost near the other maps', less in the headset
-    { const S = (await import(pathToFileURL(path.join(ROOT, 'src/chess/scale.js')))).SIZES, inside = (v, r) => v && v[0] >= r[0] - 0.01 && v[1] <= r[1] + 0.01;
-      const WANT = { deep: { tile: { x: 9, y: 9 }, says: /^Giant fungus/, sheet: 'water', sky: false, air: 1, check: z => inside(z.world.crystal, S.crystal.tall) && inside(z.world.stalagmite, S.stalagmite.tall) && inside(z.tree, [S.tree.puffcap.tall[0], S.tree.fungus.tall[1]]) && z.tree[1] < 2.4 * z.figure && z.cloud === 0 },
-        rime: { tile: { x: 2, y: 6 }, says: /^Ice/, sheet: 'ice', sky: true, air: 1, check: z => inside(z.tree, S.tree.fir.tall) && inside(z.world.banner, [S.banner.tall, S.banner.tall]) && z.cloud > 0 },
-        scar: { tile: { x: 5, y: 5 }, says: /^Steam vent/, sheet: 'lava', sky: true, air: 2, check: z => inside(z.world.column, S.column.tall) && inside(z.tree, S.tree.snag.tall) && z.world.rib[1] > z.figure && z.cloud > 0 } };
-      for (const [id, w] of Object.entries(WANT)) { const m = G.MAPS[id];
-        await L.goto(BASE + '/chess?show=' + id, { waitUntil: 'commit', timeout: 120000 }); await until(L, () => !!window.__t && !!window.__t.field && window.__t.field.land);
-        await until(L, () => window.__t.field.stats().draws > 18, null, 120000); await nap(3000);
-        const f = await L.evaluate(() => { const T = window.__t, F = T.field; let off = 0, air = 0; T.scene.traverse(o => { const p = o.userData && o.userData.pick; if (p && p.kind === 'unit') { const u = T.state.units.find(u => u.id === p.id); if (u && Math.abs(o.userData.target.y - F.yAt(u.x, u.y)) > 1e-6) off++; } }); F.group.traverse(o => { if (o.isPoints && o.userData.n) air++; });
-          F.setDetail(true, false, 0); const hi = F.stats(); F.setDetail(false, false, 0); const lo = F.stats(); F.setDetail(false, true, 2); const ar = F.stats(), arLamps = F.lights.filter(l => l.visible).length, arSky = !!(F.sky && F.sky.visible); F.setDetail(localStorage.getItem('quality') !== 'low', false, 0);
-          return { id: F.id, off, air, hi, lo, ar, arLamps, arSky, lamps: F.lights.length, sky: !!(F.sky && F.sky.visible), sheet: F.sheet, z: F.sizes(), bg: !!T.scene.background, ice: [F.yAt(5, 6), F.yAt(0, 5), F.yAt(5, 3)] }; });
-        ok(f.id === id && f.off === 0 && f.bg && f.sheet === w.sheet && f.sky === w.sky && f.air === w.air && f.lamps >= 2 && f.lamps <= 3 && f.arLamps <= 2 && !f.arSky, m.name + ' is built from its data: every piece on its own tile\'s ground, a sheet of ' + f.sheet + ', ' + (f.sky ? 'its own sky' : 'no sky') + ', ' + f.lamps + ' lamps, ' + f.air + ' kind(s) of thing in the air');
-        ok(f.hi.draws <= 45 && f.hi.tris > 20000 && f.hi.tris < 190000 && f.lo.tris <= f.hi.tris && f.ar.tris < f.lo.tris && f.ar.draws <= f.lo.draws, 'its cost: ' + f.hi.draws + ' draws and ' + f.hi.tris + ' triangles on high, ' + f.lo.draws + ' and ' + f.lo.tris + ' on low, ' + f.ar.draws + ' and ' + f.ar.tris + ' in the eased headset');
-        ok(f.z.figure === 1.8 && w.check(f.z), 'its things are the size the scale table gives them: ' + JSON.stringify(Object.fromEntries(Object.entries({ tree: f.z.tree, ...f.z.world }).map(([k, v]) => [k, v.map(n => +n.toFixed(1)).join('-')]))));
-        if (id === 'rime') ok(Math.abs(f.ice[0] - f.ice[1]) < 1e-6 && f.ice[2] > f.ice[0], 'a piece on the ice stands on the ice, level all along the river and below the bank');
-        const at = await L.evaluate(t => { const T = window.__t, p = T.V(t.x - (T.field.cols - 1) / 2, T.field.yAt(t.x, t.y), t.y - (T.field.rows - 1) / 2); p.project(T.camera); return { x: (p.x + 1) / 2 * innerWidth, y: (1 - p.y) / 2 * innerHeight }; }, w.tile);
-        await L.mouse.click(at.x, at.y); await soon(L, re => new RegExp(re).test(document.getElementById('info').textContent), w.says.source);
-        ok(w.says.test(await L.textContent('#info')), 'a real click on its ground says what it is: ' + (await L.textContent('#info')).slice(0, 70));
-        await shot(L, 'world-' + id); await tap(L, null); } }
-    await L.evaluate(() => window.__t.show('board')); ok(await L.evaluate(() => !window.__t.field.land && !window.__t.field.sky && window.__t.cloud === 0), 'the plain board has no sky and no shade of cloud');
-    await L.goto(BASE + '/chess', { waitUntil: 'commit', timeout: 120000 }); await until(L, () => !!window.__t && document.getElementById('mapSel').options.length >= 4);
-    await L.selectOption('#mapSel', 'pass'); await L.evaluate(() => document.getElementById('createBtn').click());
-    ok(await until(L, () => window.__t.state && window.__t.state.map === 'pass' && window.__t.field && window.__t.field.id === 'pass') && /crags/.test(await L.textContent('#mapInfo')), 'the host picks the map on the menu: Greywether Pass is the one the room is made on');
-    await L.evaluate(() => document.getElementById('helpBtn').click()); ok(/Forest/.test(await L.textContent('#rules')) && /High ground/.test(await L.textContent('#rules')), 'GROUND RULES lists what each ground does');
-    ok(errs.length === n0, 'no page errors on the landscaped maps' + (errs.length > n0 ? ': ' + errs.slice(n0, n0 + 4).join(' | ') : '')); await L.context().close(); }
+  // ---- only the board is offered: the menu, a link to a level that is set aside, the board as one mesh ----
+  { const n0 = errs.length, L = await open(), asked = []; cur = null; L.on('request', r => asked.push(r.url()));
+    await L.goto(BASE + '/chess', { waitUntil: 'commit', timeout: 120000 }); await until(L, () => !!window.__t && !!document.getElementById('createBtn'));
+    ok((await L.locator('#mapSel option').count()) === 1 && !(await L.isVisible('#mapSel')) && (await fetch(BASE + '/chess-assets/land/tex/grass_d.jpg')).status === 404 && (await fetch(BASE + '/chess-assets/characters/animations.glb')).status === 404, 'the menu offers one battlefield, the board: nothing to choose, and the levels\' files and the unthinned people are not on the website');
+    await L.goto(BASE + '/chess?show=river', { waitUntil: 'commit', timeout: 120000 }); await until(L, () => !!window.__t && !!window.__t.field && window.__t.unitsReady, null, 180000);
+    const f = await L.evaluate(() => { const T = window.__t; let tiles = 0, flick = 0; T.field.group.traverse(o => { if (o.isMesh && o.material.visible !== false) tiles++; if (o.isLight) flick++; });
+      return { id: T.field.id, map: T.state.map, cols: T.field.cols, help: document.getElementById('helpBtn').hidden, meshes: tiles, lights: flick, unlit: T.field.slab.material.type, mips: T.field.slab.material.map.generateMipmaps, an: T.field.slab.material.map.anisotropy }; });
+    ok(f.id === 'board' && f.map === 'board' && f.cols === 9 && f.help && !asked.some(u => /\/land\//.test(u)), 'a link to a landscaped map shows the board, and nothing of the levels is fetched (' + asked.filter(u => /chess-assets/.test(u)).length + ' files in all)');
+    ok(f.meshes <= 3 && f.lights === 0 && f.unlit === 'MeshBasicMaterial' && f.mips && f.an >= 1, 'the board, its frame and its four braziers are one mesh under one painted picture, unlit, with its glow and its marks a sheet each (' + f.meshes + ' meshes, no lamp)');
+    const kn = (await st(L)).units.find(u => u.owner === 0 && u.type === 'bulwark'); await tap(L, { kind: 'unit', id: kn.id });
+    const marks = await L.evaluate(() => ({ n: window.__t.field.marks.size, sheet: window.__t.field.sheet.visible }));
+    const at = await L.evaluate(() => { const T = window.__t, p = T.V(0 - (T.field.cols - 1) / 2, 0, 4 - (T.field.rows - 1) / 2); p.project(T.camera); return { x: (p.x + 1) / 2 * innerWidth, y: (1 - p.y) / 2 * innerHeight }; });
+    await L.mouse.click(at.x, at.y); const aimed = await soon(L, () => window.__t.field.aimed === 4 * 9 && window.__t.selected === null);
+    ok(marks.n > 4 && marks.sheet && aimed, 'a picked knight\'s moves are marked on the one sheet (' + marks.n + ' tiles), and a real click on an empty tile finds that tile');
+    await shot(L, 'board'); await tap(L, null);
+    ok(errs.length === n0, 'no page errors on the board' + (errs.length > n0 ? ': ' + errs.slice(n0, n0 + 4).join(' | ') : '')); await L.context().close(); }
 
   // ---- the campaign on the page: the overland map, a banner a battle, a battle against the computer, back to the map ----
   { const n0 = errs.length, C = await open(), N = CAMP.CAMPAIGN.nodes.length; cur = null;
     await C.goto(BASE + '/chess', { waitUntil: 'commit', timeout: 120000 }); await until(C, () => !!window.__t && !!document.getElementById('campBtn'));
     ok((await C.locator('#levelSel option').count()) === 2 && /Cold Beacon/.test(await C.textContent('#campBtn')), 'the menu offers a match against the computer at two levels, and the campaign');
     await C.evaluate(() => document.getElementById('campBtn').click());
-    ok(await until(C, () => window.__t.overland && window.__t.field && window.__t.field.id === '@camp' && window.__t.field.stats().draws > 20, null, 120000) && (await C.evaluate(() => { let n = 0; window.__t.scene.traverse(o => { if (o.userData && o.userData.pick && o.userData.pick.kind === 'node') n++; }); return n; })) === N && /0 of/.test(await C.textContent('#status')), 'CAMPAIGN lays the overland map on the table with a banner at each of its ' + N + ' battles');
-    const at = await C.evaluate(() => { const T = window.__t; let g = null; T.scene.traverse(o => { if (o.userData && o.userData.pick && o.userData.pick.kind === 'node' && o.userData.pick.id === 'toll') g = o; }); const p = g.getWorldPosition(T.V(0, 0, 0)); p.y += 0.06; p.project(T.camera); return { x: (p.x + 1) / 2 * innerWidth, y: (1 - p.y) / 2 * innerHeight }; });
-    await C.mouse.click(at.x, at.y); const picked = await soon(C, () => window.__t.campSel === 'toll');
-    ok(picked && /Toll at Millford/.test(await C.textContent('#campName')) && /28 points/.test(await C.textContent('#campPts')) && /Knight/.test(await C.textContent('#campFoe')) && !(await C.isDisabled('#fightBtn')), 'a real click on a banner tells the battle there: its words, who stands against you, the points you field');
+    ok(await until(C, () => window.__t.inCamp && window.__t.field && window.__t.field.id === 'board' && window.__t.unitMeshes.size === 0, null, 120000) && (await C.locator('#campList button').count()) === N && /0 of/.test(await C.textContent('#status')), 'CAMPAIGN lists its ' + N + ' battles beside the plain board');
+    await C.click('#campList button[data-id="toll"]'); const picked = await soon(C, () => window.__t.campSel === 'toll');
+    const listed = await C.evaluate(() => [...document.querySelectorAll('#campList button')].map(b => b.className).join());
+    ok(picked && /sel/.test(listed.split(',')[0]) && listed.split('shut').length === 6 && /Toll at Millford/.test(await C.textContent('#campName')) && /28 points/.test(await C.textContent('#campPts')) && /Knight/.test(await C.textContent('#campFoe')) && !(await C.isDisabled('#fightBtn')), 'a click on a battle in the list tells it (the rest are shown as not open yet): its words, who stands against you, the points you field');
     await tap(C, { kind: 'node', id: 'beacon' }); const shut = (await C.isDisabled('#fightBtn')) && /Not open yet/.test(await C.textContent('#campPts')); await shot(C, 'campaign'); await tap(C, { kind: 'node', id: 'toll' });
     await C.evaluate(() => document.getElementById('fightBtn').click());
-    ok(shut && await until(C, () => window.__t.state && window.__t.state.map === 'river' && window.__t.state.phase === 'setup' && window.__t.campNode === 'toll' && window.__t.me === 0) && (await st(C)).budget === 28 && /\/ 28 points/.test(await C.textContent('#budget')), 'a battle not yet open cannot be fought; FIGHT opens the first on its own field, to set out under the campaign\'s points');
+    ok(shut && await until(C, () => window.__t.state && window.__t.state.map === 'board' && window.__t.state.phase === 'setup' && window.__t.campNode === 'toll' && window.__t.me === 0) && (await st(C)).budget === 28 && /\/ 28 points/.test(await C.textContent('#budget')), 'a battle not yet open cannot be fought; FIGHT opens the first on the board, to set out under the campaign\'s points');
     await C.evaluate(() => document.getElementById('readyBtn').click()); await until(C, () => window.__t.state.phase === 'play' && window.__t.state.units.length > 10);
     const foes = (await st(C)).units.filter(u => u.owner === 1).length; await tap(C, { kind: 'end' });
     ok(foes === CAMP.nodeOf('toll').enemy.length && await soon(C, () => window.__t.state.turn === 0 && window.__t.state.turnNo >= 3, null, 40000) && /^Your turn$/.test(await C.textContent('#status')), 'READY starts the battle against the enemy as written (' + foes + '); the computer takes its turn and gives yours back, with no clock');
@@ -454,7 +419,7 @@ let halt = () => {};
     const won = me.state.winner === 0; me.s.close();
     ok(me.state.winner !== null && await soon(C, () => !document.getElementById('after').hidden, null, 40000) && (won ? /won/ : /lost/).test(await C.textContent('#afterTitle')), 'the battle is fought to its end (' + (won ? 'won' : 'lost') + ' in ' + me.state.turnNo + ' turns), and the page says how it went');
     await C.evaluate(() => document.getElementById('afterBtn').click());
-    ok(await until(C, () => window.__t.overland && window.__t.field.id === '@camp') && (await C.evaluate(() => window.__t.camp.done.join())) === (won ? 'toll' : '') && (await C.evaluate(() => window.__t.CAMPAIGN && JSON.parse(localStorage.getItem('chess-camp') || '{"done":[]}').done.join())) === (won ? 'toll' : ''), 'BACK TO THE MAP: ' + (won ? 'the battle is marked won, kept in the browser for anyone not signed in, and the next ones are open' : 'nothing is won, and the battle can be tried again'));
+    ok(await until(C, () => window.__t.inCamp && window.__t.field.id === 'board') && (await C.evaluate(() => window.__t.camp.done.join())) === (won ? 'toll' : '') && (await C.evaluate(() => window.__t.CAMPAIGN && JSON.parse(localStorage.getItem('chess-camp') || '{"done":[]}').done.join())) === (won ? 'toll' : ''), 'BACK TO THE CAMPAIGN: ' + (won ? 'the battle is marked won, kept in the browser for anyone not signed in, and the next ones are open' : 'nothing is won, and the battle can be tried again'));
     ok(errs.length === n0, 'no page errors in the campaign' + (errs.length > n0 ? ': ' + errs.slice(n0, n0 + 4).join(' | ') : '')); await C.context().close(); }
 
   // ---- upgrades on the page: the trees, a point spent, the upgraded unit on the table against the computer, none in a fair duel ----
@@ -506,21 +471,21 @@ let halt = () => {};
     // smooth in the headset: under a head sweep the board stays where it is in the room, drawn from that frame's own head pose, and a label keeps to its piece
     { const r = await Q.evaluate(async () => { const T = window.__t, w = window.__w, V = () => T.V(0, 0, 0); let g = null; T.scene.traverse(o => { if (!g && o.userData && o.userData.pick && o.userData.pick.kind === 'unit') g = o; });
         const eyes = () => { const e = T.renderer.xr.getCamera().cameras; return V().setFromMatrixPosition(e[0].matrixWorld).add(V().setFromMatrixPosition(e[1].matrixWorld)).multiplyScalar(0.5); };   // midway between the two eyes as drawn
-        const see = () => ({ cam: eyes().distanceTo(xrDevice.position), w: w.getWorldPosition(V()), l: g.userData.label.getWorldPosition(V()).sub(g.getWorldPosition(V())) });
+        const see = () => ({ cam: eyes().distanceTo(xrDevice.position), w: w.getWorldPosition(V()), l: (() => { const s = T.labels.slots.get(g.userData.pick.id), q = T.labels.pos, o = s.i * 24, c = V(); for (let k = 0; k < 4; k++) c.add(V().fromArray(q, o + k * 3)); return T.labels.mesh.localToWorld(c.multiplyScalar(0.25)).sub(g.getWorldPosition(V())); })() });
         const a = await window.__drawn(see); let cam = a.cam, drift = 0, lab = 0;
         for (let i = 1; i <= 12; i++) { xrDevice.position.set(0.3 * Math.sin(i * 0.2), 1.6 + 0.05 * Math.sin(i * 0.3), 0.1 * Math.sin(i * 0.15)); const b = await window.__drawn(see); cam = Math.max(cam, b.cam); drift = Math.max(drift, b.w.distanceTo(a.w)); lab = Math.max(lab, b.l.distanceTo(a.l)); }
         xrDevice.position.set(0, 1.6, 0); await window.__drawn(); return { cam: cam * 1000, drift: drift * 1000, lab: lab * 1000 }; });
-      ok(r.cam < 0.01 && r.drift < 0.01 && r.lab < 0.01, 'a head sweep of 30 cm: each frame is drawn from its own head pose, the board does not move in the room, a label keeps to its piece (mm: ' + JSON.stringify(r) + ')'); }
+      ok(r.cam < 0.01 && r.drift < 0.01 && r.lab < 0.01, 'a head sweep of 30 cm: each frame is drawn from its own head pose, the board does not move in the room, the bar over a piece keeps to it (mm: ' + JSON.stringify(r) + ')'); }
     await Q.evaluate(() => xrDevice.controllers.right.updateButtonValue('squeeze', 1)); await Q.waitForTimeout(3000); await Q.evaluate(() => { const c = xrDevice.controllers.right; c.position.set(c.position.x + 0.2, c.position.y, c.position.z); }); await until(Q, x => { const w = window.__t.scene.children.find(o => o.isGroup && o.children.length > 3); return Math.abs(w.position.x - x - 0.2) < 0.03; }, bd.x, 20000);
     const moved = await board(); await Q.evaluate(() => xrDevice.controllers.right.updateButtonValue('squeeze', 0));
     ok(Math.abs(moved.x - bd.x - 0.2) < 0.03, 'holding the grip drags the board with the hand');
-    { const slip = await Q.evaluate(async () => { const T = window.__t, w = window.__w, V = () => T.V(0, 0, 0), c = xrDevice.controllers.right, hands = T.scene.children.filter(o => o.isGroup && o.children.some(k => k.isLine));
+    { const slip = await Q.evaluate(async () => { const T = window.__t, w = window.__w, V = () => T.V(0, 0, 0), c = xrDevice.controllers.right, hands = T.scene.children.filter(o => o.isGroup && o.userData.hand);
         const rel = () => w.getWorldPosition(V()).x - hands.map(h => h.getWorldPosition(V())).sort((a, b) => a.distanceTo(c.position) - b.distanceTo(c.position))[0].x;   // the board from the hand as drawn
         c.updateButtonValue('squeeze', 1); for (let i = 0; i < 5; i++) await window.__drawn(); const r0 = await window.__drawn(rel); let slip = 0;
         for (let i = 0; i < 8; i++) { c.position.set(c.position.x + 0.002, c.position.y, c.position.z); slip = Math.max(slip, Math.abs(await window.__drawn(rel) - r0)); }
         c.updateButtonValue('squeeze', 0); await window.__drawn(); return slip * 1000; });
       ok(slip < 0.05, 'dragged smoothly (2 mm a frame) the board is drawn with the hand in the same frame, not one behind (' + slip.toFixed(3) + ' mm apart)'); }
-    ok(await until(Q, () => window.__t.lean === 2 && !window.__t.sun.castShadow, null, 120000), 'a headset whose frames run late is eased: a lower frame rate where it has one, then no shadows');
+    ok(await until(Q, () => window.__t.lean === 2 && !window.__t.sun.castShadow, null, 120000), 'a headset whose frames run late is eased: a lower frame rate where it has one, then coarser edges of the view; there is no shadow to drop');
     if (OUT) await Q.screenshot({ path: path.join(OUT, 'quest3-ar.png'), timeout: 180000 }).catch(() => {});
     await Q.evaluate(() => window.__t.renderer.xr.getSession().end()); ok(await until(Q, () => !window.__t.renderer.xr.isPresenting && window.__t.scene.background !== null), 'leaving AR puts the table and its hall back');
     // smooth on the screen too: a piece on its way moves by the frame's own time, so equal frames are equal steps
@@ -533,5 +498,28 @@ let halt = () => {};
         const q = []; for (let i = 4; i < xs.length; i++) q.push((x0 + 3 - xs[i]) / (x0 + 3 - xs[i - 1])); return { lo: Math.min(...q), hi: Math.max(...q), want: Math.exp(-7 / 90) }; });
       ok(Math.abs(r.lo - r.want) < 1e-6 && Math.abs(r.hi - r.want) < 1e-6, 'a walking piece steps by the frame\'s own time: over equal frames every step is the same share of the way left (' + r.lo.toFixed(6) + ' to ' + r.hi.toFixed(6) + ', ' + r.want.toFixed(6) + ' wanted)'); }
     ok(errs.length === n0, 'no page errors in the headset' + (errs.length > n0 ? ': ' + errs.slice(n0, n0 + 4).join(' | ') : '')); foe.s.close(); }
+  // ---- what the board costs to draw in the headset, with twelve a side: the budget, no shadow pass, nothing that varies ----
+  { const n0 = errs.length, F = await open(IWER + ';window.xrDevice=new IWER.XRDevice(IWER.metaQuest3);xrDevice.installRuntime({forceInstall:true});xrDevice.position.set(0,1.6,0);'); cur = null;
+    await F.goto(BASE + '/chess?show=board&full=1', { waitUntil: 'commit', timeout: 120000 }); await until(F, () => !!window.__t && !!window.__t.field && window.__t.unitsReady, null, 180000);
+    await until(F, () => !document.getElementById('arBtn').hidden, null, 20000); await F.evaluate(() => document.getElementById('arBtn').click());
+    await until(F, () => window.__t.renderer.xr.isPresenting && window.__t.world.position.z < -0.3, null, 30000);
+    const m = await F.evaluate(async () => { const T = window.__t, R = T.renderer, I = R.info, draw = R.render; let after = null; R.render = (s, c) => { draw.call(R, s, c); const f = after; if (f) f(); };
+      const drawn = fn => new Promise(res => { after = () => { after = null; res(fn()); }; });
+      const cost = () => { let skinned = 0, lights = 0, casting = 0; T.scene.traverse(o => { let v = true; for (let q = o; q; q = q.parent) if (!q.visible) v = false; if (!v) return; if (o.isSkinnedMesh) skinned++; if (o.isLight) { lights++; if (o.castShadow) casting++; } }); return { calls: I.render.calls, tris: I.render.triangles, skinned, lights, casting }; };
+      const look = () => { const a = []; T.scene.traverse(o => { if (o.isLight) a.push(o.intensity, o.color.getHex()); }); T.field.group.traverse(o => { if (o.isMesh && o.material.visible !== false) { a.push(o.material.opacity, o.material.color.getHex(), o.matrixWorld.elements.join()); const p = o.geometry.attributes.position; a.push(p.version, p.array[0], p.array[p.array.length - 1]); if (o.material.map) a.push(o.material.map.version); } }); return a.join('|'); };
+      for (let i = 0; i < 8; i++) await drawn(() => 0);
+      const rest = await drawn(cost), seen = new Set(); for (let i = 0; i < 14; i++) seen.add(await drawn(look));
+      const u = T.state.units.find(u => u.owner === 0 && u.type === 'strider'), g = T.unitMeshes.get(u.id); g.userData.target.z -= 3; let walk = null;
+      for (let i = 0; i < 40 && !(walk && walk.skinned); i++) walk = await drawn(cost);
+      const ember = T.state.units.find(u => u.owner === 0 && u.type === 'ember'), eg = T.unitMeshes.get(ember.id); T.castFx('blast', eg, eg.position.clone(), T.V(0, 0, -1)); let spell = { calls: 0 };
+      for (let i = 0; i < 30; i++) { const c = await drawn(cost); if (c.calls > spell.calls) spell = c; }
+      return { rest, walk, spell, steady: seen.size, units: T.state.units.length, fov: R.xr.getFoveation(), map: !!T.sun.shadow.map, tone: R.toneMapping, eyes: R.xr.getCamera().cameras.length }; });
+    ok(m.units === 24 && m.eyes === 2 && m.rest.calls < 60 && m.rest.tris < 150000 && m.rest.skinned === 0, 'twelve a side at rest in the headset, both eyes: ' + m.rest.calls + ' draws and ' + m.rest.tris + ' triangles a frame (under 60 and 150,000), no piece with bones');
+    ok(m.rest.lights === 2 && m.rest.casting === 0 && !m.map && m.walk.casting === 0, 'one sun and the sky\'s fill, and no shadow pass: no light casts, no shadow map was ever made');
+    ok(m.steady === 1, 'nothing in the fire or the light varies from frame to frame: the lights, the board, its glow and its marks are the same over fourteen frames');
+    ok(m.walk && m.walk.skinned === 1 && m.walk.calls < 60 && m.spell.calls < 60 && m.spell.casting === 0, 'only the piece that walks has bones (' + m.walk.calls + ' draws then), and a fire burst at its fullest is ' + m.spell.calls + ' draws');
+    ok(m.fov > 0 && m.tone === 0, 'the view\'s edges are drawn coarser (fixed foveation ' + m.fov + '), with no tone curve or post pass over the picture');
+    if (OUT) await F.screenshot({ path: path.join(OUT, 'quest3-full.png'), timeout: 180000 }).catch(() => {});
+    ok(errs.length === n0, 'no page errors measuring the headset' + (errs.length > n0 ? ': ' + errs.slice(n0, n0 + 4).join(' | ') : '')); await F.context().close(); }
   await done(b);
 })().catch(e => { console.log('FAIL the check itself broke: ' + (e && e.stack || e)); halt(); process.exit(1); });

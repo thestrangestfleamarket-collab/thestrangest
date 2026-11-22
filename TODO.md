@@ -395,4 +395,5 @@ Last (owner, 7 Nov 2026: "we will do VR checks last"): every check and look line
 
 ## SKIRMISH TABLE (`/chess`)
 
+- **P3** SKIRMISH TABLE as rebuilt on 22 Nov 2026 (the board only, baked, pieces at rest without bones) has not been seen in a real Quest 3: the frame rate in passthrough, whether the bars and names read well at half a metre, the embers' glow against a bright room, fixed foveation at 0.7, and the grip's thumbstick sizing the table are still to be tried by a person. The levels are in `archive/chess-levels/` until the owner asks for one back.
 - **P3** SKIRMISH TABLE has never been run on a real Quest 3 since its maps, teams, campaign and upgrades (21 Nov 2026): frame rate in passthrough on each landscaped map, the table's buttons by ray and pinch, and every sound, are still to be tried by a person. The three worlds (22 Nov 2026: Glimmerdeep, the Rimewater, Cinderscar) the same, and their sounds have never been heard. YOUR UNITS has no panel in the headset (it is on the screen's menu).

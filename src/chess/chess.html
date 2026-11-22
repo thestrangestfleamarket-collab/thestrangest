@@ -46,11 +46,16 @@
   #readyBtn { width: 100%; margin-top: 8px; background: #2f8f4a; }
   #readyBtn.danger { background: #8a2f2f; }
   #setupMsg { color: #ff9c8a; min-height: 1.3em; margin-top: 6px; font-size: 13px; }
-  #camp { position: fixed; left: 12px; top: 64px; width: 300px; z-index: 3; background: #1d2129ee; border: 1px solid #2c323c; border-radius: 12px; padding: 14px; }
+  #camp { position: fixed; left: 12px; top: 64px; width: 320px; max-height: calc(100% - 110px); overflow: auto; z-index: 3; background: #1d2129ee; border: 1px solid #2c323c; border-radius: 12px; padding: 14px; }
   #camp[hidden], #after[hidden] { display: none; }
   #camp h2 { margin: 0 0 6px; font-size: 18px; }
   #camp p { margin: 0 0 8px; color: #cfd4dc; }
   #campPts { color: #ffd66b !important; }
+  #campList { display: flex; flex-direction: column; gap: 6px; margin: 0 0 10px; }
+  #campList .node { text-align: left; padding: 8px 10px; font-size: 14px; background: #33486e; border: 2px solid transparent; }
+  #campList .node.won { background: #2f5a43; }
+  #campList .node.shut { background: #2a2e36; color: #9aa0aa; }
+  #campList .node.sel { border-color: #c9a94e; }
   #camp .row { display: flex; gap: 8px; }
   #camp .row > * { flex: 1; }
   #after { position: fixed; inset: 0; display: flex; align-items: center; justify-content: center; padding: 16px; background: rgba(14, 16, 20, .6); z-index: 9; }
@@ -89,7 +94,7 @@
 <div id="lobby">
   <div class="card">
     <h1>Skirmish Table</h1>
-    <p>Two-player turn-based tactics. Plays on a Quest 3 in mixed reality or in any browser.</p>
+    <p>Two-player turn-based tactics on a stone board. Plays on a Quest 3 in mixed reality or in any browser.</p>
     <div class="row" style="margin-top:0">
       <select id="mapSel" aria-label="Battlefield"></select>
       <button id="createBtn">Create a match</button>
@@ -131,6 +136,7 @@
   <div id="setupMsg"></div>
 </div>
 <div id="camp" hidden>
+  <div id="campList"></div>
   <h2 id="campName"></h2>
   <p id="campText"></p>
   <p id="campFoe"></p>

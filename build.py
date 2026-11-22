@@ -114,6 +114,7 @@ subprocess.run(['node', 'tools/saloon.cjs'], check=True)   # THE LAST CHANCE (sr
 subprocess.run(['node', 'tools/scare.cjs'], check=True)   # VESPER WARD (src/scare/): its own page, dist/scare.html, and its models, dist/scare-assets/
 subprocess.run(['node', 'tools/hide.cjs'], check=True)   # DEAD END (src/hide/): its own page, dist/hide.html, and its pictures, models and sounds, dist/hide-assets/
 subprocess.run(['node', 'tools/zombie.cjs'], check=True)   # EYES DOWN (src/zombie/): its own page, dist/zombie.html, and its pictures and models, dist/zombie-assets/
+subprocess.run(['node', 'tools/drive.cjs'], check=True)   # SAVANO LANE NIGHT DRIVE (src/drive/): its own page, dist/drive.html, and its map, cars, people, surfaces and sounds, dist/drive-assets/
 subprocess.run(['node', 'tools/jam.cjs'], check=True)   # STADIUM JAM (src/jam/): its own page, dist/jam.html, and its avatars, hands and samples, dist/jam-assets/
 subprocess.run(['node', 'tools/drums.cjs'], check=True)   # THE GARAGE (src/drums/): its own page, dist/drums.html, and its recorded kit, models and surfaces, dist/drums-assets/
 subprocess.run(['node', 'tools/sniper.cjs'], check=True)   # COLD BORE (src/sniper/): its own page, dist/sniper.html, and its skies, surfaces, models and sounds, dist/sniper-assets/

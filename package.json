@@ -25,6 +25,7 @@
   },
   "dependencies": {
     "@anthropic-ai/sdk": "1.6.0",
-    "partyserver": "0.5.10"
+    "partyserver": "0.5.10",
+    "three170": "npm:three@0.170.0"
   }
 }

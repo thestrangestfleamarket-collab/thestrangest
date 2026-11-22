@@ -30,6 +30,7 @@ const G = {
   fleet: ['space.html?sim&fx&watch&fast=3', async pg => { await till(pg, () => window.__space && __space.G.view.units.size >= 10, 180000); await pg.waitForTimeout(40000);
     await pg.evaluate(() => { const S = __space, u = [...S.G.view.units.values()], m = u.filter(q => q.side === 0).sort((a, b) => b.type - a.type)[0] || u[0]; for (const k of ["g", "mesh", "obj", "root"]) if (S.panel[k] && S.panel[k].isObject3D) S.panel[k].visible = false; S.camera.position.set(m.pos.x + .28, m.pos.y + .14, m.pos.z + .34); S.camera.lookAt(m.pos.x, m.pos.y, m.pos.z); }); }, 1],
   shoot: ['shoot.html', async pg => { await till(pg, () => window.game && game.world); await pg.evaluate(() => document.querySelector('#practice').click()); await pg.evaluate(() => document.querySelector('#desktop').click()); }, 8],
+  qzar: ['qzar.html', async pg => { await till(pg, () => window.__qzar); await pg.evaluate(() => document.querySelector('#start').click()); await till(pg, () => __qzar.state === 'play', 30000); await pg.evaluate(() => { for (const id of ['hud', 'foot', 'banner']) { const e = document.getElementById(id); if (e) e.style.display = 'none'; } }); }, 5],
   duel: ['duel.html?bot&auto&nolock', async pg => { await till(pg, () => window.__duel && __duel.game.phase === 'fight', 120000); await pg.mouse.click(480, 270); }, 3],
 };
 const TYPE = { html: 'text/html', js: 'text/javascript', json: 'application/json', jpg: 'image/jpeg', png: 'image/png', mp3: 'audio/mpeg', mp4: 'video/mp4' };

@@ -1,7 +1,10 @@
-// Sound: recorded one-shots (CC0) plus synthesized whooshes, wind and reverb, all positioned in 3D.
+// Sound: recorded one-shots and a recorded room tone (CC0, docs/chess-sounds.md), a made reverb, all positioned in 3D. (whoosh and crackle are shaped noise: the archived maps' grounds and the braziers.)
 const FILES = ['select', 'end', 'turn', 'win', 'lose', 'heal1', 'heal2', 'step0', 'step1', 'step2', 'step3', 'step4',
   'swing1', 'swing2', 'swing3', 'bow', 'drop', 'flesh0', 'flesh1', 'flesh2', 'armor0', 'armor1', 'armor2',
-  'block0', 'block1', 'block2', 'thud0', 'thud1', 'fall0', 'fall1', 'boom0', 'boom1', 'rumble', 'snare0', 'snare1'];
+  'block0', 'block1', 'block2', 'thud0', 'thud1', 'fall0', 'fall1', 'boom0', 'boom1', 'rumble', 'snare0', 'snare1',
+  'paw0', 'paw1', 'paw2', 'bone0', 'bone1', 'bone2', 'bone3', 'glass0', 'glass1', 'cloth0', 'cloth1', 'drip0', 'drip1', 'drip2', 'woosh0', 'woosh1', 'woosh2', 'woosh3', 'chop', 'punch0', 'punch1', 'scrape',
+  'growl', 'whine', 'roar', 'screech', 'grunt', 'groan', 'wail', 'moan', 'flare', 'burn', 'arrow', 'bodyfall', 'shimmer', 'tone'];
+export const SOUND_FILES = FILES;
 
 export class Sound {
   constructor() {
@@ -9,6 +12,7 @@ export class Sound {
     this.buffers = {};
     this.refDistance = 14;
     this.muted = false;
+    this.heard = null;   // a check sets this to a list: every sound asked for is named in it
     try { this.muted = localStorage.getItem('muted') === '1'; } catch { /* storage blocked */ }
   }
 
@@ -42,11 +46,8 @@ export class Sound {
     this.noise = ctx.createBuffer(1, ctx.sampleRate * 2, ctx.sampleRate);
     const n = this.noise.getChannelData(0);
     for (let i = 0; i < n.length; i++) n[i] = Math.random() * 2 - 1;
-    for (const name of FILES) {
-      fetch(`/chess-assets/sfx/${name}.mp3`).then(r => r.arrayBuffer()).then(b => ctx.decodeAudioData(b))
-        .then(buf => { this.buffers[name] = buf; }).catch(() => {});
-    }
-    this.startWind();
+    this.loaded = Promise.all(FILES.map(name => fetch(`/chess-assets/sfx/${name}.mp3`).then(r => r.arrayBuffer()).then(b => ctx.decodeAudioData(b))
+      .then(buf => { this.buffers[name] = buf; if (name === 'tone') this.startTone(); }).catch(() => {})));
     if (this.want) this.ambience(this.want);
   }
 
@@ -92,6 +93,7 @@ export class Sound {
 
   // name may end in '*' to pick a random numbered variant, e.g. 'flesh*'.
   play(name, { pos = null, vol = 1, rate = 1, delay = 0, send } = {}) {
+    if (this.heard) this.heard.push(name);
     if (!this.ctx) return;
     if (name.endsWith('*')) {
       const opts = Object.keys(this.buffers).filter(k => k.startsWith(name.slice(0, -1)));
@@ -126,20 +128,14 @@ export class Sound {
     src.stop(t + dur + 0.05);
   }
 
-  // Quiet room tone: low rumbling wind that swells slowly, plus the odd fire crackle.
-  startWind() {
-    const ctx = this.ctx, src = ctx.createBufferSource();
-    src.buffer = this.noise; src.loop = true;
-    const lp = ctx.createBiquadFilter();
-    lp.type = 'lowpass'; lp.frequency.value = 260; lp.Q.value = 0.7;
-    this.wind = ctx.createGain();
-    this.wind.gain.value = 0.1;
-    const lfo = ctx.createOscillator(), depth = ctx.createGain();
-    lfo.frequency.value = 0.07; depth.gain.value = 0.05;
-    lfo.connect(depth).connect(this.wind.gain);
-    src.connect(lp).connect(this.wind).connect(this.master);
-    this.wind.connect(this.reverb);
-    src.start(); lfo.start();
+  // The room: a recorded wind, slowed and muffled, low and unplaced, and now and then a drop of water somewhere in it.
+  startTone() {
+    const ctx = this.ctx, src = ctx.createBufferSource(), g = ctx.createGain();
+    src.buffer = this.buffers.tone; src.loop = true; g.gain.value = 0.5;
+    src.connect(g).connect(this.master); g.connect(this.reverb);
+    src.start();
+    const drop = () => { if (ctx.state === 'running' && !document.hidden) this.play('drip*', { vol: 0.35, rate: 0.8 + Math.random() * 0.4, send: 1.2 }); setTimeout(drop, 7000 + Math.random() * 12000); };
+    setTimeout(drop, 5000);
   }
 
   // The map's standing sounds, each at its place in the room (null: silent): a river (shaped noise), birds (a recording), leaves in the wind;

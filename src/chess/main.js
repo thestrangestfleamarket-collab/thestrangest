@@ -10,7 +10,8 @@ import { LEVELS } from './ai.js';
 import { CAMPAIGN, nodeOf, budgetFor, isOpen, finished } from './campaign.js';
 import { FX } from './fx.js';
 import { Sound } from './audio.js';
-import { loadCharacters, makeCharacter, charactersReady, typeReady, typesReady, trisOf, need, Crowd } from './characters.js';
+import { loadCharacters, makeCharacter, charactersReady, typeReady, typesReady, trisOf, sizeOf, clipsOf, need, Crowd } from './characters.js';
+import { stepSound, strikeSound, hitSound, fallSound, shatterSound } from './voices.js';
 
 const $ = id => document.getElementById(id);
 const AR_SCALE = 0.06; // one tile = 6 cm on your real table
@@ -131,7 +132,7 @@ function buildUnit(u) {
 // A piece's bones and clips, made the first time it has to move.
 function rigOf(g) {
   const d = g.userData;
-  if (!d.ch && typeReady(d.type)) { d.ch = makeCharacter(d.type); d.ch.mesh.visible = false; crowd.tint(d.ch.mesh, d.rested); g.add(d.ch.mesh); }
+  if (!d.ch && typeReady(d.type)) { d.ch = makeCharacter(d.type); d.ch.mesh.visible = false; crowd.tint(d.ch.mesh, d.rested, d.owner); g.add(d.ch.mesh); }
   return d.ch;
 }
 
@@ -156,6 +157,7 @@ function syncPools() {
   pools.count = list.length; pools.visible = list.length > 0; pools.instanceMatrix.needsUpdate = true; pools.instanceColor.needsUpdate = true;
 }
 function syncUnits() {
+  if (!state) return;   // a board update that was waiting for its effects can come after the match is left
   const alive = new Set();
   need(state.units.flatMap(u => [u.type, G.TYPES[u.type].summon]).filter(Boolean)).catch(() => {});
   syncPools();
@@ -165,11 +167,11 @@ function syncUnits() {
     if (g && g.userData.type !== u.type) { unitsGroup.remove(g); unitMeshes.delete(u.id); g = null; }
     if (!g) { g = buildUnit(u); unitMeshes.set(u.id, g); unitsGroup.add(g); }
     const d = g.userData, t = G.stats(u), stars = u.up ? Object.keys(u.up).length : 0, rested = u.rec > 0 || u.snare > 0;
-    const tag = [u.snare > 0 ? `snared ${u.snare}` : u.rec > 0 ? `resting ${u.rec}` : '', u.frozen > 0 ? `frozen ${u.frozen}` : '', u.empty ? 'unloaded' : '', u.life > 0 ? `fades in ${u.life}` : ''].filter(Boolean).join(', ');
+    const tag = u.snare > 0 ? `snared ${u.snare}` : u.rec > 0 ? `resting ${u.rec}` : '';
     d.target.set(tx(u.x), ty(u.x, u.y), tz(u.y));
     d.angle = FACE_ANGLE[u.facing]; d.owner = u.owner;
     labels.set(u.id, { name: t.name + (stars ? ' ' + '★'.repeat(Math.min(3, stars)) : ''), hp: u.hp / t.hp, owner: u.owner, tag });
-    if (rested !== d.rested) { d.rested = rested; if (d.ch) crowd.tint(d.ch.mesh, rested); }
+    if (rested !== d.rested) { d.rested = rested; if (d.ch) crowd.tint(d.ch.mesh, rested, d.owner); }
   }
   for (const [id, g] of unitMeshes) {
     if (alive.has(id)) continue;
@@ -221,11 +223,11 @@ const fight3D = makeButton('FIGHT', '#3f8656', -1.3, 'fight'), after3D = makeBut
 fight3D.visible = after3D.visible = false;
 const recenterButton3D = makeButton('RECENTER', '#3d434e', 1.3, 'recenter');
 // Setting out, in the headset: a chip a unit type, then REMOVE, DEFAULT, SAVED (the next saved team) and READY.
-// The unit types are shown a group at a time (the tabs), five chips to a row.
-const GROUP_KEYS = Object.keys(G.GROUPS), typesIn = k => Object.keys(G.TYPES).filter(t => G.TYPES[t].group === k);
+// The unit types are shown a group at a time (the tabs), five chips to a row; the buttons under them sit below the longest group.
+const GROUP_KEYS = Object.keys(G.GROUPS), typesIn = k => G.PICK.filter(t => G.TYPES[t].group === k), CHIP_ROWS = Math.max(...GROUP_KEYS.map(k => Math.ceil(typesIn(k).length / 5)));
 const tabs3D = GROUP_KEYS.map((k, i) => makeButton(G.GROUPS[k].toUpperCase(), '#3d434e', (i - 1.5) * 1.75, { kind: 'page', page: k }, 1.65, 2.2));
 const chips3D = GROUP_KEYS.flatMap(k => typesIn(k).map((type, i, a) => makeButton('', '#3d434e', (i % 5 - (Math.min(5, a.length - Math.floor(i / 5) * 5) - 1) / 2) * 1.4, { kind: 'chip', type }, 1.34, 3.15 + Math.floor(i / 5) * 0.95)));
-const setup3D = [['remove', 'REMOVE'], ['default', 'DEFAULT'], ['saved', 'SAVED'], ['ready', 'READY']].map(([act, text], i) => makeButton(text, '#3d434e', (i - 1.5) * 1.75, { kind: 'setup', act }, 1.65, 5.05));
+const setup3D = [['remove', 'REMOVE'], ['default', 'DEFAULT'], ['saved', 'SAVED'], ['ready', 'READY']].map(([act, text], i) => makeButton(text, '#3d434e', (i - 1.5) * 1.75, { kind: 'setup', act }, 1.65, 3.15 + CHIP_ROWS * 0.95));
 for (const b of tabs3D) b.visible = false;
 // The campaign's battles, in the headset: a button each, two abreast.
 const nodes3D = CAMPAIGN.nodes.map((n, i) => makeButton('', '#3d434e', (i % 2 ? 1.72 : -1.72), { kind: 'node', id: n.id }, 3.3, 2.2 + Math.floor(i / 2) * 0.95));
@@ -279,7 +281,7 @@ const V = (x, y, z) => new THREE.Vector3(x, y, z);
 const up = (v, h) => v.clone().setY(v.y + h); // a point this high above the ground under v
 const worldPos = local => world.localToWorld(local.clone()); // board space -> room space, for 3D audio
 const later = (t, fn) => (t > 0 ? setTimeout(fn, t * 1000) : fn());
-const IMPACT_DELAY = { melee: 0.16, line: 0.18, ranged: 0.4, blast: 0.5, heal: 0.25, snare: 0.3, bolt: 0.3, chain: 0.14, cone: 0.32, flask: 0.5, summon: 0.3, reload: 0 };
+const IMPACT_DELAY = { melee: 0.16, line: 0.18, ranged: 0.4, blast: 0.5, heal: 0.25, snare: 0.3, cone: 0.32, flask: 0.5, summon: 0.3 };
 
 function explode(t) {
   const wp = worldPos(t);
@@ -293,16 +295,14 @@ function explode(t) {
 }
 
 // With animated characters the effect waits for the wind-up of the attack animation.
-const LEAD = { melee: 0.3, line: 0.4, ranged: 0.3, blast: 0.4, heal: 0.35, snare: 0.4, bolt: 0.4, chain: 0.4, cone: 0.35, flask: 0.4, summon: 0.4, reload: 0 };
-const leadTime = (kind, g) => (g && g.userData.ch ? LEAD[kind] || 0 : 0);
-// lightning: one quick pale streak from a point to a point, no flash
-const streak = (from, to) => fx.projectile({ from, to, arc: 0.05, dur: 0.12, tex: 'trace_01', color: 0xcfdcff, size: 0.42, trailTex: 'spark_05', trailColor: 0xb4c6f4, trailSize: 0.2 });
+const LEAD = { melee: 0.3, line: 0.4, ranged: 0.3, blast: 0.4, heal: 0.35, snare: 0.4, cone: 0.35, flask: 0.4, summon: 0.4 };
+const leadTime = (kind, g) => (g && g.userData.ch ? g.userData.ch.lead || LEAD[kind] || 0 : 0);   // each strike's own moment (the bake found where its clip reaches furthest)
 
 function castFx(kind, g, a, t) {
   const dir = t.clone().sub(a).setY(0);
   if (g && dir.lengthSq() > 0) g.userData.angle = Math.atan2(-dir.x, -dir.z);
   const ch = g && rigOf(g);
-  if (ch && kind !== 'reload') ch.once('attack');
+  if (ch) ch.once('attack');
   later(leadTime(kind, g), () => castFxNow(kind, g, a, t));
 }
 
@@ -310,69 +310,44 @@ function castFxNow(kind, g, a, t) {
   const dir = t.clone().sub(a).setY(0);
   if (dir.lengthSq() > 0) dir.normalize();
   const wp = worldPos(a);
+  strikeSound(sound, g ? g.userData.type : '', kind, wp);
   if (kind === 'melee' || kind === 'line') {
     if (g) g.position.addScaledVector(dir, g.userData.ch ? 0.25 : 0.45); // lunge; the unit springs back on its own
-    sound.play('swing*', { pos: wp, vol: 0.9 });
-    sound.whoosh({ pos: wp, dur: 0.18, from: 900, to: 3000, vol: 0.25 });
     if (kind === 'melee') {
       fx.flash({ pos: up(a, 0.7).addScaledVector(dir, 0.7), tex: 'slash_02', color: 0xe8e4da, size: 1.2, life: 0.3, grow: 0.4, rotation: Math.random() * 6.28 });
     } else {
       for (const d of [1, 2]) fx.flash({ pos: up(a, 0.65).addScaledVector(dir, d), tex: 'flare_01', color: 0xdfe4ee, size: 0.9, life: 0.28 + d * 0.05, grow: 0.8 });
     }
   } else if (kind === 'ranged') {
-    sound.play('bow', { pos: wp, vol: 0.8, rate: 1.4 });
-    sound.whoosh({ pos: wp, dur: 0.38, from: 1500, to: 600, vol: 0.3 });
     fx.projectile({ from: up(a, 0.9), to: up(t, 0.6), arc: 1.1, dur: 0.4, tex: 'spark_05', color: 0xf0e4c0, size: 0.35, trailTex: 'circle_05', trailColor: 0xc4cce6, trailSize: 0.12 });
   } else if (kind === 'blast') {
-    sound.whoosh({ pos: wp, dur: 0.5, from: 200, to: 1200, vol: 0.6, q: 0.8 });
     fx.flash({ pos: up(a, 1.1), tex: 'flare_01', color: 0xee8a48, size: 1.1, life: 0.36 });
     fx.projectile({ from: up(a, 1.1), to: up(t, 0.3), arc: 2.2, dur: 0.5, tex: 'fire_01', color: 0xf2a25a, size: 0.75, trailTex: 'flame_05', trailColor: 0xe87c40, trailSize: 0.42, onHit: () => explode(t) });
   } else if (kind === 'heal') {
-    sound.play('heal*', { pos: worldPos(t), vol: 0.8 });
     fx.flash({ pos: up(a, 1.0), tex: 'light_01', color: 0x8fdcaa, size: 1, life: 0.5 });
     later(0.2, () => {
       fx.burst({ pos: up(t, 0.2), tex: 'star_06', color: 0x8fdcaa, count: 8, size: 0.28, life: 1.0, speed: 0.6, up: 2.2, drag: 1, spread: 0.4 });
       fx.flash({ pos: up(t, 0.6), tex: 'twirl_01', color: 0x8fdcaa, size: 1.4, life: 0.9, spin: 1.6 });
     });
-  } else if (kind === 'bolt') {
-    sound.play('snare*', { pos: wp, vol: 0.6, rate: 1.5 });
-    fx.projectile({ from: up(a, 1.1), to: up(t, 0.7), arc: 0.2, dur: 0.3, tex: 'star_06', color: 0xa8dcff, size: 0.45, trailTex: 'circle_05', trailColor: 0x8cc8f0, trailSize: 0.22,
-      onHit: () => {
-        fx.flash({ pos: up(t, 0.6), tex: 'star_06', color: 0xbfe6ff, size: 1.5, life: 0.9, grow: 0.3, opacity: 0.5 });
-        fx.burst({ pos: up(t, 0.5), tex: 'spark_05', color: 0xcfeaff, count: 8, size: 0.22, life: 1.0, speed: 0.9, up: 0.3, drag: 2, spread: 0.4, opacity: 0.6 });
-      } });
-  } else if (kind === 'chain') {
-    sound.whoosh({ pos: wp, dur: 0.25, from: 2400, to: 700, vol: 0.4, q: 1.2 });
-    sound.play('thud*', { pos: worldPos(t), vol: 0.5, rate: 0.7, delay: 0.14 });
-    fx.flash({ pos: up(a, 1.3), tex: 'flare_01', color: 0xbfd0ff, size: 0.9, life: 0.4, opacity: 0.5 });
-    streak(up(a, 1.3), up(t, 0.8));
   } else if (kind === 'cone') {
-    sound.whoosh({ pos: wp, dur: 0.6, from: 300, to: 1100, vol: 0.5, q: 0.7 });
     const side = V(-dir.z, 0, dir.x);
     [t.clone(), a.clone().addScaledVector(dir, 2), a.clone().addScaledVector(dir, 2).add(side), a.clone().addScaledVector(dir, 2).sub(side)].forEach((p, i) => fx.projectile({ from: up(a, 1.1), to: up(p, 0.35), arc: 0.12, dur: 0.3 + i * 0.03, tex: 'fire_01', color: 0xf2a25a, size: 0.6, trailTex: 'flame_05', trailColor: 0xe87c40, trailSize: 0.34,
       onHit: () => fx.burst({ pos: up(p, 0.25), tex: 'fire_01', color: 0xee9058, count: 4, size: 0.6, life: 0.6, speed: 0.8, up: 0.8, drag: 3, grow: 0.6, spread: 0.3, opacity: 0.5 }) }));
   } else if (kind === 'flask') {
-    sound.whoosh({ pos: wp, dur: 0.4, from: 900, to: 500, vol: 0.25 });
     fx.projectile({ from: up(a, 1.2), to: up(t, 0.1), arc: 1.6, dur: 0.5, tex: 'circle_05', color: 0x7ae08a, size: 0.3, trailTex: 'circle_05', trailColor: 0x58c06a, trailSize: 0.1,
       onHit: () => {
-        sound.play('drop', { pos: worldPos(t), vol: 0.5, rate: 1.6 });
+        shatterSound(sound, worldPos(t));
         fx.burst({ pos: up(t, 0.2), tex: 'fire_01', color: 0xee9058, count: 7, size: 0.6, life: 0.7, speed: 1.2, up: 0.8, drag: 3, grow: 0.7, spread: 0.4, opacity: 0.5 });
         fx.burst({ pos: up(t, 0.2), tex: 'smoke_07', color: 0x34302c, count: 3, size: 0.9, life: 1.4, speed: 0.5, up: 1.1, drag: 1, grow: 1, additive: false, opacity: 0.35, spread: 0.5 });
       } });
   } else if (kind === 'summon') {
-    const c = g && g.userData.type === 'necro' ? 0xa8e07a : 0x9adfd6;
-    sound.play('heal*', { pos: worldPos(t), vol: 0.6, rate: 0.7 });
+    const c = 0xa8e07a;
     fx.flash({ pos: up(a, 1.2), tex: 'magic_05', color: c, size: 0.9, life: 0.5 });
     later(0.15, () => {
       fx.flash({ pos: up(t, 0.5), tex: 'twirl_01', color: c, size: 1.8, life: 1.1, spin: 1.4, opacity: 0.6 });
       fx.burst({ pos: up(t, 0.1), tex: 'magic_03', color: c, count: 9, size: 0.3, life: 1.1, speed: 0.5, up: 1.6, drag: 1, spread: 0.4 });
     });
-  } else if (kind === 'reload') {
-    sound.play('select', { pos: wp, vol: 0.5, rate: 0.7 });
-    sound.play('drop', { pos: wp, vol: 0.3, rate: 1.8, delay: 0.2 });
-    if (g) floatText(g.position, 'Reloaded', '#e6e2d8');
   } else if (kind === 'snare') {
-    sound.play('snare*', { pos: worldPos(t), vol: 0.7 });
     fx.projectile({ from: up(a, 1.1), to: up(t, 0.7), arc: 0.4, dur: 0.3, tex: 'magic_05', color: 0xc0a0ea, size: 0.5, trailTex: 'magic_03', trailColor: 0xa684de, trailSize: 0.3,
       onHit: () => {
         fx.flash({ pos: up(t, 0.6), tex: 'twirl_01', color: 0xb294e4, size: 1.7, life: 1.0, spin: -1.8 });
@@ -392,8 +367,8 @@ function hitFx(g, e, kind, a) {
   floatText(p, `-${e.dmg}`, '#e88f80');
   const armored = G.TYPES[g.userData.type].armor > 0;
   if (kind === 'burn') fx.burst({ pos: up(p, 0.3), tex: 'fire_01', color: 0xee9058, count: 4, size: 0.5, life: 0.6, speed: 0.6, up: 0.9, drag: 3, grow: 0.6, spread: 0.3, opacity: 0.5 });
-  if (kind === 'blast' || kind === 'cone' || kind === 'flask' || kind === 'chain' || kind === 'bolt' || kind === 'burn') { sound.play('flesh*', { pos: wp, vol: 0.5 }); return; }
-  sound.play(armored ? 'armor*' : kind === 'ranged' ? 'thud*' : 'flesh*', { pos: wp, vol: 1 });
+  hitSound(sound, g.userData.type, kind, armored, wp);
+  if (kind === 'blast' || kind === 'cone' || kind === 'flask' || kind === 'burn') return;
   fx.flash({ pos: up(p, 0.7), tex: 'spark_05', color: armored ? 0xf0e4c0 : 0xe0705e, size: 0.85, life: 0.28, grow: 0.8 });
   if (armored) fx.burst({ pos: up(p, 0.7), tex: 'spark_01', color: 0xf0d8a4, count: 6, size: 0.16, life: 0.6, speed: 3.5, up: 0.8, gravity: 9, drag: 0.8 });
   else fx.burst({ pos: up(p, 0.7), tex: 'dirt_02', color: 0x9c3a30, count: 5, size: 0.3, life: 0.5, speed: 1.6, up: 0.8, gravity: 6, additive: false, opacity: 0.8 });
@@ -412,8 +387,7 @@ function blockFx(g) {
 function deathFx(g) {
   if (!g) return;
   const p = g.position.clone(), wp = worldPos(p);
-  sound.play('fall*', { pos: wp, vol: 1 });
-  sound.play('drop', { pos: wp, vol: 0.5, delay: 0.25 });
+  fallSound(sound, g.userData.type, wp);
   fx.burst({ pos: up(p, 0.3), tex: 'smoke_04', color: 0x555048, count: 5, size: 0.9, life: 1.4, speed: 0.7, up: 1, drag: 1.5, grow: 1, additive: false, opacity: 0.5, spread: 0.4 });
 }
 
@@ -422,19 +396,24 @@ function deathFx(g) {
 const FOOT = { grass: [0.82, 0.4, 'rustle'], leaves: [0.78, 0.4, 'rustle'], moss: [0.7, 0.3, 'rustle'], dirt: [1, 0.5], wood: [1.3, 0.6, 'thud'], water: [0.7, 0.3, 'splash'],
   snow: [0.7, 0.34, 'crunch'], gravel: [1.05, 0.45, 'crunch'], cinder: [0.95, 0.42, 'crunch'], ice: [1.5, 0.42, 'tick'], stone: [1.22, 0.55, 'tick'], ash: [0.62, 0.26, 'puff'] };
 function moveFx(g, e) {
-  const p = g.position.clone(), wp = worldPos(p), m = G.mapOf(state.map), k = m.tiles ? m.tiles[e.y][e.x] : null, own = m.look && m.look.foot;
+  const p = g.position.clone(), wp = worldPos(p), m = G.mapOf(state.map), k = m.tiles ? m.tiles[e.y][e.x] : null, own = m.look && m.look.foot, d = g.userData;
   const [rate, vol, more] = FOOT[k && ((own && own[k]) || G.TERRAIN[k].foot)] || [1, 0.5];
-  for (let i = 0; i < 3; i++) { const delay = i * 0.13;
-    sound.play('step*', { pos: wp, vol, rate, delay });
+  // it walks there at its own stride's speed (a long way a little quicker, the stride quickened with it), so its feet do not slide
+  d.target.set(tx(e.x), ty(e.x, e.y), tz(e.y));
+  const ch = rigOf(g), far = Math.hypot(p.x - d.target.x, p.z - d.target.z), pace = ch ? ch.pick(far) : 3;
+  d.hurry = Math.min(1.5, Math.max(1, far / pace / 1.5)); d.pace = pace * d.hurry; d.walk = far > 0.05;
+  const secs = far / d.pace, steps = stepSound(sound, d.type, wp, secs, [rate, vol]);
+  for (let i = 0; i < steps; i++) { const delay = (i + 0.3) * secs / steps;
     if (more === 'splash') sound.whoosh({ pos: wp, dur: 0.22, from: 2600, to: 500, vol: 0.22, q: 0.6, delay: delay + 0.03 });
     else if (more === 'rustle') sound.whoosh({ pos: wp, dur: 0.12, from: 5000, to: 2500, vol: 0.05, q: 0.5, delay });
     else if (more === 'thud') sound.play('thud*', { pos: wp, vol: 0.12, rate: 1.5, delay });
     else if (more === 'crunch') sound.whoosh({ pos: wp, dur: 0.16, from: 1500, to: 520, vol: 0.2, q: 0.7, delay: delay + 0.01 });
-    else if (more === 'tick') sound.whoosh({ pos: wp, dur: 0.05, from: 4200, to: 3000, vol: 0.09, q: 2.5, delay });
     else if (more === 'puff') sound.whoosh({ pos: wp, dur: 0.24, from: 520, to: 240, vol: 0.14, q: 0.5, delay });
   }
   fx.burst({ pos: up(p, 0.08), tex: 'dirt_02', color: 0x8a7a66, count: 4, size: 0.4, life: 0.6, speed: 0.6, up: 0.5, drag: 2, grow: 0.8, additive: false, opacity: 0.4, spread: 0.2 });
 }
+// how long until a walking piece is on its tile (seconds)
+const arrives = g => { const d = g && g.userData; if (!d || !d.walk) return 0; return Math.min(3, Math.hypot(g.position.x - d.target.x, g.position.z - d.target.z) / (d.pace || 3)); };
 
 // Starts the effects for one batch of server events. Returns how long (seconds) the board
 // should wait before showing the result (health bars, removed units).
@@ -443,12 +422,8 @@ function playEvents(events) {
   const say = (g, at, text, color) => later(at, () => g && g.parent && floatText(g.position, text, color));
   for (const e of events) {
     const g = unitMeshes.get(e.id);
-    if (e.t === 'brace') { say(g, Math.max(0, impact - 0.2), 'Braced', '#e6e2d8'); const ch = g && rigOf(g); if (ch) ch.once('attack'); }
-    else if (e.t === 'immune') say(g, impact, 'No effect', '#b9bec8');
-    else if (e.t === 'frozen') say(g, impact, 'Frozen', '#a8dcff');
-    else if (e.t === 'arc') { const f = V(tx(e.fx), ty(e.fx, e.fy), tz(e.fy)); impact += 0.16; const at = impact - 0.12; later(at, () => g && g.parent && streak(up(f, 0.8), up(g.position, 0.8))); wait = impact + 0.1; }
+    if (e.t === 'immune') say(g, impact, 'No effect', '#b9bec8');
     else if (e.t === 'summon') wait = Math.max(wait, impact + 0.35);
-    else if (e.t === 'fade') say(g, 0, 'Fades', '#9adfd6');
     else if (e.t === 'rout') later(impact + 0.6, () => floatText(V(0, 0.4, 0), 'Leaderless', '#e6c36c'));
     else if (e.t === 'skip') later(wait + 0.5, () => floatText(V(0, 0.4, 0), 'Turn lost', '#e6c36c'));
     if (e.t === 'move') { if (g) moveFx(g, e); }
@@ -456,8 +431,10 @@ function playEvents(events) {
       kind = e.kind;
       const t = V(tx(e.x), ty(e.x, e.y), tz(e.y));
       a = g ? g.userData.target.clone() : t.clone();
-      castFx(kind, g, a, t);
-      impact = leadTime(kind, g) + IMPACT_DELAY[kind]; wait = impact + 0.1;
+      const lag = arrives(g);   // a piece still walking strikes when it is there
+      if (g) rigOf(g);
+      if (lag) later(lag, () => castFx(kind, g, a, t)); else castFx(kind, g, a, t);
+      impact = lag + leadTime(kind, g) + IMPACT_DELAY[kind]; wait = impact + 0.1;
     }
     else if (e.t === 'hit') later(impact, () => hitFx(g, e, kind, a));
     else if (e.t === 'block') later(impact, () => blockFx(g));
@@ -519,7 +496,7 @@ function refresh() {
   const usable = !setup && sel && G.canUse(state, me, sel);
   if (!usable) aim = false;
   const { moves, hits } = usable ? options(sel) : { moves: [], hits: [] };
-  const heal = sel && (kindly(G.TYPES[sel.type].kind) || sel.empty);
+  const heal = sel && kindly(G.TYPES[sel.type].kind);
   field.clear();
   if (setup && !ready[me] && (held || sel)) for (let y = 0; y < rows; y++) for (let x = 0; x < cols; x++) if (G.inZone(state, me, y) && !G.ground(state, x, y).solid && !G.unitAt(state, x, y)) field.mark(x, y, 'move');
   for (const p of moves) field.mark(p.x, p.y, 'move');
@@ -527,7 +504,7 @@ function refresh() {
   if (sel) field.mark(sel.x, sel.y, 'sel');
   field.flush();
   if (!renderer.xr.isPresenting) field.aim(inspectedTile ? inspectedTile.x : null, inspectedTile && inspectedTile.y);
-  arrowsGroup.visible = !!usable && !(sel.frozen > 0);
+  arrowsGroup.visible = !!usable;
   if (usable) arrowsGroup.position.set(tx(sel.x), ty(sel.x, sel.y), tz(sel.y));
   endButton3D.visible = myTurn();
   drawSetup(setup);
@@ -541,7 +518,7 @@ function refresh() {
   const ht = setup && held && G.TYPES[held];
   $('info').innerHTML = ht ? `<b>${ht.name}</b> - ${ht.cost} points, at most ${ht.limit}: HP ${ht.hp}, power ${ht.pow}, armour ${ht.armor}%, block ${ht.block}%, move ${ht.move}, rest ${ht.rec}. ${ht.info}` : u ? `<b>${G.TYPES[u.type].name}</b> - ${l2.split(': ')[1]}. ${G.TYPES[u.type].info}` : inspectedTile && G.mapOf(state.map).tiles ? l2 :
     setup ? (ready[me] ? 'You are ready. Stand down to change your team.' : 'Pick a unit type, then a tile on your own rows to place it. Tap a placed unit to move or remove it. READY when done.') :
-    (myTurn() ? (usable && GROUND(G.TYPES[sel.type].kind) && !(state.active && state.active.acted) ? (aim ? 'Aiming: tap a marked tile, or tap the unit again to move instead.' : 'Tap the unit again to aim its power at empty ground.') + ' ' : usable && sel.empty ? 'Tap the unit again to reload. ' : '') + 'Pick one of your units, move (blue), act (red), then tap a yellow arrow to choose its facing and end the turn.' : '');
+    (myTurn() ? (usable && GROUND(G.TYPES[sel.type].kind) && !(state.active && state.active.acted) ? (aim ? 'Aiming: tap a marked tile, or tap the unit again to move instead.' : 'Tap the unit again to aim its power at empty ground.') + ' ' : '') + 'Pick one of your units, move (blue), act (red), then tap a yellow arrow to choose its facing and end the turn.' : '');
 }
 
 // What the picked unit may do now. A power that lands on empty ground (a flask, a summons, a breath of fire) shows its empty tiles only while aiming (tap the unit again), or once the unit has moved, so a tile is never both a move and a target.
@@ -647,6 +624,8 @@ async function loadTeams() {
   else { try { const p = JSON.parse(localStorage.getItem('chess-prog')); if (p && typeof p === 'object') prog = { xp: p.xp || {}, ups: G.tidyUps(p.ups, p.xp || {}) }; } catch { /* storage blocked */ }
     try { teams = JSON.parse(localStorage.getItem('chess-teams')) || []; company = JSON.parse(localStorage.getItem('chess-company')) || []; camp = JSON.parse(localStorage.getItem('chess-camp')) || { done: [] }; } catch { teams = []; } }
   if (!Array.isArray(camp.done)) camp = { done: [] };
+  const fit = list => (Array.isArray(list) ? list : []).filter(u => u && G.PICK.includes(u.type));   // a saved unit of a type no longer picked is dropped
+  teams = (Array.isArray(teams) ? teams : []).map(t => ({ ...t, units: fit(t && t.units) })).filter(t => t.name && t.units.length); company = fit(company);
   drawTeams();
   if (inCamp) drawCamp();
 }
@@ -675,9 +654,11 @@ $('teamSel').onchange = () => { const t = teams[+$('teamSel').value]; if ($('tea
 $('saveTeamBtn').onclick = () => { if (saveTeam(prompt('Name this team:', 'My team'))) setupNote = 'Team saved.'; refresh(); };
 $('delTeamBtn').onclick = () => { const i = +$('teamSel').value; if ($('teamSel').value !== '' && teams[i]) { teams.splice(i, 1); keepTeams(); } };
 loadTeams();
+// While the team panel is up on a screen wide enough, the picture is drawn to its right, so the panel covers none of the board.
+function aside() { const w = !$('setup').hidden && innerWidth > 900 ? $('setup').offsetWidth + 24 : 0; if (w) camera.setViewOffset(innerWidth, innerHeight, -w / 2, 0, innerWidth, innerHeight); else if (camera.view) camera.clearViewOffset(); }
 // The setting-out panel (the page's on a screen, the table's in the headset) as the state stands.
 function drawSetup(on) {
-  $('setup').hidden = !on || renderer.xr.isPresenting;
+  $('setup').hidden = !on || renderer.xr.isPresenting; aside();
   for (const b of [...tabs3D, ...setup3D]) b.visible = on;
   for (const b of chips3D) b.visible = on && G.TYPES[b.userData.pick.type].group === page;
   $('copyBtn').hidden = !!solo;
@@ -700,7 +681,7 @@ function drawSetup(on) {
 for (const n of CAMPAIGN.nodes) { const b = document.createElement('button'); b.dataset.id = n.id; b.onclick = () => handlePick({ kind: 'node', id: n.id }); $('campList').appendChild(b); }
 function drawCamp() {
   const n = campSel && nodeOf(campSel), open = n && isOpen(n.id, camp.done), won = n && camp.done.includes(n.id), total = CAMPAIGN.nodes.length, ar = renderer.xr.isPresenting;
-  $('camp').hidden = !inCamp || ar; $('setup').hidden = true;
+  $('camp').hidden = !inCamp || ar; $('setup').hidden = true; aside();
   for (const b of [...chips3D, ...tabs3D, ...setup3D, endButton3D]) b.visible = false;
   fight3D.visible = !!open; arrowsGroup.visible = false;
   CAMPAIGN.nodes.forEach((q, i) => {
@@ -742,8 +723,8 @@ function keepProg() {
 // The upgrade trees: a row a unit type, its level and experience, the upgrades it may take.
 function drawUnits() {
   const box = $('unitRows'); box.innerHTML = '';
-  for (const [type, t] of Object.entries(G.TYPES)) {
-    const xp = prog.xp[type] || 0, lvl = G.levelOf(xp), mine = prog.ups[type] || [], next = G.LEVELS_XP[lvl], row = document.createElement('div');
+  for (const type of Object.keys(G.UPGRADES)) {
+    const t = G.TYPES[type], xp = prog.xp[type] || 0, lvl = G.levelOf(xp), mine = prog.ups[type] || [], next = G.LEVELS_XP[lvl], row = document.createElement('div');
     row.className = 'urow'; row.dataset.type = type;
     row.innerHTML = `<div class="uhead"><b>${t.name}</b> level ${lvl} <span>${next ? xp + ' / ' + next + ' experience' : xp + ' experience (highest level)'}</span> <i>${lvl - mine.length} point${lvl - mine.length === 1 ? '' : 's'} to spend</i></div>`;
     for (const u of G.UPGRADES[type]) {
@@ -922,7 +903,7 @@ function warm() {
   const any = Object.keys(G.TYPES).find(typeReady);
   if (!any) return;
   const ch = makeCharacter(any);
-  for (const rested of [false, true]) { crowd.tint(ch.mesh, rested); renderer.compile(ch.mesh, camera, scene); }
+  for (const owner of [0, 1]) for (const rested of [false, true]) { crowd.tint(ch.mesh, rested, owner); renderer.compile(ch.mesh, camera, scene); }
 }
 
 // In the headset a late frame is a jump in the room (a drawn frame is only turned to follow the head, never moved),
@@ -953,11 +934,17 @@ renderer.setAnimationLoop(time => {
     const d = g.userData, t = d.target, far = Math.hypot(g.position.x - t.x, g.position.z - t.z);
     let a = d.angle - g.rotation.y;
     a = Math.atan2(Math.sin(a), Math.cos(a));
-    if (far > 0.003 || Math.abs(a) > 0.003 || Math.abs(g.scale.x - 1) > 0.003 || Math.abs(g.position.y - t.y) > 0.003) { g.position.lerp(t, k); g.scale.lerp(ONE, k); g.rotation.y += a * k; d.rest = false; crowdDirty = true; }
+    if (d.walk) {   // walking to its tile, facing the way it goes, as fast as its stride covers the ground
+      const step = (d.pace || 3) * dt;
+      if (far <= step || !far) { g.position.x = t.x; g.position.z = t.z; d.walk = false; }
+      else { let w = Math.atan2(-(t.x - g.position.x), -(t.z - g.position.z)) - g.rotation.y; w = Math.atan2(Math.sin(w), Math.cos(w)); g.rotation.y += w * Math.min(1, k * 1.6); g.position.x += (t.x - g.position.x) / far * step; g.position.z += (t.z - g.position.z) / far * step; }
+      g.position.y += (t.y - g.position.y) * k; g.scale.lerp(ONE, k); d.rest = false; crowdDirty = true;
+    }
+    else if (far > 0.003 || Math.abs(a) > 0.003 || Math.abs(g.scale.x - 1) > 0.003 || Math.abs(g.position.y - t.y) > 0.003) { g.position.lerp(t, k); g.scale.lerp(ONE, k); g.rotation.y += a * k; d.rest = false; crowdDirty = true; }
     else if (!d.rest) { d.rest = true; g.position.copy(t); g.scale.copy(ONE); g.rotation.y = d.angle; crowdDirty = true; }
-    const ch = far > 0.12 ? rigOf(g) : d.ch;
+    const ch = d.walk ? rigOf(g) : d.ch;
     if (!ch) continue;
-    ch.setMoving(far > 0.12);
+    ch.setMoving(!!d.walk, d.hurry || 1);
     if (ch.busy) ch.update(dt);
     if (ch.busy !== d.live) { d.live = ch.busy; ch.mesh.visible = d.live; crowdDirty = true; }
   }
@@ -1028,7 +1015,7 @@ addEventListener('resize', () => {
   if (renderer.xr.isPresenting) return;
   camera.aspect = innerWidth / innerHeight;
   camera.updateProjectionMatrix();
-  renderer.setSize(innerWidth, innerHeight);
+  renderer.setSize(innerWidth, innerHeight); aside();
 });
 
 // ---------------------------------------------------------------- network + lobby
@@ -1140,4 +1127,4 @@ function act(player, action, rand) {
 }
 if (new URLSearchParams(location.search).get('camp')) openCampaign();
 if (new URLSearchParams(location.search).get('show')) show(new URLSearchParams(location.search).get('show'), new URLSearchParams(location.search).get('setup'), new URLSearchParams(location.search).get('full'));
-window.__t = { stage, act, need, typesReady, trisOf, get page() { return page; }, get aim() { return aim; }, tabs3D, chips3D, pools, handlePick, show, world, G, drawUnits, get prog() { return prog; }, get openMatch() { return openMatch; }, openCampaign, CAMPAIGN, get camp() { return camp; }, get inCamp() { return inCamp; }, get unitsReady() { return charactersReady() && !crowdDirty && (!state || typesReady(state.units.map(u => u.type))); }, dungeon, crowd, labels, hemi, get arScale() { return arScale; }, unitMeshes, get campSel() { return campSel; }, get solo() { return solo; }, get campNode() { return campNode; }, saveTeam, loadTeam, get teams() { return teams; }, get held() { return held; }, get ready() { return ready; }, get setupSel() { return setupSel; }, get field() { return field; }, castFx, explode, V, camera, controls, fx, sun, renderer, scene, get state() { return state; }, get me() { return me; }, get code() { return code; }, get selected() { return selected; }, get lean() { return lean; } };
+window.__t = { stage, act, need, typesReady, trisOf, sizeOf, clipsOf, sound, rigOf, playEvents, get page() { return page; }, get aim() { return aim; }, tabs3D, chips3D, pools, handlePick, show, world, G, drawUnits, get prog() { return prog; }, get openMatch() { return openMatch; }, openCampaign, CAMPAIGN, get camp() { return camp; }, get inCamp() { return inCamp; }, get unitsReady() { return charactersReady() && !crowdDirty && (!state || typesReady(state.units.map(u => u.type))); }, dungeon, crowd, labels, hemi, get arScale() { return arScale; }, unitMeshes, get campSel() { return campSel; }, get solo() { return solo; }, get campNode() { return campNode; }, saveTeam, loadTeam, get teams() { return teams; }, get held() { return held; }, get ready() { return ready; }, get setupSel() { return setupSel; }, get field() { return field; }, castFx, explode, V, camera, controls, fx, sun, renderer, scene, get state() { return state; }, get me() { return me; }, get code() { return code; }, get selected() { return selected; }, get lean() { return lean; } };

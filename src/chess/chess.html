@@ -31,7 +31,7 @@
   #help h2 { margin: 0 0 10px; font-size: 19px; }
   #help p { color: #a5acb8; margin: 12px 0 0; }
   #rules { line-height: 1.6; }
-  #setup { position: fixed; left: 12px; top: 64px; width: 236px; z-index: 3; background: #1d2129ee; border: 1px solid #2c323c; border-radius: 12px; padding: 12px; max-height: calc(100% - 140px); overflow: auto; }
+  #setup { position: fixed; left: 12px; top: 64px; width: 396px; max-width: calc(100% - 24px); box-sizing: border-box; z-index: 3; background: #1d2129ee; border: 1px solid #2c323c; border-radius: 12px; padding: 12px; max-height: calc(100% - 140px); overflow: auto; }
   #setup[hidden] { display: none; }
   #setup h2 { margin: 0 0 4px; font-size: 17px; }
   #setup .row { display: flex; gap: 6px; margin-top: 6px; }
@@ -39,9 +39,9 @@
   #setup button { padding: 7px 8px; font-size: 14px; }
   #setup select { padding: 7px 8px; font-size: 14px; width: 100%; }
   #budget { color: #ffd66b; font-weight: 600; margin-bottom: 6px; }
-  #roster { display: grid; gap: 4px; }
-  #roster .chip { text-align: left; }
-  #roster h3 { margin: 6px 0 0; font-size: 12px; font-weight: 600; color: #9aa3b2; text-transform: uppercase; letter-spacing: .06em; }
+  #roster { display: grid; grid-template-columns: 1fr 1fr; gap: 4px; }
+  #roster .chip { text-align: left; font-size: 12px; padding: 6px 5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  #roster h3 { grid-column: 1 / -1; margin: 6px 0 0; font-size: 12px; font-weight: 600; color: #9aa3b2; text-transform: uppercase; letter-spacing: .06em; }
   #roster .chip.held { background: #b8860b; }
   #teamNote { color: #7d8594; font-size: 12px; margin-top: 4px; }
   #readyBtn { width: 100%; margin-top: 8px; background: #2f8f4a; }

@@ -8,7 +8,7 @@ const srv = http.createServer((q, r) => {
   if (q.url === '/') { r.writeHead(200, { 'content-type': 'text/html' }); return r.end('<!doctype html><script type="module">' + js.replace(/<\/script/gi, '<\\/script') + '</script>'); }
   const cre = q.url.startsWith('/creatures/'), tree = q.url.startsWith('/trees/'), f = cre ? path.join(path.resolve('data/full/chess/creatures'), q.url.slice(11)) : tree ? path.join(path.resolve('.cache/chess-trees'), q.url.slice(7)) : path.join(SRC, q.url.slice(6));
   if (!(cre || tree || q.url.startsWith('/full/')) || q.url.includes('..') || !fs.existsSync(f)) { r.writeHead(404); return r.end(); }
-  r.writeHead(200, { 'content-type': f.endsWith('.jpg') ? 'image/jpeg' : f.endsWith('.png') ? 'image/png' : f.endsWith('.gltf') ? 'model/gltf+json' : 'model/gltf-binary' }); fs.createReadStream(f).pipe(r);
+  r.writeHead(200, { 'content-type': f.endsWith('.jpg') ? 'image/jpeg' : f.endsWith('.png') ? 'image/png' : f.endsWith('.gltf') ? 'model/gltf+json' : f.endsWith('.dae') ? 'text/xml' : 'model/gltf-binary' }); fs.createReadStream(f).pipe(r);
 });
 (async () => {
   await new Promise(r => srv.listen(0, '127.0.0.1', r));

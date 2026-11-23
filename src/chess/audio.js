@@ -1,9 +1,9 @@
-// Sound: recorded one-shots and a recorded room tone (CC0, docs/chess-sounds.md), a made reverb, all positioned in 3D. (whoosh and crackle are shaped noise: the archived maps' grounds and the braziers.)
+// Sound: recorded one-shots, a recorded room tone, the waterfall across the gorge and a far bird's cry (CC0, docs/chess-sounds.md), a made reverb, all positioned in 3D. (whoosh and crackle are shaped noise: the archived maps' grounds and the braziers.)
 const FILES = ['select', 'end', 'turn', 'win', 'lose', 'heal1', 'heal2', 'step0', 'step1', 'step2', 'step3', 'step4',
   'swing1', 'swing2', 'swing3', 'bow', 'drop', 'flesh0', 'flesh1', 'flesh2', 'armor0', 'armor1', 'armor2',
   'block0', 'block1', 'block2', 'thud0', 'thud1', 'fall0', 'fall1', 'boom0', 'boom1', 'rumble', 'snare0', 'snare1',
   'paw0', 'paw1', 'paw2', 'bone0', 'bone1', 'bone2', 'bone3', 'glass0', 'glass1', 'cloth0', 'cloth1', 'drip0', 'drip1', 'drip2', 'woosh0', 'woosh1', 'woosh2', 'woosh3', 'chop', 'punch0', 'punch1', 'scrape',
-  'growl', 'whine', 'roar', 'screech', 'grunt', 'groan', 'wail', 'moan', 'flare', 'burn', 'arrow', 'bodyfall', 'shimmer', 'tone'];
+  'growl', 'whine', 'roar', 'screech', 'grunt', 'groan', 'wail', 'moan', 'flare', 'burn', 'arrow', 'bodyfall', 'shimmer', 'tone', 'falls', 'cry0', 'cry1'];
 export const SOUND_FILES = FILES;
 
 export class Sound {
@@ -47,7 +47,7 @@ export class Sound {
     const n = this.noise.getChannelData(0);
     for (let i = 0; i < n.length; i++) n[i] = Math.random() * 2 - 1;
     this.loaded = Promise.all(FILES.map(name => fetch(`/chess-assets/sfx/${name}.mp3`).then(r => r.arrayBuffer()).then(b => ctx.decodeAudioData(b))
-      .then(buf => { this.buffers[name] = buf; if (name === 'tone') this.startTone(); }).catch(() => {})));
+      .then(buf => { this.buffers[name] = buf; if (name === 'tone') this.startTone(); if (name === 'falls') this.startFalls(); }).catch(() => {})));
     if (this.want) this.ambience(this.want);
   }
 
@@ -137,6 +137,17 @@ export class Sound {
     const drop = () => { if (ctx.state === 'running' && !document.hidden) this.play('drip*', { vol: 0.35, rate: 0.8 + Math.random() * 0.4, send: 1.2 }); setTimeout(drop, 7000 + Math.random() * 12000); };
     setTimeout(drop, 5000);
   }
+
+  // The waterfall across the gorge: a recording of rapids, muffled, at its own place (fallsAt keeps it there when the board is moved), quiet.
+  startFalls() {
+    const ctx = this.ctx, src = ctx.createBufferSource(), g = ctx.createGain(), p = this.fallsPan = ctx.createPanner();
+    src.buffer = this.buffers.falls; src.loop = true; g.gain.value = 0.55; p.panningModel = 'HRTF'; p.distanceModel = 'inverse'; p.rolloffFactor = 1;
+    src.connect(g).connect(p).connect(this.master);
+    src.start();
+  }
+  fallsAt(pos) { const p = this.fallsPan; if (p) { p.refDistance = this.refDistance; p.positionX.value = pos.x; p.positionY.value = pos.y; p.positionZ.value = pos.z; } }
+  // a bird of prey calling, far off
+  cry(pos) { if (this.ctx && this.ctx.state === 'running' && !document.hidden) this.play('cry*', { pos, vol: 0.4, rate: 0.9 + Math.random() * 0.2, send: 1.1 }); }
 
   // The map's standing sounds, each at its place in the room (null: silent): a river (shaped noise), birds (a recording), leaves in the wind;
   // and the three worlds' own: a high wind (a recording) over a low one, lava (a recorded fire, slowed, over a rumble), a cavern's hollow air.

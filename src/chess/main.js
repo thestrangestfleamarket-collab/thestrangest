@@ -678,6 +678,7 @@ function drawSetup(on) {
 }
 
 // ---------------------------------------------------------------- the campaign: its battles as a list (the page's on a screen, the table's buttons in the headset), then the battle against the computer
+$('placeText').textContent = CAMPAIGN.place.text;
 for (const n of CAMPAIGN.nodes) { const b = document.createElement('button'); b.dataset.id = n.id; b.onclick = () => handlePick({ kind: 'node', id: n.id }); $('campList').appendChild(b); }
 function drawCamp() {
   const n = campSel && nodeOf(campSel), open = n && isOpen(n.id, camp.done), won = n && camp.done.includes(n.id), total = CAMPAIGN.nodes.length, ar = renderer.xr.isPresenting;
@@ -922,7 +923,7 @@ function govern(dt) {
 }
 const ONE = new THREE.Vector3(1, 1, 1), camLocal = new THREE.Vector3(), camPos = new THREE.Vector3(), camDir = new THREE.Vector3(), camUp = new THREE.Vector3(), eyeR = new THREE.Vector3(), eyeU = new THREE.Vector3(), tmpQ = new THREE.Quaternion();
 const drawn = [], named = new Set(), placeOf = id => { const g = unitMeshes.get(id); return g && g.position; };
-let nextCrackle = 0;
+let nextCrackle = 0, nextCry = 25;
 let lastSecond = 0;
 let lastTime = 0, now = 0;
 renderer.setAnimationLoop(time => {
@@ -999,6 +1000,8 @@ renderer.setAnimationLoop(time => {
   viewCam.getWorldDirection(camDir);
   camUp.set(0, 1, 0).applyQuaternion(viewCam.quaternion);
   sound.setListener(camPos, camDir, camUp);
+  sound.fallsAt(world.localToWorld(tmpV.set(-52, -18, 0)));   // the place's own sounds: the waterfall where it falls, a bird's cry now and then from over the gorge
+  if (now > nextCry) { nextCry = now + 50 + Math.random() * 70; sound.cry(world.localToWorld(tmpV.set(-44, 24, (Math.random() - 0.5) * 60))); }
   tmpQ.copy(world.quaternion).invert();
   eyeU.copy(camUp).applyQuaternion(tmpQ); eyeR.set(1, 0, 0).applyQuaternion(viewCam.quaternion).applyQuaternion(tmpQ);
   fx.update(dt, eyeR, eyeU);

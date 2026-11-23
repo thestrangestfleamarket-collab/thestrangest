@@ -16,8 +16,8 @@ const RIBTIPS = [], SCONCES = [[6.16, 2.15, -3.4], [6.16, 2.15, -1.25], [6.16, 2
 const R0 = 5, R1 = 46, LS = 2048;                 // the ground's picture: from the moat out to 46 tiles, finer near (dungeon.js reads it the same way)
 const EYE = new THREE.Vector3(0, 9, 0);           // where the far country is seen from
 const EL0 = -35 * Math.PI / 180, EL1 = Math.PI / 2, PW = 4096, PH = 1424;
-const W = 2048, H = 2048, CELL = { brick: [0, 0, 512, 2], wall: [512, 0, 512, 2], floor: [1024, 0, 512, 3], rock_face_01: [1536, 0, 512], rock_face_02: [0, 512, 512], kerb: [512, 512, 256, 1.5], moat: [768, 512, 256, 1.5],
-  namaqualand_boulder_02: [512, 768, 256], rock_moss_set_01: [768, 768, 256], stone_fire_pit: [1024, 512, 256], large_iron_gate: [1280, 512, 256], treasure_chest: [1024, 768, 256], wine_barrel_01: [1280, 768, 256],
+const W = 2048, H = 2048, CELL = { brick: [0, 0, 512, 2], wall: [512, 0, 512, 2], floor: [1024, 0, 512, 3], kerb: [512, 512, 256, 1.5], moat: [768, 512, 256, 1.5],
+  namaqualand_boulder_02: [512, 768, 256], rock_moss_set_01: [1536, 0, 512], stone_fire_pit: [1024, 512, 256], large_iron_gate: [1280, 512, 256], treasure_chest: [1024, 768, 256], wine_barrel_01: [1280, 768, 256],
   wooden_crate_01: [1536, 512, 256], kite_shield: [1792, 512, 256], white: [1544, 776, 48], iron: [1608, 776, 48] };
 const canvas = document.createElement('canvas'); canvas.width = W; canvas.height = H;
 const ctx = canvas.getContext('2d'); ctx.fillStyle = '#4a4744'; ctx.fillRect(0, 0, W, H); ctx.fillStyle = '#fff'; ctx.fillRect(1536, 768, 64, 64); ctx.fillStyle = '#3a3836'; ctx.fillRect(1600, 768, 64, 64);
@@ -46,17 +46,17 @@ function ground(x, z) {
   let y, b = 0;
   if (t <= 0) y = fy + (fbm(x / 5, z / 5, 3) - 0.5) * 1.2;
   else if (t < 1) { const tb = clamp(t + Math.sin(Math.PI * t) * ((fbm(z / 17, east ? 1.5 : 7.7, 3) - 0.5) * 0.7 + (fbm(z / 5, 2.2, 2) - 0.5) * 0.22), 0, 1), s = tb * tb * (3 - 2 * tb), top = rim + pass * sm(t, 0.3, 1);   // buttresses and gullies along the wall
-    const ys = fy + (top - fy) * Math.pow(s, 0.75), band = 8.5, fr = ys / band - Math.floor(ys / band); y = lerp(ys, (Math.floor(ys / band) + sm(fr, 0.5, 1)) * band, 0.36 * Math.sin(Math.PI * t)); }                                                        // ledges: the rock lies in beds
+    const ys = fy + (top - fy) * Math.pow(s, 0.75), band = 8.5, fr = ys / band - Math.floor(ys / band); y = lerp(ys, (Math.floor(ys / band) + sm(fr, 0.5, 1)) * band, 0.14 * Math.sin(Math.PI * t)); }                                                        // ledges: the rock lies in beds
   else {
     b = d - w - ww;
     if (east) { const bh = x + 16.1, q = lerp(bh, b, sm(Math.abs(z), 20, 60));
-      y = sh - 2.5 * near * (1 - sm(b, 0.5, 8)) + 4.4 * (1 - sm(Math.abs(z), 10, 24)) * sm(q, 23.6, 30) + 12 * sm(q, 27.6, 52) - 8 * sm(q, 52, 78) + Math.max(0, q - 78) * 0.42; }
+      y = sh - 2.5 * near * (1 - sm(b, 0.5, 8)) + 3.6 * (1 - sm(Math.abs(z), 10, 24)) * sm(q, 23.6, 31.6) + 12 * sm(q, 27.6, 52) - 8 * sm(q, 52, 78) + Math.max(0, q - 78) * 0.42; }
     else { y = rim + 0.08 * Math.min(b, 100) + Math.max(0, b - 100) * 0.36; const dz = Math.abs(z - FALLZ - 3 * Math.sin(x / 14)); if (dz < 3 && b < 70) y -= 3.5 * (1 - (dz / 3) ** 2) * (1 - sm(b, 40, 70)); }
     y += pass * Math.exp(-b / 50);
-    y += ridged(x / 380 + 5.2, z / 380 + 1.7, 4) * sm(b, 70, 520) * (east ? 380 : 300);
+    y += ridged(x / 380 + 5.2, z / 380 + 1.7, r > 700 ? 3 : 4) * sm(b, 70, 520) * (east ? 380 : 300);
   }
-  y += (fbm(x / 13, z / 13) - 0.5) * 3.2 * sm(r, 12, 40) * (t > 0 && t < 1 ? 0.4 : 1);
-  y += ridged(x / 1100 + 1.1, z / 1100 + 4.3, 4) * 460 * sm(r, 500, 1600);
+  y += (fbm(x / 13, z / 13) - 0.5) * 3.2 * sm(r, 12, 40) * (1 - sm(r, 70, 170)) * (t > 0 && t < 1 ? 0.4 : 1);   // small rises, near only: far off they are finer than the far picture can hold
+  y += ridged(x / 1100 + 1.1, z / 1100 + 4.3, r > 2500 ? 3 : 4) * 460 * sm(r, 500, 1600);
   y += 55 * Math.exp(-((x - BEACON[0]) ** 2 + (z - BEACON[1]) ** 2) / 1444);
   return y * sm(Math.max(Math.abs(x) + Math.max(0, x - 7.3) * 2.2, Math.abs(z)), 8.2, 13);   // the hall's own floor is level; the hill begins at once behind its east wall
 }
@@ -100,7 +100,7 @@ function lightAt(p, n, rays = 12) {
 // far ground has no walls to shade it: its own slopes do, found by walking toward the sun
 function farLight(x, y, z, n) {
   let vis = 1; const ndl = Math.max(0, n.dot(SUN));
-  if (ndl > 0) for (let k = 1, s = 2; k <= 14; k++, s *= 1.5) { if (ground(x + SUN.x * s, z + SUN.z * s) > y + SUN.y * s + 0.3) { vis = 0.12; break; } }
+  if (ndl > 0) for (let k = 1, s = 2; k <= 14; k++, s *= 1.5) vis = Math.min(vis, 1 - clamp((ground(x + SUN.x * s, z + SUN.z * s) - y - SUN.y * s) / (s * 0.25) + 0.3, 0, 0.88));
   const up = n.y * 0.5 + 0.5, ao = 0.75 + 0.25 * up;
   return [SUNC[0] * ndl * vis + (SKYC[0] * (0.5 + 0.5 * up) + BOUNCE[0] * (1 - up)) * ao, SUNC[1] * ndl * vis + (SKYC[1] * (0.5 + 0.5 * up) + BOUNCE[1] * (1 - up)) * ao, SUNC[2] * ndl * vis + (SKYC[2] * (0.5 + 0.5 * up) + BOUNCE[2] * (1 - up)) * ao];
 }
@@ -172,7 +172,7 @@ function build() {
     ruin('brick', 'brick', n, (u, side, y) => V(6.45 + side * 0.45, y, z0 + u * 0.25), hi, lo, (u, side) => V(side ? 1 : -1, 0, 0), 0.25);
     for (const pz of [-3.4, -1.25, 1.25, 3.4]) { const top = 2.9 + R() * 0.4;   // a pier, and the rib of the fallen roof that still springs from it
       ruin('wall', 'wall', 2, (u, side, y) => V(6.45 - (side ? 0 : 0.24), y, pz - 0.26 + u * 0.26), [top, top + 0.08, top], null, (u, side) => V(side ? 1 : -1, 0, 0), 0.26);
-      const F = new Faces('wall'), len = 3 + Math.floor(R() * 4), P = k => { const a = k / 7 * 1.25; return V(6.33 - 2.4 * (1 - Math.cos(a)), top - 0.05 + 2.4 * Math.sin(a), pz); }, sd = V(0, 0, 0.12);
+      const F = new Faces('wall'), len = 1 + Math.floor(R() * 2), P = k => { const a = k / 7 * 1.25; return V(6.33 - 2.4 * (1 - Math.cos(a)), top - 0.05 + 2.4 * Math.sin(a), pz); }, sd = V(0, 0, 0.12);
       for (let k = 0; k < len; k++) { const a = P(k), b = P(k + 1), up = V(-(b.y - a.y), b.x - a.x, 0).normalize().multiplyScalar(0.13), q = (p, i, j) => V().copy(p).addScaledVector(up, i).addScaledVector(sd, j);
         for (const [i0, j0, i1, j1, o] of [[-1, -1, -1, 1, up.clone().negate()], [1, 1, 1, -1, up], [-1, 1, 1, 1, sd], [1, -1, -1, -1, sd.clone().negate()]]) F.quad(q(a, i0, j0), q(a, i1, j1), q(b, i1, j1), q(b, i0, j0), [[k * 0.6, 0], [k * 0.6, 0.3], [k * 0.6 + 0.6, 0.3], [k * 0.6 + 0.6, 0]], o);
         if (k === len - 1) { F.quad(q(b, -1, -1), q(b, -1, 1), q(b, 1, 1), q(b, 1, -1), [[0, 0], [0.3, 0], [0.3, 0.3], [0, 0.3]], V().copy(b).sub(a)); RIBTIPS.push(b.clone()); } }
@@ -180,9 +180,9 @@ function build() {
     for (const [cz, lo2, hi2] of [[-6.25, 3.9, 5.2], [6.25, 2.0, 3.3]]) { const m = 12, hs = ragged(m, lo2, hi2, 0.2); hs[m] = hs[0]; const rr = side => side ? 0.95 : 0.6;
       ruin('brick', 'brick', m, (u, side, y) => { const a = (u / m) * Math.PI * 2; return V(6.75 + Math.cos(a) * rr(side), y, cz + Math.sin(a) * rr(side)); }, hs, null, (u, side) => { const a = (u / m) * Math.PI * 2; return V(Math.cos(a), 0, Math.sin(a)).multiplyScalar(side ? 1 : -1); }); } }
   // the west wall went down the mountain with the roof: its two corners still stand, and its stones lie down the slope to the gorge's rim
-  for (const sz of [-1, 1]) { const n = 12, hi = ragged(n, 0.5, 3.3, 0.1).map((h, i) => h * (1 - i / n) ** 0.7 + 0.05); hi[n] = 0;
+  for (const sz of [-1, 1]) { const n = 12, hi = ragged(n, 1.6, 3.3, 0.25).map((h, i) => h * (1 - (i / n) ** 2.2) + 0.05); hi[n] = 0;
     ruin('wall', 'wall', n, (u, side, y) => V(-7.05 + side * 0.4, y, sz * (7.5 - u * 0.25)), hi, null, (u, side) => V(side ? 1 : -1, 0, 0), 0.25);
-    const m = 8, h2 = ragged(m, 0.4, 2.6, 0.1).map((h, i) => h * (1 - i / m) ** 0.8 + 0.05); h2[0] = hi[0]; h2[m] = 0;
+    const m = 8, h2 = ragged(m, 1.2, 2.6, 0.25).map((h, i) => h * (1 - (i / m) ** 2) + 0.05); h2[0] = hi[0]; h2[m] = 0;
     ruin('wall', 'wall', m, (u, side, y) => V(-7.05 + u * 0.25, y, sz * (7.5 - side * 0.4)), h2, null, (u, side) => V(0, 0, sz * (side ? -1 : 1)), 0.25); }
   { const F = new Faces('wall');
     for (let i = 0; i < 56; i++) { const far = R() ** 1.3, x = -6.3 - far * 8.5, z = (R() - 0.5) * (13 + far * 6), s = (0.08 + R() * R() * 0.3) * (1 - far * 0.3), y = ground(x, z);
@@ -226,15 +226,16 @@ const trees = [];
 function plant() {
   const n = V();
   for (const [rMax, step, rMin] of [[150, 2.7, 0], [430, 4.4, 150], [1150, 8.5, 430]]) for (let gx = -rMax; gx < rMax; gx += step) for (let gz = -rMax; gz < rMax; gz += step) {
-    const x = gx + R() * step, z = gz + R() * step, r = Math.hypot(x, z); if (r >= rMax || r < rMin || (Math.abs(x) < 12.5 && Math.abs(z) < 28) || (z > 0 && z < 70 && Math.abs(x) < 6 + z * 0.22)) { R(); R(); R(); continue; }
+    const x = gx + (R() * 2.2 - 0.6) * step, z = gz + (R() * 2.2 - 0.6) * step, r = Math.hypot(x, z);   // well off the grid: a forest is not an orchard
+    if (r >= rMax || r < rMin || (Math.abs(x) < 12.5 && Math.abs(z) < 28) || (z > 0 && z < 90 && Math.abs(x) < 9 + z * 0.5) || (r < 200 && roadAt(x, z) < 4)) { R(); R(); R(); continue; }
     const y = ground(x, z); normalAt(x, z, 0.6, n);
-    if (R() > forestAt(x, z, y, n.y) * 0.9) { R(); R(); continue; }
+    if (R() > forestAt(x, z, y, n.y) * 0.72) { R(); R(); continue; }
     const fir = R() < clamp(0.55 + y / 120 - z / 400, 0.2, 0.95), sp = fir ? FIRS[Math.floor(R() * FIRS.length)] : LEAFY[Math.floor(R() * LEAFY.length)], h = fir ? 8.5 + R() * 6.5 : 4.6 + R() * 2.6;
     trees.push({ x, y: y - 0.25, z, r, h: h * (r > 430 ? 1.5 : 1), sp, fir, tint: fir ? [0.8 + R() * 0.14, 0.86 + R() * 0.1, 0.78 + R() * 0.1] : [1.0 + R() * 0.12, 0.86 + R() * 0.08, 0.52 + R() * 0.16], near: false });
   }
   // the ones the game draws as cards: round the hall, and along the far rim of the gorge
   const mine = trees.filter(t => { const ax = axis(t.z); return (Math.max(Math.abs(t.x), Math.abs(t.z)) < R1 - 1 && t.x > ax + 16) || (t.x < ax - 17 && t.x > ax - 46 && Math.abs(t.z) < 82); }).sort((a, b) => a.r - b.r);
-  for (const t of mine.slice(0, 210)) t.near = true;
+  for (const t of mine.slice(0, 300)) t.near = true;
   log.push(trees.length + ' trees, ' + trees.filter(t => t.near).length + ' of them cards in the game');
 }
 const cardLight = t => { const c = lightAt(tmp.set(t.x, t.y + t.h * 0.5, t.z), V(0, 1, 0).lerp(SUN, 0.5).normalize(), 6); return [c[0] / 0.78 * t.tint[0], c[1] / 0.78 * t.tint[1], c[2] / 0.78 * t.tint[2]]; };
@@ -262,7 +263,7 @@ function leaves() {
   // the trees' cards: two crossed near the hall, one turned to the hall further off
   let cards = 0;
   for (const t of trees) { if (!t.near) continue; const L = hazed(cardLight(t), tmp.set(t.x, t.y + t.h * 0.6, t.z)), Lb = L.map(c => c * 0.72), w = t.h * t.sp.asp / 2, s = t.sp, a0 = t.r < 30 ? R() * 3.14 : Math.atan2(t.x, -t.z) + Math.PI;
-    for (const a of t.r < 30 ? [a0, a0 + Math.PI / 2] : [a0]) { const dx = Math.cos(a) * w, dz = Math.sin(a) * w; cards++;
+    for (const a of t.r < 24 ? [a0, a0 + Math.PI / 3, a0 + 2 * Math.PI / 3] : t.r < 34 ? [a0, a0 + Math.PI / 2] : [a0]) { const dx = Math.cos(a) * w, dz = Math.sin(a) * w; cards++;
       quad([V(t.x - dx, t.y, t.z - dz), V(t.x + dx, t.y, t.z + dz), V(t.x + dx, t.y + t.h, t.z + dz), V(t.x - dx, t.y + t.h, t.z - dz)], [[s.u0, s.v1], [s.u1, s.v1], [s.u1, s.v0], [s.u0, s.v0]], [Lb, Lb, L, L]); } }
   const g = new THREE.BufferGeometry(); g.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3)); g.setAttribute('uv', new THREE.Float32BufferAttribute(uv, 2)); g.setAttribute('color', new THREE.BufferAttribute(new Uint8Array(col), 4, true));
   log.push('leaves: ' + nIvy + ' ivy and chain triangles, ' + cards * 2 + ' in tree cards');
@@ -320,6 +321,7 @@ function sheet(nu, nv, at, lit, uv2) {
   for (let j = 0; j < nv; j++) for (let i = 0; i < nu; i++) { const k = j * nu + i, [x, z] = at(i, j), y = ground(x, z); normalAt(x, z, lit ? 0.3 : Math.max(0.4, Math.hypot(x, z) * 0.012), n); p.set(x, y, z);
     pos.set([x, y, z], k * 3); nor.set([n.x, n.y, n.z], k * 3); li.set(lit ? lightAt(p, n) : farLight(x, y, z, n), k * 3); mat.set(matAt(x, z, y, n), k * 4); if (uv2) u2.set(uv2(x, z), k * 2);
     if (i < nu - 1 && j < nv - 1) idx.push(k, k + nu, k + 1, k + 1, k + nu, k + nu + 1); }
+  if (!lit) for (let pass = 0; pass < 2; pass++) { const o = li.slice(); for (let j = 1; j < nv - 1; j++) for (let i = 0; i < nu; i++) for (let c = 0; c < 3; c++) { const a = (i + nu - 2) % (nu - 1), b = (i + 1) % (nu - 1); li[(j * nu + i) * 3 + c] = (o[(j * nu + i) * 3 + c] * 2 + o[(j * nu + a) * 3 + c] + o[(j * nu + b) * 3 + c] + o[((j - 1) * nu + i) * 3 + c] + o[((j + 1) * nu + i) * 3 + c]) / 6; } }   // far light is soft: no one triangle stands out
   const g = new THREE.BufferGeometry(); g.setAttribute('position', new THREE.BufferAttribute(pos, 3)); g.setAttribute('normal', new THREE.BufferAttribute(nor, 3)); g.setAttribute('aLight', new THREE.BufferAttribute(li, 3)); g.setAttribute('aMat', new THREE.BufferAttribute(mat, 4)); g.setAttribute('aUv2', new THREE.BufferAttribute(u2, 2)); g.setIndex(idx);
   return g;
 }
@@ -338,10 +340,8 @@ window.bakeDungeon = async () => {
   for (const name of ['grass', 'forest', 'cliff', 'scree', 'crag', 'sky']) pix[name] = await img('/full/tex/' + name + '.jpg');
   const treesPic = await img('/full/trees.png'); leafSheet(await img('/full/ivy.png'), treesPic);
   build();
-  // the cliff the hall is built against, east of its wall (the cavern's rock); rubble; the embers' pits; the gate in its arch; what the garrison left
-  await thing('rock_face_01', 420, [{ at: [8.9, -4.7], tall: 3.6, turn: -Math.PI / 2, deep: 0.5, tilt: -0.5, sink: 0.6 }, { at: [9.0, 2.0], tall: 3.2, turn: -Math.PI / 2 + 0.12, deep: 0.5, tilt: -0.5, sink: 0.6 }, { at: [9.3, 9.6], tall: 3.0, turn: -Math.PI / 2 - 0.4, deep: 0.5, tilt: -0.4, sink: 0.5 }]);
-  await thing('rock_face_02', 420, [{ at: [8.8, 5.6], tall: 3.6, turn: -Math.PI / 2 - 0.1, deep: 0.7, tilt: -0.45, sink: 0.6 }, { at: [8.9, -1.2], tall: 3.3, turn: -Math.PI / 2 + 0.15, deep: 0.7, tilt: -0.45, sink: 0.6 }, { at: [9.2, -9.8], tall: 3.4, turn: -Math.PI / 2 + 0.4, deep: 0.7, tilt: -0.4, sink: 0.5 }]);
-  await thing('rock_moss_set_01', 260, [{ at: [-8.3, 2.7], wide: 1.6, sink: 0.1 }, { at: [6.0, -3.9, 0], wide: 0.9, turn: 2 }]);
+  // mossed rock and boulders among the fallen stones; the embers' pits; the gate in its arch; what the garrison left
+  await thing('rock_moss_set_01', 260, [{ at: [-8.3, 2.7], wide: 1.6, sink: 0.1 }, { at: [6.0, -3.9, 0], wide: 0.9, turn: 2 }, { at: [9.6, 10.5], wide: 2.4, turn: 1, sink: 0.25 }, { at: [-10.5, -15], wide: 2.6, turn: 4, sink: 0.3 }, { at: [10.5, -12], wide: 2.0, turn: 2.6, sink: 0.25 }]);
   await thing('namaqualand_boulder_02', 70, [{ at: [-8.6, -1.9], wide: 0.9, sink: 0.1 }, { at: [-6.2, 5.9, 0], wide: 0.7, turn: 1 }, { at: [5.4, 7.9], wide: 0.45, turn: 2 }, { at: [-5.35, -8.0], wide: 0.5, turn: 4 }, { at: [6.05, 4.3, 0], wide: 0.45, turn: 3 }, { at: [-10.3, -5.3], wide: 1.3, turn: 5, sink: 0.2 }, { at: [-11.6, 4.6], wide: 1.1, sink: 0.2 }, { at: [5.9, -1.9, 0], wide: 0.35, turn: 1 }, { at: [-9.1, -3.2], wide: 0.6, turn: 2.2 }, { at: [-12.8, 0.6], wide: 0.9, turn: 0.7, sink: 0.15 }, { at: [3.4, 9.4], wide: 0.6, turn: 1.4, sink: 0.1 }, { at: [-3.8, -9.6], wide: 0.7, turn: 3.3, sink: 0.1 }]);
   await thing('stone_fire_pit', 170, PITS.map(([x, z]) => ({ at: [x, z, 0], wide: 0.56 })));
   await thing('large_iron_gate', 420, [{ at: [6.62, 0, 0], tall: 2.05, turn: Math.PI / 2 }]);
@@ -378,7 +378,7 @@ window.bakeDungeon = async () => {
   console.log('the ground and the far wall are painted');
 
   // ---- the game's own ground: rings out from the bank, coarse (its detail is in the paint), stopping at the gorge where the far wall's sheet takes over
-  { const K = 13, NS = 20, pos = [], idx = [], ring = k => 7.3 * Math.pow((R1 - 0.6) / 7.3, k / K), at = (k, i) => { const m = k > K ? ring(K) : ring(k), s = Math.floor(i / NS), f = (i % NS) / NS * 2 - 1, q = [[f, -1], [1, f], [-f, 1], [-1, -f]][s]; let x = q[0] * m, z = q[1] * m; x = Math.max(x, axis(z) + 6); return [x, ground(x, z) - (k === 0 ? 0.03 : k > K ? 7 : 0), z]; };
+  { const K = 16, NS = 26, pos = [], idx = [], ring = k => 7.3 * Math.pow((R1 - 0.6) / 7.3, k / K), at = (k, i) => { const m = k > K ? ring(K) : ring(k), s = Math.floor(i / NS), f = (i % NS) / NS * 2 - 1, q = [[f, -1], [1, f], [-f, 1], [-1, -f]][s]; let x = q[0] * m, z = q[1] * m; x = Math.max(x, axis(z) + 6); return [x, ground(x, z) - (k === 0 ? 0.03 : k > K ? 7 : 0), z]; };
     for (let k = 0; k <= K + 1; k++) for (let i = 0; i < 4 * NS; i++) { pos.push(...at(k, i)); if (k <= K) { const a = k * 4 * NS + i, b = k * 4 * NS + (i + 1) % (4 * NS), c = a + 4 * NS, d = b + 4 * NS; idx.push(a, b, c, b, d, c); } }
     const [cx, cy, cs] = CELL.white, g = new THREE.BufferGeometry(); g.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3)); g.setIndex(idx); const q = g.toNonIndexed(), n = q.attributes.position.count;
     q.setAttribute('uv', new THREE.Float32BufferAttribute(Array.from({ length: n * 2 }, (_, i) => (i % 2 ? cy + cs / 2 : cx + cs / 2) / (i % 2 ? H : W)), 2)); q.userData.land = true; q.computeVertexNormals(); parts.push(shade(q));
@@ -397,7 +397,7 @@ window.bakeDungeon = async () => {
       let run = 0; for (let k = 0; k < pts.length - 1; k++) { const a = pts[k], b = pts[k + 1], len = a.distanceTo(b), wA = k < 4 ? 1.1 : 1.3 + (k - 4) * 0.12, wB = k + 1 < 4 ? 1.1 : 1.3 + (k - 3) * 0.12, fa = hazeAt(a), fb2 = hazeAt(b), cA = [lerp(0.8, HZ[0], fa), lerp(0.84, HZ[1], fa), lerp(0.87, HZ[2], fa), k < 4 ? 0.5 * sm(k, 0, 1.5) : 0.82 * (1 - sm(k, 13, 18))], cB = [lerp(0.8, HZ[0], fb2), lerp(0.84, HZ[1], fb2), lerp(0.87, HZ[2], fb2), k + 1 < 4 ? 0.5 : 0.82 * (1 - sm(k + 1, 13, 18))];
         put([V(a.x, a.y, a.z + wA), V(a.x, a.y, a.z - wA), V(b.x, b.y, b.z - wB), V(b.x, b.y, b.z + wB)], [[0, run / 9], [1, run / 9], [1, (run + len) / 9], [0, (run + len) / 9]], [cA, cA, cB, cB], [0, 0, 0, k < 4 ? 0.35 : 1]); run += len; } }
     // mist: where the water lands, and lying along the gorge
-    for (const [dx, y, z, w, h, a, amp] of [[-4, -38, FALLZ, 13, 11, 0.5, 1.2], [-1, -31, FALLZ + 3, 17, 12, 0.34, 1.8], [-3, -25, FALLZ - 4, 15, 10, 0.22, 2.2], [1, -30, -34, 26, 12, 0.24, 2.6], [0, -32, 30, 28, 12, 0.24, 2.4], [2, -27, -62, 30, 13, 0.2, 3], [1, -29, 60, 30, 13, 0.2, 3], [3, -19, 8, 22, 9, 0.13, 3.2]]) { const x = axis(z) + dx, c = [0.86, 0.89, 0.92, a]; put([V(x, y - h / 2, z + w / 2), V(x, y - h / 2, z - w / 2), V(x, y + h / 2, z - w / 2), V(x, y + h / 2, z + w / 2)], [[0, 0], [1, 0], [1, 1], [0, 1]], c, [1, R() * 6.3, amp, 0.02 + R() * 0.02]); }
+    for (const [dx, y, z, w, h, a, amp] of [[-9, -10, FALLZ, 9, 16, 0.2, 0.9], [-4, -38, FALLZ, 13, 11, 0.5, 1.2], [-1, -31, FALLZ + 3, 17, 12, 0.34, 1.8], [-3, -25, FALLZ - 4, 15, 10, 0.22, 2.2], [1, -30, -34, 26, 12, 0.24, 2.6], [0, -32, 30, 28, 12, 0.24, 2.4], [2, -27, -62, 30, 13, 0.2, 3], [1, -29, 60, 30, 13, 0.2, 3], [3, -19, 8, 22, 9, 0.13, 3.2]]) { const x = axis(z) + dx, c = [0.86, 0.89, 0.92, a]; put([V(x, y - h / 2, z + w / 2), V(x, y - h / 2, z - w / 2), V(x, y + h / 2, z - w / 2), V(x, y + h / 2, z + w / 2)], [[0, 0], [1, 0], [1, 1], [0, 1]], c, [1, R() * 6.3, amp, 0.02 + R() * 0.02]); }
     // birds, far off: each on its own slow circle over the gorge or the crest
     for (const [cx, cy, cz, rad, pace] of [[-46, 20, -22, 15, 0.062], [-50, 27, 26, 21, -0.047], [-40, 34, -58, 17, 0.055], [-60, 16, 50, 12, -0.07], [-70, 38, -6, 26, 0.04], [44, 46, -52, 16, -0.058], [-52, 48, 10, 30, 0.036]]) { const s = 0.7, ph = R() * 6.3, f = hazeAt(V(cx, cy, cz)), c = [lerp(0.12, HZ[0], f), lerp(0.115, HZ[1], f), lerp(0.11, HZ[2], f), 1];
       put([V(-s, 0.14 * s, -0.08 * s), V(0, 0, -0.26 * s), V(0, 0, 0.34 * s), V(-s * 0.45, 0.05 * s, 0.1 * s)], [[0.5, 0.5], [0.5, 0.5], [0.5, 0.5], [0.5, 0.5]], c, [2, ph, rad, pace], [cx, cy, cz]);
@@ -406,7 +406,7 @@ window.bakeDungeon = async () => {
     return g; })();
 
   // ---- the far country, drawn once from the hall
-  { const sc = new THREE.Scene(), NA = 1100, NR = 360, far = sheet(NA + 1, NR, (i, j) => { const r = 22 * Math.pow(6500 / 22, j / (NR - 1)), a = i / NA * Math.PI * 2; return [Math.cos(a) * r, Math.sin(a) * r]; }, false);
+  { const sc = new THREE.Scene(), NA = 1100, NR = 520, far = sheet(NA + 1, NR, (i, j) => { const r = 22 * Math.pow(6500 / 22, j / (NR - 1)), a = i / NA * Math.PI * 2; return [Math.cos(a) * r, Math.sin(a) * r]; }, false);
     const land = new THREE.Mesh(far, heroMat(0)); land.frustumCulled = false; sc.add(land);
     console.log('the far ground is lit');
     const skyT = new THREE.Texture(pix.sky); skyT.colorSpace = THREE.SRGBColorSpace; skyT.wrapS = THREE.RepeatWrapping; skyT.needsUpdate = true;

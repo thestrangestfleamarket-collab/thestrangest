@@ -8,7 +8,7 @@ API, OUT = 'https://api.polyhaven.com/files/', 'data/full/chess/dungeon/'
 TEX = {'flag': ('medieval_blocks_03', 1024), 'brick': ('castle_brick_broken_06', 1024), 'wall': ('mossy_stone_wall', 1024), 'moat': ('rock_wall_08', 512), 'floor': ('mossy_rock', 1024), 'kerb': ('medieval_blocks_05', 512),
        'grass': ('leafy_grass', 512), 'forest': ('forrest_ground_01', 512), 'cliff': ('cliff_side', 1024), 'scree': ('rocks_ground_05', 512), 'crag': ('aerial_rocks_02', 512)}   # the mountainside's ground
 # Poly Haven's model: (picture pixels, triangles after thinning)
-MODELS = {'rock_face_01': (512, 900), 'rock_face_02': (512, 900), 'namaqualand_boulder_02': (256, 220), 'rock_moss_set_01': (512, 500),
+MODELS = {'namaqualand_boulder_02': (256, 220), 'rock_moss_set_01': (512, 500),
           'stone_fire_pit': (512, 500), 'large_iron_gate': (512, 900), 'treasure_chest': (256, 500),
           'wine_barrel_01': (256, 400), 'wooden_crate_01': (256, 200), 'kite_shield': (256, 300)}
 TREES = ('fir_sapling', 'pine_sapling_small', 'island_tree_02')   # whole, for their pictures only

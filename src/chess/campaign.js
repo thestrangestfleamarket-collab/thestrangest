@@ -4,6 +4,8 @@
 export const CAMPAIGN = {
   name: 'The Cold Beacon',
   intro: 'The beacon above Tarn Vale has been dark for nine nights. You lead a free company up the valley road to find out why, and to light it again.',
+  // where every battle is fought, and what happened there (the place itself is dungeon.js)
+  place: { name: 'Kilnhold', text: 'Kilnhold, the wardens\' hall on the beacon road, was built over a vein of the mountain\'s fire to keep the beacon\'s oil from freezing. Thirty winters ago the Long Slip took its west wall and its roof down into the Tarnwater\'s gorge. The Greyveil still falls across from it, the valley road still runs through it, and companies with a quarrel still settle it on the old muster floor.' },
   start: 28,
   nodes: [
     { id: 'toll', name: 'The Toll at Millford', map: 'board', level: 'easy', gain: 3, needs: [],

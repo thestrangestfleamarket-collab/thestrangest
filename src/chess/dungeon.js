@@ -1,5 +1,5 @@
 // SKIRMISH TABLE's place round the board: Kilnhold's ruined hall, broken open on the mountainside above the Tarnwater's gorge (baked by tools/chess-bake.cjs dungeon from photographed and scanned things: Poly Haven and ambientCG, CC0).
-// All of it is unlit and nothing in it is worked out while you play. Five draws: the hall, the near ground and the gorge's far wall one mesh on one picture (the hall's light in each point's colour, the ground's in its own painted picture); ivy, chains and the trees' cards a second; the lava a third (its picture drifting slowly, its brightness capped);
+// All of it is unlit and nothing in it is worked out while you play. Five draws: the hall, the near ground and the gorge's far wall one mesh on one picture (the walls' stone on a picture of its own with their light in another, the things' light in each point's colour, the ground's in its own painted picture); ivy, chains and the trees' cards a second; the lava a third (its picture drifting slowly, its brightness capped);
 // the waterfall, the gorge's mist and the far birds a fourth (the water's picture runs down, the mist drifts, each bird keeps its slow circle); the far country and its sky a fifth, one all-round picture at no distance, a thin layer of cloud drifting over its sky.
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
@@ -46,13 +46,17 @@ void main() { vec3 d = normalize(vD); vec2 uv = vec2(atan(d.z, d.x) / 6.2831853 
   group.add(lava, sky);
   const out = { group, lava, sky, air: null, ready: false, tris: 0, tick(now) { t.value = now; } };
   new GLTFLoader().loadAsync(A + 'dungeon.glb').then(g => {
+    const stone = pic('stone.webp'), light = pic('light.webp'); stone.wrapS = THREE.RepeatWrapping; light.generateMipmaps = false; light.minFilter = THREE.LinearFilter; light.anisotropy = 1;
     const mats = {
-      // a point's alpha says where its light is: in its own colour (the hall), or in the ground's picture, found from where the point is
-      dungeon: new THREE.ShaderMaterial({ vertexColors: true, uniforms: { map: { value: pic('atlas.jpg') }, land: { value: pic('land.jpg', false, true) } },
-        vertexShader: 'varying vec2 vUv, vQ; varying vec4 vC; void main() { vUv = uv; vC = color; vQ = position.xz; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }',
-        fragmentShader: `uniform sampler2D map, land; varying vec2 vUv, vQ; varying vec4 vC;
-void main() { float m = max(max(abs(vQ.x), abs(vQ.y)), ${R0}.0); vec3 l = texture2D(land, 0.5 + 0.5 * vQ / m * min(1.0, log(m / ${R0}.0) / ${Math.log(R1 / R0).toFixed(6)})).rgb;
-  gl_FragColor = vec4(texture2D(map, vUv).rgb * mix(l, vC.rgb, step(0.5, vC.a)), 1.0);
+      // a point's alpha says where its light is: in its own colour (the hall's things), in the ground's picture, found from where the point is, or (the walls, on the stone picture) in the light picture
+      dungeon: new THREE.ShaderMaterial({ vertexColors: true, uniforms: { map: { value: pic('atlas.jpg') }, land: { value: pic('land.jpg', false, true) }, stone: { value: stone }, light: { value: light } },
+        vertexShader: 'attribute vec2 uv1; varying vec2 vUv, vUv1, vQ; varying vec4 vC; void main() { vUv = uv; vUv1 = uv1; vC = color; vQ = position.xz; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }',
+        fragmentShader: `uniform sampler2D map, land, stone, light; varying vec2 vUv, vUv1, vQ; varying vec4 vC;
+void main() { vec3 c;
+  if (vC.a > 0.75) c = texture2D(map, vUv).rgb * vC.rgb;
+  else if (vC.a > 0.25) c = texture2D(stone, vUv).rgb * texture2D(light, vUv1).rgb * vC.rgb;
+  else { float m = max(max(abs(vQ.x), abs(vQ.y)), ${R0}.0); c = texture2D(map, vUv).rgb * texture2D(land, 0.5 + 0.5 * vQ / m * min(1.0, log(m / ${R0}.0) / ${Math.log(R1 / R0).toFixed(6)})).rgb; }
+  gl_FragColor = vec4(c, 1.0);
   #include <colorspace_fragment>
 }` }),
       ivy: new THREE.MeshBasicMaterial({ map: pic('leaf.webp'), vertexColors: true, alphaTest: 0.5, side: THREE.DoubleSide }),

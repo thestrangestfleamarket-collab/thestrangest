@@ -34,3 +34,5 @@ The USC Optical Sound Effects Library on the Internet Archive (archive.org, item
 | bodyfall | FIGHT, "Body hit and crash" | 1.1 s | the ogre falling |
 | shimmer | MAGIC, "Genie appearing from and returning to a bottle" | 1.5 s | the necromancer's raising |
 | tone | WIND, "Steady wind" | 10 s, slowed, muffled, its ends folded together | the room, low and unplaced |
+| falls | WATER, "River rapids" | 10 s, muffled, its ends folded together | the Greyveil across the gorge, at its place, quiet |
+| cry0, cry1 | BIRDS, "Eagle squawks & calls" | 1.3 s each | a bird of prey far off, now and then |

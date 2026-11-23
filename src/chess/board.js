@@ -5,9 +5,9 @@ import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 const PX = 96, EDGE = 0.35, DEEP = 0.34;   // the picture's dots to a tile; the frame's width; the slab's depth
 // a tile's mark: its fill and its rim, soft and steady
 const MARK = { sel: ['rgba(226,190,116,0.42)', 'rgba(236,206,140,0.7)'], hit: ['rgba(204,104,92,0.36)', 'rgba(214,122,108,0.66)'], heal: ['rgba(112,186,140,0.34)', 'rgba(132,200,158,0.62)'], move: ['rgba(112,150,206,0.3)', 'rgba(134,168,216,0.58)'] };
-// the photographed stone the tiles are cut from and the cavern floor under the table (data/chess/dungeon/, Poly Haven, CC0); a board made before they arrive is painted again when they do
+// the photographed stone the tiles are cut from (data/chess/dungeon/, Poly Haven, CC0); a board made before it arrives is painted again when it does
 const PICS = {}, waiting = new Set();
-for (const k of ['flag', 'floor']) { const i = new Image(); i.onload = () => { PICS[k] = i; for (const f of waiting) f(k); }; i.src = `/chess-assets/dungeon/${k}.jpg`; }
+for (const k of ['flag']) { const i = new Image(); i.onload = () => { PICS[k] = i; for (const f of waiting) f(k); }; i.src = `/chess-assets/dungeon/${k}.jpg`; }
 const rnd = seed => () => { seed = (seed * 1664525 + 1013904223) >>> 0; return seed / 4294967296; };
 const picture = (canvas, renderer) => { const t = new THREE.CanvasTexture(canvas); t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = Math.min(8, renderer.capabilities.getMaxAnisotropy()); return t; };
 const glowDot = (c, x, y, r, col, a) => { const g = c.createRadialGradient(x, y, 0, x, y, r); g.addColorStop(0, `rgba(${col},${a})`); g.addColorStop(1, `rgba(${col},0)`); c.fillStyle = g; c.fillRect(x - r, y - r, 2 * r, 2 * r); };
@@ -93,21 +93,4 @@ export function makeBoard(map, { id, renderer }) {
     aim(x, y) { const a = x == null ? null : y * cols + x; if (a !== aimed) { aimed = a; flush(); } },   // the tile a controller points at
     dispose() { waiting.delete(again); group.removeFromParent(); slab.geometry.dispose(); halo.geometry.dispose(); tex.dispose(); mtex.dispose(); },
   };
-}
-
-// The cavern's floor under it all, on a screen only (in the headset your own table is there): one disc, the photographed rock, the lava's and the embers' warmth and the dark beyond painted once.
-export function makeTable(map, renderer) {
-  const S = 1024, RAD = 17, canvas = document.createElement('canvas'), u = S / (2 * RAD), mid = S / 2, tex = picture(canvas, renderer);
-  canvas.width = canvas.height = S;
-  const draw = () => { const c = canvas.getContext('2d');
-    c.fillStyle = '#2b2927'; c.fillRect(0, 0, S, S);
-    if (PICS.floor) { for (let y = 0; y < S; y += 128) for (let x = 0; x < S; x += 128) c.drawImage(PICS.floor, x, y, 128, 128); c.fillStyle = 'rgba(12,11,12,0.6)'; c.fillRect(0, 0, S, S); }
-    glowDot(c, mid, mid, 11.5 * u, '255,128,60', 0.2);
-    { const g = c.createRadialGradient(mid, mid, 8 * u, mid, mid, 16.6 * u); g.addColorStop(0, 'rgba(13,13,16,0)'); g.addColorStop(0.5, 'rgba(13,13,16,0.75)'); g.addColorStop(1, 'rgba(13,13,16,1)'); c.fillStyle = g; c.fillRect(0, 0, S, S); }
-    tex.needsUpdate = true; };
-  draw();
-  const again = k => { if (k === 'floor') draw(); }; waiting.add(again);
-  const table = new THREE.Mesh(new THREE.CircleGeometry(RAD, 48).rotateX(-Math.PI / 2).translate(0, -DEEP - 0.01, 0), new THREE.MeshBasicMaterial({ map: tex }));
-  table.raycast = () => {}; table.matrixAutoUpdate = false; table.userData.free = () => waiting.delete(again);
-  return table;
 }

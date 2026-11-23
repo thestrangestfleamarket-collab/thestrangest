@@ -30,6 +30,8 @@ S = {
  'bodyfall': (USC + 'FIGHT/BODYFALL/FGHTBf_Body hit and crash_CS_USC.wav', ('event', 0, 1.1), 1, -20),
  'shimmer': (USC + 'MAGIC/SHIMMER/MAGShim_Genie appearing from and returning to a bottle_CS_USC.wav', ('event', 0, 1.5), 1, -24),
  'tone': (USC + 'WIND/GENERAL/WIND_Steady wind_CS_USC.wav', ('loop', 2, 10), 0.7, -30),   # the room: a steady wind slowed and muffled, its two ends folded together
+ 'falls': (USC + 'WATER/FLOW/WATRFlow_River rapids_CS_USC.wav', ('loop', 4, 10), 0.85, -30),   # the Greyveil across the gorge: rapids, muffled by the distance, its ends folded together
+ 'cry0': (USC + 'BIRDS/BIRD OF PREY/BIRDPrey_Eagle squawks & calls_CS_USC.wav', ('event', 0, 1.3), 1, -28), 'cry1': (USC + 'BIRDS/BIRD OF PREY/BIRDPrey_Eagle squawks & calls_CS_USC.wav', ('event', 2, 1.3), 1, -28),   # a bird of prey, far off over the gorge
 }
 
 def raw(url):
@@ -63,7 +65,7 @@ def make(name):
         a = min(len(x) // 8, SR // 200); x[:a] *= np.linspace(0, 1, a); b = max(SR // 50, int(len(x) * 0.3)); x[-b:] *= np.linspace(1, 0, b) ** 2
     w = min(len(x), SR // 3); loud = np.sqrt(np.convolve(x ** 2, np.ones(w) / w, 'valid').max()); x *= 10 ** (level / 20) / max(loud, 1e-9)
     lim = 10 ** (-4 / 20); x = np.where(np.abs(x) > lim * 0.7, np.sign(x) * (lim * 0.7 + lim * 0.3 * np.tanh((np.abs(x) - lim * 0.7) / (lim * 0.3))), x)   # no peak above -4 dB: the top is bent over, never clipped
-    subprocess.run(['ffmpeg', '-v', 'error', '-y', '-f', 'f32le', '-ar', str(SR), '-ac', '1', '-i', '-', '-b:a', '48k' if name == 'tone' else '64k', OUT + name + '.mp3'], input=x.astype(np.float32).tobytes(), check=True)
+    subprocess.run(['ffmpeg', '-v', 'error', '-y', '-f', 'f32le', '-ar', str(SR), '-ac', '1', '-i', '-', '-b:a', '48k' if cut and cut[0] == 'loop' else '64k', OUT + name + '.mp3'], input=x.astype(np.float32).tobytes(), check=True)
     print('%-9s %5.2f s  peak %6.1f dB  loudest %6.1f dB  %5d bytes' % (name, len(x) / SR, 20 * np.log10(np.abs(x).max()), level, os.path.getsize(OUT + name + '.mp3')), flush=True)
 
 for name in sys.argv[1:] or S: make(name)

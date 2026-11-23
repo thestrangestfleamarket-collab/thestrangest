@@ -1,6 +1,8 @@
-# fetches what SKIRMISH TABLE's creatures and clips are baked from (all CC0; credits in docs/chess-credits.md): python3 tools/chess-creatures.py  ->  data/full/chess/characters/animations.glb, animations2.glb (Quaternius' two animation libraries, only the clips the bake names), data/full/chess/creatures/whelp/ (the dragon, its four clips, its picture), data/full/chess/creatures/tex/ (the surfaces the built creatures are painted with); then PWCHROME=/opt/pw-browsers/chromium node tools/chess-bake.cjs
+# fetches what SKIRMISH TABLE's clips, surfaces and scanned things are baked from (all CC0; credits in docs/chess-credits.md): python3 tools/chess-creatures.py [clips] [tex] [props]  ->  data/full/chess/characters/animations.glb, animations2.glb (Quaternius' two animation libraries, only the clips the bake names), data/full/chess/creatures/tex/ (Poly Haven's and ambientCG's surfaces: what is worn and held is painted with them), data/full/chess/props/m/ (Poly Haven's sword, shield and axe); the bodies come from tools/chess-people.py, the whelp from tools/chess-whelp.cjs; then PWCHROME=/opt/pw-browsers/chromium node tools/chess-bake.cjs
 import io, json, os, struct, sys, urllib.request, zipfile
 from PIL import Image
+exec('def jpg(' + open('tools/sushi-assets.py').read().split('def jpg(')[1].split("for d in ('tex', 'm')")[0])   # jpg, pic, pad, model: the ramen cart's own
+API, OUT = 'https://api.polyhaven.com/files/', 'data/full/chess/props/'
 
 def get(url):
     return urllib.request.urlopen(urllib.request.Request(url, headers={'User-Agent': 'Mozilla/5.0 asset-fetch'}), timeout=300).read()
@@ -11,8 +13,9 @@ LIBS = {'animations': ('quaternius-universal-animation-library/3D/characters/UAL
         'animations2': ('quaternius-universal-animation-library-2/3D/characters/UAL2_Standard.glb',
                         ['Idle_Shield_Loop', 'Sword_Regular_B', 'OverhandThrow', 'Zombie_Idle_Loop', 'Zombie_Scratch', 'TreeChopping_Loop'])}
 # our name: (Poly Haven's, which of its pictures)
-TEX = {'stone': 'rock_boulder_cracked', 'bone': 'white_rough_plaster', 'hide': 'leather_white', 'cloth': 'rough_linen', 'fur': 'polar_fleece'}
-DRAGON = 'https://opengameart.org/sites/default/files/dragon_oga.zip'   # "Cethiel's Dragon 3D" (kooow / Drummyfish, after Cethiel's 2D dragon), CC0
+TEX = {'bone': 'white_rough_plaster', 'hide': 'leather_white', 'cloth': 'rough_linen', 'fur': 'polar_fleece', 'steel': 'metal_plate_02', 'leather': 'brown_leather', 'wool': 'poly_wool_herringbone', 'sack': 'hessian_230', 'wood': 'wood_table_worn'}
+PROPS = {'antique_estoc': 512, 'kite_shield': 512, 'wooden_axe': 512}   # Poly Haven's models: their picture's pixels
+ACG = {'chain': 'Chainmail004'}   # ambientCG's
 
 def trim(glb, names):   # a .glb with only its bones and the named clips
     n = struct.unpack('<I', glb[12:16])[0]; G = json.loads(glb[20:20 + n]); B = glb[28 + n:]
@@ -36,10 +39,6 @@ only = sys.argv[1:]
 if not only or 'clips' in only:
     for name, (path, names) in LIBS.items():
         b = trim(get(MIRROR + path), names); open('data/full/chess/characters/' + name + '.glb', 'wb').write(b); print(name, len(names), 'clips', len(b) // 1024, 'KB', flush=True)
-if not only or 'whelp' in only:
-    os.makedirs('data/full/chess/creatures/whelp', exist_ok=True); z = zipfile.ZipFile(io.BytesIO(get(DRAGON)))
-    for f in ('dragon.dae', 'dragon_attack.dae', 'dragon_die.dae', 'dragon_idle.dae', 'dragon_walk.dae'): open('data/full/chess/creatures/whelp/' + f, 'wb').write(z.read(f))
-    Image.open(io.BytesIO(z.read('dragon.png'))).convert('RGB').resize((512, 512), Image.LANCZOS).save('data/full/chess/creatures/whelp/dragon.jpg', quality=90); print('whelp', flush=True)
 if not only or 'tex' in only:
     os.makedirs('data/full/chess/creatures/tex', exist_ok=True)
     for name, s in TEX.items():
@@ -48,3 +47,12 @@ if not only or 'tex' in only:
             if part not in F: continue
             Image.open(io.BytesIO(get(F[part]['1k']['jpg']['url']))).convert('RGB').resize((512, 512), Image.LANCZOS).save('data/full/chess/creatures/tex/' + name + suf + '.jpg', quality=88)
         print(name, s, flush=True)
+    for name, s in ACG.items():
+        z = zipfile.ZipFile(io.BytesIO(get('https://ambientcg.com/get?file=' + s + '_1K-JPG.zip'))); n = z.namelist()
+        for part, suf in (('Color', ''), ('NormalGL', '_n'), ('AmbientOcclusion', '_ao')):
+            f = [x for x in n if x.endswith('_' + part + '.jpg')]
+            if f: Image.open(io.BytesIO(z.read(f[0]))).convert('RGB').resize((512, 512), Image.LANCZOS).save('data/full/chess/creatures/tex/' + name + suf + '.jpg', quality=88)
+        print(name, s, n, flush=True)
+if not only or 'props' in only:
+    os.makedirs(OUT + 'm', exist_ok=True)
+    for s, z in PROPS.items(): model(s, z)

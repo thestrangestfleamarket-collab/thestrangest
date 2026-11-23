@@ -530,7 +530,7 @@ let halt = () => {};
         const floor = Math.min(...run.map(f => Math.min(...f.map(q => q[1])))), near = floor + (bb.max.y - bb.min.y) * 0.02; let slip = 0, went = 0, n = 0;
         for (let k = 1; k < run.length; k++) { let j = 0; for (let i = 1; i < feet.length; i++) if (run[k - 1][i][1] < run[k - 1][j][1]) j = i; const a = run[k - 1][j], b = run[k][j]; if (a[1] < near && b[1] < near) { slip += Math.hypot(b[0] - a[0], b[2] - a[2] + speed * dt); went += speed * dt; n++; } }   // the point bearing it at each step
         ch.setMoving(false); o[type + ' ' + tiles] = { share: went ? slip / went : 9, n, speed: speed * 0.78 }; }
-      return o; }, [['bulwark', 2], ['bulwark', 5], ['strider', 4], ['skeleton', 2], ['ogre', 2], ['whelp', 3]]);   // not the wolf: its gallop is off the ground most of the time, so there is no bearing point to follow
+      return o; }, [['bulwark', 2], ['bulwark', 5], ['strider', 4], ['skeleton', 2], ['ogre', 2], ['slinger', 3]]);   // not the wolf: its gallop is off the ground most of the time, so there is no bearing point to follow; nor the whelp, which flies
     const slid = Object.entries(slide).filter(([, v]) => !(v.share < 0.35 && v.n > 20));
     ok(!slid.length, 'a walking piece crosses the board at its stride\'s own speed, so the feet that are down stay put (how far they slip, as a share of the way gone: ' + Object.entries(slide).map(([k, v]) => k + ' tiles ' + v.share.toFixed(2) + ' at ' + v.speed.toFixed(1) + ' tiles a second').join(', ') + '; under 0.35 wanted, a piece pushed along without its stride would be 1)' + (slid.length ? ' BUT ' + JSON.stringify(slid) : ''));
     // no arms-out moment: from a strike or a blow back to standing, the clips make up the whole pose at every step

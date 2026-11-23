@@ -32,6 +32,12 @@ const ROOT = path.resolve(__dirname, '..'), OUT = process.argv[2], PORT = 8797, 
   ok(d.d > 1 && Math.abs(d.y) < 2, 'the car powers up and drives off on the ground (' + d.d.toFixed(1) + ' m)');
   if (OUT) await A.screenshot({ path: path.join(OUT, 'drive.png') });
   await B.close(); await A.waitForFunction(() => window.__sim.net.players.size === 0, null, { timeout: 30000 }).catch(() => {}); ok(await A.evaluate(() => window.__sim.net.players.size) === 0, 'a page that leaves is gone from the road');
+  const c = await A.evaluate(() => { const S = window.__sim, v = S.veh, w = S.world; S.onKey('KeyR'); window.__testDrive = true; v.power = true; v.gear = 'D'; v.epb = false; let slip = 0, sp = 0;
+    for (let i = 0; i < 400; i++) { const u = Math.abs(v.fwdSpeed), lim = Math.min(1, Math.atan(2.5 * 5.9 / Math.max(1, u * u)) / 0.6); v.update(1 / 60, { throttle: u < 11 ? 0.7 : 0.2, brake: 0, steer: i > 210 ? lim : 0 });
+      if (v.impact > 0.5) break;
+      if (i > 240 && u > 5) { const f = new v.pos.constructor(0, 0, -1).applyQuaternion(v.quat), h = Math.hypot(v.vel.x, v.vel.z) || 1; slip = Math.max(slip, Math.acos(Math.min(1, Math.abs(f.x * v.vel.x + f.z * v.vel.z) / h))); sp = Math.max(sp, u); } }
+    window.__testDrive = false; return { slip, sp }; });
+  ok(c.slip < 0.3 && c.sp > 8, 'a key held hard over at speed turns the car without spinning it (slip ' + c.slip.toFixed(2) + ' rad at ' + c.sp.toFixed(0) + ' m/s)');
   ok(!errs.length, 'no page errors' + (errs.length ? ': ' + errs.slice(0, 3).join(' | ') : ''));
   await b.close(); stop(); console.log(fails.length ? fails.length + ' FAILED' : 'ALL OK'); process.exit(fails.length ? 1 : 0);
 })();

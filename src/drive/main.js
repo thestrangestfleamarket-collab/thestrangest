@@ -17,12 +17,12 @@ import { makeBody } from './body.js';
 const $ = (id) => document.getElementById(id);
 const UA = navigator.userAgent; const isQuest = /OculusBrowser|Quest/i.test(UA); const isTouch = 'ontouchstart' in window && !isQuest;
 const QUALITY = {
-  high: { lod: 'hi', viewDist: 900, shadows: true, spotShadows: true, lampLights: 8, lampIntensity: 260, bloom: true, camRes: 384, pr: 1.5, aniso: 8, rainDrops: 2600, parallelLoads: 4, camsPerFrame: 1, leafCards: 34, vegDist: 700, ao: true, grassCount: 4200, grassRadius: 16, traffic: 46, people: 16 },
-  medium: { lod: 'hi', viewDist: 650, shadows: false, spotShadows: false, lampLights: 4, lampIntensity: 260, bloom: true, camRes: 256, pr: 1, aniso: 4, rainDrops: 1500, parallelLoads: 3, camsPerFrame: 1, leafCards: 22, vegDist: 450, grassCount: 2000, grassRadius: 11, traffic: 30, people: 10 },
-  low: { lod: 'lo', viewDist: 380, shadows: false, spotShadows: false, lampLights: 2, lampIntensity: 260, bloom: false, camRes: 192, pr: 1, aniso: 2, rainDrops: 600, parallelLoads: 2, camsPerFrame: 0.34, lightCount: 1, leafCards: 12, vegDist: 220, grassCount: 600, grassRadius: 6, traffic: 14, people: 5 },
+  high: { lod: 'hi', viewDist: 900, shadows: true, spotShadows: true, lampLights: 8, lampIntensity: 260, bloom: true, camRes: 384, pr: 1.5, aniso: 8, rainDrops: 2600, parallelLoads: 4, camsPerFrame: 0.5, leafCards: 34, vegDist: 700, ao: true, grassCount: 4200, grassRadius: 16, traffic: 46, people: 16 },
+  medium: { lod: 'hi', viewDist: 650, shadows: false, spotShadows: false, lampLights: 4, lampIntensity: 260, bloom: true, camRes: 256, pr: 1, aniso: 4, rainDrops: 1500, parallelLoads: 3, camsPerFrame: 0.34, leafCards: 22, vegDist: 450, grassCount: 2000, grassRadius: 11, traffic: 30, people: 10 },
+  low: { lod: 'lo', viewDist: 380, shadows: false, spotShadows: false, lampLights: 2, lampIntensity: 260, bloom: false, camRes: 192, pr: 1, aniso: 2, rainDrops: 600, parallelLoads: 2, camsPerFrame: 0.2, lightCount: 1, leafCards: 12, vegDist: 220, grassCount: 600, grassRadius: 6, traffic: 14, people: 5 },
 };
 const params = new URLSearchParams(location.search);
-$('quality').value = params.get('q') || (isQuest || isTouch ? 'low' : 'high'); if (params.get('room')) $('room').value = params.get('room'); if (params.get('name')) $('name').value = params.get('name'); if (params.get('time')) $('time').value = params.get('time');
+$('quality').value = params.get('q') || (isQuest || isTouch ? 'low' : 'medium'); if (params.get('room')) $('room').value = params.get('room'); if (params.get('name')) $('name').value = params.get('name'); if (params.get('time')) $('time').value = params.get('time');
 try { const sv = JSON.parse(localStorage.getItem('drivesim') || '{}'); if (sv.name && !params.get('name')) $('name').value = sv.name; if (sv.color) $('color').value = sv.color; } catch { }
 
 let traffic = null, people = null, body = null, hoverPerson = null; const law = { cites: [], cool: {}, speedT: 0, lastSig: null, stop: null, last: '' }; let Q, renderer, scene, camera, rig, composer, bloom, world, audio = new AudioSys(), net = new Net();
@@ -215,9 +215,9 @@ function readControls(dt) {
     if (gp && !xr.active) { const ax = gp.axes[0] || 0; if (Math.abs(ax) > 0.06) { st = Math.sign(ax) * Math.pow(Math.abs(ax), 1.6); analog = true; } thr = Math.max(thr, gp.buttons[7]?.value || 0); brk = Math.max(brk, gp.buttons[6]?.value || 0); hb = hb || gp.buttons[0]?.pressed; horn = horn || gp.buttons[2]?.pressed; }
     if (xr.active) { const x = xrInput(); if (x) { thr = Math.max(thr, x.thr); brk = Math.max(brk, x.brk); if (Math.abs(x.steer) > 0.08) { st = Math.sign(x.steer) * Math.pow(Math.abs(x.steer), 1.5); analog = true; } } }
   }
-  // speed-sensitive steering: full lock when parking, a few degrees at highway speed
-  const v = Math.abs(veh.fwdSpeed); const lim = 1 / (1 + (v / 11) ** 2 * 1.2); const target = st * Math.max(lim, 0.05);
-  const rate = analog ? 5 : (Math.sign(target - ctl.steer) === Math.sign(ctl.steer) || ctl.steer === 0 ? 1.5 : 3.2) * (0.6 + lim * 0.8);
+  // the lock a key or stick can ask for is what the tyres can hold at this speed (about 0.6 g of cornering), full lock only at a crawl
+  const v = Math.abs(veh.fwdSpeed); const lim = Math.min(1, Math.atan(2.5 * 5.9 / Math.max(1, v * v)) / 0.6); const target = st * Math.max(lim, 0.03);
+  const back = Math.abs(target) < Math.abs(ctl.steer) || Math.sign(target) !== Math.sign(ctl.steer), rate = analog ? 6 : back ? 2.2 + lim * 3 : 0.35 + lim * 1.6;
   ctl.steer += Math.max(-rate * dt, Math.min(rate * dt, target - ctl.steer));
   ctl.throttle += (thr - ctl.throttle) * Math.min(1, dt * (thr > ctl.throttle ? 5 : 9)); ctl.brake += (brk - ctl.brake) * Math.min(1, dt * (brk > ctl.brake ? 8 : 12)); ctl.handbrake = hb;
   ctl.hornClick = Math.max(0, (ctl.hornClick || 0) - dt); ctl.horn = horn || ctl.hornClick > 0;
@@ -382,6 +382,19 @@ function screenData(ent) {
     clock: now.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' }), dateStr: now.toLocaleDateString([], { weekday: 'long', month: 'long', day: 'numeric' }), odo: mine ? 18240000 + veh.odo : 0, trip: mine ? veh.trip : 0, limit: law.limit || (nr && nr.seg.r.s ? nr.seg.r.s : 0), street: nr ? (nr.seg.r.n || (nr.seg.r.c === 0 ? 'Driveway' : 'Unnamed road')) : '', x: p.x, z: p.z, yaw: _e.y, heading: compass(_e.y), night: world.dark, mapScale, temp: Math.round(58 + 22 * (world.dayK || 0)) + '°F', weather: world.weather.rain > 0.3 ? 'Rain' : world.weather.cloud > 0.55 ? 'Cloudy' : world.weather.mist > 0.4 ? 'Mist' : 'Clear', players: net.players.size + 1, room: net.connected ? 'Room: ' + net.room : 'Offline', doors: c.anim.doors, windows: c.anim.windows, tailgate: c.anim.tailgate, hood: c.anim.hood, radio: audio.radioNow(world.now()), tip: law.cites.length ? 'Citations: ' + law.cites.length + ' · ' + law.last : 'Clean record · limit ' + (law.limit || '--') + ' mph', limitNow: law.limit };
 }
 
+// holds the frame rate: when frames run late the picture is drawn smaller, then without its lens, then nearer; it comes back when there is room
+const gov = { t: 0, n: 0, pr: 0, plain: false, good: 0 };
+function govern(now) {
+  if (xr.active || params.get('vd') || document.hidden) { gov.t = now; gov.n = 0; return; }
+  gov.n++; if (!gov.t) gov.t = now; if (now - gov.t < 2) return;
+  const fps = gov.n / (now - gov.t), top = Math.min(window.devicePixelRatio || 1, Q.pr); gov.t = now; gov.n = 0; if (!gov.pr) gov.pr = top;
+  const size = () => { renderer.setPixelRatio(gov.pr); if (composer) { composer.setPixelRatio(gov.pr); composer.setSize(window.innerWidth, window.innerHeight); } };
+  if (fps < 42) { gov.good = 0;
+    if (gov.pr > 0.56) { gov.pr = Math.max(0.55, gov.pr * (fps < 25 ? 0.75 : 0.88)); size(); }
+    else if (composer && !gov.plain) gov.plain = true;
+    else if (Q.viewDist > 300) { Q.viewDist = Math.max(300, Q.viewDist * 0.85); Q.vegDist = Math.max(160, Q.vegDist * 0.8); Q.camsPerFrame = Math.min(Q.camsPerFrame, 0.2); }
+  } else if (fps > 57 && ++gov.good >= 4 && gov.pr < top) { gov.good = 0; gov.pr = Math.min(top, gov.pr * 1.1); size(); }
+}
 function loop(time) {
   const now = time / 1000; const dt = Math.min(0.05, Math.max(0.001, now - (loop.last || now))); loop.last = now; frame++;
   readControls(dt);
@@ -420,6 +433,7 @@ function loop(time) {
   const showSpd = me.mode === 'seat' && me.cam === 'chase'; $('speedo').style.display = showSpd ? 'block' : 'none'; if (showSpd && frame % 6 === 0) { $('spd').textContent = Math.round(Math.abs(veh.fwdSpeed) * 2.23694); $('gearTxt').textContent = veh.gear + ' · mph'; }
   $('dot').style.display = locked ? 'block' : 'none';
   fpsN++; if (now - fpsT > 1) { $('fps').textContent = fpsN + ' fps · ' + world.loaded.size + ' tiles' + (world.pendingCount ? ' (+' + world.pendingCount + ' loading)' : ''); fpsN = 0; fpsT = now; }
-  if (composer && !xr.active) composer.render(dt); else renderer.render(scene, camera);
+  if (composer && !gov.plain && !xr.active) composer.render(dt); else renderer.render(scene, camera);
+  govern(now);
 }
 window.__sim = { get veh() { return veh; }, get me() { return me; }, get world() { return world; }, get myCar() { return myCar; }, get camera() { return camera; }, get cars() { return cars; }, get net() { return net; }, get traffic() { return traffic; }, get people() { return people; }, get audio() { return audio; }, law, ctl, keys, onKey, act, setPower, setGear, toast, get renderer() { return renderer; } };

@@ -1,21 +1,21 @@
-// SKIRMISH TABLE's people and creatures (CC0, docs/chess-credits.md; baked by tools/chess-bake.cjs into data/chess/units/): each unit type one thinned mesh on one shared picture, fetched only when a match has that type.
+// SKIRMISH TABLE's people and creatures (Microsoft Rocketbox's bodies, MIT, and CC0 things: docs/chess-credits.md; baked by tools/chess-bake.cjs into data/chess/units/): each unit type one thinned mesh on one shared picture, fetched only when a match has that type.
 // A piece at rest is not animated at all: every resting piece of every type is drawn in one call, each as its type's standing pose. Only a piece that walks, strikes, is struck or falls has bones, for as long as it does.
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import * as SkeletonUtils from 'three/addons/utils/SkeletonUtils.js';
 
-// A person, and a creature built on a person's bones, plays the clips all people share (anim.glb, Quaternius' two animation libraries): which it stands in, walks with and strikes with is named here. A creature of its own (OWN) carries its five in its file: Idle, Walk, Attack, Hit, Death.
+// A person, and a creature built on a person's bones, plays the clips all people share (anim.glb: Rocketbox's own walk, run and way of standing, the Real_ ones; Quaternius' two animation libraries for the rest): which it stands in, walks with and strikes with is named here. A creature of its own (OWN) carries its five in its file: Idle, Walk, Attack, Hit, Death.
 // rate: how fast its strike is played; pace: how fast its walk is played (its speed over the ground follows, so its feet never slide); run: what it crosses more than two tiles with; glide: it has no legs and drifts at this many tiles a second; sheer: it is seen through (a draw of its own).
-const H = (idle, walk, attack, more) => ({ idle, walk, attack, hit: 'Hit_Chest', death: 'Death01', rate: 1.3, pace: 1.5, run: 'Jog_Fwd_Loop', ...more }), OWN = { idle: 'Idle', walk: 'Walk', attack: 'Attack', hit: 'Hit', death: 'Death', own: true, rate: 1.5, pace: 1 };
+const H = (idle, walk, attack, more) => ({ idle, walk, attack, hit: 'Hit_Chest', death: 'Death01', rate: 1.3, pace: 1.3, run: 'Real_Run', ...more }), OWN = { idle: 'Idle', walk: 'Walk', attack: 'Attack', hit: 'Hit', death: 'Death', own: true, rate: 1.5, pace: 1 };
 const RUN = 0.8;   // how fast the run is played
-const cast = H('Idle_Loop', 'Walk_Loop', 'Spell_Simple_Shoot'), run = { pace: RUN }, slow = { run: null };
+const M = 'Real_Walk', F = 'Real_WalkF', SM = 'Real_Idle', SF = 'Real_IdleF', slow = { run: null };   // Rocketbox's own walks and ways of standing, a man's and a woman's
 const SPEC = {
-  bulwark: H('Idle_Shield_Loop', 'Walk_Loop', 'Sword_Regular_B', { rate: 1 }), lancer: H('Sword_Idle', 'Walk_Loop', 'TreeChopping_Loop'), strider: H('Idle_Loop', 'Jog_Fwd_Loop', 'Punch_Jab', run), slinger: H('Idle_Loop', 'Walk_Loop', 'Pistol_Shoot', { rate: 1 }),
-  ember: cast, mender: H('Idle_Loop', 'Walk_Loop', 'Interact', { rate: 1.8 }), hexbinder: cast,
-  alchemist: H('Idle_Loop', 'Walk_Loop', 'OverhandThrow', { rate: 1.5 }), necro: cast, captain: H('Sword_Idle', 'Walk_Loop', 'Sword_Attack', { rate: 1.6 }),
+  bulwark: H('Idle_Shield_Loop', M, 'Sword_Regular_B', { rate: 1 }), lancer: H(SM, M, 'TreeChopping_Loop'), strider: H(SM, M, 'Punch_Jab'), slinger: H(SF, F, 'Pistol_Shoot', { rate: 1 }),
+  ember: H(SM, M, 'Spell_Simple_Shoot'), mender: H(SF, F, 'Interact', { rate: 1.8 }), hexbinder: H(SF, F, 'Spell_Simple_Shoot'),
+  alchemist: H(SM, M, 'OverhandThrow', { rate: 1.5 }), necro: H(SF, F, 'Spell_Simple_Shoot'), captain: H(SM, M, 'Sword_Attack', { rate: 1.6 }),
   ogre: H('Idle_Loop', 'Walk_Loop', 'TreeChopping_Loop', { ...slow, hit: 'Hit_Head', rate: 1.05, pace: 1.25 }), ghost: H('Zombie_Idle_Loop', 'Zombie_Idle_Loop', 'Zombie_Scratch', { ...slow, rate: 1.6, glide: 1.7, sheer: true }),
-  skeleton: H('Sword_Idle', 'Walk_Loop', 'Sword_Attack', { rate: 1.6 }),
-  wolf: { ...OWN, pace: 1.3 }, whelp: { ...OWN, rate: 1.8, pace: 1.4 },
+  skeleton: H('Sword_Idle', M, 'Sword_Attack', { rate: 1.6 }),
+  wolf: { ...OWN, pace: 1.3 }, whelp: { ...OWN, rate: 1.4, glide: 2.2 },   // the whelp flies: its Walk is its wings
 };
 const SCALE = 0.78;   // board units to a metre: a figure, 1.8 m, stands 1.4 tiles high
 const TEAM = [0x3fa497, 0xd58a4a], REST = 0.5, MAX = 64;

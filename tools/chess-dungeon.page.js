@@ -1,5 +1,5 @@
 // SKIRMISH TABLE's dungeon bake, the part that runs in a browser (tools/chess-bake.cjs dungeon): Kilnhold's hall round the board and the mountainside it has broken open on, all still.
-// Near: one mesh on one picture (the hall's walls and things lit a point at a time, sun, sky, shade and the lava's glow worked out against everything that stands; the ground and the gorge's far wall painted whole, light and shadow in the paint), leaves and tree cards a second, falling water, mist and birds a third.
+// Near: one mesh (the hall's walls, built in chess-hall.page.js, on a stone picture with their light in another; its things on one picture, lit a point at a time, sun, sky, shade and the lava's glow worked out against everything that stands; the ground and the gorge's far wall painted whole, light and shadow in the paint), leaves and tree cards a second, falling water, mist and birds a third.
 // Far: the whole country (ridges, forest, the tarn, the pass, the beacon) drawn once from the hall under a photographed sky into one all-round picture, its haze in the paint.
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
@@ -8,15 +8,16 @@ import { MeshoptSimplifier } from 'meshoptimizer';
 import { MeshBVH } from 'three-mesh-bvh';
 import { thin, b64, exportGlb } from './chess-bake.page.js';
 import { SHEET, TW, TH } from './chess-trees.page.js';
+import { makeHall, stonePicture } from './chess-hall.page.js';
 
-// the plan, in tiles (the board with its kerb is 9.7 by 11.7): a moat of lava round the board, a bank of rock round the moat, the hall's east wall with its gate, piers and two towers against the cliff, low broken walls before each seat, the west wall fallen into the gorge
+// the plan, in tiles (the board with its kerb is 9.7 by 11.7): a moat of lava round the board, a bank of rock round the moat, the hall's walls round that
 const BX = 4.85, BZ = 5.85, MX = 5.5, MZ = 6.5, OX = 7.5, OZ = 7.5, LAVA = -0.3;
 export const PITS = [[-5.98, -6.78], [5.98, -6.78], [-5.98, 6.78], [5.98, 6.78]];
-const RIBTIPS = [], SCONCES = [[6.16, 2.15, -3.4], [6.16, 2.15, -1.25], [6.16, 2.15, 1.25], [6.16, 2.15, 3.4]];
+let HALL = null, SCONCES = [];   // the hall's walls (tools/chess-hall.page.js) and the baskets of embers on its buttresses
 const R0 = 5, R1 = 46, LS = 2048;                 // the ground's picture: from the moat out to 46 tiles, finer near (dungeon.js reads it the same way)
 const EYE = new THREE.Vector3(0, 9, 0);           // where the far country is seen from
 const EL0 = -35 * Math.PI / 180, EL1 = Math.PI / 2, PW = 4096, PH = 1424;
-const W = 2048, H = 2048, CELL = { brick: [0, 0, 512, 2], wall: [512, 0, 512, 2], floor: [1024, 0, 512, 3], kerb: [512, 512, 256, 1.5], moat: [768, 512, 256, 1.5],
+const W = 2048, H = 2048, CELL = { wall: [512, 0, 512, 2], floor: [1024, 0, 512, 3], kerb: [512, 512, 256, 1.5], moat: [768, 512, 256, 1.5],
   namaqualand_boulder_02: [512, 768, 256], rock_moss_set_01: [1536, 0, 512], stone_fire_pit: [1024, 512, 256], large_iron_gate: [1280, 512, 256], treasure_chest: [1024, 768, 256], wine_barrel_01: [1280, 768, 256],
   wooden_crate_01: [1536, 512, 256], kite_shield: [1792, 512, 256], white: [1544, 776, 48], iron: [1608, 776, 48] };
 const canvas = document.createElement('canvas'); canvas.width = W; canvas.height = H;
@@ -135,25 +136,6 @@ class Faces {
   }
   done(land) { if (this.pos.length) parts.push(finish(this.pos, this.uv, land)); }
 }
-// A ruined wall along a line (at(u, side, y) gives a point: side 0 its inner face, 1 its outer): its top (hi) and, over an opening, its underside (lo) are given at every joint, so the top runs ragged, not in steps.
-function ruin(cell, cap, n, at, hi, lo, outOf, cw = 0.5) {
-  const F = new Faces(cell), C = new Faces(cap), L = (i, e) => !lo ? 0 : typeof lo === 'function' ? lo(i, e) : lo[i + e];
-  for (let i = 0; i < n; i++) {
-    const h0 = hi[i], h1 = hi[i + 1], l0 = L(i, 0), l1 = L(i, 1); if (Math.max(h0, h1) <= Math.min(l0, l1) + 1e-6 || h0 + h1 - l0 - l1 < 0.02) continue;
-    const s0 = i * cw, s1 = s0 + cw, yA = Math.ceil(Math.max(l0, l1) - 1e-6), yB = Math.floor(Math.min(h0, h1) + 1e-6), rows = yA < yB ? [[l0, l1, yA, yA], ...Array.from({ length: yB - yA }, (_, k) => [yA + k, yA + k, yA + k + 1, yA + k + 1]), [yB, yB, h0, h1]] : [[l0, l1, h0, h1]];
-    for (const side of [0, 1]) { const o = outOf(i + 0.5, side); for (const [a0, a1, b0, b1] of rows) if (b0 - a0 > 1e-4 || b1 - a1 > 1e-4) F.quad(at(i, side, a0), at(i + 1, side, a1), at(i + 1, side, b1), at(i, side, b0), [[s0, a0], [s1, a1], [s1, b1], [s0, b0]], o); }
-    C.quad(at(i, 0, h0), at(i + 1, 0, h1), at(i + 1, 1, h1), at(i, 1, h0), [[s0, 0], [s1, 0], [s1, 0.5], [s0, 0.5]], V(0, 1, 0));
-    if (l0 > 0 || l1 > 0) C.quad(at(i, 0, l0), at(i + 1, 0, l1), at(i + 1, 1, l1), at(i, 1, l0), [[s0, 0], [s1, 0], [s1, 0.5], [s0, 0.5]], V(0, -1, 0));
-    const along = tmp.copy(at(i + 1, 0, 0)).sub(at(i, 0, 0)).normalize().clone();
-    // the wall's ends, and the jamb where an opening begins or ends
-    for (const [u, a, b, o] of [[i, i === 0 ? l0 : Math.min(l0, L(i - 1, 1)), i === 0 ? h0 : Math.max(l0, L(i - 1, 1)), i === 0 ? along.clone().negate() : l0 > L(i - 1, 1) ? along.clone().negate() : along], ...(i === n - 1 ? [[n, l1, h1, along]] : [])])
-      if (b - a > 0.02 && (i === 0 || u === n || i > 0)) F.quad(at(u, 0, a), at(u, 1, a), at(u, 1, b), at(u, 0, b), [[0, a], [0.45, a], [0.45, b], [0, b]], o);
-  }
-  F.done(); C.done();
-}
-// a wall's top at each joint: it wanders between lo and hi, and here and there a bite is out of it
-const ragged = (n, lo, hi, bite = 0.1) => { const a = []; let h = lo + R() * (hi - lo), gap = 0, deep = 0; for (let i = 0; i <= n; i++) { h = clamp(h + (R() - 0.5) * (hi - lo) * 0.3, lo, hi); if (gap > 0) gap--; else if (R() < bite) { gap = 1 + Math.floor(R() * 3); deep = (0.25 + R() * 0.5) * (hi - lo); } a.push(gap > 0 ? Math.max(lo * 0.6, h - deep) + (R() - 0.5) * 0.06 : h); } return a; };
-
 function build() {
   // the bank of rock round the moat: its light and shade are in the ground's picture
   { const F = new Faces('floor'), M = new Faces('moat'), s = 1.5;
@@ -163,40 +145,22 @@ function build() {
     for (let x = -MX; x < MX - 1e-6; x += 0.5) for (const z of [-MZ, MZ]) M.quad(V(x, LAVA - 0.04, z), V(x + 0.5, LAVA - 0.04, z), V(x + 0.5, 0, z), V(x, 0, z), [[x + 20, 0], [x + 20.5, 0], [x + 20.5, 0.34], [x + 20, 0.34]], V(0, 0, -z));
     for (let z = -MZ; z < MZ - 1e-6; z += 0.5) for (const x of [-MX, MX]) M.quad(V(x, LAVA - 0.04, z), V(x, LAVA - 0.04, z + 0.5), V(x, 0, z + 0.5), V(x, 0, z), [[z + 20, 0], [z + 20.5, 0], [z + 20.5, 0.34], [z + 20, 0.34]], V(-x, 0, 0));
     F.done(true); M.done(); }
-  // low broken walls before each seat, the road's gap in the middle of each: nothing here stands between a player and the board
-  for (const sz of [-1, 1]) { const n = 40, x0 = -5, hi = ragged(n, 0.22, 0.78, 0.2); for (let i = 17; i <= 23; i++) hi[i] = 0; hi[16] = hi[24] = 0.95; hi[15] = hi[25] = 1.05;
-    ruin('wall', 'wall', n, (u, side, y) => V(x0 + u * 0.25, y, sz * (6.7 + side * 0.3)), hi, null, (u, side) => V(0, 0, sz * (side ? 1 : -1)), 0.25); }
-  // the east: the hall's one standing wall, brick, an arched gateway in it, piers along it, a tower at each end
-  { const n = 44, z0 = -5.5, hi = ragged(n, 2.5, 3.6), lo = (i, e) => { const dz = Math.abs(z0 + (i + e) * 0.25); return i < 18 || i > 25 ? 0 : 1.25 + 0.85 * Math.sqrt(Math.max(0, 1 - dz * dz)); };
-    for (let i = 18; i <= 26; i++) hi[i] = Math.max(hi[i], 3.0);
-    ruin('brick', 'brick', n, (u, side, y) => V(6.45 + side * 0.45, y, z0 + u * 0.25), hi, lo, (u, side) => V(side ? 1 : -1, 0, 0), 0.25);
-    for (const pz of [-3.4, -1.25, 1.25, 3.4]) { const top = 2.9 + R() * 0.4;   // a pier, and the rib of the fallen roof that still springs from it
-      ruin('wall', 'wall', 2, (u, side, y) => V(6.45 - (side ? 0 : 0.24), y, pz - 0.26 + u * 0.26), [top, top + 0.08, top], null, (u, side) => V(side ? 1 : -1, 0, 0), 0.26);
-      const F = new Faces('wall'), len = 1 + Math.floor(R() * 2), P = k => { const a = k / 7 * 1.25; return V(6.33 - 2.4 * (1 - Math.cos(a)), top - 0.05 + 2.4 * Math.sin(a), pz); }, sd = V(0, 0, 0.12);
-      for (let k = 0; k < len; k++) { const a = P(k), b = P(k + 1), up = V(-(b.y - a.y), b.x - a.x, 0).normalize().multiplyScalar(0.13), q = (p, i, j) => V().copy(p).addScaledVector(up, i).addScaledVector(sd, j);
-        for (const [i0, j0, i1, j1, o] of [[-1, -1, -1, 1, up.clone().negate()], [1, 1, 1, -1, up], [-1, 1, 1, 1, sd], [1, -1, -1, -1, sd.clone().negate()]]) F.quad(q(a, i0, j0), q(a, i1, j1), q(b, i1, j1), q(b, i0, j0), [[k * 0.6, 0], [k * 0.6, 0.3], [k * 0.6 + 0.6, 0.3], [k * 0.6 + 0.6, 0]], o);
-        if (k === len - 1) { F.quad(q(b, -1, -1), q(b, -1, 1), q(b, 1, 1), q(b, 1, -1), [[0, 0], [0.3, 0], [0.3, 0.3], [0, 0.3]], V().copy(b).sub(a)); RIBTIPS.push(b.clone()); } }
-      F.done(); }
-    for (const [cz, lo2, hi2] of [[-6.25, 3.9, 5.2], [6.25, 2.0, 3.3]]) { const m = 12, hs = ragged(m, lo2, hi2, 0.2); hs[m] = hs[0]; const rr = side => side ? 0.95 : 0.6;
-      ruin('brick', 'brick', m, (u, side, y) => { const a = (u / m) * Math.PI * 2; return V(6.75 + Math.cos(a) * rr(side), y, cz + Math.sin(a) * rr(side)); }, hs, null, (u, side) => { const a = (u / m) * Math.PI * 2; return V(Math.cos(a), 0, Math.sin(a)).multiplyScalar(side ? 1 : -1); }); } }
-  // the west wall went down the mountain with the roof: its two corners still stand, and its stones lie down the slope to the gorge's rim
-  for (const sz of [-1, 1]) { const n = 12, hi = ragged(n, 1.6, 3.3, 0.25).map((h, i) => h * (1 - (i / n) ** 2.2) + 0.05); hi[n] = 0;
-    ruin('wall', 'wall', n, (u, side, y) => V(-7.05 + side * 0.4, y, sz * (7.5 - u * 0.25)), hi, null, (u, side) => V(side ? 1 : -1, 0, 0), 0.25);
-    const m = 8, h2 = ragged(m, 1.2, 2.6, 0.25).map((h, i) => h * (1 - (i / m) ** 2) + 0.05); h2[0] = hi[0]; h2[m] = 0;
-    ruin('wall', 'wall', m, (u, side, y) => V(-7.05 + u * 0.25, y, sz * (7.5 - side * 0.4)), h2, null, (u, side) => V(0, 0, sz * (side ? -1 : 1)), 0.25); }
+  // the hall's walls: stone on its own picture, its light in another
+  HALL = makeHall(R); SCONCES = HALL.sconces; { const h = HALL.geometry(); h.g.userData.stone = true; parts.push(h.g); log.push('the hall: ' + h.faces + ' faces, ' + h.g.attributes.position.count / 3 + ' triangles, ' + h.patches + ' patches of light at ' + h.D.toFixed(1) + ' points a tile'); }
+  // the west wall's stones lie down the slope to the gorge's rim
   { const F = new Faces('wall');
     for (let i = 0; i < 56; i++) { const far = R() ** 1.3, x = -6.3 - far * 8.5, z = (R() - 0.5) * (13 + far * 6), s = (0.08 + R() * R() * 0.3) * (1 - far * 0.3), y = ground(x, z);
       F.box(V(x, y + s * 0.15, z), V(s * (0.8 + R() * 1.1), s * (0.5 + R() * 0.4), s * (0.6 + R() * 0.5)), R() * 6.3, (R() - 0.5) * 1.1); }
     for (const [x, z] of [[-3.2, 7.9], [3.6, -8.1], [-1.9, -7.7], [5.2, 7.8]]) F.box(V(x, 0.12, z), V(0.3, 0.16, 0.22), R() * 6, (R() - 0.5) * 0.5);
     F.done(); }
-  // iron baskets of embers on the piers
+  // iron baskets of embers on the buttresses
   { const F = new Faces('iron'), E = new Faces('white');
     for (const [x, y, z] of SCONCES) { F.box(V(x + 0.12, y - 0.05, z), V(0.13, 0.02, 0.02)); for (let k = 0; k < 6; k++) { const a = k / 6 * 6.283, b = a + 6.283 / 6, p = (q, r, yy) => V(x + Math.cos(q) * r, y + yy, z + Math.sin(q) * r);
       F.quad(p(a, 0.06, -0.08), p(b, 0.06, -0.08), p(b, 0.11, 0.08), p(a, 0.11, 0.08), [[0, 0], [0.1, 0], [0.1, 0.2], [0, 0.2]], V(Math.cos(a + 0.5), 0, Math.sin(a + 0.5)));
       E.quad(p(a, 0.1, 0.06), p(b, 0.1, 0.06), V(x, y + 0.06, z), V(x, y + 0.06, z), [[0, 0], [0.1, 0], [0.1, 0.1], [0, 0.1]], V(0, 1, 0)); } }
     F.done(); const g = finish(E.pos, E.uv); g.userData.fixed = (p, i) => { const r = Math.min(...SCONCES.map(s => Math.hypot(p.x - s[0], p.z - s[2]))) / 0.1; return [0.9 - 0.35 * r, 0.32 - 0.2 * r, 0.07 - 0.05 * r]; }; parts.push(g); }
   // the way into the mountain behind the gate: dark
-  { const F = new Faces('white'); F.quad(V(6.92, 0, -1), V(6.92, 0, 1), V(6.92, 2.2, 1), V(6.92, 2.2, -1), [[0, 0], [1, 0], [1, 1], [0, 1]], V(-1, 0, 0)); const g = finish(F.pos, F.uv); g.userData.fixed = p => [0.03 + 0.03 * (1 - p.y / 2.2), 0.028, 0.03]; parts.push(g); }
+  { const F = new Faces('white'); F.quad(V(6.92, 0, -1), V(6.92, 0, 1), V(6.92, 2.2, 1), V(6.92, 2.2, -1), [[0, 0], [1, 0], [1, 1], [0, 1]], V(-1, 0, 0)); const g = finish(F.pos, F.uv); g.userData.fixed = p => [0.012 + 0.012 * (1 - p.y / 2.2), 0.011, 0.012]; parts.push(g); }
 }
 
 // ---- the scanned things: each stood at its place, sized by its height, on its own corner of the picture
@@ -249,17 +213,15 @@ function leaves() {
     quad([[-1, -1], [1, -1], [1, 1], [-1, 1]].map(([x, y]) => V().copy(c).addScaledVector(r, x * s).addScaledVector(u, y * s)), [[0.01, 0.99], [0.99, 0.99], [0.99, 0.01], [0.01, 0.01]].map(([a2, b2]) => [u0 + a2 * 256 / LW, v0 + b2 * 256 / LH]), [L[0] * g * 0.62, L[1] * g * 0.7, L[2] * g * 0.5]); };
   const vine = (start, right, out, len, n, s = 1) => { const p = V().copy(start), up = V(0, 1, 0); let drift = (R() - 0.5) * 0.5;
     for (let i = 0; i < n; i++) { drift += (R() - 0.5) * 0.3; p.y -= len / n; p.addScaledVector(right, drift * len / n); if (p.y < 0.06) break; leaf(V().copy(p).addScaledVector(out, 0.04 + R() * 0.05).addScaledVector(right, (R() - 0.5) * 0.2), right, up, out, (0.12 + R() * 0.09) * s); } };
-  for (let i = 0; i < 16; i++) vine(V(6.45, 2.6 + R() * 0.9, -5.2 + R() * 10.4), V(0, 0, 1), V(-1, 0, 0), 1.3 + R() * 1.9, 13);                                       // down the brick wall's inner face
-  for (let i = 0; i < 9; i++) { const z = -5 + R() * 10; leaf(V(6.5 + R() * 0.3, 3.0 + R() * 0.5, z), V(0, 0, 1), V(1, 0, 0), V(0, 1, 0), 0.2); }                      // over its top
-  for (const sz of [-1, 1]) for (let i = 0; i < 7; i++) { const x = -4.8 + R() * 9.6; if (Math.abs(x) < 1.2) continue; vine(V(x, 0.62, sz * 6.7), V(1, 0, 0), V(0, 0, -sz), 0.55, 4, 0.85); vine(V(x + 0.3, 0.6, sz * 7.0), V(1, 0, 0), V(0, 0, sz), 0.55, 4, 0.85); }
-  for (const [cz, top] of [[-6.25, 4.2], [6.25, 2.4]]) for (let i = 0; i < 6; i++) { const a = Math.PI * (0.5 + R() * 1.0), o = V(Math.cos(a), 0, Math.sin(a)); vine(V(6.75 + o.x * 0.95, top * (0.6 + R() * 0.4), cz + o.z * 0.95), V(-o.z, 0, o.x), o, 1.6 + R(), 10); }
-  for (const sz of [-1, 1]) for (let i = 0; i < 5; i++) { vine(V(-6.65, 0.8 + R() * 1.6, sz * (7.4 - R() * 1.6)), V(0, 0, 1), V(1, 0, 0), 1.2, 6); vine(V(-7.05, 0.8 + R() * 1.4, sz * (7.4 - R() * 1.6)), V(0, 0, 1), V(-1, 0, 0), 1.2, 5); }
+  for (const v of HALL.vines) vine(v.at, v.right, v.out, v.len, v.n, v.s || 1);                                                                                        // down the walls and towers
+  for (const [x, y, z] of HALL.tops) leaf(V(x, y, z), V(0, 0, 1), V(1, 0, 0), V(0, 1, 0), 0.2);                                                                       // over the wall walk
   for (let i = 0; i < 26; i++) { const far = R(), x = -7.6 - far * 6.5, z = (R() - 0.5) * 16, y = ground(x, z); leaf(V(x, y + 0.14, z), V(1, 0, 0), V(0, 0, 1), V(0, 1, 0).add(V(R() - 0.5, 0, R() - 0.5).multiplyScalar(0.6)).normalize(), 0.22 + R() * 0.16); }   // among the fallen stones
   const nIvy = pos.length / 9;
   // chains: from the gate's arch, from two ribs' broken ends, from the tall tower
   { const u0 = 1024 / LW, u1 = 1056 / LW, v0 = 512 / LH;
-    for (const [x, y, z, len] of [[6.4, 2.02, -0.55, 0.7], [6.4, 2.02, 0.55, 0.5], ...[0, 2].map(k => [RIBTIPS[k].x + 0.1, RIBTIPS[k].y - 0.15, RIBTIPS[k].z, 1.0 + k * 0.25]), [5.95, 4.0, -5.7, 1.3]]) { const L = lightAt(V(x, y - len / 2, z), V(-1, 0, 0), 6).map(c => c * 0.8), v1 = v0 + Math.min(1, len / 1.6) * 256 / LH;
+    for (const [x, y, z, len] of [[5.93, 2.0, -0.55, 0.7], [5.93, 2.0, 0.55, 0.5], ...[0, 3].map(k => [HALL.ribTips[k].x + 0.1, HALL.ribTips[k].y - 0.15, HALL.ribTips[k].z, 1.0 + k * 0.1]), [5.98, 4.4, -6.3, 1.3]]) { const L = lightAt(V(x, y - len / 2, z), V(-1, 0, 0), 6).map(c => c * 0.8), v1 = v0 + Math.min(1, len / 1.6) * 256 / LH;
       for (const [dx, dz] of [[0.035, 0], [0, 0.035]]) quad([V(x - dx, y - len, z - dz), V(x + dx, y - len, z + dz), V(x + dx, y, z + dz), V(x - dx, y, z - dz)], [[u0, v1], [u1, v1], [u1, v0], [u0, v0]], L); } }
+  seed = 1772292596;
   // the trees' cards: two crossed near the hall, one turned to the hall further off
   let cards = 0;
   for (const t of trees) { if (!t.near) continue; const L = hazed(cardLight(t), tmp.set(t.x, t.y + t.h * 0.6, t.z)), Lb = L.map(c => c * 0.72), w = t.h * t.sp.asp / 2, s = t.sp, a0 = t.r < 30 ? R() * 3.14 : Math.atan2(t.x, -t.z) + Math.PI;
@@ -334,26 +296,26 @@ function shot(renderer, w, h, scene, cam, into, x, y) { renderer.setSize(w, h, f
 
 window.bakeDungeon = async () => {
   await MeshoptSimplifier.ready;
-  const QUIET = { brick: 'saturate(0.5) brightness(0.84)', wall: 'saturate(0.8) brightness(0.92)', floor: 'saturate(0.75) brightness(0.9)', kerb: 'saturate(0.6) brightness(0.78)', moat: 'brightness(0.9)' };   // muted: no surface shouts
+  const QUIET = { wall: 'saturate(0.8) brightness(0.92)', floor: 'saturate(0.75) brightness(0.9)', kerb: 'saturate(0.6) brightness(0.78)', moat: 'brightness(0.9)' };   // muted: no surface shouts
   for (const name of Object.keys(QUIET)) { const [x, y, s] = CELL[name]; ctx.filter = QUIET[name]; ctx.drawImage(await img('/full/tex/' + name + '.jpg'), x, y, s, s); }
   ctx.filter = 'none';
   for (const name of ['grass', 'forest', 'cliff', 'scree', 'crag', 'sky']) pix[name] = await img('/full/tex/' + name + '.jpg');
   const treesPic = await img('/full/trees.png'); leafSheet(await img('/full/ivy.png'), treesPic);
   build();
   // mossed rock and boulders among the fallen stones; the embers' pits; the gate in its arch; what the garrison left
-  await thing('rock_moss_set_01', 260, [{ at: [-8.3, 2.7], wide: 1.6, sink: 0.1 }, { at: [6.0, -3.9, 0], wide: 0.9, turn: 2 }, { at: [9.6, 10.5], wide: 2.4, turn: 1, sink: 0.25 }, { at: [-10.5, -15], wide: 2.6, turn: 4, sink: 0.3 }, { at: [10.5, -12], wide: 2.0, turn: 2.6, sink: 0.25 }]);
-  await thing('namaqualand_boulder_02', 70, [{ at: [-8.6, -1.9], wide: 0.9, sink: 0.1 }, { at: [-6.2, 5.9, 0], wide: 0.7, turn: 1 }, { at: [5.4, 7.9], wide: 0.45, turn: 2 }, { at: [-5.35, -8.0], wide: 0.5, turn: 4 }, { at: [6.05, 4.3, 0], wide: 0.45, turn: 3 }, { at: [-10.3, -5.3], wide: 1.3, turn: 5, sink: 0.2 }, { at: [-11.6, 4.6], wide: 1.1, sink: 0.2 }, { at: [5.9, -1.9, 0], wide: 0.35, turn: 1 }, { at: [-9.1, -3.2], wide: 0.6, turn: 2.2 }, { at: [-12.8, 0.6], wide: 0.9, turn: 0.7, sink: 0.15 }, { at: [3.4, 9.4], wide: 0.6, turn: 1.4, sink: 0.1 }, { at: [-3.8, -9.6], wide: 0.7, turn: 3.3, sink: 0.1 }]);
+  await thing('rock_moss_set_01', 260, [{ at: [-8.3, 2.7], wide: 1.6, sink: 0.1 }, { at: [5.95, -2.3, 0], wide: 0.8, turn: 2 }, { at: [9.6, 10.5], wide: 2.4, turn: 1, sink: 0.25 }, { at: [-10.5, -15], wide: 2.6, turn: 4, sink: 0.3 }, { at: [10.5, -12], wide: 2.0, turn: 2.6, sink: 0.25 }]);
+  await thing('namaqualand_boulder_02', 70, [{ at: [-8.6, -1.9], wide: 0.9, sink: 0.1 }, { at: [-6.2, 5.9, 0], wide: 0.7, turn: 1 }, { at: [5.4, 7.9], wide: 0.45, turn: 2 }, { at: [-5.35, -8.0], wide: 0.5, turn: 4 }, { at: [6.0, 2.0, 0], wide: 0.4, turn: 3 }, { at: [-10.3, -5.3], wide: 1.3, turn: 5, sink: 0.2 }, { at: [-11.6, 4.6], wide: 1.1, sink: 0.2 }, { at: [5.9, -1.9, 0], wide: 0.35, turn: 1 }, { at: [-9.1, -3.2], wide: 0.6, turn: 2.2 }, { at: [-12.8, 0.6], wide: 0.9, turn: 0.7, sink: 0.15 }, { at: [3.4, 9.4], wide: 0.6, turn: 1.4, sink: 0.1 }, { at: [-3.8, -9.6], wide: 0.7, turn: 3.3, sink: 0.1 }]);
   await thing('stone_fire_pit', 170, PITS.map(([x, z]) => ({ at: [x, z, 0], wide: 0.56 })));
   await thing('large_iron_gate', 420, [{ at: [6.62, 0, 0], tall: 2.05, turn: Math.PI / 2 }]);
-  await thing('treasure_chest', 120, [{ at: [6.0, 1.9, 0], wide: 0.5, turn: -1.9 }]);
-  await thing('wine_barrel_01', 150, [{ at: [6.02, 2.75, 0], tall: 0.62, turn: 0.4 }, { at: [6.05, 3.42, 0], tall: 0.62, turn: 2.2 }]);
-  await thing('wooden_crate_01', 60, [{ at: [5.95, -2.5, 0], wide: 0.5, turn: 0.3 }, { at: [6.0, -3.05, 0], wide: 0.42, turn: 1.1 }, { at: [5.97, -2.6, 0.36], wide: 0.36, turn: 0.8 }]);
-  await thing('kite_shield', 110, [{ at: [6.3, -4.3, 0.02], tall: 0.7, turn: -Math.PI / 2, tilt: -0.3 }, { at: [6.3, 4.45, 0.02], tall: 0.7, turn: -Math.PI / 2 + 0.2, tilt: -0.28 }]);
+  await thing('treasure_chest', 120, [{ at: [5.98, 2.3, 0], wide: 0.5, turn: -1.75 }]);
+  await thing('wine_barrel_01', 150, [{ at: [6.05, 3.5, 0], tall: 0.62, turn: 0.4 }, { at: [6.05, 4.08, 0], tall: 0.62, turn: 2.2 }]);
+  await thing('wooden_crate_01', 60, [{ at: [5.98, -3.55, 0], wide: 0.5, turn: 0.3 }, { at: [6.02, -4.08, 0], wide: 0.42, turn: 1.1 }, { at: [5.99, -3.65, 0.36], wide: 0.36, turn: 0.8 }]);
+  await thing('kite_shield', 110, [{ at: [6.2, -5.3, 0.02], tall: 0.7, turn: -Math.PI / 2, tilt: -0.3 }, { at: [6.2, 5.35, 0.02], tall: 0.7, turn: -Math.PI / 2 + 0.2, tilt: -0.28 }, { at: [5.95, 0, 2.4], tall: 0.6, turn: -Math.PI / 2 }]);
   // the embers in each pit: a small bright disc
   { const [cx, cy, cs] = CELL.white, u = (cx + cs / 2) / W, v = (cy + cs / 2) / H;
     for (const [x, z] of PITS) { const g = new THREE.CircleGeometry(0.2, 10).rotateX(-Math.PI / 2).translate(x, 0.16, z).toNonIndexed(); for (let i = 0; i < g.attributes.uv.count; i++) g.attributes.uv.setXY(i, u, v);
       g.userData.fixed = p => { const r = Math.hypot(p.x - x, p.z - z) / 0.2; return [0.92 - 0.4 * r, 0.3 - 0.2 * r, 0.06 - 0.05 * r]; }; parts.push(g); } }
-  plant();
+  seed = 3511135824; plant();   // the trees stand where they stood before the walls were rebuilt
 
   // ---- everything that can shade: the hall and its things, the ground for 90 tiles round, each near tree as a cone or a ball
   { const occ = parts.map(g => { const q = (g.index ? g.toNonIndexed() : g.clone()); for (const k of Object.keys(q.attributes)) if (k !== 'position') q.deleteAttribute(k); return q; });
@@ -363,7 +325,8 @@ window.bakeDungeon = async () => {
     const can = trees.filter(t => t.r < 80).map(t => { const g = t.fir ? new THREE.ConeGeometry(t.h * 0.2, t.h * 0.86, 7).translate(0, t.h * 0.56, 0) : new THREE.SphereGeometry(t.h * 0.5, 7, 5).scale(1, 0.5, 1).translate(0, t.h * 0.72, 0); g.translate(t.x, t.y, t.z); const q = g.toNonIndexed(); q.deleteAttribute('normal'); q.deleteAttribute('uv'); return q; });
     canopy = new MeshBVH(mergeGeometries(can));
     log.push('shade from ' + solid.geometry.attributes.position.count / 3 + ' triangles and ' + can.length + ' trees'); }
-  for (const g of parts) { if (!g.attributes.normal) g.computeVertexNormals(); shade(g); }
+  for (const g of parts) { if (g.userData.stone) continue; if (!g.attributes.normal) g.computeVertexNormals(); shade(g); }
+  const lightC = HALL.light((p, n, rays) => lightAt(p, n, rays), p => { lseed = (Math.imul(Math.round(p.x * 997), 374761393) ^ Math.imul(Math.round(p.y * 997), 668265263) ^ Math.imul(Math.round(p.z * 997), 1274126177)) >>> 0; });
   console.log('the hall is lit');
 
   // ---- the ground's paint and the far wall's
@@ -453,13 +416,14 @@ window.bakeDungeon = async () => {
     quad.material = flat(1); const mc = document.createElement('canvas'); mc.width = 1024; mc.height = 356; const mx = mc.getContext('2d'); mx.filter = 'blur(2px) brightness(0.9) contrast(1.6)'; shot(renderer, 1024, 356, q, new THREE.Camera(), mx, 0, 0);
     files['mask.jpg'] = mc.toDataURL('image/jpeg', 0.8).split(',')[1]; }
 
-  const all = mergeGeometries(parts.map(g => { for (const k of Object.keys(g.attributes)) if (!['position', 'normal', 'uv', 'color'].includes(k)) g.deleteAttribute(k); return g.index ? g.toNonIndexed() : g; }));
-  all.deleteAttribute('normal');
+  const all = mergeGeometries(parts.map(g => { for (const k of Object.keys(g.attributes)) if (!['position', 'uv', 'uv1', 'color'].includes(k)) g.deleteAttribute(k); const q = g.index ? g.toNonIndexed() : g; if (!q.attributes.uv1) q.setAttribute('uv1', new THREE.Float32BufferAttribute(q.attributes.position.count * 2, 2)); return q; }));
   const root = new THREE.Group(), walls = new THREE.Mesh(mergeVertices(all), new THREE.MeshBasicMaterial({ vertexColors: true })), lv = new THREE.Mesh(mergeVertices(leaves()), new THREE.MeshBasicMaterial({ vertexColors: true })), am = new THREE.Mesh(air, new THREE.MeshBasicMaterial({ vertexColors: true }));
   walls.name = 'dungeon'; lv.name = 'ivy'; am.name = 'air'; root.add(walls, lv, am);
   files['dungeon.glb'] = b64(await exportGlb(root));
   files['atlas.jpg'] = canvas.toDataURL('image/jpeg', 0.84).split(',')[1];
   files['land.jpg'] = landC.toDataURL('image/jpeg', 0.84).split(',')[1];
+  { const sp = {}; for (const k of ['stone', 'ashlar']) for (const suf of ['', '_nor', '_ao']) sp[k + suf] = await img('/full/tex/' + k + suf + '.jpg'); files['stone.webp'] = stonePicture(sp).toDataURL('image/webp', 0.82).split(',')[1]; }
+  files['light.webp'] = lightC.toDataURL('image/webp', 0.9).split(',')[1];
   files['leaf.webp'] = leafC.toDataURL('image/webp', 0.86).split(',')[1];
   const small = async (name, s) => { const c = document.createElement('canvas'); c.width = c.height = s; c.getContext('2d').drawImage(await img('/full/tex/' + name + '.jpg'), 0, 0, s, s); return c.toDataURL('image/jpeg', 0.86).split(',')[1]; };
   files['flag.jpg'] = await small('flag', 512); files['lava.jpg'] = await small('lava_glow', 256);

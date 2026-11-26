@@ -6,4 +6,7 @@ fs.mkdirSync('dist', { recursive: true }); fs.writeFileSync('dist/chess.html', h
 fs.rmSync('dist/chess-assets', { recursive: true, force: true }); fs.cpSync('data/chess', 'dist/chess-assets', { recursive: true });
 fs.mkdirSync('dist/chess-assets/jungle', { recursive: true });   // the jungle's trees and rocks are HULL DOWN's own files
 for (const f of ['tree_willow', 'tree_beech', 'tree_elm', 'tree_willow_lo', 'tree_beech_lo', 'tree_elm_lo', 'rocks']) fs.copyFileSync(`data/tank/m/${f}.glb`, `dist/chess-assets/jungle/${f}.glb`);
+fs.mkdirSync('dist/chess-assets/cavern', { recursive: true });   // the cavern's things: the dungeon's own originals, THE LAST CHANCE's ladder, HULL DOWN's dead tree
+for (const f of ['stone_fire_pit', 'large_iron_gate', 'wooden_crate_01', 'kite_shield', 'treasure_chest', 'wine_barrel_01']) fs.copyFileSync(`data/full/chess/dungeon/m/${f}.glb`, `dist/chess-assets/cavern/${f}.glb`);
+fs.copyFileSync('data/saloon/m/wooden_ladder.glb', 'dist/chess-assets/cavern/wooden_ladder.glb'); fs.copyFileSync('data/tank/m/deadtree.glb', 'dist/chess-assets/cavern/deadtree.glb');
 console.log('dist/chess.html', html.length, 'bytes, dist/chess-assets/ copied');

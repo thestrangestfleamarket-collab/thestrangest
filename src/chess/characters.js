@@ -191,7 +191,7 @@ export class Crowd {
     let n = 0, k = 0, k2 = 0; const solid = this.stand();
     for (const g of list) {
       const u = g.userData; g.updateMatrix();
-      this.bases.setMatrixAt(n, g.matrix); this.bases.setColorAt(n, this.c.setHex(TEAM[u.owner]).multiplyScalar(u.rested ? 0.6 : 1));
+      this.bases.setMatrixAt(n, g.matrix); this.bases.setColorAt(n, this.c.setHex(TEAM[u.owner]).multiplyScalar((u.rested ? 0.6 : 1) * (this.dim ?? 1)));
       this.shade.setMatrixAt(n, g.matrix); n++;
       if (u.live || !solid || !still[u.type]) continue;
       const thin = SPEC[u.type].sheer, b = thin ? this.ghosts() : solid, geo = thin ? this.geo2 : this.geo, ids = thin ? this.ids2 : this.ids, at = thin ? k2++ : k++;

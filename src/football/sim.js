@@ -68,7 +68,7 @@ export class Game {
     return by(r < 0.42 ? 'RUN' : r < 0.8 ? 'SHORT' : 'DEEP');
   }
   tipDef() { const d = this.dir(this.poss), n = (s) => DEFENSE.findIndex(p => p.name === s); return 50 - this.los * d <= 4 ? n('GOAL LINE') : this.toGo >= 8 ? n(this.down >= 3 ? 'COVER 4' : 'COVER 3') : this.toGo <= 2 ? n('COVER 1 MAN') : n(this.down === 1 ? 'COVER 2' : 'COVER 2 MAN'); }
-  cpuDef() { const d = this.dir(this.poss); if (50 - this.los * d <= 3) return DEFENSE.findIndex(p => p.tight); return Math.floor(this.rnd() * (DEFENSE.length - 1)); }
+  cpuDef() { const d = this.dir(this.poss); if (50 - this.los * d <= 3) return DEFENSE.findIndex(p => p.tight); const r = this.rnd(), c = r < 0.48 ? 'ZONE' : r < 0.74 ? 'MAN' : 'BLITZ', L = DEFENSE.map((p, i) => [p, i]).filter(([p]) => p.cat === c && !p.tight && (p.name !== 'PREVENT' || this.toGo > 14)); return L[Math.floor(this.rnd() * L.length)][1]; }
   lineup() {
     this.run = null; const o = this.poss, d = this.dir(o), play = OFFENSE[this.call[o]], dplay = DEFENSE[this.call[1 - o]], form = formation(play.form); this.play = play; this.dplay = dplay;
     const at = (p, f, s) => { p.x = this.los + d * f; p.z = clamp(d * s, -FIELD.W + 1, FIELD.W - 1); p.hx = p.x; p.hz = p.z; p.face = d > 0 ? 0 : Math.PI; };
@@ -82,7 +82,7 @@ export class Game {
     // man coverage: the corners take the widest receivers, the rest go to whoever is nearest and still free
     const taken = new Set(), men = this.team(1 - o).filter(p => p.job === 'man');
     for (const m of men) { let best = null, bd = 1e9; for (const r of sk) { if (taken.has(r.id)) continue; const q = hyp(r.x - m.x, (r.z - m.z) * 1.6); if (q < bd) { bd = q; best = r; } } if (best) { taken.add(best.id); m.tgt = best.id; } else { m.job = 'zone'; m.zone = { x: this.los + d * 9, z: m.z }; } }
-    this.handed = false; this.thrown = false; this.caught = false; this.past = false; this.t = 0; this.pre = 0; this.phase = 'pre'; this.carrier = -1; this.result = null;
+    this.pend = null; this.windId = -1; this.handed = false; this.thrown = false; this.caught = false; this.past = false; this.t = 0; this.pre = 0; this.phase = 'pre'; this.carrier = -1; this.result = null;
     this.ball.st = 'dead'; this.ball.x = this.los; this.ball.z = 0; this.ball.y = 0.15;
     this.ctls[o] = -1; this.ctls[1 - o] = this.human[1 - o] ? (1 - o) * 11 + 5 : -1;
     this.emit('lineup');
@@ -115,7 +115,7 @@ export class Game {
     if (this.play.kick) { this.kick(); return true; }
     this.ball.st = 'held'; this.ball.by = qb.id; this.carrier = qb.id; this.emit('snap');
     if (this.play.kneel) { qb.x -= this.dir(this.poss); return this.end('down', qb), true; } if (this.play.spike) { this.thrown = true; return this.end('inc'), true; }
-    if (this.play.sneak) { this.handed = true; qb.job = 'runner'; qb.way = [{ x: this.los + this.dir(this.poss) * 3, z: 0 }]; }
+    if (this.play.sneak || this.play.qbrun) { const d = this.dir(this.poss); this.handed = true; qb.job = 'runner'; qb.way = (this.play.qbrun || [[3, 0]]).map(([f, z]) => ({ x: this.los + d * f, z: d * z })); }
     if (this.human[this.poss]) this.ctls[this.poss] = this.run ? -1 : qb.id;
     return true;
   }
@@ -204,7 +204,7 @@ export class Game {
       let best = null, bd = 1e9; if (b.ord != null && this.P[b.ord].st === 'up') best = this.P[b.ord];
       else for (const q of D) { if (q.blkN > 0 && !LINE.has(b.role)) continue; const m = hyp(q.x - b.x, q.z - b.z) + 0.45 * hyp(q.x - prot.x, q.z - prot.z) + q.blkN * 6 + (q.job === 'rush' || q.job === 'pursue' ? 0 : 5); if (m < bd) { bd = m; best = q; } }
       b.bt = best ? best.id : -1; if (!best) continue; best.blkN++;
-      if (hyp(best.x - b.x, best.z - b.z) < 1.25 && best.free <= 0 && !best.mv) { best.blk = b.id; const k = (SHED[best.role] || 0.3) * (best.id === this.ctls[best.team] ? 2.2 : 1) * (this.past ? 1.6 : this.run && !this.thrown ? 0.2 : this.human[o] && !this.human[1 - o] ? this.K.shed : 1); if (this.rnd() < k * dt) { best.free = 1.3; b.stun = 0.8; best.blk = -1; } }
+      if (hyp(best.x - b.x, best.z - b.z) < 1.25 && best.free <= 0 && !best.mv) { best.blk = b.id; const k = (SHED[best.role] || 0.3) * (best.id === this.ctls[best.team] ? 2.2 : 1) * (this.past ? 1.6 : this.run && !this.thrown ? 0.2 : this.human[o] && !this.human[1 - o] ? this.K.shed : 0.6); if (this.rnd() < k * dt) { best.free = 1.3; b.stun = 0.8; best.blk = -1; } }
     }
   }
   think(p, dt) {
@@ -230,7 +230,7 @@ export class Game {
       return this.blockJob(p, dt);
     }
     // the other side
-    const slow = p.blk >= 0 ? (this.run && !this.thrown ? 0.1 : 0.2) : p.job === 'rush' && this.human[o] && !this.past && !this.thrown && !this.handed ? this.K.rush : 1; let aim = null;
+    const slow = p.blk >= 0 ? (this.run && !this.thrown ? 0.1 : 0.2) : p.job === 'rush' && !this.past && !this.thrown && !this.handed ? (this.human[o] ? this.K.rush : 0.88) : 1; let aim = null;
     if (air && (p.job !== 'rush' || hyp(b.land.x - p.x, b.land.z - p.z) < 8)) { if (hyp(b.land.x - p.x, b.land.z - p.z) < 14 || p.tgt === b.tgt) aim = b.land; }
     if (!aim && car && (p.job === 'rush' || car.team !== o || this.past || (this.handed && this.t > (this.run ? this.run.ho : 0) + 1.0) || car.id !== this.qb && car.team === o && this.thrown)) { const q = hyp(car.x - p.x, car.z - p.z), T = Math.min(1.6, q / p.spd); aim = { x: car.x + car.vx * T, z: car.z + car.vz * T }; if (p.job !== 'rush') p.job = 'pursue'; }
     if (!aim && p.job === 'man' && p.lagT > 0) { p.lagT -= dt; aim = { x: p.x + p.vx, z: p.z + p.vz }; }
@@ -260,10 +260,11 @@ export class Game {
   }
   open(r, T = 0.6) { let m = 99; const px = r.x + r.vx * T, pz = r.z + r.vz * T; for (const q of this.team(1 - r.team)) { if (q.st !== 'up') continue; const e = hyp(q.x + q.vx * T * 0.7 - px, q.z + q.vz * T * 0.7 - pz); if (e < m) m = e; } return m; }
   cpuQB(p) {
-    if (!this.canThrow() || this.run && !this.play.pa || this.t < 1.3 + (this.human[1 - p.team] ? this.K.read : 0)) return; const d = this.dir(p.team); let heat = 99; for (const q of this.team(1 - p.team)) if (q.st === 'up' && q.blk < 0) heat = Math.min(heat, hyp(q.x - p.x, q.z - p.z));
+    if (!this.canThrow() || this.run && !this.play.pa || this.t < 1.3 + (this.human[1 - p.team] ? this.K.read : 0)) return; if (this.pend) { if (this.t >= this.pend.at) { const w = this.pend; this.pend = null; this.windId = -1; this.throwTo(w.id, w.lob, null, w.wild); } return; }
+    const d = this.dir(p.team); let heat = 99; for (const q of this.team(1 - p.team)) if (q.st === 'up' && q.blk < 0) heat = Math.min(heat, hyp(q.x - p.x, q.z - p.z));
     if ((this.qbT || 0) > this.t && heat > 2.5) return; this.qbT = this.t + 0.25; let best = null, bs = this.t > 3.6 || heat < 3 ? 1.6 : this.t > 2.4 ? 2.8 : 3.8;
     for (const r of this.team(p.team)) { if (!r.elig || r.st !== 'up' || r.job !== 'route') continue; const dist = hyp(r.x - p.x, r.z - p.z); if (dist < 3 || dist > 55) continue; const s = this.open(r, dist / 22) + (r.x - this.los) * d * 0.035; if (s > bs) { bs = s; best = r; } }
-    if (best) return this.throwTo(best.id, hyp(best.x - p.x, best.z - p.z) > 28, null, this.human[1 - p.team] ? this.K.wild + 0.8 : 3.2);
+    if (best) { this.pend = { id: best.id, lob: hyp(best.x - p.x, best.z - p.z) > 28, wild: this.human[1 - p.team] ? this.K.wild + 0.8 : 3.2, at: this.t + 0.13 }; this.windId = p.id; return; }   // the arm goes back a moment before the ball leaves
     if (heat < 2.6 && this.t > 1.8 && this.rnd() < 0.45) { this.scr = true; return; }   // nobody open and the rush is home: he runs
     if (this.t > 5 || heat < 2.3 && this.t > 1.5) { const from = { x: p.x, y: 2, z: p.z }; this.launch(from, { vx: d * 9, vz: (p.z > 0 ? 1 : -1) * 16, vy: 6 }); }
   }
@@ -308,7 +309,7 @@ export class Game {
 
   // ---- the whistle ----
   end(k, c, by) {
-    if (this.phase !== 'live') return; const o = this.poss, d = this.dir(o), b = this.ball; this.phase = 'dead'; this.deadT = 2.6; this.downed = c ? c.id : -1; let msg = '', next;
+    if (this.phase !== 'live') return; this.pend = null; this.windId = -1; const o = this.poss, d = this.dir(o), b = this.ball; this.phase = 'dead'; this.deadT = 2.6; this.downed = c ? c.id : -1; let msg = '', next;
     if (c && k !== 'td') { c.st = 'down'; c.dn = 9; c.vx *= 0.3; c.vz *= 0.3; c.mv = ''; c.y = 0; } if (by) { by.st = 'down'; by.dn = 1.2; }
     const gain = c ? Math.round((c.x - this.los) * d) : 0, turn = c && c.team !== o;
     const B = this.box[o];

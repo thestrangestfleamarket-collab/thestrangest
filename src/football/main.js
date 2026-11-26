@@ -38,7 +38,7 @@ function readInput() {
 // ---- where the field is: a table in front of you, or life size around the player you are ----
 function headPose(pos, fwd) { const c = renderer.xr.isPresenting ? renderer.xr.getCamera() : camera; c.getWorldPosition(pos); c.getWorldDirection(fwd); fwd.y = 0; if (fwd.lengthSq() < 1e-4) fwd.set(0, 0, -1); fwd.normalize(); }
 function place() {
-  if (G.mode === 'table') { W.position.copy(G.tpos); W.rotation.y = G.tyaw; W.scale.setScalar(G.tscale); panel.mesh.position.set(0, 0.72, -0.62).applyAxisAngle(v1.set(0, 1, 0), G.tyaw).add(G.tpos); panel.mesh.rotation.set(0, G.tyaw, 0); if (!G.xr) { panel.mesh.scale.setScalar(1.55); panel.mesh.position.y += 0.2; } else panel.mesh.scale.setScalar(1); }
+  if (G.mode === 'table') { W.position.copy(G.tpos); W.rotation.y = G.tyaw; W.scale.setScalar(G.tscale); panel.mesh.position.set(0, 0.72, -0.62).applyAxisAngle(v1.set(0, 1, 0), G.tyaw).add(G.tpos); panel.mesh.rotation.set(0, G.tyaw, 0); if (!G.xr) { panel.mesh.scale.setScalar(1.3); panel.mesh.position.y += 0.06; } else panel.mesh.scale.setScalar(1); }
   else { const p = sim.P[G.body] || sim.P[sim.qb] || sim.P[0]; W.scale.setScalar(YD); W.rotation.y = G.yaw; W.position.set(0, 0, 0); W.updateMatrix(); v1.set(p.x, 0, p.z).applyMatrix4(W.matrix); W.position.set(G.anchor.x - v1.x, 0, G.anchor.z - v1.z);
     panel.mesh.position.copy(G.anchor).addScaledVector(G.fwd, 1.5); panel.mesh.position.y = 1.25; panel.mesh.rotation.set(0, Math.atan2(-G.fwd.x, -G.fwd.z), 0); }
   W.updateMatrixWorld(true);
@@ -72,7 +72,7 @@ function pointer() {
 }
 function click(id) {
   const [k, a] = id.split(':'); snd.start();
-  if (k === 'tab') G.tab = a; else if (k === 'play') { sim.pick(USER, +a); } else if (k === 'auto') G.auto = !G.auto; else if (k === 'room') { G.room = !G.room; env(); } else if (k === 'wx') { const K = Object.keys(WEATHER); sky(K[(K.indexOf(world.kind) + 1) % K.length], world.hour); } else if (k === 'hour') { const K = Object.keys(HOURS); sky(world.kind, K[(K.indexOf(world.hour) + 1) % K.length]); }
+  if (k === 'tab') { G.tab = a; G.page = 0; } else if (k === 'more') G.page = (G.page || 0) + 1; else if (k === 'play') { sim.pick(USER, +a); } else if (k === 'auto') G.auto = !G.auto; else if (k === 'room') { G.room = !G.room; env(); } else if (k === 'wx') { const K = Object.keys(WEATHER); sky(K[(K.indexOf(world.kind) + 1) % K.length], world.hour); } else if (k === 'hour') { const K = Object.keys(HOURS); sky(world.kind, K[(K.indexOf(world.hour) + 1) % K.length]); }
   else if (k === 'view') setMode(G.mode === 'table' ? 'first' : 'table'); else if (k === 'again') newGame(); else if (k === 'snap') sim.snap(); else if (k === 'audible') { sim.audible(); view.showRoutes(sim, false); }
   else if (k === 'menu') G.menu = !G.menu; else if (k === 'timeout') { if (sim.timeout(USER)) snd.whistle(); } else if (k === 'lvl') { OPT.lvl = (OPT.lvl + 1) % LEVELS.length; sim.lvl = OPT.lvl; sim.K = LEVELS[OPT.lvl]; } else if ((k === 'gmode' || k === 'qlen') && VS.role !== 'solo') snd.tone(220, 0.1); else if (k === 'gmode') { OPT.mode = { game: 'drill', drill: 'practice', practice: 'game' }[OPT.mode]; newGame(); G.menu = true; } else if (k === 'qlen') { OPT.qlen = { 60: 180, 180: 300, 300: 60 }[OPT.qlen] || 180; newGame(); G.menu = true; }
   else if (k === 'hot' && G.sel >= 0) { sim.order(G.sel, { route: a }); view.showRoutes(sim, true); }
@@ -93,7 +93,7 @@ function versus(dt) { if (VS.role === 'solo') return; VS.at += dt;
   if (sim.phase === 'call' && VS.phT > 25) { for (const t of [0, 1]) if (sim.call[t] < 0) sim.call[t] = t === sim.poss ? sim.cpuOff() : sim.cpuDef(); sim.pick(0, -1); } else if (sim.phase === 'pre' && VS.phT > 20) sim.snap();
   if (VS.at >= 0.05) { VS.at = 0; net.send({ t: 's', s: sim.snapshot(VS.ev.splice(0)) }); } }
 function buzz(side, v = 0.6, ms = 40) { for (const h of hands) { if (!h.src || (side && h.src.handedness !== side)) continue; const a = h.src.gamepad && h.src.gamepad.hapticActuators && h.src.gamepad.hapticActuators[0]; if (a && a.pulse) a.pulse(v, ms).catch(() => {}); } }
-function tabFix() { const off = sim.poss === USER, ok = off ? ['RUN', 'SHORT', 'DEEP', 'KICK'] : ['ZONE', 'MAN', 'BLITZ']; if (!ok.includes(G.tab)) G.tab = ok[0]; }
+function tabFix() { const off = sim.poss === USER, ok = off ? ['RUN', 'SHORT', 'DEEP', 'KICK'] : ['ZONE', 'MAN', 'BLITZ']; if (!ok.includes(G.tab)) { G.tab = ok[0]; G.page = 0; } }
 function juke(p, side) { const s = Math.hypot(p.vx, p.vz) || 1, lx = p.vz / s, lz = -p.vx / s; return side[0] * lx + side[1] * lz > 0 ? 'jukeL' : 'jukeR'; }
 
 function controls(dt) {
@@ -141,7 +141,7 @@ function grab(l, r) {
 }
 
 function events() {
-  for (const e of sim.ev) { const off = sim.poss === USER;
+  for (const e of sim.ev) { const off = sim.poss === USER; view.event(e, sim);
     if (e.t === 'lineup') { G.sel = -1; view.showRoutes(sim, off && !sim.isKO); }
     else if (e.t === 'snap') { snd.snap(); view.showRoutes(sim, false); G.sel = -1; if (G.auto && off && !sim.run && !sim.play.sneak) setMode('first'); }
     else if (e.t === 'throw') { snd.swish(); if (G.auto) setMode('table'); } else if (e.t === 'handoff') { if (G.auto) setMode('table'); }
@@ -149,16 +149,16 @@ function events() {
     else if (e.t === 'td' || e.t === 'fgood') { snd.cheer(0.5, 4); world.cheer(1); } else if (e.t === 'first') { snd.cheer(0.2, 1.5); world.cheer(0.45); } else if (e.t === 'int') { world.cheer(0.6); snd.cheer(0.3, 2); } else if (e.t === 'whistle') { snd.whistle(); if (G.auto) setMode('table'); } }
   if (VS.role === 'host') VS.ev.push(...sim.ev); sim.ev.length = 0;
 }
-let acc = 0, last = 0; const FRUST = new THREE.Frustum(), COST = { n: 0, ms: 0 };
+let acc = 0, last = 0; const FRUST = new THREE.Frustum(), EYE = new THREE.Vector3(), COST = { n: 0, ms: 0 };
 function advance(dt) { acc += dt; let n = 0; while (acc >= 1 / 60 && n++ < 6) { sim.step(1 / 60); acc -= 1 / 60; events(); } if (n > 5) acc = 0; }
 function frame(ms) {
   const dt = Math.min(0.05, (ms - last) / 1000 || 0.016); last = ms; G.t += dt; if (!G.started) { place(); renderer.render(scene, camera); return; }
   const t0 = performance.now(); place(); readInput(); if (sim.phase === 'call') tabFix(); controls(dt); advance(dt); versus(dt); place();
   const first = G.mode === 'first', mine = sim.P[G.body]; if (first) { const c = renderer.xr.isPresenting ? renderer.xr.getCamera() : camera; c.updateMatrixWorld(); m1.multiplyMatrices(c.projectionMatrix, c.matrixWorldInverse); FRUST.setFromProjectionMatrix(m1); }
   const hold = first && G.xr && mine && mine.id === sim.carrier ? handAt() : null;
-  view.update(sim, dt, { hide: first ? G.body : -1, sel: G.sel, hover: G.hover, spot: G.spot, targets: sim.poss === USER && sim.canThrow() && sim.ctl === sim.qb, far: first && mine ? mine : null, frustum: first && !G.free ? FRUST : null, ballAt: hold ? v3.set(hold.x, hold.y, hold.z) : null });
-  { const c = renderer.xr.isPresenting ? renderer.xr.getCamera() : camera; c.getWorldPosition(v1); world.update(dt, v1, !G.room, G.mode === 'table', mine || sim.ball); }
-  panel.mesh.visible = sim.phase !== 'live'; panel.draw({ sim, user: USER, wx: world.kind, hour: world.hour, menu: G.menu, lvlName: LEVELS[OPT.lvl].name, qlen: OPT.qlen, tab: G.tab, sel: G.sel, selRoute: G.sel >= 0 && sim.P[G.sel].elig && sim.P[G.sel].team === sim.poss, auto: G.auto, room: G.room, xr: G.xr, mode: G.mode });
+  view.update(sim, dt, { hide: first ? G.body : -1, sel: G.sel, hover: G.hover, spot: G.spot, targets: sim.poss === USER && sim.canThrow() && sim.ctl === sim.qb, far: first && mine ? mine : null, frustum: first && !G.free ? FRUST : null, eye: EYE, wind: G.aim && sim.ctl === sim.qb ? sim.qb : (sim.windId ?? -1), ballAt: hold ? v3.set(hold.x, hold.y, hold.z) : null });
+  { const c = renderer.xr.isPresenting ? renderer.xr.getCamera() : camera; c.getWorldPosition(v1); EYE.copy(v1); world.update(dt, v1, !G.room, G.mode === 'table', mine || sim.ball); }
+  panel.mesh.visible = sim.phase !== 'live'; panel.draw({ sim, user: USER, page: G.page, wx: world.kind, hour: world.hour, menu: G.menu, lvlName: LEVELS[OPT.lvl].name, qlen: OPT.qlen, tab: G.tab, sel: G.sel, selRoute: G.sel >= 0 && sim.P[G.sel].elig && sim.P[G.sel].team === sim.poss, auto: G.auto, room: G.room, xr: G.xr, mode: G.mode });
   if ($('hint')) $('hint').textContent = hint();
   COST.ms += performance.now() - t0; COST.n++; renderer.render(scene, camera);
 }
@@ -181,5 +181,5 @@ $('screen').onclick = () => { snd.start(); begin(); };
 if (qs.has('local')) net.connect({ local: true, slot: +(qs.get('slot') || 0) }); else if (!qs.has('solo') && location.protocol !== 'file:') net.connect();
 window.__fb = { VS, net, get user() { return USER; }, pointer, mouse, world, sky, COST, OPT, get sim() { return sim; }, G, view, W, camera, scene, renderer, panel, hands, THREE, OFFENSE, DEFENSE, setMode, click, enter,
   simulate(s) { for (let i = 0, n = Math.round(s * 60); i < n; i++) { sim.step(1 / 60); events(); } }, tap(...n) { virt.tap = n; }, hold(n, on) { (virt.hold ||= {})[n] = on; }, stick(x, y) { virt.stick = x || y ? [x, y] : null; }, point(id) { virt.point = id; },
-  spot(id) { panel.draw({ sim, user: USER, wx: world.kind, hour: world.hour, menu: G.menu, lvlName: LEVELS[OPT.lvl].name, qlen: OPT.qlen, tab: G.tab, sel: G.sel, selRoute: false, auto: G.auto, room: G.room, xr: G.xr, mode: G.mode }); const b = panel.btns.find(b => b.id === id); return b ? panel.mesh.localToWorld(new THREE.Vector3(((b.x + b.w / 2) / 1024 - 0.5) * 0.9, (0.5 - (b.y + b.h / 2) / 640) * 0.5625, 0)) : null; },
+  spot(id) { panel.draw({ sim, user: USER, page: G.page, wx: world.kind, hour: world.hour, menu: G.menu, lvlName: LEVELS[OPT.lvl].name, qlen: OPT.qlen, tab: G.tab, sel: G.sel, selRoute: false, auto: G.auto, room: G.room, xr: G.xr, mode: G.mode }); const b = panel.btns.find(b => b.id === id); return b ? panel.mesh.localToWorld(new THREE.Vector3(((b.x + b.w / 2) / 1024 - 0.5) * 0.9, (0.5 - (b.y + b.h / 2) / 640) * 0.5625, 0)) : null; },
   screenOf(id) { const p = sim.P[id]; v1.set(p.x, 1.2, p.z); W.localToWorld(v1).project(camera); return [(v1.x + 1) / 2 * innerWidth, (1 - v1.y) / 2 * innerHeight]; } };

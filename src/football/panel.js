@@ -5,7 +5,7 @@ import { OFFENSE, DEFENSE, OCATS, DCATS, DALIGN, ROUTES, HOT, formation } from '
 const CW = 1024, CH = 640;
 export class Panel {
   constructor() { const c = this.c = document.createElement('canvas'); c.width = CW; c.height = CH; this.tex = new THREE.CanvasTexture(c); this.tex.colorSpace = THREE.SRGBColorSpace; this.tex.anisotropy = 4;
-    this.mesh = new THREE.Mesh(new THREE.PlaneGeometry(0.9, 0.9 * CH / CW), new THREE.MeshBasicMaterial({ map: this.tex, transparent: true, opacity: 0.96 })); this.btns = []; this.key = ''; this.hover = ''; }
+    this.mesh = new THREE.Mesh(new THREE.PlaneGeometry(0.9, 0.9 * CH / CW), new THREE.MeshBasicMaterial({ map: this.tex, transparent: true, opacity: 0.96, fog: false })); this.btns = []; this.key = ''; this.hover = ''; }
   at(uv) { const x = uv.x * CW, y = (1 - uv.y) * CH; for (const b of this.btns) if (x >= b.x && x <= b.x + b.w && y >= b.y && y <= b.y + b.h) return b; return null; }
   offCard(g, p, x, y, w, h) {
     const s = 4.4, cx = x + w / 2, cy = y + h - 52, F = formation(p.form); g.strokeStyle = '#5a6578'; g.lineWidth = 2; g.beginPath(); g.moveTo(x + 10, cy); g.lineTo(x + w - 10, cy); g.stroke();
@@ -23,7 +23,7 @@ export class Panel {
     const text = (t, x, y, sz = 28, col = '#fff', al = 'left', wt = 700) => { g.fillStyle = col; g.font = wt + ' ' + sz + 'px system-ui, sans-serif'; g.textAlign = al; g.textBaseline = 'middle'; g.fillText(t, x, y); };
     const btn = (id, label, x, y, w, h, on, sz = 26) => { const hot = this.hover === id; g.fillStyle = on ? '#ffe030' : hot ? '#3a4a66' : '#1e2736'; g.beginPath(); g.roundRect(x, y, w, h, 12); g.fill(); if (hot) { g.strokeStyle = '#40e0ff'; g.lineWidth = 3; g.stroke(); } if (label) text(label, x + w / 2, y + h / 2 + 1, sz, on ? '#14100a' : '#fff', 'center', 800); B.push({ id, x, y, w, h }); };
     text(sim.names[0] + ' ' + sim.score[0] + '   ' + sim.names[1] + ' ' + sim.score[1], 28, 40, 30, '#fff', 'left', 800); text(sim.phase === 'over' ? 'FINAL' : 'Q' + Math.min(4, sim.q) + '  ' + Math.floor(sim.clock / 60) + ':' + String(Math.floor(sim.clock % 60)).padStart(2, '0') + '   ' + sim.downText + '   ' + sim.yard, CW - 28, 40, 28, '#ffe030', 'right', 800);
-    const opts = () => { const o = [['auto', 'QB VIEW: ' + (S.auto ? 'AUTO' : 'MANUAL'), 236], ['wx', S.wx, 150], ['hour', S.hour, 110], ...(S.xr ? [['room', S.room ? 'YOUR ROOM' : 'STADIUM', 170]] : []), ['view', S.mode === 'first' ? 'TABLE VIEW' : 'FIELD VIEW', 150], ['again', 'NEW GAME', 140]]; let x = 22; for (const [id, t, w] of o) { btn(id, t, x, 568, w, 52, false, 20); x += w + 8; } };
+    const opts = () => { const o = [['auto', 'QB VIEW: ' + (S.auto ? 'AUTO' : 'MANUAL'), 236], ['wx', S.wx, 150], ['hour', S.hour, 110], ['room', S.room ? 'FIELD ONLY' : 'STADIUM', 170], ['view', S.mode === 'first' ? 'TABLE VIEW' : 'FIELD VIEW', 150], ['again', 'NEW GAME', 140]]; let x = 22; for (const [id, t, w] of o) { btn(id, t, x, 568, w, 52, false, 20); x += w + 8; } };
     if (sim.phase === 'call') {
       const cats = off ? OCATS : DCATS, list = (off ? OFFENSE : DEFENSE).map((p, i) => [p, i]).filter(([p]) => p.cat === S.tab); text(off ? 'OFFENSE: CHOOSE A PLAY' : 'DEFENSE: CHOOSE A PLAY', 28, 96, 26, '#9fb0c8');
       cats.forEach((c, i) => btn('tab:' + c, c, 420 + i * 148, 72, 138, 48, c === S.tab, 22));

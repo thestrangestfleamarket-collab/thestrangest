@@ -1,4 +1,4 @@
-// JUNGLE COURT: a regulation basketball court in a jungle clearing, for a headset or a screen (/ball): the court, weather and sky, four balls and their physics, hands, sounds
+// BALL: a regulation basketball court in a jungle clearing, for a headset or a screen (/ball): the court, weather and sky, four balls and their physics, hands, sounds
 import * as THREE from 'three';
 import { XRHandModelFactory } from 'three/addons/webxr/XRHandModelFactory.js';
 import { Hand } from '../cantina/hands.js';
@@ -204,7 +204,7 @@ function boardTexture(){ const c=cv(1024,598),x=c.getContext('2d'); x.fillStyle=
   for(let i=0;i<60;i++){const bx=rr(250,774),by=rr(250,560);const g=x.createRadialGradient(bx,by,0,bx,by,rr(15,40));g.addColorStop(0,'rgba(60,45,35,.10)');g.addColorStop(1,'rgba(60,45,35,0)');x.fillStyle=g;x.fillRect(bx-40,by-40,80,80)} // ball marks
   for(let i=0;i<30;i++){const ex=rnd()<.5?rr(0,60):rr(964,1024),ey=rr(0,598),g=x.createRadialGradient(ex,ey,0,ex,ey,rr(20,70));g.addColorStop(0,'rgba(120,62,24,.55)');g.addColorStop(1,'rgba(120,62,24,0)');x.fillStyle=g;x.fillRect(ex-70,ey-70,140,140)} // rust creeping in from the edges
   for(let i=0;i<5;i++){const dx=rr(120,900),dy=rr(60,300),g=x.createRadialGradient(dx-4,dy-4,2,dx,dy,rr(14,26));g.addColorStop(0,'rgba(255,255,255,.35)');g.addColorStop(.6,'rgba(90,90,90,.25)');g.addColorStop(1,'rgba(0,0,0,0)');x.fillStyle=g;x.fillRect(dx-30,dy-30,60,60)} // dents
-  for(const [sxp,syp,col,txt] of [[70,470,'#f2c230','PLAY'],[880,90,'#2c7fb8','JNGL'],[820,500,'#d43d5a','★']]){x.save();x.translate(sxp,syp);x.rotate(rr(-.3,.3));x.fillStyle=col;x.fillRect(-42,-24,84,48);x.fillStyle='#fff';x.font='700 26px Arial';x.textAlign='center';x.fillText(txt,0,9);x.restore()} // stickers
+  for(const [sxp,syp,col,txt] of [[70,470,'#f2c230','PLAY'],[820,500,'#d43d5a','★']]){x.save();x.translate(sxp,syp);x.rotate(rr(-.3,.3));x.fillStyle=col;x.fillRect(-42,-24,84,48);x.fillStyle='#fff';x.font='700 26px Arial';x.textAlign='center';x.fillText(txt,0,9);x.restore()} // stickers
   for(let i=0;i<14;i++){const sx=rr(0,1024);const g=x.createLinearGradient(0,0,0,598);g.addColorStop(0,'rgba(110,70,35,.22)');g.addColorStop(1,'rgba(110,70,35,0)');x.fillStyle=g;x.fillRect(sx,0,rr(2,7),rr(120,500))} // rust runs
   return c; }
 const boardTex=tex(boardTexture());
@@ -472,7 +472,7 @@ const _eul=new THREE.Euler(), rr2=(a,b)=>a+Math.random()*(b-a);
 let mode=null; // null = browser, 'vr', 'ar'
 let sport='hoops', venue='clearing', arPick='hoops'; const SPORTS={}, BND={cx:0,cz:0,x:FX-.4,z:FZ-.4}, SOLIDS=[];
 function headPos(){ return camera.getWorldPosition(_hp); }
-const world={hour:22,wx:'mist',net:'nylon',pref:0,court:'jungle'}, CEIL=9; let GYM=null;
+const world={hour:22,wx:'mist',net:'nylon',pref:0,court:'outdoor'}, CEIL=9; let GYM=null;
 function seg(m,a,b){ _d.subVectors(b,a); const L=_d.length()||1e-4; m.position.copy(a); m.quaternion.setFromUnitVectors(UPV,_d.multiplyScalar(1/L)); m.scale.set(1,L,1); }
 
 /* ---------- balls: four kinds on a rack ---------- */
@@ -753,7 +753,7 @@ const WXP={clear:{fog:.45,wet:.15,rain:0,wind:.35,cloud:.3},mist:{fog:1.35,wet:.
 const fogBase=new THREE.Color(), bodyDir=skyU.bodyDir.value; let bakeAt=.01, nextBolt=8;
 function sampleTK(hr){ let i=0; while(i<TK.length-2&&TK[i+1].h<=hr) i++; const a=TK[i],b=TK[i+1],f=THREE.MathUtils.clamp((hr-a.h)/(b.h-a.h),0,1), o={};
   for(const k in a){ o[k]=Array.isArray(a[k])?a[k].map((v,j)=>v+(b[k][j]-v)*f):a[k]+(b[k]-a[k])*f; } return o; }
-function labels(){ const g=venue==='gym'; $('bWx').textContent=g?'Weather: indoors':'Weather: '+world.wx; $('bWx').disabled=g; $('bCourt').textContent='Court: '+(g?'indoor':'jungle'); $('bNet').textContent='Net: '+world.net; $('bBall').textContent='Get ball: '+BT[world.pref].name; $('bGame').textContent=game.on?'Stop the game':'60 second game'; $('todV').textContent=hh(world.hour); }
+function labels(){ const g=venue==='gym'; $('bWx').textContent=g?'Weather: indoors':'Weather: '+world.wx; $('bWx').disabled=g; $('bCourt').textContent='Court: '+(g?'indoor':'outdoor'); $('bNet').textContent='Net: '+world.net; $('bBall').textContent='Get ball: '+BT[world.pref].name; $('bGame').textContent=game.on?'Stop the game':'60 second game'; $('todV').textContent=hh(world.hour); }
 function applyWorld(){ env.visible=venue==='clearing'&&mode!=='ar'; if(GYM) GYM.g.visible=venue==='gym'&&mode!=='ar';
   if(mode==='ar'){ scene.fog=null; sun.position.copy(sunDir).multiplyScalar(70).add(rig.position); sun.target.position.copy(rig.position); sun.color.set(0xfff0dc); sun.intensity=3.3; sun.visible=sun.castShadow=true; arHemi.visible=true; U.lampK.value=0; renderer.toneMappingExposure=1; rain.visible=false; W.rain=0; W.wet=0; if(typeof setRain==='function') setRain(0); catcher.position.set(rig.position.x,.002,rig.position.z-2); drawBox(); return; }
   if(venue==='gym'&&GYM){ const dayK=THREE.MathUtils.clamp(Math.sin((world.hour-6)/12*Math.PI)*3+.15,0,1); scene.fog=null; sun.position.set(4,30,6); sun.target.position.set(0,0,0); sun.color.set(0xfff3e0); sun.intensity=1.5; sun.visible=sun.castShadow=true; arHemi.visible=false;
@@ -788,10 +788,10 @@ const boxC=cv(512,512), boxT=tex(boxC), BOXZ=3.7, BOXY=1.75;
 { const m=shadowOn(new THREE.Mesh(new THREE.BoxGeometry(.05,.8,.8),[blackSteel,new THREE.MeshStandardMaterial({map:boxT,emissive:0xffffff,emissiveMap:boxT,emissiveIntensity:.5,roughness:.5}),blackSteel,blackSteel,blackSteel,blackSteel])); m.position.set(FX-.1,BOXY-.4,BOXZ); env.add(m); }
 const TODS=[22,6.2,12,19.2];
 function drawBox(){ const x=boxC.getContext('2d'); x.fillStyle='#0b0e10'; x.fillRect(0,0,512,512); x.textAlign='center';
-  const ar=mode==='ar', gy=venue==='gym'; [['WEATHER',ar||gy?'—':world.wx],['TIME',ar?'—':hh(world.hour)],['NET',world.net],['GET BALL',BT[world.pref].name],['60 SECOND GAME',game.on?'stop':'start'],['COURT',ar?'—':gy?'indoor':'jungle']].forEach(([a,b],i)=>{ x.fillStyle='#1b2a2e'; x.fillRect(14,i*84+8,484,72); x.fillStyle='#8fa3a8'; x.font='700 19px Arial'; x.fillText(a,256,i*84+32); x.fillStyle='#ffb629'; x.font='700 34px Arial'; x.fillText(String(b).toUpperCase(),256,i*84+68); }); boxT.needsUpdate=true; }
-function setCourt(v){ if(mode==='ar') return; world.court=v==='gym'?'gym':'jungle'; venue=v==='gym'?'gym':'clearing'; if(venue==='gym'&&!GYM){ K.gymMap=tex(courtTexture(true)); GYM=makeGym(K); mergeStill(GYM.g); GYM.g.traverse(o=>{ const m=o.material; if(Array.isArray(m)) m.forEach(patchMat); else patchMat(m); }); }
-  try{ localStorage.setItem('ball-court',world.court); }catch(e){} setAmb(); applyWorld(); flash(venue==='gym'?'INDOOR COURT':'JUNGLE COURT'); }
-function boxAct(i){ if(i===5) setCourt(world.court==='gym'?'jungle':'gym'); if(i===0&&venue!=='gym') world.wx=Object.keys(WXP)[(Object.keys(WXP).indexOf(world.wx)+1)%4]; if(i===1){ const k=TODS.findIndex(v=>Math.abs(v-world.hour)<.3); world.hour=TODS[(k+1)%4]; $('tod').value=world.hour; }
+  const ar=mode==='ar', gy=venue==='gym'; [['WEATHER',ar||gy?'—':world.wx],['TIME',ar?'—':hh(world.hour)],['NET',world.net],['GET BALL',BT[world.pref].name],['60 SECOND GAME',game.on?'stop':'start'],['COURT',ar?'—':gy?'indoor':'outdoor']].forEach(([a,b],i)=>{ x.fillStyle='#1b2a2e'; x.fillRect(14,i*84+8,484,72); x.fillStyle='#8fa3a8'; x.font='700 19px Arial'; x.fillText(a,256,i*84+32); x.fillStyle='#ffb629'; x.font='700 34px Arial'; x.fillText(String(b).toUpperCase(),256,i*84+68); }); boxT.needsUpdate=true; }
+function setCourt(v){ if(mode==='ar') return; world.court=v==='gym'?'gym':'outdoor'; venue=v==='gym'?'gym':'clearing'; if(venue==='gym'&&!GYM){ K.gymMap=tex(courtTexture(true)); GYM=makeGym(K); mergeStill(GYM.g); GYM.g.traverse(o=>{ const m=o.material; if(Array.isArray(m)) m.forEach(patchMat); else patchMat(m); }); }
+  try{ localStorage.setItem('ball-court',world.court); }catch(e){} setAmb(); applyWorld(); flash(venue==='gym'?'INDOOR COURT':'OUTDOOR COURT'); }
+function boxAct(i){ if(i===5) setCourt(world.court==='gym'?'outdoor':'gym'); if(i===0&&venue!=='gym') world.wx=Object.keys(WXP)[(Object.keys(WXP).indexOf(world.wx)+1)%4]; if(i===1){ const k=TODS.findIndex(v=>Math.abs(v-world.hour)<.3); world.hour=TODS[(k+1)%4]; $('tod').value=world.hour; }
   if(i===2){ world.net=world.net==='nylon'?'chain':'nylon'; for(const h of hoops){ h.netS.mesh.material=netMats[world.net]; h.netS.quiet=0; } } if(i===3) world.pref=(world.pref+1)%BT.length; if(i===4){ if(game.on) endGame(); else startGame(); } snd('catch',menu.visible?menu.position:_a.set(FX-.1,1.4,BOXZ),4); applyWorld(); }
 function boxTouch(h,p,t){ const i=Math.floor((BOXY-p.y)/(.8/6)), inn=mode!=='ar'&&p.x>=FX-.24&&Math.abs(p.z-BOXZ)<=.38&&i>=0&&i<=5, was=h.bIn; h.bIn=inn; if(!inn||was||t<h.boxT) return; h.boxT=t+.25; buzz(h,.7,40); boxAct(i); }
 

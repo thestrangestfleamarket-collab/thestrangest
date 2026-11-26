@@ -1,4 +1,4 @@
-# JUNGLE COURT: credits
+# BALL: credits
 
 Surfaces (`data/ball/`, 512 px, colour `_d` and relief `_n`), all from Poly Haven (polyhaven.com), CC0:
 

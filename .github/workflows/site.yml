@@ -297,7 +297,7 @@ jobs:
         timeout-minutes: 30
         if: contains(steps.f.outputs.run, ' skyaces')
         run: node tests/skyaces.cjs dist/fly.html
-      - name: Jungle Court (basketball at /ball; a free throw, the bounce, the 60 second game, then an emulated Quest 3)
+      - name: Ball (basketball at /ball; a free throw, the bounce, the 60 second game, then an emulated Quest 3)
         timeout-minutes: 20
         if: contains(steps.f.outputs.run, ' ball')
         run: node tests/ball.cjs dist/ball.html

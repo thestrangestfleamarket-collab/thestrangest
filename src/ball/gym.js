@@ -1,4 +1,4 @@
-// JUNGLE COURT's indoor court: a school gym on the same floor plan (hardwood, painted block walls, pads, trusses, lamps, high windows)
+// BALL's indoor court: a school gym on the same floor plan (hardwood, painted block walls, pads, trusses, lamps, high windows)
 import * as THREE from 'three';
 export function makeGym(K){ const {FX,FZ,ptex,tex,cv,shadowOn,blackSteel,galv,tube,V3,RACK,BALL_R}=K, g=new THREE.Group(), H=K.CEIL; K.scene.add(g);
   const std=o=>new THREE.MeshStandardMaterial({roughness:.9,metalness:0,...o}), nm=(n,rx,ry)=>{ const t=ptex(n,rx,ry,false); return t?{normalMap:t}:{}; };
@@ -19,8 +19,6 @@ export function makeGym(K){ const {FX,FZ,ptex,tex,cv,shadowOn,blackSteel,galv,tu
   put(new THREE.BoxGeometry(.05,.8,.8),[blackSteel,face(K.boxT),blackSteel,blackSteel,blackSteel,blackSteel],FX-.1,K.BOXY-.4,K.BOXZ);
   { const z0=RACK.z-.25, z1=RACK.z+1.15, ry=RACK.y-BALL_R*.78; for(const dx of[-.085,.085]){ tube(new V3(RACK.x+dx,ry,z0),new V3(RACK.x+dx,ry,z1),.014,galv,g); for(const zz of[z0,z1]) tube(new V3(RACK.x+dx,0,zz),new V3(RACK.x+dx,ry+.25,zz),.016,galv,g); }
     for(const zz of[z0,z1]) tube(new V3(RACK.x-.085,ry+.25,zz),new V3(RACK.x+.085,ry+.25,zz),.014,galv,g); }
-  { const c=cv(1024,256),x=c.getContext('2d'); x.fillStyle='#1d4a34'; x.fillRect(0,0,1024,256); x.strokeStyle='#e0b23c'; x.lineWidth=10; x.strokeRect(12,12,1000,232); x.fillStyle='#f1ead6'; x.textAlign='center'; x.font='700 120px Arial'; x.fillText('JUNGLE COURT',512,170);
-    put(new THREE.PlaneGeometry(6,1.5),std({map:tex(c),roughness:.95}),0,5.2,-FZ+.02); }
   { const c=cv(512,512),x=c.getContext('2d'); x.fillStyle='#6d7477'; x.fillRect(0,0,512,512); x.strokeStyle='#33383a'; x.lineWidth=8; x.strokeRect(4,4,504,504); x.beginPath(); x.moveTo(256,0); x.lineTo(256,512); x.stroke();
     x.fillStyle='#b9bcbb'; x.fillRect(40,250,180,16); x.fillRect(292,250,180,16); x.fillStyle='#20272c'; x.fillRect(150,60,70,110); x.fillRect(292,60,70,110);
     put(new THREE.PlaneGeometry(1.9,2.1),std({map:tex(c),roughness:.6,metalness:.3}),5.5,1.05,FZ-.02,Math.PI); }

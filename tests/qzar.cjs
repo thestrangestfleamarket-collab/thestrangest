@@ -10,6 +10,7 @@ const srv = require('http').createServer((q, r) => { const f = path.join(ROOT, d
   const errs = [], ctx = await b.newContext({ viewport: { width: 400, height: 240 } });
   const open = async hash => { const pg = await ctx.newPage(); pg.on('pageerror', e => errs.push(e.message.slice(0, 300))); await pg.goto(URL + hash); await pg.waitForFunction(() => !!window.__qzar, null, { timeout: 60000 }).catch(() => {}); return pg; };
   const until = (pg, fn, arg) => pg.waitForFunction(fn, arg, { polling: 50, timeout: 60000 }).then(() => true, () => false);
+  { const d = await ctx.newPage(); await d.goto(URL + '?game=disc'); await d.waitForFunction(() => !!window.__qzar, null, { timeout: 60000 }).catch(() => {}); ok(await d.evaluate(() => __qzar.game === 'disc' && document.getElementById('gDisc').getAttribute('aria-pressed') === 'true'), '?game=disc opens on the disc arena'); await d.click('#start'); ok(await until(d, () => __qzar.state === 'play' && __qzar.game === 'disc'), 'and its round starts'); await d.close(); }
   const pg = await open('');
   await pg.click('#start');
   ok(await until(pg, () => __qzar.state === 'play'), 'the page starts and a round against the bot begins');

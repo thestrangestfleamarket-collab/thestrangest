@@ -42,7 +42,7 @@ export class View {
     this.routes = new THREE.Group(); W.add(this.routes); this.routeMat = [new THREE.LineBasicMaterial({ color: 0xffe030 }), new THREE.LineBasicMaterial({ color: 0xff7a30 })];
     this.phase = new Float32Array(22);
     // the scoreboard: one picture on three boards (behind each end zone and along the far side)
-    const sc = this.sc = document.createElement('canvas'); sc.width = 1024; sc.height = 384; this.scTex = new THREE.CanvasTexture(sc); this.scTex.colorSpace = THREE.SRGBColorSpace; const sm = new THREE.MeshBasicMaterial({ map: this.scTex });
+    const sc = this.sc = document.createElement('canvas'); sc.width = 1024; sc.height = 384; this.scTex = new THREE.CanvasTexture(sc); this.scTex.colorSpace = THREE.SRGBColorSpace; const sm = new THREE.MeshBasicMaterial({ map: this.scTex, fog: false });
     this.boards = [[0, 15, -34, 0, 30], [100, 30, 0, -Math.PI / 2, 44], [-100, 30, 0, Math.PI / 2, 44]].map(([x, y, z, ry, w]) => { const m = new THREE.Mesh(new THREE.PlaneGeometry(w, w * 0.375), sm); m.position.set(x, y, z); m.rotation.y = ry; W.add(m); return m; }); this.scKey = '';
   }
   // the players' bodies: until they arrive, and if they never do, the players are drawn as blocks

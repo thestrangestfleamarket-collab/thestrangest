@@ -39,4 +39,4 @@ function buildCosmos(cat, sunDir) {
   root.add(sun); root.tick = () => {};
   return root;
 }
-export { buildCosmos, tint };   // tint: a star's colour from its B-V, used by FOURTH & LONG's far stars too
+export { buildCosmos };

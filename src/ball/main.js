@@ -485,7 +485,7 @@ const _eul=new THREE.Euler(), rr2=(a,b)=>a+Math.random()*(b-a);
 let mode=null; // null = browser, 'vr', 'ar'
 let sport='hoops', venue='clearing', arPick='hoops'; const SPORTS={}, BND={cx:0,cz:0,x:FX-.4,z:FZ-.4}, SOLIDS=[];
 function headPos(){ return camera.getWorldPosition(_hp); }
-const world={hour:22,wx:'mist',net:'nylon',pref:0,court:'outdoor',lights:0,input:'auto'}, CEIL=9, CAVEH=14, ROWS=9, LIGHTS=['on','half','off'], COURTS=['outdoor','gym','cave'], CNAME={outdoor:'outdoor',gym:'indoor',cave:'cavern'}, INPUTS=['auto','hands','controllers']; let GYM=null, CAVE=null, MULTI=null;
+const world={hour:22,wx:'mist',net:'nylon',pref:0,court:'outdoor',lights:0,input:'auto'}, CEIL=9, CAVEH=14, ROWS=9, LIGHTS=['on','half','off'], COURTS=['outdoor','gym','cave'], CNAME={outdoor:'outdoor',gym:'indoor',cave:'cavern'}, INPUTS=['auto','hands','controllers']; let GYM=null, CAVE=null, MULTI=null, handRate=1;   // handRate: the hands' clock against the frame's, for a check whose frames are slow
 function seg(m,a,b){ _d.subVectors(b,a); const L=_d.length()||1e-4; m.position.copy(a); m.quaternion.setFromUnitVectors(UPV,_d.multiplyScalar(1/L)); m.scale.set(1,L,1); }
 
 /* ---------- balls: four kinds on a rack ---------- */
@@ -945,9 +945,9 @@ function frame(ms){ const t=ms/1000, raw=t-last||.016, dt=Math.min(.05,raw); las
       else { h.fon=false; h.grip.getWorldPosition(h.pos); h.grip.getWorldQuaternion(_q); _q2.copy(h.qPrev).invert().premultiply(_q); h.qPrev.copy(_q); const ang=2*Math.acos(Math.min(1,Math.abs(_q2.w))), sn=Math.sqrt(1-_q2.w*_q2.w)||1;
         _a.set(_q2.x,_q2.y,_q2.z).multiplyScalar((_q2.w<0?-1:1)*ang/(sn*dt)); if(_a.length()>40) _a.setLength(40); h.angVel.lerp(_a,.4); }
       h.wasHand=h.isHand;
-      const o=h.hist.length<12?{t:0,p:new V3()}:h.hist.shift(); o.t=t; o.p.copy(h.pos); h.hist.push(o);
-      let old=o; for(let i=h.hist.length-1;i>=0;i--){ old=h.hist[i]; if(t-old.t>.045) break; }
-      if(old!==o) h.vel.subVectors(o.p,old.p).multiplyScalar(1/Math.max(t-old.t,.005));
+      const o=h.hist.length<12?{t:0,p:new V3()}:h.hist.shift(); o.t=t*handRate; o.p.copy(h.pos); h.hist.push(o);
+      let old=o; for(let i=h.hist.length-1;i>=0;i--){ old=h.hist[i]; if(o.t-old.t>.045) break; }
+      if(old!==o) h.vel.subVectors(o.p,old.p).multiplyScalar(1/Math.max(o.t-old.t,.005));
       let g=false,a=false; const gp=h.src.gamepad;
       if(h.isHand){ h.pinch=h.jp[TIPS[0]].distanceTo(h.jp[TIPS[1]]); g=h.pressed?(h.pinch<.045||h.curl>.5):(h.pinch<.022||h.curl>.62);   // a pinch or a fist: the far pull, the rim, the teleport
         h.grips=h.curl>(h.ball?.17:.28)||h.pinch<(h.ball?.045:.022); }                                                                            // a hand closed a little, as round a ball: it holds until it opens
@@ -1041,6 +1041,6 @@ K.board=lines=>{ const x=sbC.getContext('2d'); x.fillStyle='#07090a'; x.fillRect
 scene.traverse(o=>{ const m=o.material; if(Array.isArray(m)) m.forEach(patchMat); else patchMat(m); });
 applyMode(); try{ const c=localStorage.getItem('ball-court'), i=localStorage.getItem('ball-input'); if(INPUTS.includes(i)) world.input=i; if(c==='gym'||c==='cave') setCourt(c); }catch(e){}
 Object.assign(K,{seg,gameLine,endGame,game,drawBox:()=>{ drawBox(); labels(); },setWorld,balls,world}); Object.defineProperty(K,'ball',{get:()=>cur}); MULTI=makeMulti(K);
-window.__ball={get multi(){return MULTI},get cave(){return CAVE},ROWS,TIPS,setCourt,menu,menuToggle,boxAct,get venue(){return venue},get gym(){return GYM},setSport,SPORTS,K,env,get sport(){return sport},get ball(){return cur},balls,simulate,game,startGame,endGame,hands,tp,vig,get mode(){return mode},get t(){return last},get yExtra(){return yExtra},rig,stats,camera,renderer,scene,world,applyWorld,hoops,set(y,p){yaw=yawT=y;pitch=pitchT=p},get q(){return qLevel},set q(v){qLevel=v;applyQuality()},launched,THREE,
+window.__ball={set handRate(v){handRate=v},get multi(){return MULTI},get cave(){return CAVE},ROWS,TIPS,setCourt,menu,menuToggle,boxAct,get venue(){return venue},get gym(){return GYM},setSport,SPORTS,K,env,get sport(){return sport},get ball(){return cur},balls,simulate,game,startGame,endGame,hands,tp,vig,get mode(){return mode},get t(){return last},get yExtra(){return yExtra},rig,stats,camera,renderer,scene,world,applyWorld,hoops,set(y,p){yaw=yawT=y;pitch=pitchT=p},get q(){return qLevel},set q(v){qLevel=v;applyQuality()},launched,THREE,
   free(b){ if(camB===b) camB=null; b.holder=null; b.hover=0; b.rest=false; }};
 renderer.setAnimationLoop(frame);

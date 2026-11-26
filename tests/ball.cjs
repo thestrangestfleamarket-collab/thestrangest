@@ -72,7 +72,8 @@ const srv = require('http').createServer((q, r) => { const f = path.join(ROOT, d
     // the hand takes the ball, keeps it while it grips, lets it go at the end of a swing, or when it opens; and can be switched off
     const H = X.hands.right, B = c.ball, near = async () => { c.free(B); B.cool = 0; B.v.set(0, 0, 0); B.p.copy(h.pos).addScaledVector(h.pn, .13); B.hover = 9; h.regrab = 0; await fr(2); };
     c.rig.rotation.y = 0; c.rig.position.set(0, 0, -6); H.position.set(.2, 1.3, -.4); H.updatePinchValue(0); await fr(6); o.curl = +h.curl.toFixed(2); await near(); H.updatePinchValue(1); await fr(5); o.took = h.ball === B; await fr(20); o.kept = h.ball === B && B.p.distanceTo(h.pos) < .25;
-    for (let i = 0; i < 7; i++) { H.position.z -= .1; H.position.y += .06; await fr(1); } await fr(8); o.thrown = !h.ball && B.v.length() > 1.5 && B.v.z < -.5; o.v = B.v.toArray().map(v => +v.toFixed(1)); H.updatePinchValue(0); await fr(30);
+    { const t0 = performance.now(); await fr(6); c.handRate = .016 / ((performance.now() - t0) / 6000); }   // the hand's clock at sixty frames a second, however slowly this machine draws
+    for (let i = 0; i < 7; i++) { H.position.z -= .1; H.position.y += .06; await fr(1); } await fr(8); c.handRate = 1; o.thrown = !h.ball && B.v.length() > 1.5 && B.v.z < -.5; o.v = B.v.toArray().map(v => +v.toFixed(1)); H.updatePinchValue(0); await fr(30);
     H.position.set(.2, 1.3, -.4); await fr(6); await near(); H.updatePinchValue(1); await fr(5); const had = h.ball === B; H.updatePinchValue(0); await fr(6); o.opened = had && !h.ball; await fr(30);
     c.world.input = 'controllers'; await near(); H.updatePinchValue(1); await fr(6); o.off = !h.ball; H.updatePinchValue(0); c.world.input = 'auto'; await fr(3); return o; });
   ok(poke.tab, 'with tracked hands a touch of the tab on the left wrist brings the menu up'); ok(poke.row, 'and a fingertip pushed into a row works it once, however long it rests there');

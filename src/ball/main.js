@@ -748,7 +748,7 @@ const tp={h:null,valid:false,pt:new V3(),line:new THREE.Line(new THREE.BufferGeo
 tp.line.frustumCulled=false; tp.line.visible=tp.ring.visible=false; scene.add(tp.line,tp.ring);
 function tpAim(h){ h.ctrl.getWorldPosition(_a); h.ctrl.getWorldDirection(_b).negate().multiplyScalar(7.5); const p=tp.line.geometry.attributes.position; let hitG=false;
   for(let i=0;i<32;i++){ if(!hitG){ const py=_a.y; _a.addScaledVector(_b,.045); _b.y-=9.81*.045; if(_a.y<=0){ const k=py/(py-_a.y); _a.addScaledVector(_b,-.045*(1-k)); _a.y=0; hitG=true; tp.pt.copy(_a); } } p.setXYZ(i,_a.x,_a.y+.02,_a.z); }
-  headPos(); tp.valid=hitG&&(mode==='ar'?Math.hypot(tp.pt.x-_hp.x,tp.pt.z-_hp.z)<8:(Math.abs(tp.pt.x-BND.cx)<BND.x&&Math.abs(tp.pt.z-BND.cz)<BND.z));
+  headPos(); tp.valid=hitG&&(mode==='ar'?Math.hypot(tp.pt.x-_hp.x,tp.pt.z-_hp.z)<8:(Math.abs(tp.pt.x-BND.cx)<BND.x&&Math.abs(tp.pt.z-BND.cz)<BND.z&&!SOLIDS.some(q=>(!q.gym||venue==='gym')&&tp.pt.x>q.x0-.22&&tp.pt.x<q.x1+.22&&tp.pt.z>q.z0-.22&&tp.pt.z<q.z1+.22)));
   p.needsUpdate=true; tp.line.visible=true; tpMat.opacity=tp.valid?.85:.25; tp.ring.visible=tp.valid; tp.ring.position.set(tp.pt.x,.025,tp.pt.z); }
 function tpEnd(){ tp.h=null; tp.line.visible=tp.ring.visible=false; }
 function tpGo(){ if(tp.valid){ headPos(); rig.position.x+=tp.pt.x-_hp.x; rig.position.z+=tp.pt.z-_hp.z; vel.set(0,0,0); yExtra=0; rig.updateMatrixWorld(true); snd('step',tp.pt,4); } tp.valid=false; tpEnd(); }
@@ -769,7 +769,7 @@ function applyWorld(){ env.visible=venue==='clearing'&&mode!=='ar'; if(GYM) GYM.
   if(venue==='gym'&&GYM){ const L=[1,.5,0][world.lights], a=(world.hour-6)/12*Math.PI, up=Math.sin(a), sk=THREE.MathUtils.clamp(up*4,0,1), useSun=sk>.05; scene.fog=null; arHemi.visible=false;
     _f.set(.3+.55*Math.abs(Math.cos(a)),Math.max(.05,up),-Math.cos(a)*.6).normalize(); _c.set(1,.5+.45*Math.min(1,up*1.6),.22+.63*Math.min(1,up*1.6));           // the windows face the sun's side of the sky; _f is the way its light travels, turned upright
     sun.visible=sun.castShadow=useSun; if(useSun){ sun.position.set(-_f.x,_f.y,-_f.z).multiplyScalar(70); sun.target.position.set(0,0,0); sun.color.setRGB(_c.x,_c.y,_c.z); sun.intensity=3.2*sk; }
-    GYM.sunIn(_f,sk,sun.color,L>0?.035:.07); GYM.key.visible=L>0; GYM.key.intensity=1.5*L; GYM.key.castShadow=L>0&&!useSun; GYM.lampM.color.setRGB(.08+.92*L,.08+.88*L,.08+.81*L);
+    GYM.sunIn(_f,sk,sun.color,L>0?.035:.07); GYM.key.visible=L>0; GYM.key.intensity=1.5*L; GYM.key.castShadow=L>0&&!useSun; GYM.lampM.color.setRGB(.025+.975*L,.025+.935*L,.025+.865*L);
     GYM.win.color.setRGB(.03+.9*sk,.04+1.0*sk,.08+1.1*sk); GYM.hemi.intensity=.05+1.15*L+.34*sk; GYM.hemi.color.setRGB(1,.96,.89+.1*(1-L)); GYM.clock(world.hour);
     W.lampOn=false; W.night=0; W.wet=0; W.rain=0; U.lampK.value=0; U.wind.value=0; renderer.toneMappingExposure=L>0?1:1.15; rain.visible=false; if(typeof setRain==='function') setRain(0);
     for(const b of balls) b.mesh.material.roughness=Math.min(1,b.T.rough+.12); setShadows(); bakeAt=last+.3; drawBox(); labels(); return; }
@@ -883,7 +883,8 @@ function setShadows(){ const size=(mode||coarse)?1024:2048; let on=mode?[0,3]:[0
   lamps.forEach((l,i)=>{ if(l.shadow.mapSize.x!==size){ l.shadow.mapSize.set(size,size); if(l.shadow.map){ l.shadow.map.dispose(); l.shadow.map=null; } } l.castShadow=on.includes(i); });
   mistG.visible=qLevel<2; }
 function applyQuality(){ if(!mode){ renderer.setPixelRatio(Math.max(.6,basePR*[1,.8,.65,.5][qLevel])); resize(); } applyWorld(); }
-function solidPush(){headPos(); for(const q of SOLIDS){ if(q.gym&&venue!=='gym') continue; const m=.22, x=_hp.x, z=_hp.z; if(x>q.x0-m&&x<q.x1+m&&z>q.z0-m&&z<q.z1+m){ const a=x-q.x0+m, b=q.x1+m-x, c=z-q.z0+m, d=q.z1+m-z, k=Math.min(a,b,c,d); if(k===a) rig.position.x-=a; else if(k===b) rig.position.x+=b; else if(k===c) rig.position.z-=c; else rig.position.z+=d; _hp.x=1e9; } }   }   // a table is not walked through
+function solidPush(){headPos(); for(const q of SOLIDS){ if(q.gym&&venue!=='gym') continue; const m=.22, x=_hp.x, z=_hp.z; if(x>q.x0-m&&x<q.x1+m&&z>q.z0-m&&z<q.z1+m){ const a=q.x0-m<BND.cx-BND.x?1e9:x-q.x0+m, b=q.x1+m>BND.cx+BND.x?1e9:q.x1+m-x, c=q.z0-m<BND.cz-BND.z?1e9:z-q.z0+m, d=q.z1+m>BND.cz+BND.z?1e9:q.z1+m-z, k=Math.min(a,b,c,d);   // never out through the wall it stands against
+    if(k===a) rig.position.x-=a; else if(k===b) rig.position.x+=b; else if(k===c) rig.position.z-=c; else rig.position.z+=d; _hp.x=1e9; } }   }   // a table is not walked through
 function applyMove(dt,speed,rate){ camera.getWorldDirection(_f); _f.y=0; _f.normalize(); _r.crossVectors(_f,_a.set(0,1,0));
   const m=Math.hypot(inX,inZ); if(m>1){ inX/=m; inZ/=m; }
   _tg.set(0,0,0).addScaledVector(_f,-inZ*speed).addScaledVector(_r,inX*speed);

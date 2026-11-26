@@ -7,7 +7,8 @@ const TEAM = KIT, NUMS = [55, 66, 67, 72, 76, 12, 81, 84, 88, 44, 23], LINEMEN =
 const M = new THREE.Matrix4(), B = new THREE.Matrix4(), T1 = new THREE.Matrix4(), R1 = new THREE.Matrix4(), Q = new THREE.Quaternion(), E = new THREE.Euler(), V = new THREE.Vector3(), SC = new THREE.Vector3(), SP = new THREE.Sphere(), C = new THREE.Color();
 
 function fieldTexture() {
-  const c = document.createElement('canvas'); c.width = 2048; c.height = 912; const g = c.getContext('2d'), px = c.width / 120, X = (yd) => (yd + 60) * px, Z = (yd) => (yd + FIELD.W) * px;
+  const K = /OculusBrowser|Quest|Pico/i.test(navigator.userAgent) ? 1 : 2, c = document.createElement('canvas'); c.width = 2048 * K; c.height = 912 * K; const g = c.getContext('2d'), px = c.width / 120,   // twice as fine on a screen
+    X = (yd) => (yd + 60) * px, Z = (yd) => (yd + FIELD.W) * px;
   for (let i = 0; i < 20; i++) { g.fillStyle = i % 2 ? '#2f7d32' : '#2a722d'; g.fillRect(X(-50 + i * 5), 0, 5 * px + 1, c.height); }
   [[-60, TEAM[0]], [50, TEAM[1]]].forEach(([x, t], i) => { g.fillStyle = t.css; g.fillRect(X(x), 0, 10 * px, c.height); g.save(); g.translate(X(x + 5), c.height / 2); g.rotate(i ? Math.PI / 2 : -Math.PI / 2); g.fillStyle = '#fff'; g.font = '900 ' + 6.5 * px + 'px system-ui, sans-serif'; g.textAlign = 'center'; g.textBaseline = 'middle'; g.fillText(t.name, 0, 0); g.restore(); });
   g.strokeStyle = '#fff'; g.fillStyle = '#fff'; g.lineWidth = px * 0.35; g.strokeRect(X(-60) + 2, 2, c.width - 4, c.height - 4);
@@ -16,8 +17,11 @@ function fieldTexture() {
   g.font = '800 ' + 3.4 * px + 'px system-ui, sans-serif'; g.textAlign = 'center'; g.textBaseline = 'middle';
   for (let y = -40; y <= 40; y += 10) for (const s of [-1, 1]) { g.save(); g.translate(X(y), Z(s * 17)); if (s < 0) g.rotate(Math.PI); g.fillText(String(50 - Math.abs(y)), 0, 0); g.restore(); }
   g.globalAlpha = 0.5; g.font = '900 ' + 5 * px + 'px system-ui, sans-serif'; g.fillText('4TH & LONG', X(0), Z(0)); g.globalAlpha = 1;
-  { let s = 5; const r = () => (s = (s * 16807) % 2147483647) / 2147483647; for (let i = 0; i < 60000; i++) { g.fillStyle = r() < 0.5 ? 'rgba(0,0,0,0.07)' : 'rgba(255,255,200,0.05)'; g.fillRect(r() * c.width, r() * c.height, 1 + r() * 2, 1 + r() * 3); } }   // the turf's grain
-  const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = 8; return t;
+  { let s = 5; const r = () => (s = (s * 16807) % 2147483647) / 2147483647; for (let i = 0; i < 60000 * K * K; i++) { g.fillStyle = r() < 0.5 ? 'rgba(0,0,0,0.07)' : 'rgba(255,255,200,0.05)'; g.fillRect(r() * c.width, r() * c.height, 1 + r() * 2, 1 + r() * 3); } }   // the turf's grain
+  const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = 8;
+  const img = new Image(); img.onload = () => { g.save(); g.globalCompositeOperation = 'overlay'; g.globalAlpha = 0.85; g.scale(0.28 * K, 0.28 * K); g.fillStyle = g.createPattern(img, 'repeat'); g.fillRect(0, 0, c.width / 0.28, c.height / 0.28); g.restore();   // SKIRMISH TABLE's photographed grass
+    g.save(); g.globalCompositeOperation = 'soft-light'; for (let i = 0; i < 24; i++) { g.fillStyle = i % 2 ? 'rgba(255,255,255,0.22)' : 'rgba(0,0,0,0.22)'; g.fillRect(i * 5 * px, 0, 5 * px, c.height); } g.restore(); t.needsUpdate = true; }; img.src = '/chess-assets/board/grass.jpg';
+  return t;
 }
 export class View {
   constructor(scene) {
@@ -36,7 +40,12 @@ export class View {
     this.torso = im(new THREE.CylinderGeometry(0.36, 0.22, 0.78, 10), 22); this.helm = im(new THREE.SphereGeometry(0.21, 12, 8), 22); this.legs = im(new THREE.BoxGeometry(0.17, 0.85, 0.17), 44); this.arms = im(new THREE.BoxGeometry(0.13, 0.62, 0.13), 44);
     this.shade = new THREE.InstancedMesh(new THREE.CircleGeometry(0.55, 14).rotateX(-Math.PI / 2), new THREE.MeshBasicMaterial({ color: 0, transparent: true, opacity: 0.28, depthWrite: false }), 23); this.shade.frustumCulled = false; W.add(this.shade);
     for (let i = 0; i < 22; i++) { const t = TEAM[i < 11 ? 0 : 1]; this.torso.setColorAt(i, C.set(t.jersey)); this.helm.setColorAt(i, C.set(t.helmet)); for (const k of [0, 1]) { this.legs.setColorAt(i * 2 + k, C.set(t.pants)); this.arms.setColorAt(i * 2 + k, C.set(t.jersey)); } }
-    this.ball = new THREE.Mesh(new THREE.SphereGeometry(0.17, 12, 8).scale(1.75, 1, 1), new THREE.MeshLambertMaterial({ color: 0x7a3d18 })); W.add(this.ball);
+    // the ball at its real size (11 in long, 6.7 in across), pointed, pebbled leather with its laces and seams
+    { const pts = []; for (let i = 0; i <= 16; i++) { const u = i / 16 * 2 - 1; pts.push(new THREE.Vector2(0.093 * Math.pow(Math.max(0, 1 - u * u), 0.7), u * 0.153)); }
+      const c = document.createElement('canvas'); c.width = 256; c.height = 128; const g = c.getContext('2d'); g.fillStyle = '#6f3716'; g.fillRect(0, 0, 256, 128); let s = 9; const r = () => (s = (s * 16807) % 2147483647) / 2147483647;
+      for (let i = 0; i < 5000; i++) { g.fillStyle = r() < 0.5 ? 'rgba(0,0,0,0.16)' : 'rgba(255,190,130,0.1)'; g.fillRect(r() * 256, r() * 128, 1.5, 1.5); } g.strokeStyle = 'rgba(30,12,4,0.8)'; g.lineWidth = 1.5; for (const x of [0, 64, 128, 192, 256]) { g.beginPath(); g.moveTo(x, 0); g.lineTo(x, 128); g.stroke(); }
+      g.fillStyle = '#f1ede2'; g.fillRect(62.5, 40, 3, 48); for (let y = 44; y <= 84; y += 8) g.fillRect(57, y - 1.2, 14, 2.6);
+      const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; this.ball = new THREE.Mesh(new THREE.LatheGeometry(pts, 16).rotateZ(Math.PI / 2), new THREE.MeshLambertMaterial({ map: t })); W.add(this.ball); }
     // a marker over each receiver while the user's quarterback has the ball: green open, red covered
     this.marks = []; for (let i = 0; i < 5; i++) { const m = new THREE.Mesh(new THREE.ConeGeometry(0.45, 0.9, 4).rotateX(Math.PI), new THREE.MeshBasicMaterial({ color: 0x30e060 })); m.visible = false; W.add(m); this.marks.push(m); }
     this.routes = new THREE.Group(); W.add(this.routes); this.routeMat = [new THREE.LineBasicMaterial({ color: 0xffe030 }), new THREE.LineBasicMaterial({ color: 0xff7a30 })];
@@ -80,9 +89,9 @@ export class View {
       const arm = p.mv === 'stiff' ? 1.5 : p.mv === 'jump' ? 2.9 : p.id === sim.carrier ? 0.5 : -sw; part(this.arms, i * 2, 0, 1.58, -0.42, arm, 0.62); part(this.arms, i * 2 + 1, 0, 1.58, 0.42, p.mv === 'jump' ? 2.9 : sw, 0.62);
       M.makeTranslation(p.x, 0.04, p.z); if (hide) M.scale(V.set(0, 0, 0)); this.shade.setMatrixAt(n++, M);
     }
-    const b = sim.ball, bs = this.table ? 2.2 : 1; M.makeTranslation(b.x, 0.045, b.z); M.scale(V.set(0.5, 1, 0.5)); this.shade.setMatrixAt(22, M);
+    const b = sim.ball, bs = this.table ? 1.5 : 1; M.makeTranslation(b.x, 0.045, b.z); M.scale(V.set(0.5, 1, 0.5)); this.shade.setMatrixAt(22, M);
     for (const m of [this.torso, this.helm, this.legs, this.arms, this.shade]) m.instanceMatrix.needsUpdate = true;
-    if (o.ballAt) this.ball.position.copy(o.ballAt); else this.ball.position.set(b.x, Math.max(0.17, b.y), b.z); this.ball.scale.setScalar(bs);
+    if (o.ballAt) this.ball.position.copy(o.ballAt); else this.ball.position.set(b.x, Math.max(0.1, b.y), b.z); this.ball.scale.setScalar(bs);
     if (b.st === 'air' || b.st === 'kick') { this.ball.rotation.set(0, Math.atan2(-b.vz, b.vx), Math.atan2(b.vy, Math.hypot(b.vx, b.vz))); this.ball.rotateX(performance.now() * 0.02); } else this.ball.rotation.set(0, 0, 0);
     const live = sim.phase === 'pre' || sim.phase === 'live' || sim.phase === 'call'; this.los.visible = this.gain.visible = live && !sim.past; this.los.position.x = sim.los; this.gain.position.x = sim.first; this.gain.visible &&= Math.abs(sim.first) < 50;
     const at = (r, id) => { r.visible = id >= 0 && id !== o.hide; if (r.visible) { r.position.x = sim.P[id].x; r.position.z = sim.P[id].z; } };

@@ -18,11 +18,13 @@ export class Game {
     this.ball = { x: 0, y: 0.3, z: 0, vx: 0, vy: 0, vz: 0, st: 'dead', by: -1, land: null, tgt: -1 };
     this.mode = o.mode ?? 'game'; this.ko = o.ko ?? this.mode === 'game'; this.to = [3, 3]; this.lastRun = 0; this.box = [0, 1].map(() => ({ att: 0, comp: 0, pass: 0, rush: 0, runs: 0, int: 0, sack: 0, first: 0, td: 0, fum: 0 }));
     if (this.mode === 'drill') { this.q = 4; this.clock = 120; this.score = [0, 4]; }   // the two-minute drill: your ball, down four, two minutes
-    this.ev = []; this.msg = ''; this.ctl = -1; this.in = { x: 0, z: 0, sprint: false }; this.call = [-1, -1]; this.stats = { plays: 0, td: 0, int: 0, sack: 0, comp: 0, att: 0 };
+    this.ev = []; this.msg = ''; this.me = this.human[0] ? 0 : 1; this.ctls = [-1, -1]; this.ins = [{ x: 0, z: 0, sprint: false }, { x: 0, z: 0, sprint: false }]; this.call = [-1, -1]; this.stats = { plays: 0, td: 0, int: 0, sack: 0, comp: 0, att: 0 };
     this.firstPoss = o.first ?? 0; this.wx = { wet: 0, wind: 0 };   // the weather's hand in the game: a wet ball, slow footing, a kick in the wind
     this.kickoff(this.firstPoss);
   }
   dir(t) { return t === 0 ? 1 : -1; }
+  // each side's own player and stick; ctl and in are those of the side this page plays (me)
+  get ctl() { return this.ctls[this.me]; } set ctl(v) { this.ctls[this.me] = v; } get in() { return this.ins[this.me]; }
   get off() { return this.poss; } get def() { return 1 - this.poss; }
   team(t) { return this.P.slice(t * 11, t * 11 + 11); }
   emit(t, d) { this.ev.push({ t, ...d }); }
@@ -31,17 +33,17 @@ export class Game {
   reset(p, role) { return Object.assign(p, { role, spd: SPD[role], vx: 0, vz: 0, y: 0, st: 'up', dn: 0, stun: 0, free: 0, blk: -1, blkN: 0, mv: '', mvT: 0, cd: 0, tk: 0, way: null, wi: 0, tgt: -1, zone: null, deep: false, lagT: 0, hold: 0, tried: -1, ord: null, elig: false, bt: -1 }); }
   // a kickoff, taken up as the returner catches it: his blockers in two rows ahead of him, the kicking side already coming down the field
   kickReturn(t) {
-    const d = this.dir(t), R = this.team(t), K = this.team(1 - t); this.los = this.first = -47 * d; this.down = 1; this.pc = 30; this.tip = -1; this.msg = ''; this.call = [0, 0]; this.play = { name: 'KICKOFF', cat: 'KICK', ko: 1, sk: [] }; this.dplay = DEFENSE[0];
+    const d = this.dir(t), R = this.team(t), K = this.team(1 - t); this.los = this.first = -47 * d; this.down = 1; this.pc = 30; this.tip = [-1, -1]; this.msg = ''; this.call = [0, 0]; this.play = { name: 'KICKOFF', cat: 'KICK', ko: 1, sk: [] }; this.dplay = DEFENSE[0];
     R.forEach((p, i) => { this.reset(p, i === 10 ? 'HB' : 'TE'); p.job = i === 10 ? 'carry' : 'block'; p.x = (i === 10 ? -46 : i < 5 ? -22 : -33) * d; p.z = i === 10 ? 0 : ((i % 5) - 2) * 9.5; p.face = d > 0 ? 0 : Math.PI; p.hx = p.x; p.hz = p.z; });
     K.forEach((p, i) => { this.reset(p, 'OLB'); p.job = 'pursue'; p.x = (2 + (i % 2) * 3) * d; p.z = (i - 5) * 4.6; p.face = d > 0 ? Math.PI : 0; p.hx = p.x; p.hz = p.z; });
     const r = R[10], b = this.ball; this.qb = r.id; this.run = null; this.handed = true; this.thrown = false; this.past = true; this.scr = false; this.isKO = true; this.t = 0; this.pre = 0; this.phase = 'pre'; this.result = null; this.carrier = r.id; b.st = 'held'; b.by = r.id; b.land = null;
-    this.ctl = this.human[t] ? r.id : this.human[1 - t] ? (1 - t) * 11 + 5 : -1; this.emit('lineup');
+    this.ctls = [-1, -1]; if (this.human[t]) this.ctls[t] = r.id; if (this.human[1 - t]) this.ctls[1 - t] = (1 - t) * 11 + 5; this.emit('lineup');
   }
   spot(x, first) {
     const d = this.dir(this.poss); this.los = clamp(x, -49, 49);
     if (first) { this.down = 1; this.first = this.los + 10 * d; if (this.first * d > 50) this.first = 50 * d; }
-    this.phase = 'call'; this.call = [-1, -1]; this.pc = 30; this.isKO = false; this.t = 0; this.pre = 0; this.ball.st = 'dead'; this.ball.by = -1; this.ball.x = this.los; this.ball.z = 0; this.ball.y = 0.15; this.carrier = -1; this.ctl = -1;
-    this.stand(); this.tip = this.human[this.poss] ? this.cpuOff() : this.human[1 - this.poss] ? this.tipDef() : -1;
+    this.phase = 'call'; this.call = [-1, -1]; this.pc = 30; this.isKO = false; this.t = 0; this.pre = 0; this.ball.st = 'dead'; this.ball.by = -1; this.ball.x = this.los; this.ball.z = 0; this.ball.y = 0.15; this.carrier = -1; this.ctls = [-1, -1];
+    this.stand(); this.tip = [0, 1].map(t => !this.human[t] ? -1 : t === this.poss ? this.cpuOff() : this.tipDef());   // the coach's pick, each side's own
   }
   get toGo() { return Math.max(0, Math.round((this.first - this.los) * this.dir(this.poss))); }
   get yard() { const a = this.los * this.dir(this.poss); return a <= 0 ? 'OWN ' + Math.round(50 + a) : 'OPP ' + Math.round(50 - a); }
@@ -82,7 +84,7 @@ export class Game {
     for (const m of men) { let best = null, bd = 1e9; for (const r of sk) { if (taken.has(r.id)) continue; const q = hyp(r.x - m.x, (r.z - m.z) * 1.6); if (q < bd) { bd = q; best = r; } } if (best) { taken.add(best.id); m.tgt = best.id; } else { m.job = 'zone'; m.zone = { x: this.los + d * 9, z: m.z }; } }
     this.handed = false; this.thrown = false; this.caught = false; this.past = false; this.t = 0; this.pre = 0; this.phase = 'pre'; this.carrier = -1; this.result = null;
     this.ball.st = 'dead'; this.ball.x = this.los; this.ball.z = 0; this.ball.y = 0.15;
-    if (this.human[o]) this.ctl = -1; else if (this.human[1 - o]) this.ctl = (1 - o) * 11 + 5;
+    this.ctls[o] = -1; this.ctls[1 - o] = this.human[1 - o] ? (1 - o) * 11 + 5 : -1;
     this.emit('lineup');
   }
   setJob(p, j) {
@@ -93,7 +95,7 @@ export class Game {
   }
   // the user's word to one of his own: a spot to go to, a player to block or cover, or a new route
   order(id, o) {
-    const p = this.P[id]; if (!p || (this.phase !== 'pre' && this.phase !== 'live') || p.id === this.ctl) return false; const off = p.team === this.poss;
+    const p = this.P[id]; if (!p || (this.phase !== 'pre' && this.phase !== 'live') || p.id === this.ctls[p.team]) return false; const off = p.team === this.poss;
     if (o.route) { if (!off || !p.elig || this.phase !== 'pre') return false; this.setJob(p, o.route); return true; }
     if (o.target != null) { const q = this.P[o.target]; if (!q || q.team === p.team) return false; if (off) { p.job = 'block'; p.ord = q.id; } else if (q.id === this.qb || q.id === this.carrier) p.job = 'rush'; else { p.job = 'man'; p.tgt = q.id; } return true; }
     const x = clamp(o.x, -FIELD.L - 8, FIELD.L + 8), z = clamp(o.z, -FIELD.W + 1, FIELD.W - 1);
@@ -104,9 +106,9 @@ export class Game {
   // the quarterback throws it away, out of bounds
   throwAway() { if (!this.canThrow()) return false; const q = this.P[this.qb], d = this.dir(q.team); const ok = this.launch({ x: q.x, y: 2, z: q.z }, { vx: d * 9, vz: (q.z >= 0 ? 1 : -1) * 17, vy: 7 }); for (const p of this.P) p.tried = 1; this.box[q.team].att--; this.stats.att--; return ok; }
   // a timeout: the seconds the last play ran off the clock come back
-  timeout(team) { if ((this.phase !== 'dead' && this.phase !== 'call' && this.phase !== 'pre') || this.to[team] < 1 || this.lastRun <= 0) return false; this.clock += this.lastRun; this.lastRun = 0; this.to[team]--; this.emit('timeout'); return true; }
+  timeout(team = this.me) { if ((this.phase !== 'dead' && this.phase !== 'call' && this.phase !== 'pre') || this.to[team] < 1 || this.lastRun <= 0) return false; this.clock += this.lastRun; this.lastRun = 0; this.to[team]--; this.emit('timeout'); return true; }
   hurry() { if (this.phase === 'pre' && !this.human[this.poss]) this.pre = 99; }
-  audible() { if (this.phase !== 'pre' || !this.human[this.poss] || this.isKO) return false; this.phase = 'call'; this.call[this.poss] = -1; this.ctl = -1; return true; }
+  audible() { if (this.phase !== 'pre' || !this.human[this.poss] || this.isKO) return false; this.phase = 'call'; this.call[this.poss] = -1; this.ctls[this.poss] = -1; return true; }
   skip() { if (this.phase === 'dead') this.deadT = Math.min(this.deadT, 0.05); }
   snap() {
     if (this.phase !== 'pre') return false; if (this.isKO) { this.pre = 99; return true; } this.phase = 'live'; this.t = 0; this.stats.plays++; const qb = this.P[this.qb];
@@ -114,7 +116,7 @@ export class Game {
     this.ball.st = 'held'; this.ball.by = qb.id; this.carrier = qb.id; this.emit('snap');
     if (this.play.kneel) { qb.x -= this.dir(this.poss); return this.end('down', qb), true; } if (this.play.spike) { this.thrown = true; return this.end('inc'), true; }
     if (this.play.sneak) { this.handed = true; qb.job = 'runner'; qb.way = [{ x: this.los + this.dir(this.poss) * 3, z: 0 }]; }
-    if (this.human[this.poss]) this.ctl = this.run ? -1 : qb.id;
+    if (this.human[this.poss]) this.ctls[this.poss] = this.run ? -1 : qb.id;
     return true;
   }
   kick() {
@@ -127,7 +129,7 @@ export class Game {
   }
 
   // ---- the user's player ----
-  act(m) { return this.move(this.ctl, m); }
+  act(m, t = this.me) { return this.move(this.ctls[t], m); }
   move(id, m) {
     const p = this.P[id]; if (!p || this.phase !== 'live' || p.st !== 'up' || p.cd > 0 || p.mv) return false; const car = id === this.carrier, d = hyp(p.vx, p.vz) || 1;
     if (car && (m === 'jukeL' || m === 'jukeR' || m === 'spin' || m === 'hurdle' || m === 'stiff' || m === 'dive')) {
@@ -138,8 +140,8 @@ export class Game {
   }
   carrierTeam() { return this.carrier >= 0 ? this.P[this.carrier].team : this.ball.st === 'air' ? this.poss : -1; }
   // the nearest of the user's defenders to the ball becomes his player
-  switchCtl() { const t = this.human[0] ? 0 : 1; if (this.phase !== 'live' && this.phase !== 'pre') return; if (this.carrier >= 0 && this.P[this.carrier].team === t) return;
-    const b = this.ball.st === 'air' && this.ball.land ? this.ball.land : this.ball; let best = -1, bd = 1e9; for (const p of this.team(t)) { if (p.id === this.ctl || p.st !== 'up') continue; const q = hyp(p.x - b.x, p.z - b.z); if (q < bd) { bd = q; best = p.id; } } if (best >= 0) this.ctl = best; return best; }
+  switchCtl(t = this.me) { if (this.phase !== 'live' && this.phase !== 'pre') return; if (this.carrier >= 0 && this.P[this.carrier].team === t) return;
+    const b = this.ball.st === 'air' && this.ball.land ? this.ball.land : this.ball; let best = -1, bd = 1e9; for (const p of this.team(t)) { if (p.id === this.ctls[t] || p.st !== 'up') continue; const q = hyp(p.x - b.x, p.z - b.z); if (q < bd) { bd = q; best = p.id; } } if (best >= 0) this.ctls[t] = best; return best; }
 
   // ---- throwing ----
   // a pass led to a receiver: speed is the ball's speed over the ground (15 a lob, 25 a bullet)
@@ -166,7 +168,7 @@ export class Game {
     const b = this.ball; Object.assign(b, { x: from.x, y: from.y, z: from.z, vx: v.vx, vy: v.vy, vz: v.vz, st: 'air', by: -1 }); this.thrown = true; this.carrier = -1; this.stats.att++; this.box[this.poss].att++;
     const T = (v.vy + Math.sqrt(Math.max(0, v.vy * v.vy + 2 * G * (from.y - 1.2)))) / G; b.land = { x: from.x + v.vx * T, z: from.z + v.vz * T, T, t: 0, far: hyp(v.vx, v.vz) * T };
     let tg = -1, bd = 1e9; for (const r of this.team(this.poss)) { if (!r.elig) continue; const q = hyp(r.x + r.vx * T * 0.5 - b.land.x, r.z + r.vz * T * 0.5 - b.land.z); if (q < bd) { bd = q; tg = r.id; } } b.tgt = tg;
-    for (const p of this.P) p.tried = -1; this.emit('throw'); if (this.human[this.poss] && tg >= 0) this.ctl = -1; return true;
+    for (const p of this.P) p.tried = -1; this.emit('throw'); if (this.human[this.poss] && tg >= 0) this.ctls[this.poss] = -1; return true;
   }
 
   // ---- one step ----
@@ -180,7 +182,7 @@ export class Game {
     this.t += dt; if (this.mode !== 'practice') this.clock = Math.max(0, this.clock - dt);
     if (this.ball.st === 'kick') return this.flyKick(dt);
     const o = this.poss, d = this.dir(o), b = this.ball, car = this.carrier >= 0 ? this.P[this.carrier] : null;
-    if (this.run && !this.handed && this.t >= this.run.ho && car && car.id === this.qb && car.st === 'up') { this.handed = true; this.carrier = this.run.id; b.by = this.run.id; this.emit('handoff'); this.autoT = this.t + 0.9; if (this.human[o]) this.ctl = this.run.id; }
+    if (this.run && !this.handed && this.t >= this.run.ho && car && car.id === this.qb && car.st === 'up') { this.handed = true; this.carrier = this.run.id; b.by = this.run.id; this.emit('handoff'); this.autoT = this.t + 0.9; if (this.human[o]) this.ctls[o] = this.run.id; }
     if (car && car.team === o && (car.x - this.los) * d > 0.5) this.past = true;
     this.blocks(dt);
     for (const p of this.P) this.think(p, dt);
@@ -202,7 +204,7 @@ export class Game {
       let best = null, bd = 1e9; if (b.ord != null && this.P[b.ord].st === 'up') best = this.P[b.ord];
       else for (const q of D) { if (q.blkN > 0 && !LINE.has(b.role)) continue; const m = hyp(q.x - b.x, q.z - b.z) + 0.45 * hyp(q.x - prot.x, q.z - prot.z) + q.blkN * 6 + (q.job === 'rush' || q.job === 'pursue' ? 0 : 5); if (m < bd) { bd = m; best = q; } }
       b.bt = best ? best.id : -1; if (!best) continue; best.blkN++;
-      if (hyp(best.x - b.x, best.z - b.z) < 1.25 && best.free <= 0 && !best.mv) { best.blk = b.id; const k = (SHED[best.role] || 0.3) * (best.id === this.ctl ? 2.2 : 1) * (this.past ? 1.6 : this.run && !this.thrown ? 0.2 : this.human[o] ? this.K.shed : 1); if (this.rnd() < k * dt) { best.free = 1.3; b.stun = 0.8; best.blk = -1; } }
+      if (hyp(best.x - b.x, best.z - b.z) < 1.25 && best.free <= 0 && !best.mv) { best.blk = b.id; const k = (SHED[best.role] || 0.3) * (best.id === this.ctls[best.team] ? 2.2 : 1) * (this.past ? 1.6 : this.run && !this.thrown ? 0.2 : this.human[o] && !this.human[1 - o] ? this.K.shed : 1); if (this.rnd() < k * dt) { best.free = 1.3; b.stun = 0.8; best.blk = -1; } }
     }
   }
   think(p, dt) {
@@ -210,8 +212,8 @@ export class Game {
     if (p.st === 'down') { p.vx *= 0.85; p.vz *= 0.85; p.dn -= dt; if (p.dn <= 0 && p.id !== this.downed) p.st = 'up'; return; }
     if (p.mv) { p.mvT -= dt; this.moving(p, dt); if (p.mvT <= 0) { const m = p.mv; p.mv = ''; p.y = 0; if (m === 'dive' || m === 'hit') { if (p.id === this.carrier) return this.end('down', p); if (m === 'dive') { p.st = 'down'; p.dn = 1.1; } else p.stun = 0.5; } } if (p.mv === 'dive' || p.mv === 'hit' || p.mv === 'jukeL' || p.mv === 'jukeR') return; }
     if (p.stun > 0) { p.vx *= 0.9; p.vz *= 0.9; return; }
-    const user = p.id === this.ctl;
-    if (user) { const I = this.in, m = hyp(I.x, I.z), auto = m <= 0.15 && p.id === this.carrier && (p.id === this.qb ? !this.handed && this.t < 1.3 : this.t < (this.autoT || 0)); if (!auto && (m > 0.15 || p.id === this.carrier)) { const f = Math.min(1, m) * (I.sprint ? 1 : 0.86) * (p.id === this.carrier ? (this.past ? 0.92 : 0.99) * (p.hold > 0 ? 0.5 : 1) : 1) * (p.blk >= 0 ? 0.25 : 1) * (p.mv === 'stiff' ? 0.9 : 1); this.go(p, p.x + I.x * 10, p.z + I.z * 10, m > 0.15 ? f : 0, dt, false); this.bounds(p); return; }
+    const user = p.id === this.ctls[p.team];
+    if (user) { const I = this.ins[p.team], m = hyp(I.x, I.z), auto = m <= 0.15 && p.id === this.carrier && (p.id === this.qb ? !this.handed && this.t < 1.3 : this.t < (this.autoT || 0)); if (!auto && (m > 0.15 || p.id === this.carrier)) { const f = Math.min(1, m) * (I.sprint ? 1 : 0.86) * (p.id === this.carrier ? (this.past ? 0.92 : 0.99) * (p.hold > 0 ? 0.5 : 1) : 1) * (p.blk >= 0 ? 0.25 : 1) * (p.mv === 'stiff' ? 0.9 : 1); this.go(p, p.x + I.x * 10, p.z + I.z * 10, m > 0.15 ? f : 0, dt, false); this.bounds(p); return; }
       }
     if (p.id === this.carrier) return this.carry(p, dt, user);
     const air = b.st === 'air' && b.land, car = this.carrier >= 0 ? this.P[this.carrier] : null;
@@ -289,13 +291,13 @@ export class Game {
     if (b.y <= 0.15) return this.end('inc');
     if (Math.abs(b.z) > FIELD.W + 3 || Math.abs(b.x) > 62) return this.end('inc');
     if (b.land.t < 0.18) return;
-    const near = this.P.filter(p => p.st === 'up' && p.tried !== 1 && p.id !== this.qb && hyp(p.x - b.x, p.z - b.z) < 1.35 && b.y < (p.mv === 'jump' ? 3.5 : 2.75) + (p.id === this.ctl ? 0.15 : 0)).sort((a, c) => (a.team === this.poss ? 1 : 0) - (c.team === this.poss ? 1 : 0));
-    for (const p of near) { p.tried = 1; const mine = p.id === this.ctl;
+    const near = this.P.filter(p => p.st === 'up' && p.tried !== 1 && p.id !== this.qb && hyp(p.x - b.x, p.z - b.z) < 1.35 && b.y < (p.mv === 'jump' ? 3.5 : 2.75) + (p.id === this.ctls[p.team] ? 0.15 : 0)).sort((a, c) => (a.team === this.poss ? 1 : 0) - (c.team === this.poss ? 1 : 0));
+    for (const p of near) { p.tried = 1; const mine = p.id === this.ctls[p.team];
       if (p.team !== this.poss) { const r = this.rnd(), pi = mine ? (p.mv === 'jump' ? 0.45 : 0.22) : 0.045, ps = mine ? 0.35 : 0.24; if (r < pi) { this.stats.int++; this.box[this.poss].int++; this.grab(p); this.emit('int', { id: p.id }); this.picked = true; return; } if (r < pi + ps) { this.emit('swat', { id: p.id }); b.vx *= 0.25; b.vz *= 0.25; b.vy = Math.min(b.vy, -2); for (const q of this.P) q.tried = 1; return; } continue; }
       if (!p.elig) continue; let cov = 0; for (const q of this.team(1 - p.team)) if (q.st === 'up' && hyp(q.x - p.x, q.z - p.z) < 2.1) cov++;
       if (this.rnd() < 0.94 - Math.min(2, cov) * 0.2 - 0.1 * this.wx.wet - Math.max(0, b.land.far - 15) * 0.007) { this.stats.comp++; this.box[this.poss].comp++; this.caught = true; this.grab(p); this.emit('catch', { id: p.id }); return; } this.emit('drop', { id: p.id }); }
   }
-  grab(p) { const b = this.ball; b.st = 'held'; b.by = p.id; this.carrier = p.id; b.land = null; p.way = null; p.job = 'carry'; p.hold = 0.5; if (this.human[p.team]) this.ctl = p.id; else if (this.human[1 - p.team]) { if (this.ctl < 0 || this.P[this.ctl].team === p.team) this.ctl = -1; if (this.ctl < 0) this.switchCtl(); }
+  grab(p) { const b = this.ball; b.st = 'held'; b.by = p.id; this.carrier = p.id; b.land = null; p.way = null; p.job = 'carry'; p.hold = 0.5; if (this.human[p.team]) this.ctls[p.team] = p.id; if (this.human[1 - p.team] && this.ctls[1 - p.team] < 0) this.switchCtl(1 - p.team);
     if (p.team === this.poss && (p.x - this.los) * this.dir(p.team) > 0) this.past = true; }
   flyKick(dt) {
     const b = this.ball, d = this.dir(this.poss); b.vy -= G * dt; b.x += b.vx * dt; b.y += b.vy * dt; b.z += b.vz * dt;
@@ -335,3 +337,36 @@ export class Game {
     this.down++; this.spot(n.x, false);
   }
 }
+
+// ---- 1 v 1: the page that runs the game sends what the other needs to draw it; the other lays it over a game it does not run ----
+const r2 = v => Math.round((v || 0) * 100) / 100;
+Game.prototype.snapshot = function (ev) { const b = this.ball, pre = this.phase === 'pre';
+  return { ph: this.phase, po: this.poss, qb: this.qb ?? -1, sc: this.score, msg: this.msg, q: this.q, ck: r2(this.clock), ca: this.carrier, los: r2(this.los), fi: r2(this.first), dn: this.down, pa: this.past ? 1 : 0, th: this.thrown ? 1 : 0, ha: this.handed ? 1 : 0, t: r2(this.t), call: this.call, ct: this.ctls, run: this.run ? this.run.id : -1, to: this.to, pc: r2(this.pc ?? 30), lr: this.lastRun, tip: this.tip, ko: this.isKO ? 1 : 0, box: this.box, md: this.mode,
+    P: this.P.map(p => [r2(p.x), r2(p.z), r2(p.vx), r2(p.vz), r2(p.y), r2(p.face), p.st, p.mv || '', r2(p.mvT), p.elig ? 1 : 0, p.role, p.job, pre && p.way ? p.way.map(w => [r2(w.x), r2(w.z)]) : 0, r2(p.hx), r2(p.hz)]),
+    b: [r2(b.x), r2(b.y), r2(b.z), r2(b.vx), r2(b.vy), r2(b.vz), b.st, b.by, b.tgt, b.land ? [r2(b.land.x), r2(b.land.z), r2(b.land.T), r2(b.land.t)] : 0], ev: ev || [] }; };
+// the second player's game: it is drawn from the first's snapshots, moved on between them, and what its player does is sent, not done
+export class Remote extends Game {
+  constructor(o, send) { super({ ...o, human: [true, true], ko: false }); this.me = 1; this.send = send; this.remote = true; }
+  read(s) { if (!s || !Array.isArray(s.P) || s.P.length !== 22) return;
+    this.phase = s.ph; this.poss = s.po; this.qb = s.qb; this.score = s.sc; this.msg = s.msg; this.q = s.q; this.clock = s.ck; this.carrier = s.ca; this.los = s.los; this.first = s.fi; this.down = s.dn; this.past = !!s.pa; this.thrown = !!s.th; this.handed = !!s.ha; this.t = s.t; this.call = s.call; this.ctls = s.ct; this.run = s.run >= 0 ? { id: s.run } : null; if (s.to) { this.to = s.to; this.pc = s.pc; this.lastRun = s.lr; this.tip = s.tip; this.isKO = !!s.ko; this.box = s.box; this.mode = s.md; }
+    if (this.call[s.po] >= 0 && this.call[1 - s.po] >= 0) { this.play = OFFENSE[this.call[s.po]]; this.dplay = DEFENSE[this.call[1 - s.po]]; }
+    s.P.forEach((a, i) => { const p = this.P[i]; p.x = a[0]; p.z = a[1]; p.vx = a[2]; p.vz = a[3]; p.y = a[4]; p.face = a[5]; p.st = a[6]; p.mv = a[7]; p.mvT = a[8]; p.elig = !!a[9]; p.role = a[10]; p.job = a[11]; if (s.ph === 'pre') p.way = a[12] ? a[12].map(w => ({ x: w[0], z: w[1] })) : null; p.hx = a[13]; p.hz = a[14]; });
+    const b = this.ball, q = s.b; b.x = q[0]; b.y = q[1]; b.z = q[2]; b.vx = q[3]; b.vy = q[4]; b.vz = q[5]; b.st = q[6]; b.by = q[7]; b.tgt = q[8]; b.land = q[9] ? { x: q[9][0], z: q[9][1], T: q[9][2], t: q[9][3] } : null; this.ev.push(...(s.ev || [])); }
+  step(dt) { if (this.phase !== 'live') return; for (const p of this.P) { p.x += p.vx * dt; p.z += p.vz * dt; } const b = this.ball;
+    if (b.st === 'air' || b.st === 'kick') { b.x += b.vx * dt; b.z += b.vz * dt; b.y = Math.max(0.15, b.y + b.vy * dt); b.vy -= G * dt; } else if (b.st === 'held' && this.P[b.by]) { b.x = this.P[b.by].x; b.z = this.P[b.by].z; } }
+  pick(team, n) { if (this.phase !== 'call') return false; if (n >= 0) this.call[team] = n; this.send('pick', [n]); return true; }
+  throwAway() { if (!this.canThrow()) return false; this.send('away'); return true; } timeout() { this.send('to'); return true; } hurry() { this.send('hurry'); }
+  snap() { this.send('snap'); return true; } audible() { this.send('audible'); return true; } skip() { this.send('skip'); } act(m) { this.send('act', [m]); return true; } switchCtl() { this.send('sw'); }
+  order(id, o) { this.send('order', [id, o]); return true; } throwTo(id, lob, from, wild) { if (!this.canThrow()) return false; this.send('throw', [id, lob ? 1 : 0, from || null, wild ?? 1]); return true; } throwVel(from, v) { if (!this.canThrow()) return false; this.send('tv', [from, v]); return true; }
+}
+// what the second player asked for, done for their side by the game that runs
+const MOVES = ['jukeL', 'jukeR', 'spin', 'dive', 'hurdle', 'jump', 'hit', 'stiff'], fin = v => typeof v === 'number' && Number.isFinite(v), pt = o => o && fin(o.x) && fin(o.z) && (o.y == null || fin(o.y));
+Game.prototype.cmd = function (c, a = []) { const T = 1, mine = this.poss === T;
+  if (c === 'in') { const I = this.ins[T]; I.x = fin(a[0]) ? clamp(a[0], -1, 1) : 0; I.z = fin(a[1]) ? clamp(a[1], -1, 1) : 0; I.sprint = !!a[2]; return; }
+  if (c === 'pick') { const n = a[0] | 0, L = mine ? OFFENSE : DEFENSE; if (n >= 0 && n < L.length) this.pick(T, n); return; }
+  if (c === 'snap') { if (mine) this.snap(); return; } if (c === 'audible') { if (mine) this.audible(); return; } if (c === 'skip') return this.skip(); if (c === 'sw') return this.switchCtl(T);
+  if (c === 'away') { if (mine) this.throwAway(); return; } if (c === 'to') return void this.timeout(T); if (c === 'hurry') return this.hurry();
+  if (c === 'act') { if (typeof a[0] === 'string' && a[0].length < 12) this.act(a[0], T); return; }
+  if (c === 'order') { const p = this.P[a[0] | 0], o = a[1]; if (p && p.team === T && o && typeof o === 'object') this.order(p.id, o); return; }
+  if (c === 'throw') { const r = this.P[a[0] | 0]; if (mine && r && r.team === T) this.throwTo(r.id, !!a[1], pt(a[2]) ? a[2] : undefined, fin(a[3]) ? clamp(a[3], 0.2, 3) : 1); return; }
+  if (c === 'tv') { const v = a[1]; if (mine && pt(a[0]) && fin(a[0].y) && v && fin(v.vx) && fin(v.vy) && fin(v.vz)) this.throwVel(a[0], v); } };

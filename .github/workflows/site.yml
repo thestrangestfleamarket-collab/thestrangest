@@ -64,7 +64,7 @@ jobs:
           k asylum  'src/asylum/|tools/asylum\.cjs|tests/asylum\.cjs'
           k skyaces 'src/fly/|data/fly/|tools/fly\.cjs|tests/skyaces\.cjs'
           k golf    'src/golf/|data/golf/|tools/golf\.cjs|tests/golf\.cjs'
-          k ball    'src/ball/|data/ball/|tools/ball\.cjs|tests/ball\.cjs|src/cantina/hands\.js'
+          k ball    'src/ball/|data/ball/|tools/ball\.cjs|tests/ball(-room)?\.cjs|worker/ball\.js|src/cantina/hands\.js'
           k cantina 'src/cantina/|data/cantina/|tools/cantina\.cjs|tests/cantina\.cjs|worker/cantina'
           k sushi   'src/sushi/|data/sushi/|tools/sushi\.cjs|tests/sushi\.cjs|worker/sushi'
           k saloon  'src/saloon/|data/saloon/|tools/saloon\.cjs|tests/saloon\.cjs|worker/saloon|src/sushi/(ctx|input|items|physics|fx|pf)\.js'
@@ -82,7 +82,7 @@ jobs:
           k duel    'src/duel/|data/duel/|tools/duel\.cjs|tests/duel\.cjs'
           k qzar    'src/qzar/|tools/qzar\.cjs|tests/qzar\.cjs'
           k laser   'src/laser/|worker/laser|tools/laser\.cjs|tests/laser\.cjs'
-          k football 'src/football/|tools/football\.cjs|tests/football\.cjs|src/jam/stadium|src/sushi/(sky|ephem|air)\.js'
+          k football 'src/football/|worker/football\.js|src/space/net\.js|tools/football\.cjs|tests/football\.cjs|src/jam/stadium|src/sushi/(sky|ephem|air)\.js'
           k tag     'src/tag/|src/laser/audio|worker/tag|tools/tag\.cjs|tests/tag\.cjs'
           k chess   'src/chess/|data/chess/|worker/chess|tools/chess\.cjs|tests/chess\.cjs'
           k fleet   'src/space/|data/space/|worker/space|tools/space|tests/fleet\.cjs'
@@ -302,6 +302,10 @@ jobs:
         timeout-minutes: 20
         if: contains(steps.f.outputs.run, ' ball')
         run: node tests/ball.cjs dist/ball.html
+      - name: Ball's room (two pages on one court under the real worker, a game of HORSE between them)
+        timeout-minutes: 20
+        if: contains(steps.f.outputs.run, ' ball')
+        run: node tests/ball-room.cjs
       - name: Halcyon Greens (mini golf at /golf; it loads, a putt rolls, a putt holes out)
         timeout-minutes: 15
         if: contains(steps.f.outputs.run, ' golf')

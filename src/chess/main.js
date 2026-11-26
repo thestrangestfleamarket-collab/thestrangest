@@ -94,7 +94,7 @@ world.add(dungeon.group);
 
 // The battlefield (maps.js), built when the match's state first names it.
 let cols = G.COLS, rows = G.ROWS, field = null;
-let place = null, nextDrop = 0;
+let place = null, nextDrop = 0, nextRumble = 40;
 const PLACES = { jungle: makeJungle, cavern: makeCavern }, places = {};   // what is round a table whose map names its place (maps.js look.place), built and fetched the first time; the hall otherwise
 const tx = x => x - (cols - 1) / 2;
 const tz = y => y - (rows - 1) / 2;
@@ -110,7 +110,7 @@ function setField(id) {
   { const key = m.look && PLACES[m.look.place] ? m.look.place : null;
     if (key && !places[key]) { places[key] = PLACES[key](renderer); world.add(places[key].group); }
     dungeon.group.visible = !key; for (const k in places) places[k].group.visible = k === key; BG.set(key ? places[key].haze : HAZE);
-    place = key; sound.place(key); const dim = key ? places[key].light ?? 1 : 1; hemi.intensity = 1.9 * dim; sun.intensity = 2.1 * Math.sqrt(dim); }   // its sounds, and how much light its pieces stand in
+    place = key; sound.place(key); const dim = key ? places[key].light ?? 1 : 1; hemi.intensity = 1.9 * dim; sun.intensity = 2.1 * Math.sqrt(dim); crowd.dim = dim < 1 ? 0.45 : 1; crowdDirty = true; }   // its sounds, and how much light its pieces stand in
   catcher.scale.set(cols + 0.7, 1, rows + 0.7);
   applyQuality(); placePanel();
   if (!renderer.xr.isPresenting) resetCamera();
@@ -974,9 +974,10 @@ renderer.setAnimationLoop(time => {
     if (d.t > hold + 0.5) { unitsGroup.remove(d.g); dying.splice(i, 1); }
   }
   if (crowdDirty) { crowdDirty = false; drawn.length = 0; for (const g of unitMeshes.values()) drawn.push(g); for (const d of dying) drawn.push(d.g); crowd.sync(drawn); }
-  if (field && field.fires.length && now > nextCrackle) {
+  const fires = place && places[place].fires ? places[place].fires : field ? field.fires : [];
+  if (fires.length && now > nextCrackle) {
     nextCrackle = now + 0.4 + Math.random() * 1.2;
-    sound.crackle(worldPos(field.fires[Math.floor(Math.random() * field.fires.length)]));
+    sound.crackle(worldPos(fires[Math.floor(Math.random() * fires.length)]));
   }
 
   if (renderer.xr.isPresenting) {
@@ -1008,13 +1009,14 @@ renderer.setAnimationLoop(time => {
   viewCam.getWorldDirection(camDir);
   camUp.set(0, 1, 0).applyQuaternion(viewCam.quaternion);
   sound.setListener(camPos, camDir, camUp);
-  sound.fallsAt(world.localToWorld(tmpV.set(-52, -18, 0)));   // the place's own sounds: the waterfall where it falls, a bird's cry now and then from over the gorge
+  sound.fallsAt(world.localToWorld(place && places[place].water ? tmpV.copy(places[place].water) : tmpV.set(-52, -18, 0)));   // the place's own sounds: the waterfall where it falls, a bird's cry now and then from over the gorge
   if (place === 'cavern' && now > nextDrop) { nextDrop = now + 1.5 + Math.random() * 3.5; const a = Math.random() * 6.283, r = 6 + Math.random() * 20; sound.drop(world.localToWorld(tmpV.set(Math.sin(a) * r, 0, Math.cos(a) * r))); }
   if (place !== 'cavern' && now > nextCry) { nextCry = now + 50 + Math.random() * 70; sound.cry(world.localToWorld(tmpV.set(-44, 24, (Math.random() - 0.5) * 60))); }
   tmpQ.copy(world.quaternion).invert();
   eyeU.copy(camUp).applyQuaternion(tmpQ); eyeR.set(1, 0, 0).applyQuaternion(viewCam.quaternion).applyQuaternion(tmpQ);
   fx.update(dt, eyeR, eyeU);
-  dungeon.tick(now);
+  dungeon.tick(now); if (place && places[place].tick) places[place].tick(now);
+  if (place === 'cavern' && now > nextRumble) { nextRumble = now + 70 + Math.random() * 80; const a = Math.random() * 6.283; sound.play('rumble', { pos: world.localToWorld(tmpV.set(Math.sin(a) * 40, 6, Math.cos(a) * 40)), vol: 0.3, rate: 0.7 }); }
   named.clear(); if (selected) named.add(selected); if (inspected) named.add(inspected); if (setupSel) named.add(setupSel); if (aimedUnit) named.add(aimedUnit);
   labels.update(placeOf, camLocal, charsFailed || window.__names ? true : named, renderer.xr.isPresenting ? null : eyeR, renderer.xr.isPresenting ? 1.5 : 1);
 

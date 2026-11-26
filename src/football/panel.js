@@ -33,7 +33,7 @@ export class Panel {
     } else if (sim.phase === 'call') {
       const cats = off ? OCATS : DCATS, list = (off ? OFFENSE : DEFENSE).map((p, i) => [p, i]).filter(([p]) => p.cat === S.tab); text(off ? 'OFFENSE: CHOOSE A PLAY' : 'DEFENSE: CHOOSE A PLAY', 28, 96, 26, '#9fb0c8');
       cats.forEach((c, i) => btn('tab:' + c, c, 420 + i * 148, 72, 138, 48, c === S.tab, 22));
-      list.slice(0, 6).forEach(([p, i], k) => { const x = 28 + (k % 3) * 326, y = 134 + Math.floor(k / 3) * 212, w = 314, h = 200, tip = sim.tip === i; btn('play:' + i, '', x, y, w, h, false); if (tip) { g.strokeStyle = '#ffe030'; g.lineWidth = 4; g.beginPath(); g.roundRect(x + 2, y + 2, w - 4, h - 4, 12); g.stroke(); text("COACH'S PICK", x + w - 12, y + 18, 16, '#ffe030', 'right', 800); } if (off) this.offCard(g, p, x, y, w, h - 34); else this.defCard(g, p, x, y, w, h - 30); text(p.name, x + w / 2, y + h - 20, 24, '#fff', 'center', 800); });
+      list.slice(0, 6).forEach(([p, i], k) => { const x = 28 + (k % 3) * 326, y = 134 + Math.floor(k / 3) * 212, w = 314, h = 200, tip = sim.tip && sim.tip[S.user] === i; btn('play:' + i, '', x, y, w, h, false); if (tip) { g.strokeStyle = '#ffe030'; g.lineWidth = 4; g.beginPath(); g.roundRect(x + 2, y + 2, w - 4, h - 4, 12); g.stroke(); text("COACH'S PICK", x + w - 12, y + 18, 16, '#ffe030', 'right', 800); } if (off) this.offCard(g, p, x, y, w, h - 34); else this.defCard(g, p, x, y, w, h - 30); text(p.name, x + w / 2, y + h - 20, 24, '#fff', 'center', 800); });
       foot();
     } else if (sim.phase === 'pre') {
       text(sim.isKO ? 'KICKOFF' : off ? sim.play.name : sim.dplay.name, 28, 104, 44, '#fff', 'left', 900);

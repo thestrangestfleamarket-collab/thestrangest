@@ -5,6 +5,8 @@ import { JAM } from "./jam.js";
 import { DRIVE } from "./drive.js";
 import { LASER } from "./laser.js";
 import { TAG } from "./tag.js";
+import { BALL } from "./ball.js";
+import { FOOT } from "./football.js";
 import { TANK } from "./tank.js";
 import { SPACE } from "./space.js";
 import { CHESS } from "./chess.js";
@@ -173,7 +175,8 @@ export default {
     if (p === "/duel/") return Response.redirect(url.origin + "/duel" + url.search, 301);
     if ((request.method === "GET" || request.method === "HEAD") && (p === "/plane" || p === "/plane/")) return Response.redirect("https://claude.ai/artifact/8MkBS3cu92B3GZ5sxAoJ48", 302);   // owner, 20 Nov 2026: /plane leads to his artifact
     // SLOWFIRE DUEL (src/qzar/): its own page at /qzar, to anyone with the link
-    if ((request.method === "GET" || request.method === "HEAD") && (p === "/qzar" || p === "/qzar/")) return Response.redirect("https://claude.ai/artifact/9inZsDMyTHoZaQ9J1v2BQL", 302);   // owner, 19 Nov 2026: /qzar leads to his artifact; SLOWFIRE DUEL's page is still built, at no address
+    if ((request.method === "GET" || request.method === "HEAD") && p === "/qzar") return page(env, url, "/qzar", request, "no-cache");
+    if (p === "/qzar/") return Response.redirect(url.origin + "/qzar" + url.search, 301);
     // SAVANO LANE NIGHT DRIVE (src/drive/): its own page at /drive, to anyone with the link; its map, cars, people, surfaces and sounds under /drive-assets/
     if ((request.method === "GET" || request.method === "HEAD") && p === "/drive") return page(env, url, "/drive", request, "no-cache");
     if (p === "/drive/") return Response.redirect(url.origin + "/drive" + url.search, 301);
@@ -282,9 +285,9 @@ export default {
       return skyFeed(sky[1], request); }
     if (p.startsWith("/parties/")) return (await routePartykitRequest(request, env, {
       onBeforeConnect: async (req, { party, name }) => {
-        const room = party === "block" || party === "jam" || party === "crumbs" || party === "drive" ? ROOM.test(name) : party === "laser" || party === "tag" || party === "tank" || party === "space" ? name === "public" : party === "dish" && name === "petri";   // the dish: one for the whole market, the arcade's PETRI; LASER TAG: one public room
+        const room = party === "block" || party === "jam" || party === "crumbs" || party === "drive" ? ROOM.test(name) : party === "laser" || party === "tag" || party === "tank" || party === "space" || party === "ball" || party === "football" ? name === "public" : party === "dish" && name === "petri";   // the dish: one for the whole market, the arcade's PETRI; LASER TAG: one public room
         if (!room || (request.headers.get("Origin") !== url.origin && !dev)) return new Response("not found", { status: 404 });
-        if (party === "laser" || party === "tag" || party === "tank" || party === "space") { const r = new Request(req); r.headers.set("x-partykit-room", name); return r; }   // LASER TAG's room: to anyone with the link, like its page
+        if (party === "laser" || party === "tag" || party === "tank" || party === "space" || party === "ball" || party === "football") { const r = new Request(req); r.headers.set("x-partykit-room", name); return r; }   // LASER TAG's room: to anyone with the link, like its page
         if (party === "crumbs") { const r = new Request(req); r.headers.set("x-partykit-room", name); return r; }   // MIDNIGHT CRUMBS' houses: to anyone with the link, like its page
         if (party === "drive") { const r = new Request(req); r.headers.set("x-partykit-room", name); return r; }   // the drive's rooms: to anyone with the link, like its page
         if (party === "jam") { const r = new Request(req); r.headers.set("x-partykit-room", name); return r; }   // STADIUM JAM's rooms: to anyone with the link, like its page
@@ -1186,6 +1189,31 @@ export class Chess extends DurableObject {
 
 // SENSOR TAG's room: the same relay as LASER TAG's, with its own filter (worker/tag.js)
 export class Tag extends Laser { get R() { return TAG; } }
+// BALL's court: the one public room, eight players; it passes each one's pose on, keeps the court's settings for whoever comes next, and judges HORSE (worker/ball.js)
+export class Ball extends Server {
+  static options = { hibernate: false };
+  world = null; g = null;
+  peers(not) { const a = []; for (const o of this.getConnections()) if (o.id !== not && o.state) a.push({ id: o.id, ...o.state }); return a; }
+  all(msg) { for (const o of this.getConnections()) if (o.state) o.send(msg); }
+  sync() { this.all(JSON.stringify({ t: "horse", g: this.g })); }
+  onMessage(c, raw) {
+    if (typeof raw !== "string" || raw.length > 1024) return; let m; try { m = JSON.parse(raw); } catch (e) { return; }
+    const now = Date.now(), rl = c.rl || (c.rl = { t: now, n: 0 }); if (now - rl.t > 1000) { rl.t = now; rl.n = 0; } if (++rl.n > 60) return;
+    if (m && m.t === "join") { if (c.state) return; const peers = this.peers(c.id); if (!peers.length) { this.world = null; this.g = null; }
+      if (peers.length >= BALL.MAX) { c.send('{"t":"full"}'); return c.close(4002, "full"); }
+      const st = { slot: BALL.slot(peers.map(q => q.slot)) }; c.setState(st);
+      c.send(JSON.stringify({ t: "welcome", id: c.id, slot: st.slot, peers, world: this.world, g: this.g })); return this.broadcast(JSON.stringify({ t: "peer-join", id: c.id, ...st }), [c.id]); }
+    if (!c.state || !m) return; if (BALL.tick(this.g, now)) this.sync();
+    if (m.t === "horse") {
+      if (m.a === "start") { if (this.g && this.g.on) return; const ids = this.peers().sort((a, b) => a.slot - b.slot).map(q => q.id), g = BALL.start(ids, now); if (!g) return c.send('{"t":"alone"}'); this.g = g; return this.sync(); }
+      if (m.a === "stop") { if (this.g && this.g.on) { this.g.on = false; this.g.win = null; this.g.n++; this.sync(); } return; }
+      if (m.a === "shot" && typeof m.x === "number" && typeof m.z === "number" && BALL.shot(this.g, c.id, !!m.made, m.x, m.z, now)) this.sync();
+      return; }
+    const out = BALL.clean(m); if (!out) return; if (out.t === "world") { const { t, ...w } = out; this.world = w; }
+    out.id = c.id; this.broadcast(JSON.stringify(out), [c.id]); }
+  onClose(c) { if (!c.state) return; this.broadcast(JSON.stringify({ t: "peer-leave", id: c.id }), [c.id]); if (BALL.leave(this.g, c.id, Date.now())) this.sync(); }
+  onError(c) { this.onClose(c); }
+}
 
 // SPACE FLEET's room: the one public battle, two players; the first in is the host, whose pictures of the battle go to the other, whose orders come back (worker/space.js says what passes)
 export class Space extends Server {
@@ -1199,6 +1227,22 @@ export class Space extends Server {
       const st = { slot: SPACE.slot(peers.map(q => q.slot)) }; c.setState(st);
       c.send(JSON.stringify({ t: "welcome", id: c.id, slot: st.slot, peers })); return this.broadcast(JSON.stringify({ t: "peer-join", id: c.id, ...st }), [c.id]); }
     if (!c.state) return; const out = SPACE.clean(m, c.state.slot); if (!out) return;
+    out.id = c.id; this.broadcast(JSON.stringify(out), [c.id]); }
+  onClose(c) { if (c.state) this.broadcast(JSON.stringify({ t: "peer-leave", id: c.id }), [c.id]); }
+  onError(c) { this.onClose(c); }
+}
+// FOURTH & LONG's field: the one public game, two players; the first in runs it and its state is passed to the second, whose moves are passed back (worker/football.js says what passes)
+export class Football extends Server {
+  static options = { hibernate: false };
+  peers(not) { const a = []; for (const o of this.getConnections()) if (o.id !== not && o.state) a.push({ id: o.id, ...o.state }); return a; }
+  onMessage(c, raw) {
+    if (typeof raw !== "string" || raw.length > 12000) return; let m; try { m = JSON.parse(raw); } catch (e) { return; }
+    const now = Date.now(), rl = c.rl || (c.rl = { t: now, n: 0 }); if (now - rl.t > 1000) { rl.t = now; rl.n = 0; } if (++rl.n > 40) return;
+    if (m && m.t === "join") { if (c.state) return; const peers = this.peers(c.id);
+      if (peers.length >= FOOT.MAX) { c.send('{"t":"full"}'); return c.close(4002, "full"); }
+      const st = { slot: FOOT.slot(peers.map(q => q.slot)) }; c.setState(st);
+      c.send(JSON.stringify({ t: "welcome", id: c.id, slot: st.slot, peers })); return this.broadcast(JSON.stringify({ t: "peer-join", id: c.id, ...st }), [c.id]); }
+    if (!c.state) return; const out = FOOT.clean(m, c.state.slot); if (!out) return;
     out.id = c.id; this.broadcast(JSON.stringify(out), [c.id]); }
   onClose(c) { if (c.state) this.broadcast(JSON.stringify({ t: "peer-leave", id: c.id }), [c.id]); }
   onError(c) { this.onClose(c); }

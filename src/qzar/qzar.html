@@ -56,6 +56,7 @@ button:focus-visible,input:focus-visible{outline:2px solid var(--warn);outline-o
 #status{color:var(--warn)}
 .go{flex:1;padding:12px 14px;border:0;border-radius:4px;font-family:var(--font-display);font-weight:700;font-size:17px;color:var(--bg);background:var(--warn);white-space:nowrap}
 .go.alt{background:transparent;color:var(--ink);border:1px solid var(--ink)}
+#acts{position:sticky;bottom:-16px;z-index:1;margin:0 -22px;padding:10px 22px;background:var(--panel);border-top:1px solid var(--line)}
 #note{font-size:12px}
 </style>
 </head>
@@ -111,7 +112,7 @@ button:focus-visible,input:focus-visible{outline:2px solid var(--warn);outline-o
         </div>
         <p id="status">Host a duel and share the code, or type your rival's code and join.</p>
       </div>
-      <div class="row">
+      <div class="row" id="acts">
         <button class="go" type="button" id="start">Start duel</button>
         <button class="go alt" type="button" id="vr" hidden>Enter VR</button>
         <button class="go alt" type="button" id="mr" hidden>Enter passthrough</button>

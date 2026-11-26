@@ -45,7 +45,7 @@ button.go{background:var(--rim);border-color:transparent}
 #help{bottom:calc(14px + env(safe-area-inset-bottom,0px));left:max(16px,env(safe-area-inset-left,0px));
   font-size:12px;color:var(--dim);background:var(--panel);border:1px solid var(--line);border-radius:6px;
   padding:8px 12px;line-height:1.5;max-width:min(360px,60vw)}
-@media (max-width:640px){#help{max-width:calc(100vw - 236px)}}
+@media (max-width:640px){#help{max-width:calc(100vw - 270px)}}
 #help kbd{font:600 11px var(--ui);color:var(--fg);border:1px solid var(--line);border-radius:3px;padding:0 4px}
 #pad{bottom:calc(18px + env(safe-area-inset-bottom,0px));right:max(16px,env(safe-area-inset-right,0px));
   display:flex;gap:10px;align-items:flex-end;pointer-events:auto}
@@ -70,7 +70,7 @@ button.go{background:var(--rim);border-color:transparent}
   <div id="panel" hidden>
     <label for="tod">Time of day <span id="todV">22:00</span></label>
     <input id="tod" type="range" min="0" max="24" step="0.25" value="22">
-    <button id="bCourt">Court</button><button id="bLights">Lights</button><button id="bGame">60 second game</button><button id="bWx">Weather</button><button id="bNet">Net</button><button id="bBall">Get ball</button>
+    <button id="bCourt">Court</button><button id="bLights">Lights</button><button id="bGame">60 second game</button><button id="bHorse">HORSE</button><button id="bWx">Weather</button><button id="bNet">Net</button><button id="bBall">Get ball</button>
   </div>
   <div id="xrnote" hidden></div>
 </div>

@@ -1,0 +1,48 @@
+// BALL with others: everyone at /ball shares one court. Each other player's body, hands and ball, the court's settings kept the same for all, and the game of HORSE the room judges
+import * as THREE from 'three';
+import { Net } from './net.js';
+const COLS = [0xb3261e, 0x1f5fbf, 0xe0a010, 0x1f8a4c, 0x7a3fc0, 0xe05a10, 0x10a0b0, 0xd0d0d8], WORD = 'HORSE', UP = new THREE.Vector3(0, 1, 0);
+export function makeMulti(K) { const { scene, camera, hands, world, stats, flash, seg, V3, shadowOn } = K, peers = new Map(), M = { peers, id: null, slot: 0, g: null, connected: false, line: null };
+  const skin = new THREE.MeshStandardMaterial({ color: 0xc6957a, roughness: .65 }), shorts = new THREE.MeshStandardMaterial({ color: 0x14171a, roughness: .9 }), shoeM = new THREE.MeshStandardMaterial({ color: 0xe9e6df, roughness: .6 });
+  const _f = new V3(), _r = new V3(), _a = new V3(), _b = new V3(), _c = new V3(), _d = new V3(), _e = new V3();
+  const label = id => (id === M.id ? 'YOU' : 'P' + ((peers.get(id)?.slot ?? 0) + 1)), letters = id => (M.g && M.g.letters[id] ? WORD.slice(0, M.g.letters[id]) : '');
+  function makeBody(slot) { const g = new THREE.Group(), jersey = new THREE.MeshStandardMaterial({ color: COLS[slot % 8], roughness: .85 }); scene.add(g); K.noBake.push(g);
+    const cyl = (r, m) => { const q = new THREE.CylinderGeometry(r, r * .85, 1, 10); q.translate(0, .5, 0); const o = shadowOn(new THREE.Mesh(q, m)); g.add(o); return o; }, ball = (r, m) => { const o = shadowOn(new THREE.Mesh(new THREE.SphereGeometry(r, 14, 10), m)); g.add(o); return o; };
+    const torso = shadowOn(new THREE.Mesh(new THREE.CapsuleGeometry(.165, .32, 6, 12), jersey)); torso.scale.z = .72; g.add(torso); const hips = shadowOn(new THREE.Mesh(new THREE.CapsuleGeometry(.17, .14, 6, 12), shorts)); hips.scale.z = .75; g.add(hips);
+    const tc = K.cv(256, 64), tt = K.tex(tc), tag = new THREE.Sprite(new THREE.SpriteMaterial({ map: tt, depthWrite: false, fog: false })); tag.scale.set(.6, .15, 1); g.add(tag);
+    const o = { g, torso, hips, head: ball(.105, skin), neck: cyl(.045, skin), legs: [cyl(.075, skin), cyl(.075, skin)], shoes: [0, 1].map(() => { const s = shadowOn(new THREE.Mesh(new THREE.BoxGeometry(.105, .09, .29), shoeM)); g.add(s); return s; }), arms: [0, 1].map(() => ({ up: cyl(.05, jersey), fore: cyl(.042, skin), hand: ball(.048, skin) })), tag, tc, tt, txt: null, bt: -1,
+      ball: shadowOn(new THREE.Mesh(new THREE.SphereGeometry(K.BALL_R, 24, 16), K.balls[0].mesh.material)) }; g.add(o.ball); return o; }
+  function tagText(P) { const t = 'P' + (P.slot + 1) + (letters(P.id) ? '  ' + letters(P.id) : '') + (M.g && M.g.on && M.g.turn === P.id ? '  ◀' : ''); if (t === P.body.txt) return; P.body.txt = t; const x = P.body.tc.getContext('2d'); x.clearRect(0, 0, 256, 64); x.fillStyle = 'rgba(8,10,12,.72)'; x.fillRect(0, 6, 256, 52); x.fillStyle = '#ffb629'; x.font = '700 36px Arial'; x.textAlign = 'center'; x.fillText(t, 128, 45); P.body.tt.needsUpdate = true; }
+  function pose(P) { const o = P.body, c = P.c, hx = c[0], hy = c[1], hz = c[2], yaw = c[3], fl = P.t[13] | 0; _f.set(-Math.sin(yaw), 0, -Math.cos(yaw)); _r.crossVectors(_f, UP);
+    const hipY = Math.max(.3, hy - .8), shY = hy - .25, cx = hx - _f.x * .09, cz = hz - _f.z * .09;
+    o.head.position.set(hx, hy, hz); seg(o.neck, _a.set(cx, shY + .02, cz), _b.set(hx, hy - .06, hz)); o.torso.position.set(cx, (shY + hipY) / 2, cz); o.torso.scale.y = Math.max(.3, (shY - hipY) / .62); o.torso.rotation.y = yaw; o.hips.position.set(cx, hipY - .04, cz); o.hips.rotation.y = yaw;
+    for (let k = 0; k < 2; k++) { const sd = k ? 1 : -1; _a.set(cx + _r.x * sd * .095, hipY - .08, cz + _r.z * sd * .095); _b.set(cx + _r.x * sd * .11, .09, cz + _r.z * sd * .11); seg(o.legs[k], _a, _b); o.shoes[k].position.set(_b.x - _f.x * .05, .045, _b.z - _f.z * .05); o.shoes[k].rotation.y = yaw;
+      const A = o.arms[k], S = _a.set(cx + _r.x * sd * .2, shY - .03, cz + _r.z * sd * .2), H = _b; if (fl & (k ? 2 : 1)) H.set(c[4 + k * 3], c[5 + k * 3], c[6 + k * 3]); else H.set(S.x + _f.x * .1, S.y - .52, S.z + _f.z * .1);
+      const L1 = .3, L2 = .28; _d.subVectors(H, S); let d = _d.length() || 1e-3; _d.multiplyScalar(1 / d); if (d > L1 + L2 - .005) { d = L1 + L2 - .005; H.copy(S).addScaledVector(_d, d); }
+      const a = (L1 * L1 - L2 * L2 + d * d) / (2 * d), hh = Math.sqrt(Math.max(L1 * L1 - a * a, 0)); _e.set(0, -1, 0).addScaledVector(_r, sd * .5).addScaledVector(_f, -.35); _e.addScaledVector(_d, -_e.dot(_d)).normalize(); _c.copy(S).addScaledVector(_d, a).addScaledVector(_e, hh); seg(A.up, S, _c); seg(A.fore, _c, H); A.hand.position.copy(H); }
+    o.tag.position.set(hx, hy + .3, hz); o.ball.visible = !!(fl & 4); if (o.ball.visible) { o.ball.position.set(c[10], c[11], c[12]); const bt = P.t[14] | 0, src = bt !== o.bt && K.balls.find(q => q.ti === bt); if (src) { o.bt = bt; o.ball.material = src.mesh.material; } } }
+  const add = q => { if (peers.has(q.id)) return; peers.set(q.id, { id: q.id, slot: q.slot | 0, body: makeBody(q.slot | 0), t: null, c: null }); }, drop = id => { const P = peers.get(id); if (!P) return; scene.remove(P.body.g); P.body.g.traverse(o => { if (o.geometry) o.geometry.dispose(); }); peers.delete(id); };
+  const ring = new THREE.Mesh(new THREE.RingGeometry(.5, .62, 40).rotateX(-Math.PI / 2), new THREE.MeshBasicMaterial({ color: 0xffb629, transparent: true, opacity: .85, depthWrite: false, fog: false })); ring.visible = false; scene.add(ring); K.noBake.push(ring);
+  const sig = () => [world.court, world.hour, world.wx, world.net, world.lights].join('|'); let lastSig = sig(), sigAt = 0, poseAt = 0, pend = null, seen = -1;
+  const net = M.net = new Net({
+    welcome: m => { M.id = m.id; M.slot = m.slot; M.connected = true; for (const q of m.peers) add(q); if (m.world) { K.setWorld(m.world); lastSig = sig(); } else lastSig = ''; horse(m.g); },
+    'peer-join': m => { add(m); flash('P' + ((m.slot | 0) + 1) + ' IS HERE'); }, 'peer-leave': m => drop(m.id), full: () => flash('THE COURT IS FULL'), alone: () => flash('HORSE NEEDS TWO PLAYERS'),
+    pose: m => { const P = peers.get(m.id); if (!P || !Array.isArray(m.p) || m.p.length !== 15) return; P.t = m.p; if (!P.c) P.c = m.p.slice(); },
+    world: m => { K.setWorld(m); lastSig = sig(); }, horse: m => horse(m.g),
+    disconnect: () => { M.connected = false; for (const id of [...peers.keys()]) drop(id); horse(null); } });
+  function horse(g) { const was = M.g; M.g = g || null; pend = null; if (!g) return; if (g.on && !(was && was.on)) { if (K.game.on) K.endGame(); flash('H · O · R · S · E'); seen = g.n; return; }
+    if (g.n === seen) return; seen = g.n; if (!g.on) return flash(g.win ? label(g.win) + (g.win === M.id ? ' WIN' : ' WINS') : 'HORSE IS OVER'); if (g.last) { const L = letters(g.last.id); flash(label(g.last.id) + (g.last.made ? (g.spot && g.spot.by === g.last.id ? ': MATCH THAT' : ' MADE IT') : (L && was && was.spot ? ': ' + L : ' MISSED'))); } }
+  const line = () => { const g = M.g; if (g && g.on) { if (!g.order.includes(M.id)) return 'HORSE: WATCHING'; const me = letters(M.id) || '–'; return (g.turn === M.id ? (g.spot ? 'YOUR SHOT: FROM THE MARK' : 'YOUR SHOT: ANYWHERE') : label(g.turn) + (g.spot ? ' TO MATCH' : ' LEADS')) + '   ' + me; } return peers.size ? (peers.size + 1) + ' ON THE COURT' : null; };
+  M.launch = (b, counted) => { const g = M.g; if (!counted || pend || !g || !g.on || g.turn !== M.id) return; if (g.spot && Math.hypot(b.from.x - g.spot.x, b.from.z - g.spot.z) > 1.3) return flash('SHOOT FROM THE MARK'); pend = { b, t: K.t, x: b.from.x, z: b.from.z }; };
+  M.toggle = () => { if (!M.connected || !peers.size) return flash('HORSE NEEDS TWO PLAYERS'); net.send({ t: 'horse', a: M.g && M.g.on ? 'stop' : 'start' }); };
+  M.status = () => (M.g && M.g.on ? 'stop' : peers.size ? 'start' : 'needs 2');
+  M.step = (t, dt) => { const k = 1 - Math.exp(-dt * 14); for (const P of peers.values()) { P.body.g.visible = !!P.c; if (!P.c) continue; for (let i = 0; i < 13; i++) P.c[i] += (P.t[i] - P.c[i]) * k; if (Math.abs(P.t[3] - P.c[3]) > 3.2) P.c[3] = P.t[3]; pose(P); tagText(P); }
+    const g = M.g; ring.visible = !!(g && g.on && g.spot); if (ring.visible) ring.position.set(g.spot.x, .012, g.spot.z);
+    if (pend) { const b = pend.b, made = b.scored ? true : (t - pend.t > .5 && (b.p.y < .2 || b.holder || b.rest || b.off)) || t - pend.t > 8 ? false : null; if (made !== null) { net.send({ t: 'horse', a: 'shot', made, x: pend.x, z: pend.z }); pend = null; } }
+    const l = line(); if (l !== M.line) { const had = M.line; M.line = l; if (l === null && had !== null) K.gameLine(); K.drawBox(); } if (M.line !== null && stats.line !== M.line) { stats.line = M.line; K.drawScore(); }
+    if (!M.connected) return; if (sig() !== lastSig && t - sigAt > .25) { lastSig = sig(); sigAt = t; net.send({ t: 'world', court: world.court, hour: world.hour, wx: world.wx, net: world.net, lights: world.lights }); }
+    if (t - poseAt < .09) return; poseAt = t; camera.getWorldPosition(_a); camera.getWorldDirection(_f); const p = [_a.x, _a.y, _a.z, Math.atan2(-_f.x, -_f.z), 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]; let fl = 0;
+    for (const h of hands) { if (!h.src || !K.mode) continue; const kk = h.src.handedness === 'right' ? 1 : 0; fl |= kk ? 2 : 1; p[4 + kk * 3] = h.pos.x; p[5 + kk * 3] = h.pos.y; p[6 + kk * 3] = h.pos.z; }
+    const b = K.ball; if (b && !b.off && !b.rest) { fl |= 4; p[10] = b.p.x; p[11] = b.p.y; p[12] = b.p.z; p[14] = b.ti | 0; } p[13] = fl; net.send({ t: 'pose', p }); };
+  if (!/[?&]solo\b/.test(location.search) && location.protocol !== 'file:') net.open();
+  return M; }

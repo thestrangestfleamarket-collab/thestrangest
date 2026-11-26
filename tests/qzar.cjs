@@ -10,6 +10,7 @@ const srv = require('http').createServer((q, r) => { const f = path.join(ROOT, d
   const errs = [], ctx = await b.newContext({ viewport: { width: 400, height: 240 } });
   const open = async hash => { const pg = await ctx.newPage(); pg.on('pageerror', e => errs.push(e.message.slice(0, 300))); await pg.goto(URL + hash); await pg.waitForFunction(() => !!window.__qzar, null, { timeout: 60000 }).catch(() => {}); return pg; };
   const until = (pg, fn, arg) => pg.waitForFunction(fn, arg, { polling: 50, timeout: 60000 }).then(() => true, () => false);
+  { const d = await ctx.newPage(); await d.goto(URL + '?game=disc'); await d.waitForFunction(() => !!window.__qzar, null, { timeout: 60000 }).catch(() => {}); ok(await d.evaluate(() => __qzar.game === 'disc' && document.getElementById('gDisc').getAttribute('aria-pressed') === 'true'), '?game=disc opens on the disc arena'); await d.click('#start'); ok(await until(d, () => __qzar.state === 'play' && __qzar.game === 'disc'), 'and its round starts'); await d.close(); }
   const pg = await open('');
   await pg.click('#start');
   ok(await until(pg, () => __qzar.state === 'play'), 'the page starts and a round against the bot begins');
@@ -64,6 +65,7 @@ const srv = require('http').createServer((q, r) => { const f = path.join(ROOT, d
   await dp.close();
   const A = await open('#local'), B = await open('#local');
   await A.click('#oNet'); await A.click('#host'); const code = await A.inputValue('#code');
+  { const vp = A.viewportSize(); await A.setViewportSize({ width: 1000, height: 540 }); ok(await A.evaluate(() => { menu.scrollTop = 0; const r = document.getElementById('start').getBoundingClientRect(), e = document.elementFromPoint(r.left + r.width / 2, r.top + r.height / 2); return r.bottom <= innerHeight && !!e && e.id === 'start'; }), 'after hosting, Start and the headset buttons are still on the screen in a short window'); if (vp) await A.setViewportSize(vp); }
   await B.click('#oNet'); await B.fill('#code', code); await B.click('#join');
   ok(await until(A, () => __qzar.net.lastRx > 0) && await until(B, () => __qzar.net.lastRx > 0), 'two pages link by the code');
   await A.click('#start');

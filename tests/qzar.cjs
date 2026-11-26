@@ -65,6 +65,7 @@ const srv = require('http').createServer((q, r) => { const f = path.join(ROOT, d
   await dp.close();
   const A = await open('#local'), B = await open('#local');
   await A.click('#oNet'); await A.click('#host'); const code = await A.inputValue('#code');
+  { const vp = A.viewportSize(); await A.setViewportSize({ width: 1000, height: 540 }); ok(await A.evaluate(() => { menu.scrollTop = 0; const r = document.getElementById('start').getBoundingClientRect(), e = document.elementFromPoint(r.left + r.width / 2, r.top + r.height / 2); return r.bottom <= innerHeight && !!e && e.id === 'start'; }), 'after hosting, Start and the headset buttons are still on the screen in a short window'); if (vp) await A.setViewportSize(vp); }
   await B.click('#oNet'); await B.fill('#code', code); await B.click('#join');
   ok(await until(A, () => __qzar.net.lastRx > 0) && await until(B, () => __qzar.net.lastRx > 0), 'two pages link by the code');
   await A.click('#start');

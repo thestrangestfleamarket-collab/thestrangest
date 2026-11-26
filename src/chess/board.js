@@ -96,9 +96,9 @@ export function makeBoard(map, { id, renderer }) {
   for (const [len, ry, x, z] of [[w, 0, 0, d / 2], [w, Math.PI, 0, -d / 2], [d, Math.PI / 2, w / 2, 0], [d, -Math.PI / 2, -w / 2, 0]])
     parts.push(part(new THREE.PlaneGeometry(len, DEEP).rotateY(ry).translate(x, -DEEP / 2, z), (v, n, U, i) => [0.02 + U.getX(i) * 0.9, 1 - (H + 2 + (1 - U.getY(i)) * 60) / TH], () => WHITE));
   // what stands on the board, as on a printed table: rocks, lengths of wall, broken pillars and low brush, all in the one mesh, each cut from its swatch and shaded here (nothing taller than a piece's waist)
-  if (map.tiles) { const Q = rnd(53), L = new THREE.Vector3(0.5, 0.75, 0.35).normalize();
+  if (map.tiles) { const Q = rnd(53), L = new THREE.Vector3(0.5, 0.75, 0.35).normalize(), dark = (map.look && map.look.shade) || 1;
     const stand = (geo, sw, cx, cz, h, tint) => parts.push(part(geo, v => { const a = Math.min(0.95, Math.max(0.05, 0.5 + (v.x - cx) * 0.7 + v.y * 0.25)), b = Math.min(0.95, Math.max(0.05, 0.5 + (v.z - cz) * 0.7 - v.y * 0.4)); return [(sw * SW + a * SW) / W, 1 - (H + 64 + b * SW) / TH]; },
-      (v, n) => { const k = (0.5 + 0.62 * Math.max(0, n.dot(L))) * (0.62 + 0.38 * Math.min(1, v.y / h)); return [k * tint[0], k * tint[1], k * tint[2]]; }));
+      (v, n) => { const k = (0.5 + 0.62 * Math.max(0, n.dot(L))) * (0.62 + 0.38 * Math.min(1, v.y / h)); return [k * tint[0] * (tint[2] > 1.2 ? 1 : dark), k * tint[1] * (tint[2] > 1.2 ? 1 : dark), k * tint[2] * (tint[2] > 1.2 ? 1 : dark)]; }));
     const lump = (r, sx, sy, sz, x, y, z) => { const g = new THREE.IcosahedronGeometry(r, 1), P = g.attributes.position, seen = new Map();
       for (let i = 0; i < P.count; i++) { const key = P.getX(i).toFixed(3) + P.getY(i).toFixed(3) + P.getZ(i).toFixed(3); if (!seen.has(key)) seen.set(key, 0.82 + Q() * 0.36); const k = seen.get(key); P.setXYZ(i, P.getX(i) * k * sx, P.getY(i) * k * sy, P.getZ(i) * k * sz); }
       g.computeVertexNormals(); return g.rotateY(Q() * 6).translate(x, y, z); };

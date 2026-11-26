@@ -27,3 +27,4 @@ Set aside in `archive/chess-levels/` (22 Nov 2026), not on the website:
 - Their birds (`land/snd/birds.mp3`): BigSoundBank (Joseph Sardin, bigsoundbank.com), as HULL DOWN uses it.
 - The tables' ground (`data/chess/board/`): Poly Haven (polyhaven.com), CC0: leafy_grass, brown_mud_leaves_01, forrest_ground_01, rock_boulder_dry, river_small_rocks, burned_ground_01, castle_wall_slates, as fetched for the landscaped maps (`archive/chess-levels/`); 512 px.
 - The jungle's trees (`chess-assets/jungle/tree_*.glb`, HULL DOWN's files, `docs/tank-credits.md`), CC BY 4.0, Sketchfab: "Willow", "Beech tree", "Elm tree" by evolveduk; its rocks Poly Haven's rock_moss_set_01, CC0.
+- The cavern's things (`chess-assets/cavern/`, copied by the build): Poly Haven's stone_fire_pit, large_iron_gate, wooden_crate_01, kite_shield, treasure_chest, wine_barrel_01, wooden_ladder, CC0; its dead tree "Old tree" by evolveduk, CC BY 4.0 (`docs/tank-credits.md`).

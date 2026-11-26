@@ -1,5 +1,5 @@
 // BALL's room rules: eight players at most, what a player may send the others, and the game of HORSE (the Ball Durable Object in door.js relays only what passes here and keeps the game)
-const MAX = 8, WORD = "HORSE", TURN = 45000, COURTS = ["outdoor", "gym"], WX = ["clear", "mist", "drizzle", "storm"], NETS = ["nylon", "chain"];
+const MAX = 8, WORD = "HORSE", TURN = 45000, COURTS = ["outdoor", "gym", "cave"], WX = ["clear", "mist", "drizzle", "storm"], NETS = ["nylon", "chain"];
 const num = (v, lo, hi, d = 0) => (typeof v === "number" && Number.isFinite(v) ? Math.min(hi, Math.max(lo, v)) : d);
 const alive = g => g.order.filter(id => g.letters[id] < WORD.length);
 const after = (g, id) => { const a = alive(g), k = g.order.indexOf(id); for (let i = 1; i <= g.order.length; i++) { const q = g.order[(k + i) % g.order.length]; if (a.includes(q)) return q; } return null; };

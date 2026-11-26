@@ -12,4 +12,6 @@ Surfaces (`data/ball/`, 512 px, colour `_d` and relief `_n`), all from Poly Have
 | wood | weathered_brown_planks |
 | metal | metal_plate |
 
+The indoor court's boards, wall and ceiling (`floor`, `plaster`, `ceiling`) are the scans the clubhouse used (Poly Haven, CC0).
+
 The hands are THE CANTINA's (`data/cantina/hand/`, the WebXR generic hand, MIT). Every sound is made in the page.

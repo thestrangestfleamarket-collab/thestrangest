@@ -12,7 +12,7 @@ const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true }); rend
 const scene = new THREE.Scene(), camera = new THREE.PerspectiveCamera(62, innerWidth / innerHeight, 0.03, 9000), view = new View(scene), W = view.W, panel = new Panel(), snd = new Sound(), LEAN = /OculusBrowser|Quest|Pico/i.test(navigator.userAgent) || qs.has('lean'), world = buildWorld(scene, W, { lean: LEAN }); scene.add(panel.mesh);
 addEventListener('resize', () => { if (renderer.xr.isPresenting) return; camera.aspect = innerWidth / innerHeight; camera.updateProjectionMatrix(); renderer.setSize(innerWidth, innerHeight); });
 let sim = new Game({ seed: +(qs.get('seed') || (Date.now() % 1e6)), qlen: +(qs.get('q') || 180) });
-const G = { mode: 'table', xr: false, room: true, auto: true, tab: 'RUN', sel: -1, hover: -1, spot: null, body: -1, started: false, tpos: new THREE.Vector3(0, 0.75, -0.85), tyaw: 0, tscale: 0.016, anchor: new THREE.Vector3(), fwd: new THREE.Vector3(0, 0, -1), yaw: 0, look: { x: 0, y: 0 }, aim: null, hist: [], t: 0 };
+const G = { mode: 'table', xr: false, room: !qs.has('stadium'), auto: true, tab: 'RUN', sel: -1, hover: -1, spot: null, body: -1, started: false, tpos: new THREE.Vector3(0, 0.75, -0.85), tyaw: 0, tscale: 0.016, anchor: new THREE.Vector3(), fwd: new THREE.Vector3(0, 0, -1), yaw: 0, look: { x: 0, y: 0 }, aim: null, hist: [], t: 0 };
 const v1 = new THREE.Vector3(), v2 = new THREE.Vector3(), v3 = new THREE.Vector3(), q1 = new THREE.Quaternion(), m1 = new THREE.Matrix4(), ray = new THREE.Raycaster();
 
 // ---- the controllers ----
@@ -47,7 +47,8 @@ function setMode(m) {
     if (G.xr) headPose(G.anchor, G.fwd); else { G.anchor.set(0, 0, 0); G.fwd.set(0, 0, -1); G.look.x = G.look.y = 0; } G.anchor.y = 0; const d = sim.dir(sim.P[mine].team); G.yaw = Math.atan2(-G.fwd.z * d, G.fwd.x * d); }
   G.mode = m; view.table = m === 'table'; place();
 }
-function env() { const shown = !G.xr || !G.room; scene.background = G.xr ? null : world.fogC; sim.wx.wet = Math.max(world.wx.rain, world.wx.snow * 0.8); sim.wx.wind = world.wx.wind; snd.base = shown ? 0.035 : 0.012; snd.crowd(snd.base); }
+function env() { const shown = !G.room; scene.background = G.xr ? null : BACK; sim.wx.wet = Math.max(world.wx.rain, world.wx.snow * 0.8); sim.wx.wind = world.wx.wind; snd.base = shown ? 0.035 : 0.012; snd.crowd(snd.base); }
+const BACK = new THREE.Color(0x0b0e14);
 function sky(kind, hour) { world.set(kind, hour); env(); }
 // a stick's push, as a direction on the field: forward is the way you face
 function simDir(sx, sy) { if (G.xr || G.mode === 'first') { if (G.xr) headPose(v1, v2); else v2.set(-Math.sin(G.look.x), 0, -Math.cos(G.look.x)); } else v2.set(0, 0, -1);
@@ -98,7 +99,7 @@ function controls(dt) {
     for (let j = H.length - 1; j > 0 && end - H[j].t < 0.25; j--) { const b = H[j]; let a = b; for (let i = j; i >= 0; i--) { a = H[i]; if (b.t - a.t > 0.07) break; } const T = Math.max(b.t - a.t, 1 / 120), x = (b.x - a.x) / T, y = (b.y - a.y) / T, z = (b.z - a.z) / T, m = Math.hypot(x, y, z); if (m > top) { top = m; wx = x; wy = y; wz = z; } }
     if (top > 1.2) { const c = Math.cos(G.yaw), s = Math.sin(G.yaw), k = 2.6 / YD; if (sim.throwVel(handAt(), { vx: (wx * c - wz * s) * k, vy: wy * k, vz: (wx * s + wz * c) * k })) buzz('right', 0.8, 60); } }
   if (G.xr && G.mode === 'table') grab(I.b.lgrip, I.b.rgrip);
-  if (P.rclick) setMode(G.mode === 'table' ? 'first' : 'table'); if (P.lclick && G.xr) { G.room = !G.room; env(); }
+  if (P.rclick) setMode(G.mode === 'table' ? 'first' : 'table'); if (P.lclick) { G.room = !G.room; env(); }
   if (ph === 'pre') { if (P.a && off) sim.snap(); if (P.b) { if (off) { sim.audible(); view.showRoutes(sim, false); } else sim.switchCtl(); } }
   else if (ph === 'dead') { if (P.a) sim.skip(); }
   else if (ph === 'live' && me) {
@@ -137,7 +138,7 @@ function frame(ms) {
   place(); readInput(); if (sim.phase === 'call') tabFix(); controls(dt); advance(dt); place();
   const first = G.mode === 'first', mine = sim.P[G.body], hold = first && G.xr && mine && mine.id === sim.carrier ? handAt() : null;
   view.update(sim, dt, { hide: first ? G.body : -1, sel: G.sel, hover: G.hover, spot: G.spot, targets: sim.poss === USER && sim.canThrow() && sim.ctl === sim.qb, far: first && mine ? mine : null, ballAt: hold ? v3.set(hold.x, hold.y, hold.z) : null });
-  { const c = renderer.xr.isPresenting ? renderer.xr.getCamera() : camera; c.getWorldPosition(v1); world.update(dt, v1, !G.xr || !G.room, G.mode === 'table', mine || sim.ball); }
+  { const c = renderer.xr.isPresenting ? renderer.xr.getCamera() : camera; c.getWorldPosition(v1); world.update(dt, v1, !G.room, G.mode === 'table', mine || sim.ball); }
   panel.mesh.visible = sim.phase !== 'live'; panel.draw({ sim, user: USER, wx: world.kind, hour: world.hour, tab: G.tab, sel: G.sel, selRoute: G.sel >= 0 && sim.P[G.sel].elig && sim.P[G.sel].team === sim.poss, auto: G.auto, room: G.room, xr: G.xr, mode: G.mode });
   if ($('hint')) $('hint').textContent = hint();
   renderer.render(scene, camera);
@@ -151,7 +152,7 @@ function hint() { if (G.xr) return ''; const ph = sim.phase, off = sim.poss === 
 async function enter() {
   snd.start(); let kind = 'immersive-ar'; if (!(await navigator.xr.isSessionSupported(kind).catch(() => false))) kind = 'immersive-vr';
   let session; try { session = await navigator.xr.requestSession(kind, { requiredFeatures: ['local-floor'] }); } catch (e) { $('status').textContent = 'The headset did not start: ' + e.message; return; }
-  G.xr = true; G.room = kind === 'immersive-ar' && !qs.has('vr'); G.ar = kind === 'immersive-ar'; scene.background = null; renderer.setClearColor(0, 0); renderer.xr.setFoveation(1); await renderer.xr.setSession(session); begin();
+  G.xr = true; G.ar = kind === 'immersive-ar'; scene.background = null; renderer.setClearColor(0, 0); renderer.xr.setFoveation(1); await renderer.xr.setSession(session); begin();
   session.addEventListener('end', () => { G.xr = false; G.started = false; setMode('table'); $('lobby').classList.remove('hidden'); env(); });
 }
 function begin() { G.started = true; $('lobby').classList.add('hidden'); $('hint').hidden = G.xr; setMode('table'); env(); }

@@ -159,6 +159,9 @@ export default {
       // the room is told who a login is (never taken from the page): the campaign's battles won are kept under it
       const pid = await who(env, request, dev), fwd = new Request(url, request), hs = new Headers(fwd.headers); hs.delete("x-chess-player"); if (pid) hs.set("x-chess-player", pid);
       url.searchParams.set("room", code); return env.Chess.get(env.Chess.idFromName(code)).fetch(new Request(url, new Request(fwd, { headers: hs }))); }
+    // FOURTH & LONG (src/football/): eleven-a-side football against the computer in a headset or on a screen, its own page at /football, to anyone with the link; its bodies, surfaces and sounds are COLD BORE's, JUNGLE COURT's and SKIRMISH TABLE's own files
+    if ((request.method === "GET" || request.method === "HEAD") && p === "/football") return page(env, url, "/football", request, "no-cache");
+    if (p === "/football/") return Response.redirect(url.origin + "/football" + url.search, 301);
     // SENSOR TAG (src/tag/): its own page at /tag, to anyone with the link; its one public room is the Tag Durable Object
     if ((request.method === "GET" || request.method === "HEAD") && p === "/tag") return page(env, url, "/tag", request, "no-cache");
     if (p === "/tag/") return Response.redirect(url.origin + "/tag" + url.search, 301);

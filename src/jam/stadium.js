@@ -718,3 +718,4 @@ export function buildStadium(scene, renderer, T, { low, density = 1 }) {
     },
   };
 }
+export { figureGeometry, crowdMaterial, CLOTHES };   // the crowd's figure and its animated material, used by FOURTH & LONG's stands too (src/football/world.js)

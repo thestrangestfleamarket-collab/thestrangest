@@ -127,6 +127,7 @@ subprocess.run(['node', 'tools/ball.cjs'], check=True)   # JUNGLE COURT (src/bal
 subprocess.run(['node', 'tools/duel.cjs'], check=True)   # AR DUEL (src/duel/): its own page, dist/duel.html, and its pictures, dist/duel-assets/
 subprocess.run(['node', 'tools/qzar.cjs'], check=True)   # SLOWFIRE DUEL (src/qzar/): its own page, dist/qzar.html
 subprocess.run(['node', 'tools/laser.cjs'], check=True)   # LASER TAG (src/laser/): its own page, dist/laser.html
+subprocess.run(['node', 'tools/football.cjs'], check=True)   # FOURTH & LONG (src/football/): its own page, dist/football.html
 subprocess.run(['node', 'tools/tag.cjs'], check=True)   # SENSOR TAG (src/tag/): its own page, dist/tag.html
 subprocess.run(['node', 'tools/chess.cjs'], check=True)   # SKIRMISH TABLE (src/chess/): its own page, dist/chess.html, and its people, sprites and sounds, dist/chess-assets/
 subprocess.run(['node', 'tools/turret.cjs'], check=True)  # SWIVEL (src/turret/): its own page, dist/turret.html, and the models and sounds it uses of SPACE FLEET's, dist/turret-assets/

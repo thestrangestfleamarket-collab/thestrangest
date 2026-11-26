@@ -8,7 +8,7 @@ const IWER = fs.readFileSync(require.resolve('iwer/build/iwer.min.js'), 'utf8');
 
 (async () => {
   // ---- the game, no page ----
-  const { Game } = await import(pathToFileURL(path.resolve('src/football/sim.js'))), { OFFENSE, DEFENSE } = await import(pathToFileURL(path.resolve('src/football/plays.js')));
+  const { Game, Remote } = await import(pathToFileURL(path.resolve('src/football/sim.js'))), { OFFENSE, DEFENSE } = await import(pathToFileURL(path.resolve('src/football/plays.js')));
   const play = n => OFFENSE.findIndex(p => p.name === n), run = (g, s) => { for (let i = 0; i < s * 60 && g.phase !== 'over'; i++) g.step(1 / 60); };
   { let pts = 0, plays = 0, td = 0, done = 0; for (let s = 1; s <= 4; s++) { const g = new Game({ seed: s, human: [false, false] }); for (let i = 0; i < 400000 && g.phase !== 'over'; i++) { g.step(1 / 30); g.ev.length = 0; } if (g.phase === 'over') done++; pts += g.score[0] + g.score[1]; plays += g.stats.plays; td += g.stats.td; }
     ok(done === 4, 'four whole games between two computers reach the final whistle'); ok(plays > 200 && td >= 4 && pts > 40 && pts < 400, 'they run plays and score, and not absurdly (' + plays + ' plays, ' + td + ' touchdowns, ' + pts + ' points)'); }
@@ -25,11 +25,19 @@ const IWER = fs.readFileSync(require.resolve('iwer/build/iwer.min.js'), 'utf8');
     const k = new Game({ seed: 4 }); for (let i = 0; i < 4; i++) { k.pick(0, play('QB SNEAK')); k.snap(); const q = k.P[k.qb]; k.end('tackle', q); run(k, 4); } ok(k.poss === 1, 'four downs without ten yards: the ball goes over');
     const dd = new Game({ seed: 6, first: 1 }); ok(dd.poss === 1 && dd.phase === 'call', 'on defense you call a play too'); dd.pick(0, DEFENSE.findIndex(p => p.name === 'COVER 2')); ok(dd.phase === 'pre' && dd.ctl === 5, 'and you are the middle linebacker'); const me = dd.ctl; const sw = dd.switchCtl(), cb = dd.team(0).find(p => p.role === 'CB' && p.id !== dd.ctl); ok(sw !== me && dd.ctl === sw && dd.order(cb.id, { target: dd.qb }) && cb.job === 'rush', 'you switch to another defender and send a corner after the quarterback'); }
 
+  // ---- one against one ----
+  { const h = new Game({ seed: 4, human: [true, true] }), sent = [], g = new Remote({}, (c, a) => sent.push([c, a])); h.pick(0, OFFENSE.findIndex(p => p.name === 'FOUR VERTICALS')); ok(h.phase === 'call', 'two players: the play waits for both calls');
+    g.read(JSON.parse(JSON.stringify(h.snapshot()))); g.pick(1, 2); ok(sent[0][0] === 'pick' && g.me === 1, 'the second player\'s call is sent, not made'); h.cmd('pick', [99]); ok(h.phase === 'call', 'a call that is not a play is refused'); h.cmd(...sent[0]); ok(h.phase === 'pre' && h.ctls[0] === -1 && h.ctls[1] === 16, 'both called: they line up, and the defender is the second player\'s');
+    h.cmd('snap'); ok(h.phase === 'pre', 'the defense cannot snap the ball'); h.cmd('sw'); const d0 = h.ctls[1]; h.snap(); ok(h.phase === 'live' && h.ctls[0] === h.qb && h.ctls[1] === d0, 'each side has its own player');
+    h.cmd('in', [0, 1, 1]); h.ins[0].x = -1; const a = h.P[h.ctls[1]], q = h.P[h.qb], az = a.z, qx = q.x; for (let i = 0; i < 40; i++) h.step(1 / 60); ok(a.z > az + 1 && q.x < qx - 1, 'and its own stick: the quarterback drops back while the defender runs across');
+    g.read(JSON.parse(JSON.stringify(h.snapshot([{ t: 'snap' }])))); ok(g.phase === 'live' && Math.abs(g.P[3].x - h.P[3].x) < .02 && g.ctl === h.ctls[1] && g.play === h.play && g.ev.length === 1, 'the second player\'s game is drawn from the first\'s'); const gx = g.P[h.qb].x; g.step(.1); ok(Math.abs(g.P[h.qb].x - gx) > .01, 'and moves on between their messages');
+    h.cmd('throw', [h.team(0)[7].id, 0, null, 1]); ok(!h.thrown, 'the second player cannot throw the first\'s ball'); }
+
   // ---- the page on a screen ----
   await new Promise(res => srv.listen(0, '127.0.0.1', res)); const URL = 'http://127.0.0.1:' + srv.address().port + '/' + path.basename(PAGE);
   const b = await chromium.launch({ ...(process.env.PWCHROME ? { executablePath: process.env.PWCHROME } : {}), args: ['--use-gl=angle', '--use-angle=swiftshader', '--enable-unsafe-swiftshader', '--ignore-gpu-blocklist'] });
   const errs = [], watch = pg => { pg.on('pageerror', e => errs.push(e.message.slice(0, 300))); pg.on('console', m => { if (m.type() === 'error' && !/favicon|404/.test(m.text())) errs.push('console: ' + m.text().slice(0, 300)); }); };
-  { const pg = await b.newPage({ viewport: { width: 960, height: 540 } }); watch(pg); await pg.goto(URL + '?seed=3&lean'); await pg.click('#screen'); await pg.waitForFunction(() => window.__fb && __fb.G.started && __fb.G.people !== undefined, null, { timeout: 120000 });
+  { const pg = await b.newPage({ viewport: { width: 960, height: 540 } }); watch(pg); await pg.goto(URL + '?seed=3&lean&solo'); await pg.click('#screen'); await pg.waitForFunction(() => window.__fb && __fb.G.started && __fb.G.people !== undefined, null, { timeout: 120000 });
     ok(await pg.evaluate(() => __fb.G.people === true && __fb.view.fig.length === 22), 'the page starts and the 22 players are in uniform');
     ok(await pg.evaluate(() => __fb.G.mode === 'table' && __fb.panel.mesh.visible && __fb.sim.phase === 'call'), 'the field is a table and the board asks for a play');
     const xy = await pg.evaluate(() => { __fb.click('tab:SHORT'); const w = __fb.spot('play:' + __fb.OFFENSE.findIndex(p => p.name === 'CURLS')).project(__fb.camera); return [(w.x + 1) / 2 * innerWidth, (1 - w.y) / 2 * innerHeight]; });
@@ -45,7 +53,7 @@ const IWER = fs.readFileSync(require.resolve('iwer/build/iwer.min.js'), 'utf8');
   // ---- an emulated Quest 3 ----
   { const xc = await b.newContext({ viewport: { width: 800, height: 600 } }), pg = await xc.newPage(); watch(pg);
     await pg.addInitScript(IWER + ';window.xrDevice=new IWER.XRDevice(IWER.metaQuest3);xrDevice.installRuntime({forceInstall:true});xrDevice.position.set(0,1.6,0);');
-    await pg.goto(URL + '?seed=3&lean'); await pg.waitForFunction(() => { const e = document.getElementById('enter'); return e && !e.disabled; }, null, { timeout: 120000 }); await pg.click('#enter');
+    await pg.goto(URL + '?seed=3&lean&solo'); await pg.waitForFunction(() => { const e = document.getElementById('enter'); return e && !e.disabled; }, null, { timeout: 120000 }); await pg.click('#enter');
     await pg.waitForFunction(() => window.__fb && __fb.G.xr && __fb.G.started && __fb.G.people !== undefined && __fb.hands.filter(h => h.src).length === 2, null, { timeout: 120000 });
     const s = await pg.evaluate(() => ({ sc: __fb.W.scale.x, y: __fb.W.position.y, z: __fb.W.position.z, room: __fb.G.room, sky: __fb.world.group.visible })); ok(s.sc < 0.05 && s.y > 0.5 && s.y < 1.2 && s.z < -0.4, 'in the headset the field is a table in front of you'); ok(s.room && !s.sky, 'only the field is drawn, floating in your room'); ok(await pg.evaluate(async () => { __fb.click('room'); await new Promise(r => setTimeout(r, 1200)); const on = __fb.world.group.visible && __fb.world.count > 1000; __fb.click('room'); return on; }), 'STADIUM on the board puts the stands and their crowd round it');
     const r = await pg.evaluate(async () => { const f = __fb, c = xrDevice.controllers.right, L = xrDevice.controllers.left, wait = ms => new Promise(r => setTimeout(r, ms)), until = async (g, ms) => { for (let t = 0; t < ms && !g(); t += 50) await wait(50); return !!g(); }, out = {};
@@ -69,5 +77,12 @@ const IWER = fs.readFileSync(require.resolve('iwer/build/iwer.min.js'), 'utf8');
     if (!d.skip) { ok(d.run && d.stay, 'a run play: you are the back after the handoff, still looking at the whole field'); ok(d.dir, 'the left stick to the right runs him toward the far goal line, the left trigger sprints'); ok(d.dive, 'X dives'); }
     if (OUT) await pg.screenshot({ path: path.join(OUT, 'football-quest.png') }); await xc.close(); }
   ok(!errs.length, 'no errors on the pages' + (errs.length ? ': ' + errs.slice(0, 4).join(' | ') : ''));
+  { const ctx = await b.newContext({ viewport: { width: 640, height: 360 } }), open = async slot => { const pg = await ctx.newPage(); watch(pg); await pg.goto(URL + '?seed=3&lean&screen&local&slot=' + slot); await pg.waitForFunction(() => window.__fb && __fb.G.started, null, { timeout: 180000 }); return pg; }, till = (pg, f) => pg.waitForFunction(f, null, { timeout: 120000, polling: 200 }).then(() => true).catch(() => false);
+    const A = await open(0); ok(await A.evaluate(() => __fb.VS.role === 'solo' && __fb.sim.human[1] === false), 'alone at /football you play the computer'); const B = await open(1);
+    ok(await till(A, () => __fb.VS.role === 'host' && __fb.sim.human[1] === true) && await till(B, () => __fb.VS.role === 'guest' && __fb.user === 1 && __fb.sim.remote), 'a second page arrives: the two play each other, the first running the game');
+    await A.evaluate(() => __fb.click('play:' + __fb.OFFENSE.findIndex(p => p.name === 'FOUR VERTICALS'))); await B.evaluate(() => __fb.click('play:1')); ok(await till(A, () => __fb.sim.phase === 'pre') && await till(B, () => __fb.sim.phase === 'pre' && __fb.sim.ctl >= 11), 'each calls a play on their own board and they line up on both screens');
+    await A.evaluate(() => __fb.tap('a')); ok(await till(B, () => __fb.sim.phase === 'live'), 'the first snaps and the second sees it'); await B.evaluate(() => __fb.stick(0, 1)); ok(await till(A, () => Math.hypot(__fb.sim.ins[1].x, __fb.sim.ins[1].z) > .5), 'the second player\'s stick moves their man in the first\'s game');
+    ok(await till(B, () => { const s = __fb.sim; return s.P.some(p => Math.hypot(p.vx, p.vz) > 1); }), 'and the second sees the play run'); if (OUT) await B.screenshot({ path: path.join(OUT, 'football-1v1.png') });
+    await B.close(); ok(await till(A, () => __fb.VS.role === 'solo' && __fb.sim.human[1] === false), 'the second leaves: the computer takes their side and the game goes on'); await ctx.close(); }
   await b.close(); srv.close(); console.log(fails.length ? fails.length + ' FAILED' : 'ALL OK'); process.exit(fails.length ? 1 : 0);
 })().catch(e => { console.error(e); process.exit(1); });

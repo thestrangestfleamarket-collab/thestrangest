@@ -20,6 +20,7 @@
   button { display: block; width: 100%; padding: 16px; font-size: 19px; font-weight: 800; border: 0; border-radius: 12px; background: #ffe030; color: #14100a; cursor: pointer; margin-bottom: 10px; }
   button.alt { background: #1e2736; color: #eef1f6; } button:disabled { background: #2a2f3a; color: #8892a4; cursor: default; }
   #status { min-height: 22px; color: #ffcc66; }
+  #vs { position: fixed; left: 50%; top: 10px; transform: translateX(-50%); padding: 6px 12px; border-radius: 8px; background: rgba(11,14,20,.8); color: #ffe030; font-weight: 700; font-size: 14px; pointer-events: none; z-index: 5; }
   #hint { position: fixed; left: 0; right: 0; bottom: 10px; text-align: center; color: #fff; font-weight: 600; font-size: 15px; text-shadow: 0 1px 4px #000, 0 0 2px #000; pointer-events: none; padding: 0 16px; }
 </style>
 </head>
@@ -27,7 +28,7 @@
 <div id="lobby">
   <div class="card">
     <h1>FOURTH <span>&amp;</span> LONG</h1>
-    <p>Eleven on eleven against the computer. The whole field floats in the air in your room; when your quarterback takes the snap you are standing in the pocket.</p>
+    <p>Eleven on eleven. If someone else is here at the same time you play each other, one against one; otherwise the computer. The whole field floats in the air in your room; when your quarterback takes the snap you are standing in the pocket.</p>
     <ul>
       <li><b>Call a play</b>: point at a card on the board and pull the right trigger.</li>
       <li><b>Before the snap</b>: trigger one of your players, then a spot, an opponent or a new route. <b>A</b> snaps.</li>
@@ -42,6 +43,7 @@
   </div>
 </div>
 <div id="hint" hidden></div>
+<div id="vs" hidden></div>
 <script type="module">__FOOTBALL__</script>
 </body>
 </html>

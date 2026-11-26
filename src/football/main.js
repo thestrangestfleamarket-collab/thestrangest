@@ -1,13 +1,14 @@
 // FOURTH & LONG's page: the headset (passthrough or a stadium), the controllers, the table view of the whole game and the life-size view from inside a player, the pointer that picks plays and gives orders, the throw
 import * as THREE from 'three';
-import { Game, FIELD } from './sim.js';
+import { Game, Remote, FIELD } from './sim.js';
+import { Net } from './net.js';
 import { OFFENSE, DEFENSE } from './plays.js';
 import { View } from './view.js';
 import { Panel } from './panel.js';
 import { Sound } from './audio.js';
 import { buildWorld, WEATHER, HOURS } from './world.js';
 
-const qs = new URLSearchParams(location.search), $ = (id) => document.getElementById(id), USER = 0, YD = 0.9144;
+const qs = new URLSearchParams(location.search), $ = (id) => document.getElementById(id), YD = 0.9144; let USER = 0;
 const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true }); renderer.setPixelRatio(Math.min(devicePixelRatio, 2)); renderer.setSize(innerWidth, innerHeight); renderer.xr.enabled = true; renderer.xr.setReferenceSpaceType('local-floor'); document.body.appendChild(renderer.domElement);
 const scene = new THREE.Scene(), camera = new THREE.PerspectiveCamera(62, innerWidth / innerHeight, 0.03, 9000), view = new View(scene), W = view.W, panel = new Panel(), snd = new Sound(), LEAN = /OculusBrowser|Quest|Pico/i.test(navigator.userAgent) || qs.has('lean'), world = buildWorld(scene, W, { lean: LEAN }); scene.add(panel.mesh);
 addEventListener('resize', () => { if (renderer.xr.isPresenting) return; camera.aspect = innerWidth / innerHeight; camera.updateProjectionMatrix(); renderer.setSize(innerWidth, innerHeight); });
@@ -74,7 +75,21 @@ function click(id) {
   else if (k === 'view') setMode(G.mode === 'table' ? 'first' : 'table'); else if (k === 'again') newGame(); else if (k === 'snap') sim.snap(); else if (k === 'audible') { sim.audible(); view.showRoutes(sim, false); }
   else if (k === 'hot' && G.sel >= 0) { sim.order(G.sel, { route: a }); view.showRoutes(sim, true); }
 }
-function newGame() { sim = new Game({ seed: Date.now() % 1e6, qlen: +(qs.get('q') || 180) }); env(); G.sel = -1; setMode('table'); view.showRoutes(sim, false); }
+function newGame() { if (VS.role === 'guest') return; sim = new Game({ seed: Date.now() % 1e6, qlen: +(qs.get('q') || 180), ...(VS.role === 'host' ? { human: [true, true], names: ['YOU', 'RIVAL'] } : {}) }); fresh(); }
+function fresh() { VS.ev.length = 0; VS.ph = ''; env(); G.sel = -1; G.mode = ''; setMode('table'); view.showRoutes(sim, false); }
+
+// ---- 1 v 1: everyone at /football is in its one public room; the first in runs the game, the second takes the other side; alone, or when the other leaves, you play the computer ----
+const VS = { role: 'solo', slot: 0, ev: [], at: 0, ph: '', phT: 0 }, say = (t) => { if ($('status')) $('status').textContent = t; if ($('vs')) { $('vs').textContent = t; $('vs').hidden = !t; } };
+function pair() { if (VS.slot === 0) { VS.role = 'host'; USER = 0; newGame(); } else { VS.role = 'guest'; USER = 1; sim = new Remote({ qlen: +(qs.get('q') || 180), names: ['RIVAL', 'YOU'] }, (c, a) => net.send({ t: 'c', c, a })); fresh(); } say('1 v 1: another player is on the field against you.'); snd.tone(880, 0.12); }
+function unpair() { if (VS.role === 'solo') return; const was = VS.role; VS.role = 'solo'; say('Your rival left: the computer plays the other side.');
+  if (was === 'host') { sim.human = [true, false]; sim.ctls[1] = -1; sim.names = ['HOME', 'AWAY']; if (sim.phase === 'call') sim.pick(0, -1); } else { USER = 0; newGame(); } }
+const net = new Net({ welcome: (m) => { VS.slot = m.slot | 0; if (m.peers && m.peers.length) pair(); }, 'peer-join': () => pair(), 'peer-leave': () => unpair(), down: () => unpair(), full: () => say('Two are already playing here: you play the computer.'),
+  s: (m) => { if (VS.role === 'guest') { sim.read(m.s); events(); } }, c: (m) => { if (VS.role === 'host' && typeof m.c === 'string') sim.cmd(m.c, Array.isArray(m.a) ? m.a : []); } });
+function versus(dt) { if (VS.role === 'solo') return; VS.at += dt;
+  if (VS.role === 'guest') { if (VS.at >= 0.05) { VS.at = 0; const I = sim.in; net.send({ t: 'c', c: 'in', a: [+I.x.toFixed(2), +I.z.toFixed(2), I.sprint ? 1 : 0] }); } return; }
+  if (sim.phase !== VS.ph) { VS.ph = sim.phase; VS.phT = 0; } VS.phT += dt;   // nobody is kept waiting: a call left 25 s is made for them, a snap left 20 s is taken
+  if (sim.phase === 'call' && VS.phT > 25) { for (const t of [0, 1]) if (sim.call[t] < 0) sim.call[t] = t === sim.poss ? sim.cpuOff() : sim.cpuDef(); sim.pick(0, -1); } else if (sim.phase === 'pre' && VS.phT > 20) sim.snap();
+  if (VS.at >= 0.05) { VS.at = 0; net.send({ t: 's', s: sim.snapshot(VS.ev.splice(0)) }); } }
 function buzz(side, v = 0.6, ms = 40) { for (const h of hands) { if (!h.src || (side && h.src.handedness !== side)) continue; const a = h.src.gamepad && h.src.gamepad.hapticActuators && h.src.gamepad.hapticActuators[0]; if (a && a.pulse) a.pulse(v, ms).catch(() => {}); } }
 function tabFix() { const off = sim.poss === USER, ok = off ? ['RUN', 'SHORT', 'DEEP', 'KICK'] : ['ZONE', 'MAN', 'BLITZ']; if (!ok.includes(G.tab)) G.tab = ok[0]; }
 function juke(p, side) { const s = Math.hypot(p.vx, p.vz) || 1, lx = p.vz / s, lz = -p.vx / s; return side[0] * lx + side[1] * lz > 0 ? 'jukeL' : 'jukeR'; }
@@ -129,13 +144,13 @@ function events() {
     else if (e.t === 'throw') { snd.swish(); if (G.auto) setMode('table'); } else if (e.t === 'handoff') { if (G.auto) setMode('table'); }
     else if (e.t === 'catch') { snd.catch(); snd.cheer(0.12, 1); world.cheer(0.25); } else if (e.t === 'tackle' || e.t === 'miss') { snd.hit(); if (e.t === 'tackle' || e.id === sim.ctl) buzz('', e.t === 'tackle' ? 1 : 0.5, 120); } else if (e.t === 'kick') { snd.kick(); view.showRoutes(sim, false); } else if (e.t === 'int' || e.t === 'swat') snd.catch();
     else if (e.t === 'td' || e.t === 'fgood') { snd.cheer(0.5, 4); world.cheer(1); } else if (e.t === 'first') { snd.cheer(0.2, 1.5); world.cheer(0.45); } else if (e.t === 'int') { world.cheer(0.6); snd.cheer(0.3, 2); } else if (e.t === 'whistle') { snd.whistle(); if (G.auto) setMode('table'); } }
-  sim.ev.length = 0;
+  if (VS.role === 'host') VS.ev.push(...sim.ev); sim.ev.length = 0;
 }
 let acc = 0, last = 0;
 function advance(dt) { acc += dt; let n = 0; while (acc >= 1 / 60 && n++ < 6) { sim.step(1 / 60); acc -= 1 / 60; events(); } if (n > 5) acc = 0; }
 function frame(ms) {
   const dt = Math.min(0.05, (ms - last) / 1000 || 0.016); last = ms; G.t += dt; if (!G.started) { place(); renderer.render(scene, camera); return; }
-  place(); readInput(); if (sim.phase === 'call') tabFix(); controls(dt); advance(dt); place();
+  place(); readInput(); if (sim.phase === 'call') tabFix(); controls(dt); advance(dt); versus(dt); place();
   const first = G.mode === 'first', mine = sim.P[G.body], hold = first && G.xr && mine && mine.id === sim.carrier ? handAt() : null;
   view.update(sim, dt, { hide: first ? G.body : -1, sel: G.sel, hover: G.hover, spot: G.spot, targets: sim.poss === USER && sim.canThrow() && sim.ctl === sim.qb, far: first && mine ? mine : null, ballAt: hold ? v3.set(hold.x, hold.y, hold.z) : null });
   { const c = renderer.xr.isPresenting ? renderer.xr.getCamera() : camera; c.getWorldPosition(v1); world.update(dt, v1, !G.room, G.mode === 'table', mine || sim.ball); }
@@ -159,7 +174,8 @@ function begin() { G.started = true; $('lobby').classList.add('hidden'); $('hint
 sky(qs.get('wx') in WEATHER ? qs.get('wx') : 'CLEAR', qs.get('hour') in HOURS ? qs.get('hour') : 'DAY'); place(); renderer.setAnimationLoop(frame); view.people().then(ok => { G.people = ok; if (ok) world.staff(); });
 $('screen').onclick = () => { snd.start(); begin(); };
 (async () => { const ok = navigator.xr && ((await navigator.xr.isSessionSupported('immersive-ar').catch(() => false)) || (await navigator.xr.isSessionSupported('immersive-vr').catch(() => false))); const b = $('enter'); b.disabled = !ok; b.textContent = ok ? 'ENTER HEADSET' : 'No headset found'; if (ok) b.onclick = enter; if (qs.has('screen')) begin(); })();
-window.__fb = { pointer, mouse, world, sky, get sim() { return sim; }, G, view, W, camera, scene, renderer, panel, hands, THREE, OFFENSE, DEFENSE, setMode, click, enter,
+if (qs.has('local')) net.connect({ local: true, slot: +(qs.get('slot') || 0) }); else if (!qs.has('solo') && location.protocol !== 'file:') net.connect();
+window.__fb = { VS, net, get user() { return USER; }, pointer, mouse, world, sky, get sim() { return sim; }, G, view, W, camera, scene, renderer, panel, hands, THREE, OFFENSE, DEFENSE, setMode, click, enter,
   simulate(s) { for (let i = 0, n = Math.round(s * 60); i < n; i++) { sim.step(1 / 60); events(); } }, tap(...n) { virt.tap = n; }, hold(n, on) { (virt.hold ||= {})[n] = on; }, stick(x, y) { virt.stick = x || y ? [x, y] : null; }, point(id) { virt.point = id; },
   spot(id) { panel.draw({ sim, user: USER, tab: G.tab, sel: G.sel, selRoute: false, auto: G.auto, room: G.room, xr: G.xr, mode: G.mode }); const b = panel.btns.find(b => b.id === id); return b ? panel.mesh.localToWorld(new THREE.Vector3(((b.x + b.w / 2) / 1024 - 0.5) * 0.9, (0.5 - (b.y + b.h / 2) / 640) * 0.5625, 0)) : null; },
   screenOf(id) { const p = sim.P[id]; v1.set(p.x, 1.2, p.z); W.localToWorld(v1).project(camera); return [(v1.x + 1) / 2 * innerWidth, (1 - v1.y) / 2 * innerHeight]; } };

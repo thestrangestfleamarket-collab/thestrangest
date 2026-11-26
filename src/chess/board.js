@@ -36,7 +36,7 @@ function paint(map, canvas = document.createElement('canvas')) {
   if (base === 'flag') { for (let y = 0; y < rows; y++) for (let x = 0; x < cols; x++) { const px = e + x * PX + 1.5, py = e + y * PX + 1.5, s = PX - 3, st = PICS.flag;   // flagstones: each tile its own piece of the stone
       if (st) c.drawImage(st, R() * (st.width - 150), R() * (st.height - 150), 150, 150, px, py, s, s); else { c.fillStyle = FLAT.flag; c.fillRect(px, py, s, s); }
       c.fillStyle = `rgba(18,16,15,${0.16 + R() * 0.14})`; c.fillRect(px, py, s, s); } }
-  else { spread(c, base, e, e, bw, bh); c.fillStyle = base === 'grass' ? 'rgba(52,96,26,0.26)' : 'rgba(8,10,14,0.5)'; c.fillRect(e, e, bw, bh); }
+  else { spread(c, base, e, e, bw, bh); c.fillStyle = base === 'grass' ? 'rgba(52,96,26,0.26)' : 'rgba(6,8,12,0.62)'; c.fillRect(e, e, bw, bh); }
   // each ground over it, its edges soft and uneven
   const mc = document.createElement('canvas'); mc.width = W; mc.height = H; const m = mc.getContext('2d'), Q = rnd(31);
   const lay = (cells, k, soft) => { if (!cells.length) return; m.globalCompositeOperation = 'source-over'; m.clearRect(0, 0, W, H); m.filter = `blur(${soft}px)`; m.fillStyle = '#000';

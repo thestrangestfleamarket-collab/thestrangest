@@ -82,6 +82,7 @@ jobs:
           k duel    'src/duel/|data/duel/|tools/duel\.cjs|tests/duel\.cjs'
           k qzar    'src/qzar/|tools/qzar\.cjs|tests/qzar\.cjs'
           k laser   'src/laser/|worker/laser|tools/laser\.cjs|tests/laser\.cjs'
+          k football 'src/football/|tools/football\.cjs|tests/football\.cjs|src/jam/stadium|src/sushi/(sky|ephem|air)\.js'
           k tag     'src/tag/|src/laser/audio|worker/tag|tools/tag\.cjs|tests/tag\.cjs'
           k chess   'src/chess/|data/chess/|worker/chess|tools/chess\.cjs|tests/chess\.cjs'
           k fleet   'src/space/|data/space/|worker/space|tools/space|tests/fleet\.cjs'
@@ -345,6 +346,10 @@ jobs:
         timeout-minutes: 15
         if: contains(steps.f.outputs.run, ' laser')
         run: node tests/laser.cjs dist/laser.html
+      - name: Fourth & Long (football at /football; the rules and whole games, the page on a screen, an emulated Quest 3 calling, snapping, throwing and running)
+        timeout-minutes: 20
+        if: contains(steps.f.outputs.run, ' football')
+        run: node tests/football.cjs dist/football.html
       - name: Sensor Tag (the chest-sensor duel at /tag; the rules, where a beam lands, two linked pages, an emulated Quest 3 lining up)
         timeout-minutes: 15
         if: contains(steps.f.outputs.run, ' tag')

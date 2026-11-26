@@ -27,6 +27,7 @@ Risk is noted only when it isn't low.
    Section B, the shop insides with their windows, the moves.
 
 ## For the owner
+- [ ] **FOURTH & LONG in the headset** (owner, 26 Nov 2026) · P1 · S · look. `/football` has only been played on a screen and an emulated Quest 3: try it in the headset for the frame rate (22 bodies and the crowd), the hand throw's strength, the table's size, and say what to change.
 - [x] **The real clock and sky back** (owner, 14 Nov 2026: "lets remoev the 8 times ot day, do a real click go back to the blue, clouds, real nigth") · P1 · S · code + look. [done: worktree-agent-a3dd808517cecfa90, 14 Nov]
 - **P2 · pick** THE CANTINA (13 Nov 2026): its name (THE CANTINA is a working name); whether the old lounge (still reached by GO TO) goes to the archive now that THE BAR's door opens THE CANTINA; anyone to cut from or add to the regulars.
 - **P2 · look** THE CANTINA in a headset on the live site: how the hands sit on the controllers, how dark each look is, the frame rate with every regular in the room.

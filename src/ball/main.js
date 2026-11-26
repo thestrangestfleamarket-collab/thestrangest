@@ -789,11 +789,11 @@ const boxC=cv(512,512), boxT=tex(boxC), BOXZ=3.7, BOXY=1.75;
 const TODS=[22,6.2,12,19.2];
 function drawBox(){ const x=boxC.getContext('2d'); x.fillStyle='#0b0e10'; x.fillRect(0,0,512,512); x.textAlign='center';
   const ar=mode==='ar', gy=venue==='gym'; [['WEATHER',ar||gy?'—':world.wx],['TIME',ar?'—':hh(world.hour)],['NET',world.net],['GET BALL',BT[world.pref].name],['60 SECOND GAME',game.on?'stop':'start'],['COURT',ar?'—':gy?'indoor':'jungle']].forEach(([a,b],i)=>{ x.fillStyle='#1b2a2e'; x.fillRect(14,i*84+8,484,72); x.fillStyle='#8fa3a8'; x.font='700 19px Arial'; x.fillText(a,256,i*84+32); x.fillStyle='#ffb629'; x.font='700 34px Arial'; x.fillText(String(b).toUpperCase(),256,i*84+68); }); boxT.needsUpdate=true; }
-function setCourt(v){ if(mode==='ar') return; world.court=v==='gym'?'gym':'jungle'; venue=v==='gym'?'gym':'clearing'; if(venue==='gym'&&!GYM){ K.gymMap=tex(courtTexture(true)); GYM=makeGym(K); GYM.g.traverse(o=>{ const m=o.material; if(Array.isArray(m)) m.forEach(patchMat); else patchMat(m); }); }
+function setCourt(v){ if(mode==='ar') return; world.court=v==='gym'?'gym':'jungle'; venue=v==='gym'?'gym':'clearing'; if(venue==='gym'&&!GYM){ K.gymMap=tex(courtTexture(true)); GYM=makeGym(K); mergeStill(GYM.g); GYM.g.traverse(o=>{ const m=o.material; if(Array.isArray(m)) m.forEach(patchMat); else patchMat(m); }); }
   try{ localStorage.setItem('ball-court',world.court); }catch(e){} setAmb(); applyWorld(); flash(venue==='gym'?'INDOOR COURT':'JUNGLE COURT'); }
 function boxAct(i){ if(i===5) setCourt(world.court==='gym'?'jungle':'gym'); if(i===0&&venue!=='gym') world.wx=Object.keys(WXP)[(Object.keys(WXP).indexOf(world.wx)+1)%4]; if(i===1){ const k=TODS.findIndex(v=>Math.abs(v-world.hour)<.3); world.hour=TODS[(k+1)%4]; $('tod').value=world.hour; }
   if(i===2){ world.net=world.net==='nylon'?'chain':'nylon'; for(const h of hoops){ h.netS.mesh.material=netMats[world.net]; h.netS.quiet=0; } } if(i===3) world.pref=(world.pref+1)%BT.length; if(i===4){ if(game.on) endGame(); else startGame(); } snd('catch',menu.visible?menu.position:_a.set(FX-.1,1.4,BOXZ),4); applyWorld(); }
-function boxTouch(h,p,t){ if(t<h.boxT||p.x<FX-.24||Math.abs(p.z-BOXZ)>.38) return; const i=Math.floor((BOXY-p.y)/(.8/6)); if(i<0||i>5) return; h.boxT=t+.8; buzz(h,.7,40); boxAct(i); }
+function boxTouch(h,p,t){ const i=Math.floor((BOXY-p.y)/(.8/6)), inn=mode!=='ar'&&p.x>=FX-.24&&Math.abs(p.z-BOXZ)<=.38&&i>=0&&i<=5, was=h.bIn; h.bIn=inn; if(!inn||was||t<h.boxT) return; h.boxT=t+.25; buzz(h,.7,40); boxAct(i); }
 
 /* ---------- the headset's menu: click a stick (or touch the tab on your left wrist) and the board comes up in front of you; point and pull the trigger, or poke a row ---------- */
 const menu=new THREE.Mesh(new THREE.PlaneGeometry(.5,.5),new THREE.MeshBasicMaterial({map:boxT,fog:false,toneMapped:false})); menu.visible=false; menu.userData.dyn=true; scene.add(menu); noBake.push(menu);
@@ -802,7 +802,7 @@ const menuRay=new THREE.Line(new THREE.BufferGeometry().setAttribute('position',
 const wristTab=new THREE.Mesh(new THREE.SphereGeometry(.016,12,8),new THREE.MeshBasicMaterial({color:0xffb629,fog:false})); wristTab.visible=false; scene.add(wristTab); noBake.push(wristTab); let tabT=0;
 function menuToggle(on=!menu.visible){ menu.visible=on; menuHi.visible=menuRay.visible=false; if(on){ headPos(); camera.getWorldDirection(_f); _f.y=0; if(_f.lengthSq()<1e-4) _f.set(0,0,-1); _f.normalize(); menu.position.set(_hp.x+_f.x*.55,_hp.y-.18,_hp.z+_f.z*.55); menu.lookAt(_hp.x,_hp.y-.18,_hp.z); menu.updateMatrixWorld(true); drawBox(); } snd('catch',menu.position,3); }
 function menuHand(h,t,trig){ let x,y,press=false; // true while this hand is on the menu
-  if(h.isHand){ menu.worldToLocal(_c.copy(h.jp[TIPS[1]])); if(_c.z>.07||_c.z<-.1) return false; x=_c.x; y=_c.y; press=_c.z<.012; }
+  if(h.isHand){ menu.worldToLocal(_c.copy(h.jp[TIPS[1]])); if(_c.z>.07||_c.z<-.1){ h.mIn=false; return false; } x=_c.x; y=_c.y; const inn=_c.z<.012; press=inn&&!h.mIn; h.mIn=inn; }
   else { h.ctrl.getWorldPosition(_a); h.ctrl.getWorldDirection(_b).negate(); _c.copy(_a).addScaledVector(_b,1); menu.worldToLocal(_a); menu.worldToLocal(_c); _c.sub(_a); if(_c.z>-1e-3) return false; const k=-_a.z/_c.z; if(k<0||k>4) return false; x=_a.x+_c.x*k; y=_a.y+_c.y*k; press=trig; }
   if(Math.abs(x)>.25||Math.abs(y)>.25) return false; const i=Math.min(5,Math.floor((.25-y)/(.5/6))); menuHi.visible=true; menuHi.position.y=.25-(i+.5)*(.5/6);
   if(!h.isHand){ const p=menuRay.geometry.attributes.position; h.ctrl.getWorldPosition(_a); menu.localToWorld(_c.set(x,y,0)); p.setXYZ(0,_a.x,_a.y,_a.z); p.setXYZ(1,_c.x,_c.y,_c.z); p.needsUpdate=true; menuRay.visible=true; }
@@ -984,11 +984,12 @@ function patchMat(m){ if(!m||m.isShaderMaterial||m.isShadowMaterial||m.userData.
       .replace('#include <fog_fragment>',`#include <fog_fragment>\n#ifdef USE_FOG\nif(uLampK>0.){vec3 LP[4]=vec3[4](${LGL});vec3 rd=vWP-cameraPosition;float TT=length(rd);rd/=TT;float gl=0.;for(int i=0;i<4;i++){vec3 q=LP[i]-cameraPosition;float tc=dot(q,rd);float hh=sqrt(max(dot(q,q)-tc*tc,.09));gl+=(atan((TT-tc)/hh)+atan(tc/hh))/hh;}gl_FragColor.rgb+=vec3(1.,.93,.78)*gl*uLampK;}\n#endif\ngl_FragColor.rgb=clamp(gl_FragColor.rgb,0.,48.);`); };
   m.customProgramCacheKey=()=>'fx'+wind; m.needsUpdate=true; }
 // the still scenery as one mesh a material: far fewer draws
-{ const by=new Map(); env.updateMatrixWorld(true);
+function mergeStill(env){ const by=new Map(); env.updateMatrixWorld(true);
   env.traverse(o=>{ if(!o.isMesh||o.isInstancedMesh||o.isSkinnedMesh||o.userData.dyn||Array.isArray(o.material)||o.material.isShaderMaterial||!o.visible||!o.geometry.attributes.normal||!o.geometry.attributes.uv) return;
     const k=o.material.uuid+(o.castShadow?'c':'')+(o.receiveShadow?'r':''); if(!by.has(k)) by.set(k,[]); by.get(k).push(o); });
   for(const list of by.values()){ if(list.length<2) continue; const gs=list.map(o=>{ let g=o.geometry.clone(); if(g.index) g=g.toNonIndexed(); for(const a of Object.keys(g.attributes)) if(a!=='position'&&a!=='normal'&&a!=='uv') g.deleteAttribute(a); g.applyMatrix4(o.matrixWorld); return g; });
     const mg=mergeGeometries(gs); if(!mg) continue; const m=new THREE.Mesh(mg,list[0].material); m.castShadow=list[0].castShadow; m.receiveShadow=list[0].receiveShadow; env.add(m); for(const o of list) o.removeFromParent(); } }
+mergeStill(env);
 scene.traverse(o=>{ const m=o.material; if(Array.isArray(m)) m.forEach(patchMat); else patchMat(m); }); Object.values(netMats).forEach(patchMat);
 
 // what the other sports' files are handed

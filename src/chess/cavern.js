@@ -1,4 +1,4 @@
-// SKIRMISH TABLE's cavern, the place round a table whose map asks for it (maps.js look.place 'cavern'): a vast wet cave in the dark. A dome of rock far overhead with stalactites, a rolling floor of stalagmites and boulders, a black lake, crystals that glow, and one shaft of pale light down a hole in the roof onto the table. All of it still; its light is in each point's colour (no lamp), and the rock's wet shine is worked out from where you look. Nothing tall stands before a seat.
+// SKIRMISH TABLE's cavern, the place round a table whose map asks for it (maps.js look.place 'cavern'): a vast wet cave in the dark. A dome of rock far overhead with stalactites, a rolling floor of stalagmites and boulders, a black lake, crystals that glow, and one shaft of pale light down a hole in the roof onto the table. All of it still; its light is in each point's colour (no lamp), and the rock's wet shine is worked out from where you look. Nothing tall stands before a seat. `light` is how much of the usual light its pieces stand in.
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
@@ -96,5 +96,5 @@ export function makeCavern(renderer) {
     still(new THREE.Mesh(mergeGeometries(rs), new THREE.MeshBasicMaterial({ map: src.material.map, vertexColors: true })));
   }).catch(err => console.warn('The cavern\'s boulders did not load', err));
 
-  return { group, ready, haze: 0x030405, quality() {} };
+  return { group, ready, haze: 0x030405, light: 0.36, quality() {} };
 }

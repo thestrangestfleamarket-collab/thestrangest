@@ -49,6 +49,7 @@ export class Sound {
     this.loaded = Promise.all(FILES.map(name => fetch(`/chess-assets/sfx/${name}.mp3`).then(r => r.arrayBuffer()).then(b => ctx.decodeAudioData(b))
       .then(buf => { this.buffers[name] = buf; if (name === 'tone') this.startTone(); if (name === 'falls') this.startFalls(); }).catch(() => {})));
     if (this.want) this.ambience(this.want);
+    if (this.where) this.place(this.where);
   }
 
   setMuted(m) {
@@ -141,10 +142,20 @@ export class Sound {
   // The waterfall across the gorge: a recording of rapids, muffled, at its own place (fallsAt keeps it there when the board is moved), quiet.
   startFalls() {
     const ctx = this.ctx, src = ctx.createBufferSource(), g = ctx.createGain(), p = this.fallsPan = ctx.createPanner();
-    src.buffer = this.buffers.falls; src.loop = true; g.gain.value = 0.55; p.panningModel = 'HRTF'; p.distanceModel = 'inverse'; p.rolloffFactor = 1;
+    src.buffer = this.buffers.falls; src.loop = true; g.gain.value = this.where ? 0 : 0.55; this.fallsGain = g; p.panningModel = 'HRTF'; p.distanceModel = 'inverse'; p.rolloffFactor = 1;
     src.connect(g).connect(p).connect(this.master);
     src.start();
   }
+  // What is round the table (null: the hall): the hall's waterfall is heard only there; the jungle has its own recording all round, fetched when first wanted.
+  place(key) {
+    this.where = key; const ctx = this.ctx; if (!ctx) return;
+    if (this.fallsGain) this.fallsGain.gain.setTargetAtTime(key ? 0 : 0.55, ctx.currentTime, 0.8);
+    if (key === 'jungle' && !this.wild) { const g = this.wild = ctx.createGain(); g.gain.value = 0; g.connect(this.master);
+      fetch('/chess-assets/sfx/jungle.mp3').then(r => r.arrayBuffer()).then(b => ctx.decodeAudioData(b)).then(buf => { const src = ctx.createBufferSource(); src.buffer = buf; src.loop = true; src.connect(g); src.start(); }).catch(() => {}); }
+    if (this.wild) this.wild.gain.setTargetAtTime(key === 'jungle' ? 0.6 : 0, ctx.currentTime, 0.8);
+  }
+  // a drop falling somewhere in the cavern, with a long tail
+  drop(pos) { if (this.ctx && this.ctx.state === 'running' && !document.hidden) this.play('drip*', { pos, vol: 0.55, rate: 0.7 + Math.random() * 0.5, send: 1.8 }); }
   fallsAt(pos) { const p = this.fallsPan; if (p) { p.refDistance = this.refDistance; p.positionX.value = pos.x; p.positionY.value = pos.y; p.positionZ.value = pos.z; } }
   // a bird of prey calling, far off
   cry(pos) { if (this.ctx && this.ctx.state === 'running' && !document.hidden) this.play('cry*', { pos, vol: 0.4, rate: 0.9 + Math.random() * 0.2, send: 1.1 }); }

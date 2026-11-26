@@ -94,6 +94,7 @@ world.add(dungeon.group);
 
 // The battlefield (maps.js), built when the match's state first names it.
 let cols = G.COLS, rows = G.ROWS, field = null;
+let place = null, nextDrop = 0;
 const PLACES = { jungle: makeJungle, cavern: makeCavern }, places = {};   // what is round a table whose map names its place (maps.js look.place), built and fetched the first time; the hall otherwise
 const tx = x => x - (cols - 1) / 2;
 const tz = y => y - (rows - 1) / 2;
@@ -108,7 +109,8 @@ function setField(id) {
   fieldGroup.add(field.group);
   { const key = m.look && PLACES[m.look.place] ? m.look.place : null;
     if (key && !places[key]) { places[key] = PLACES[key](renderer); world.add(places[key].group); }
-    dungeon.group.visible = !key; for (const k in places) places[k].group.visible = k === key; BG.set(key ? places[key].haze : HAZE); }
+    dungeon.group.visible = !key; for (const k in places) places[k].group.visible = k === key; BG.set(key ? places[key].haze : HAZE);
+    place = key; sound.place(key); const dim = key ? places[key].light ?? 1 : 1; hemi.intensity = 1.9 * dim; sun.intensity = 2.1 * Math.sqrt(dim); }   // its sounds, and how much light its pieces stand in
   catcher.scale.set(cols + 0.7, 1, rows + 0.7);
   applyQuality(); placePanel();
   if (!renderer.xr.isPresenting) resetCamera();
@@ -1007,7 +1009,8 @@ renderer.setAnimationLoop(time => {
   camUp.set(0, 1, 0).applyQuaternion(viewCam.quaternion);
   sound.setListener(camPos, camDir, camUp);
   sound.fallsAt(world.localToWorld(tmpV.set(-52, -18, 0)));   // the place's own sounds: the waterfall where it falls, a bird's cry now and then from over the gorge
-  if (now > nextCry) { nextCry = now + 50 + Math.random() * 70; sound.cry(world.localToWorld(tmpV.set(-44, 24, (Math.random() - 0.5) * 60))); }
+  if (place === 'cavern' && now > nextDrop) { nextDrop = now + 1.5 + Math.random() * 3.5; const a = Math.random() * 6.283, r = 6 + Math.random() * 20; sound.drop(world.localToWorld(tmpV.set(Math.sin(a) * r, 0, Math.cos(a) * r))); }
+  if (place !== 'cavern' && now > nextCry) { nextCry = now + 50 + Math.random() * 70; sound.cry(world.localToWorld(tmpV.set(-44, 24, (Math.random() - 0.5) * 60))); }
   tmpQ.copy(world.quaternion).invert();
   eyeU.copy(camUp).applyQuaternion(tmpQ); eyeR.set(1, 0, 0).applyQuaternion(viewCam.quaternion).applyQuaternion(tmpQ);
   fx.update(dt, eyeR, eyeU);
@@ -1136,4 +1139,4 @@ function act(player, action, rand) {
 }
 if (new URLSearchParams(location.search).get('camp')) openCampaign();
 if (new URLSearchParams(location.search).get('show')) show(new URLSearchParams(location.search).get('show'), new URLSearchParams(location.search).get('setup'), new URLSearchParams(location.search).get('full'));
-window.__t = { get jungle() { return places.jungle; }, places, dungeon, stage, act, need, typesReady, trisOf, sizeOf, clipsOf, sound, rigOf, playEvents, get page() { return page; }, get aim() { return aim; }, tabs3D, chips3D, pools, handlePick, show, world, G, drawUnits, get prog() { return prog; }, get openMatch() { return openMatch; }, openCampaign, CAMPAIGN, get camp() { return camp; }, get inCamp() { return inCamp; }, get unitsReady() { return charactersReady() && !crowdDirty && (!state || typesReady(state.units.map(u => u.type))); }, dungeon, crowd, labels, hemi, get arScale() { return arScale; }, unitMeshes, get campSel() { return campSel; }, get solo() { return solo; }, get campNode() { return campNode; }, saveTeam, loadTeam, get teams() { return teams; }, get held() { return held; }, get ready() { return ready; }, get setupSel() { return setupSel; }, get field() { return field; }, castFx, explode, V, camera, controls, fx, sun, renderer, scene, get state() { return state; }, get me() { return me; }, get code() { return code; }, get selected() { return selected; }, get lean() { return lean; } };
+window.__t = { hemi, sun, get jungle() { return places.jungle; }, places, dungeon, stage, act, need, typesReady, trisOf, sizeOf, clipsOf, sound, rigOf, playEvents, get page() { return page; }, get aim() { return aim; }, tabs3D, chips3D, pools, handlePick, show, world, G, drawUnits, get prog() { return prog; }, get openMatch() { return openMatch; }, openCampaign, CAMPAIGN, get camp() { return camp; }, get inCamp() { return inCamp; }, get unitsReady() { return charactersReady() && !crowdDirty && (!state || typesReady(state.units.map(u => u.type))); }, dungeon, crowd, labels, hemi, get arScale() { return arScale; }, unitMeshes, get campSel() { return campSel; }, get solo() { return solo; }, get campNode() { return campNode; }, saveTeam, loadTeam, get teams() { return teams; }, get held() { return held; }, get ready() { return ready; }, get setupSel() { return setupSel; }, get field() { return field; }, castFx, explode, V, camera, controls, fx, sun, renderer, scene, get state() { return state; }, get me() { return me; }, get code() { return code; }, get selected() { return selected; }, get lean() { return lean; } };

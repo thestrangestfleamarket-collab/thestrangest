@@ -7,7 +7,8 @@ const TEAM = KIT, NUMS = [55, 66, 67, 72, 76, 12, 81, 84, 88, 44, 23], LINEMEN =
 const M = new THREE.Matrix4(), B = new THREE.Matrix4(), T1 = new THREE.Matrix4(), R1 = new THREE.Matrix4(), Q = new THREE.Quaternion(), E = new THREE.Euler(), V = new THREE.Vector3(), SC = new THREE.Vector3(), C = new THREE.Color();
 
 function fieldTexture() {
-  const c = document.createElement('canvas'); c.width = 2048; c.height = 912; const g = c.getContext('2d'), px = c.width / 120, X = (yd) => (yd + 60) * px, Z = (yd) => (yd + FIELD.W) * px;
+  const K = /OculusBrowser|Quest|Pico/i.test(navigator.userAgent) ? 1 : 2, c = document.createElement('canvas'); c.width = 2048 * K; c.height = 912 * K; const g = c.getContext('2d'), px = c.width / 120,   // twice as fine on a screen
+    X = (yd) => (yd + 60) * px, Z = (yd) => (yd + FIELD.W) * px;
   for (let i = 0; i < 20; i++) { g.fillStyle = i % 2 ? '#2f7d32' : '#2a722d'; g.fillRect(X(-50 + i * 5), 0, 5 * px + 1, c.height); }
   [[-60, TEAM[0]], [50, TEAM[1]]].forEach(([x, t], i) => { g.fillStyle = t.css; g.fillRect(X(x), 0, 10 * px, c.height); g.save(); g.translate(X(x + 5), c.height / 2); g.rotate(i ? Math.PI / 2 : -Math.PI / 2); g.fillStyle = '#fff'; g.font = '900 ' + 6.5 * px + 'px system-ui, sans-serif'; g.textAlign = 'center'; g.textBaseline = 'middle'; g.fillText(t.name, 0, 0); g.restore(); });
   g.strokeStyle = '#fff'; g.fillStyle = '#fff'; g.lineWidth = px * 0.35; g.strokeRect(X(-60) + 2, 2, c.width - 4, c.height - 4);
@@ -16,9 +17,9 @@ function fieldTexture() {
   g.font = '800 ' + 3.4 * px + 'px system-ui, sans-serif'; g.textAlign = 'center'; g.textBaseline = 'middle';
   for (let y = -40; y <= 40; y += 10) for (const s of [-1, 1]) { g.save(); g.translate(X(y), Z(s * 17)); if (s < 0) g.rotate(Math.PI); g.fillText(String(50 - Math.abs(y)), 0, 0); g.restore(); }
   g.globalAlpha = 0.5; g.font = '900 ' + 5 * px + 'px system-ui, sans-serif'; g.fillText('4TH & LONG', X(0), Z(0)); g.globalAlpha = 1;
-  { let s = 5; const r = () => (s = (s * 16807) % 2147483647) / 2147483647; for (let i = 0; i < 60000; i++) { g.fillStyle = r() < 0.5 ? 'rgba(0,0,0,0.07)' : 'rgba(255,255,200,0.05)'; g.fillRect(r() * c.width, r() * c.height, 1 + r() * 2, 1 + r() * 3); } }   // the turf's grain
+  { let s = 5; const r = () => (s = (s * 16807) % 2147483647) / 2147483647; for (let i = 0; i < 60000 * K * K; i++) { g.fillStyle = r() < 0.5 ? 'rgba(0,0,0,0.07)' : 'rgba(255,255,200,0.05)'; g.fillRect(r() * c.width, r() * c.height, 1 + r() * 2, 1 + r() * 3); } }   // the turf's grain
   const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = 8;
-  const img = new Image(); img.onload = () => { g.save(); g.globalCompositeOperation = 'overlay'; g.globalAlpha = 0.85; g.scale(0.28, 0.28); g.fillStyle = g.createPattern(img, 'repeat'); g.fillRect(0, 0, c.width / 0.28, c.height / 0.28); g.restore();   // SKIRMISH TABLE's photographed grass
+  const img = new Image(); img.onload = () => { g.save(); g.globalCompositeOperation = 'overlay'; g.globalAlpha = 0.85; g.scale(0.28 * K, 0.28 * K); g.fillStyle = g.createPattern(img, 'repeat'); g.fillRect(0, 0, c.width / 0.28, c.height / 0.28); g.restore();   // SKIRMISH TABLE's photographed grass
     g.save(); g.globalCompositeOperation = 'soft-light'; for (let i = 0; i < 24; i++) { g.fillStyle = i % 2 ? 'rgba(255,255,255,0.22)' : 'rgba(0,0,0,0.22)'; g.fillRect(i * 5 * px, 0, 5 * px, c.height); } g.restore(); t.needsUpdate = true; }; img.src = '/chess-assets/board/grass.jpg';
   return t;
 }

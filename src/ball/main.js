@@ -942,7 +942,7 @@ function frame(ms){ const t=ms/1000, raw=t-last||.016, dt=Math.min(.05,raw); las
       if(h.isHand){ TIPS.forEach((k,i)=>touch(h,h.jp[k],_b.copy(h.tv[i]),.011)); touch(h,h.pos,_b.copy(h.vel),.034); boxTouch(h,h.jp[TIPS[1]],t); }
       else { if(!h.ball) touch(h,h.pos,_b.copy(h.vel),.055); boxTouch(h,h.pos,t); }
       h.ray.visible=!h.ball&&tp.h!==h; }
-    { const L=hands.find(h=>h.src&&h.isHand&&h.src.handedness==='left'), Rh=hands.find(h=>h.src&&h.isHand&&h.src.handedness==='right'); wristTab.visible=!!L; if(L){ wristTab.position.copy(L.jp[0]); wristTab.position.y+=.05; if(Rh&&t>tabT&&Rh.jp[TIPS[1]].distanceTo(wristTab.position)<.035){ tabT=t+1; buzz(Rh,.7,40); menuToggle(); } } }
+    { const L=hands.find(h=>h.src&&h.isHand&&h.src.handedness==='left'), Rh=hands.find(h=>h.src&&h.isHand&&h.src.handedness==='right'); wristTab.visible=!!L; if(L){ wristTab.position.copy(L.jp[0]); wristTab.position.y+=.05; if(Rh){ const d=Rh.jp[TIPS[1]].distanceTo(wristTab.position); if(d<.035&&!tabT){ tabT=1; buzz(Rh,.7,40); menuToggle(); } else if(d>.07) tabT=0; } } }
     for(const b of balls){ const h=b.holder; if(!h||h==='cam') continue; b.prevY=b.p.y;
       if(b.holder2){ holdPoint(h,_a); holdPoint(b.holder2,_b); if(_a.distanceTo(_b)>.6){ b.holder2.ball=null; b.holder2=null; setHold(h,b,true); } else b.p.addVectors(_a,_b).multiplyScalar(.5); b.pull=false; }
       else { _a.copy(h.local); h.anchor.localToWorld(_a); if(b.pull){ b.p.lerp(_a,1-Math.exp(-11*dt)); if(b.p.distanceTo(_a)<.1){ b.pull=false; buzz(h); snd('catch',b.p,5,b.T.pitch); } } else b.p.copy(_a); }

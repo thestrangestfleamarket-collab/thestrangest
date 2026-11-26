@@ -813,7 +813,7 @@ let yaw=0,pitch=.08,yawT=0,pitchT=.08,dragD=0,eyeH=EYE,hOff=0,yExtra=0,fallV=0,c
 addEventListener('keydown',e=>{ if(e.target&&e.target.tagName==='INPUT') return; keys[e.code]=true; initAudio(); if(e.code==='Space'){ e.preventDefault(); if(!e.repeat) startCharge(); } if(e.code==='KeyR') summon(null);
   if(e.code==='KeyF'&&!mode){ camera.getWorldDirection(_f); if(_f.y<-.04){ headPos(); const k=Math.min(_hp.y/-_f.y,22); rig.position.x=THREE.MathUtils.clamp(_hp.x+_f.x*k,BND.cx-BND.x,BND.cx+BND.x); rig.position.z=THREE.MathUtils.clamp(_hp.z+_f.z*k,BND.cz-BND.z,BND.cz+BND.z); vel.set(0,0,0); snd('step',_a.set(rig.position.x,.05,rig.position.z),4); } } });
 addEventListener('keyup',e=>{ keys[e.code]=false; if(e.code==='Space') endCharge(); });
-canvas.addEventListener('pointerdown',e=>{ initAudio(); canvas.setPointerCapture(e.pointerId);
+canvas.addEventListener('pointerdown',e=>{ initAudio(); try{ canvas.setPointerCapture(e.pointerId); }catch(_){}
   if(e.pointerType==='touch'&&e.clientX<innerWidth*.4&&joy.id===null){ joy.id=e.pointerId; joy.x0=e.clientX; joy.y0=e.clientY; joy.x=joy.y=0; }
   else if(look.id===null){ look.id=e.pointerId; look.x=e.clientX; look.y=e.clientY; dragD=0; } });
 canvas.addEventListener('pointermove',e=>{ if(e.pointerId===joy.id){ joy.x=THREE.MathUtils.clamp((e.clientX-joy.x0)/50,-1,1); joy.y=THREE.MathUtils.clamp((e.clientY-joy.y0)/50,-1,1); }
@@ -829,7 +829,7 @@ function startCharge(){ initAudio(); if(SPORTS[sport].action){ SPORTS[sport].act
 function endCharge(){ if(SPORTS[sport].release) SPORTS[sport].release(); if(!charging) return; charging=false; $('meter').hidden=true; arc.visible=false; const b=camB; if(!b) return;
   camB=null; b.holder=null; shotVel(b.v); camera.getWorldDirection(_a); _a.y=0; _a.normalize(); b.w.crossVectors(_a,_b.set(0,1,0)).multiplyScalar(11); launched(b); }
 function shotVel(out){ camera.getWorldDirection(out); out.y+=.62; out.normalize().multiplyScalar(4.5+charge*8.5); return out; }
-const sb=$('shoot'); sb.addEventListener('pointerdown',e=>{ e.preventDefault(); sb.setPointerCapture(e.pointerId); startCharge(); }); sb.addEventListener('pointerup',endCharge); sb.addEventListener('pointercancel',endCharge);
+const sb=$('shoot'); sb.addEventListener('pointerdown',e=>{ e.preventDefault(); try{ sb.setPointerCapture(e.pointerId); }catch(_){} startCharge(); }); sb.addEventListener('pointerup',endCharge); sb.addEventListener('pointercancel',endCharge);
 $('recall').addEventListener('click',()=>{ initAudio(); summon(null); });
 $('btnSet').addEventListener('click',()=>{ $('panel').hidden=!$('panel').hidden; });
 $('tod').addEventListener('input',e=>{ world.hour=+e.target.value; applyWorld(); });

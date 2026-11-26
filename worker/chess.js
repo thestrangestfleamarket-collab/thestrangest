@@ -84,7 +84,7 @@ const CHESS = {
           if (this.room) return this.send(ws, { t: "error", msg: "That room code was just taken, please try again" });
           // a duel (two seats), a match against the computer (solo: its level), or a battle of the campaign (camp: its id; open by the battles this login has won, or for anyone else by the ones their page says)
           const pid = this.ids.get(ws) || "", n = typeof m.camp === "string" ? nodeOf(m.camp) : null;
-          let map = typeof m.map === "string" ? m.map : "board", ai = null, budget = G.BUDGET;
+          let map = typeof m.map === "string" ? m.map : "board", ai = null, budget = G.mapOf(map).budget ?? G.BUDGET;
           if (typeof m.camp === "string") {
             const rec = pid && this.host.store ? await CHESS.load(this.host.store(pid)) : null, done = rec ? rec.rec.camp.done : tidyDone(m.done);
             if (this.room) return this.send(ws, { t: "error", msg: "That room code was just taken, please try again" });
@@ -94,7 +94,7 @@ const CHESS = {
           const state = G.newGame(map, { setup: true, budget });
           if (n) G.placeTeam(state, 1, n.enemy.map(([type, x, y]) => ({ type, x, y })));
           else if (ai) G.placeTeam(state, 1, AI.muster(state, 1));   // the computer fields a mix of its own
-          if (budget < G.BUDGET) { const t = G.defaultTeam(map, 0); while (G.teamCost(t) > budget) t.pop(); G.setTeam(state, 0, t); }
+          if (n && budget < G.BUDGET) { const t = G.defaultTeam(map, 0); while (G.teamCost(t) > budget) t.pop(); G.setTeam(state, 0, t); }
           // a duel is fair unless its host opens it: upgrades count only in an open match, or against the computer
           this.host.room = { code, state, tokens: [null, ai ? "computer" : null], ready: [false, !!ai], deadline: null, ai, camp: n ? n.id : null, ids: ["", ""], open: !!m.open && !ai, ups: [null, null] };
         } else if (!this.room) return this.send(ws, { t: "error", msg: "No room with that code" });

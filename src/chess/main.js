@@ -1072,7 +1072,7 @@ for (const [id, m] of Object.entries(G.MAPS)) { const o = document.createElement
 const mapNote = () => { $('mapInfo').textContent = G.MAPS[$('mapSel').value].info; try { localStorage.setItem('map', $('mapSel').value); } catch { /* storage blocked */ } };
 try { const m = localStorage.getItem('map'); if (G.MAPS[m]) $('mapSel').value = m; } catch { /* storage blocked */ }
 $('mapSel').onchange = mapNote; mapNote();
-$('rules').innerHTML = Object.values(G.TERRAIN).filter(t => t.info).map(t => `<b>${t.name}</b> ${t.info}`).join('<br>') + '<br><b>High ground</b> Stepping up a level costs one more move point; two levels at once cannot be climbed. Whatever works at range reaches one tile further at targets below it.';
+$('rules').innerHTML = Object.entries(G.TERRAIN).filter(([k, t]) => t.info && Object.values(G.MAPS).some(m => m.tiles && m.tiles.some(r => r.includes(k)))).map(([, t]) => t).map(t => `<b>${t.name}</b> ${t.info}`).join('<br>') + '<br><b>High ground</b> Stepping up a level costs one more move point; two levels at once cannot be climbed. Whatever works at range reaches one tile further at targets below it.';
 $('helpBtn').onclick = () => { $('help').hidden = !$('help').hidden; };
 $('help').onclick = () => { $('help').hidden = true; };
 for (const [k, l] of Object.entries(LEVELS)) { const o = document.createElement('option'); o.value = k; o.textContent = l.name; $('levelSel').appendChild(o); }

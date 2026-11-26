@@ -14,8 +14,11 @@ export const TERRAIN = {
   b: { name: 'Bridge', foot: 'wood' },
   s: { name: 'Shallows', foot: 'water', cost: 2, slip: 0.5, info: 'Two move points to wade in; poor footing halves block.' },
   f: { name: 'Forest', foot: 'leaves', cost: 2, cover: 0.5, info: 'Two move points to enter; arrows do half damage to whoever is inside.' },
+  j: { name: 'Jungle', foot: 'leaves', cost: 2, cover: 0.5, info: 'Two move points to push through; arrows do half damage to whoever is inside.' },
+  t: { name: 'Great tree', solid: true, wall: true, info: 'Cannot be crossed; stops the axe.' },
   w: { name: 'Deep water', solid: true, info: 'Cannot be crossed.' },
   r: { name: 'Rock', solid: true, wall: true, info: 'Cannot be crossed; stops the axe.' },
+  p: { name: 'Pillar', solid: true, wall: true, info: 'Cannot be crossed; stops the axe.' },
   x: { name: 'Ruined wall', solid: true, wall: true, info: 'Cannot be crossed; stops the axe.' },
   i: { name: 'Ice', slip: 0.5, foot: 'ice', info: 'A frozen river bears your weight at walking pace; poor footing halves block.' },
   n: { name: 'Deep snow', cost: 2, foot: 'snow', info: 'Two move points to wade in.' },
@@ -36,10 +39,37 @@ export const POOLS = {
 // and anything that works at range reaches one tile further at targets below it.
 export const CLIMB = 1, REACH = 1;
 
+// A map's `look.base` is its bare ground ('grass' where not given, or 'flag'), `grow` how overgrown its stone is and `ivy` whether vines hang on what stands there; `budget` and `team` are a small table's own points and standing line-up.
 export const MAPS = {
   board: {
-    name: 'The Board', info: 'The plain stone board: no ground rules, nine by eleven.',
+    name: 'The Green', info: 'Open grass: no ground rules, nine by eleven.',
     cols: 9, rows: 11, zone: 3,
+  },
+  firebreak: {
+    name: 'The Firebreak', info: 'A channel of lava cuts the field in two: three stone bridges, scorched banks, a steam vent at the middle crossing.',
+    cols: 9, rows: 11, zone: 3, look: { foot: { b: 'stone' } },
+    tiles: ['.........', '.........', '.........', '.........', 'kkkkvkkkk', 'lbllbllbl', 'kkkkvkkkk', '.........', '.........', '.........', '.........'],
+  },
+  hall: {
+    name: 'The Pillared Hall', info: 'A ruined hall floor and seven broken pillars: nothing passes them, and they stop the axe.',
+    cols: 9, rows: 11, zone: 3, look: { base: 'flag', foot: { '.': 'stone' } },
+    tiles: ['.........', '.........', '.........', '.p..p..p.', '.........', '..p...p..', '.........', '.p..p..p.', '.........', '.........', '.........'],
+  },
+  ford: {
+    name: 'Mirewater Ford', info: 'A slow river across the middle: wade it, or take one of the two dry causeways; brush on each bank, a rock midstream.',
+    cols: 9, rows: 11, zone: 3,
+    tiles: ['.........', '.........', '.........', 'ffd...dff', 'ssdsssdss', 'ssdsrsdss', 'ssdsssdss', 'ffd...dff', '.........', '.........', '.........'],
+  },
+  temple: {
+    name: 'The Vinefall Catacomb', info: 'A sunken temple the jungle has taken back: great trees down both sides, thick growth to push through, vine-hung pillars and walls round a flooded stair.',
+    cols: 9, rows: 11, zone: 3, look: { base: 'flag', grow: 5, ivy: true, foot: { '.': 'stone' } },
+    tiles: ['t.......t', 'j.......j', 'tj.....jt', 'jx.j.j.xj', 'tj.p.p.jt', 'xj.sss.jx', 'tj.p.p.jt', 'jx.j.j.xj', 'tj.....jt', 'j.......j', 't.......t'],
+  },
+  pit: {
+    name: 'The Pit', info: 'A small table for a short match: seven by seven, twenty points, a fire pit in the middle.',
+    cols: 7, rows: 7, zone: 2, budget: 20,
+    team: [['bulwark', 3, 5], ['lancer', 2, 5], ['strider', 4, 5], ['slinger', 2, 6], ['mender', 4, 6]],
+    tiles: ['.......', '.......', 'x.....x', '...l...', 'x.....x', '.......', '.......'],
   },
 };
 

@@ -6,6 +6,7 @@ import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import { makeBoard } from './board.js';
 import { Labels } from './labels.js';
 import { makeDungeon, HAZE } from './dungeon.js';
+import { makeJungle, JHAZE } from './jungle.js';
 import { LEVELS } from './ai.js';
 import { CAMPAIGN, nodeOf, budgetFor, isOpen, finished } from './campaign.js';
 import { FX } from './fx.js';
@@ -91,7 +92,7 @@ const dungeon = makeDungeon(renderer); // the board's place: the hall, the mount
 world.add(dungeon.group);
 
 // The battlefield (maps.js), built when the match's state first names it.
-let cols = G.COLS, rows = G.ROWS, field = null;
+let cols = G.COLS, rows = G.ROWS, field = null, jungle = null;
 const tx = x => x - (cols - 1) / 2;
 const tz = y => y - (rows - 1) / 2;
 const ty = (x, y) => (field ? field.yAt(x, y) : 0);
@@ -103,6 +104,9 @@ function setField(id) {
   cols = m.cols; rows = m.rows;
   field = makeBoard(m, { id, renderer });
   fieldGroup.add(field.group);
+  { const wild = (m.look && m.look.place) === 'jungle';   // the place round the table: the hall, or the jungle a map asks for (built and fetched the first time)
+    if (wild && !jungle) { jungle = makeJungle(renderer); world.add(jungle.group); }
+    dungeon.group.visible = !wild; if (jungle) jungle.group.visible = wild; BG.set(wild ? JHAZE : HAZE); }
   catcher.scale.set(cols + 0.7, 1, rows + 0.7);
   applyQuality(); placePanel();
   if (!renderer.xr.isPresenting) resetCamera();
@@ -451,7 +455,7 @@ function playEvents(events) {
 // ---------------------------------------------------------------- quality: HIGH on a screen is the sun's real shadows and the full picture; in the headset neither changes
 function applyQuality() {
   const xr = renderer.xr.isPresenting, shadows = quality === 'high' && !xr;
-  sun.castShadow = shadows; catcher.visible = shadows; crowd.shadows(shadows);
+  sun.castShadow = shadows; catcher.visible = shadows; crowd.shadows(shadows); if (jungle) jungle.quality(xr);
   for (const g of unitMeshes.values()) if (g.userData.ch) crowd.tint(g.userData.ch.mesh, g.userData.rested);
   if (!xr) renderer.setPixelRatio(quality === 'high' ? Math.min(devicePixelRatio, 2) : 1);
   $('qualityBtn').textContent = `Quality: ${quality}`;
@@ -1130,4 +1134,4 @@ function act(player, action, rand) {
 }
 if (new URLSearchParams(location.search).get('camp')) openCampaign();
 if (new URLSearchParams(location.search).get('show')) show(new URLSearchParams(location.search).get('show'), new URLSearchParams(location.search).get('setup'), new URLSearchParams(location.search).get('full'));
-window.__t = { stage, act, need, typesReady, trisOf, sizeOf, clipsOf, sound, rigOf, playEvents, get page() { return page; }, get aim() { return aim; }, tabs3D, chips3D, pools, handlePick, show, world, G, drawUnits, get prog() { return prog; }, get openMatch() { return openMatch; }, openCampaign, CAMPAIGN, get camp() { return camp; }, get inCamp() { return inCamp; }, get unitsReady() { return charactersReady() && !crowdDirty && (!state || typesReady(state.units.map(u => u.type))); }, dungeon, crowd, labels, hemi, get arScale() { return arScale; }, unitMeshes, get campSel() { return campSel; }, get solo() { return solo; }, get campNode() { return campNode; }, saveTeam, loadTeam, get teams() { return teams; }, get held() { return held; }, get ready() { return ready; }, get setupSel() { return setupSel; }, get field() { return field; }, castFx, explode, V, camera, controls, fx, sun, renderer, scene, get state() { return state; }, get me() { return me; }, get code() { return code; }, get selected() { return selected; }, get lean() { return lean; } };
+window.__t = { get jungle() { return jungle; }, dungeon, stage, act, need, typesReady, trisOf, sizeOf, clipsOf, sound, rigOf, playEvents, get page() { return page; }, get aim() { return aim; }, tabs3D, chips3D, pools, handlePick, show, world, G, drawUnits, get prog() { return prog; }, get openMatch() { return openMatch; }, openCampaign, CAMPAIGN, get camp() { return camp; }, get inCamp() { return inCamp; }, get unitsReady() { return charactersReady() && !crowdDirty && (!state || typesReady(state.units.map(u => u.type))); }, dungeon, crowd, labels, hemi, get arScale() { return arScale; }, unitMeshes, get campSel() { return campSel; }, get solo() { return solo; }, get campNode() { return campNode; }, saveTeam, loadTeam, get teams() { return teams; }, get held() { return held; }, get ready() { return ready; }, get setupSel() { return setupSel; }, get field() { return field; }, castFx, explode, V, camera, controls, fx, sun, renderer, scene, get state() { return state; }, get me() { return me; }, get code() { return code; }, get selected() { return selected; }, get lean() { return lean; } };

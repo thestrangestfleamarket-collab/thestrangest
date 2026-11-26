@@ -15,7 +15,6 @@ export const TERRAIN = {
   s: { name: 'Shallows', foot: 'water', cost: 2, slip: 0.5, info: 'Two move points to wade in; poor footing halves block.' },
   f: { name: 'Forest', foot: 'leaves', cost: 2, cover: 0.5, info: 'Two move points to enter; arrows do half damage to whoever is inside.' },
   j: { name: 'Jungle', foot: 'leaves', cost: 2, cover: 0.5, info: 'Two move points to push through; arrows do half damage to whoever is inside.' },
-  t: { name: 'Great tree', solid: true, wall: true, info: 'Cannot be crossed; stops the axe.' },
   w: { name: 'Deep water', solid: true, info: 'Cannot be crossed.' },
   r: { name: 'Rock', solid: true, wall: true, info: 'Cannot be crossed; stops the axe.' },
   p: { name: 'Pillar', solid: true, wall: true, info: 'Cannot be crossed; stops the axe.' },
@@ -39,7 +38,7 @@ export const POOLS = {
 // and anything that works at range reaches one tile further at targets below it.
 export const CLIMB = 1, REACH = 1;
 
-// A map's `look.base` is its bare ground ('grass' where not given, or 'flag'), `grow` how overgrown its stone is and `ivy` whether vines hang on what stands there; `budget` and `team` are a small table's own points and standing line-up.
+// A map's `look.base` is its bare ground ('grass' where not given, or 'flag'), `grow` how overgrown its stone is `ivy` whether vines hang on what stands there, `place` what is round the table (the hall where not given, or 'jungle': jungle.js); `budget` and `team` are a small table's own points and standing line-up.
 export const MAPS = {
   board: {
     name: 'The Green', info: 'Open grass: no ground rules, nine by eleven.',
@@ -61,9 +60,9 @@ export const MAPS = {
     tiles: ['.........', '.........', '.........', 'ffd...dff', 'ssdsssdss', 'ssdsrsdss', 'ssdsssdss', 'ffd...dff', '.........', '.........', '.........'],
   },
   temple: {
-    name: 'The Vinefall Catacomb', info: 'A sunken temple the jungle has taken back: great trees down both sides, thick growth to push through, vine-hung pillars and walls round a flooded stair.',
-    cols: 9, rows: 11, zone: 3, look: { base: 'flag', grow: 5, ivy: true, foot: { '.': 'stone' } },
-    tiles: ['t.......t', 'j.......j', 'tj.....jt', 'jx.j.j.xj', 'tj.p.p.jt', 'xj.sss.jx', 'tj.p.p.jt', 'jx.j.j.xj', 'tj.....jt', 'j.......j', 't.......t'],
+    name: 'The Vinefall Catacomb', info: 'A sunken temple the jungle has taken back: great trees all round, thick growth to push through, vine-hung pillars, walls and rocks round a flooded stair.',
+    cols: 9, rows: 11, zone: 3, look: { base: 'flag', grow: 5, ivy: true, place: 'jungle', foot: { '.': 'stone' } },
+    tiles: ['r.......r', 'j.......j', 'rj.....jr', 'jx.j.j.xj', 'rj.p.p.jr', 'xj.sss.jx', 'rj.p.p.jr', 'jx.j.j.xj', 'rj.....jr', 'j.......j', 'r.......r'],
   },
   pit: {
     name: 'The Pit', info: 'A small table for a short match: seven by seven, twenty points, a fire pit in the middle.',

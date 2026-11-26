@@ -15,7 +15,7 @@ const picture = (canvas, renderer) => { const t = new THREE.CanvasTexture(canvas
 const glowDot = (c, x, y, r, col, a) => { const g = c.createRadialGradient(x, y, 0, x, y, r); g.addColorStop(0, `rgba(${col},${a})`); g.addColorStop(1, `rgba(${col},0)`); c.fillStyle = g; c.fillRect(x - r, y - r, 2 * r, 2 * r); };
 const spread = (c, k, x, y, w, h, size = 256) => { const p = PICS[k]; if (!p) { c.fillStyle = FLAT[k]; c.fillRect(x, y, w, h); return; } for (let j = y; j < y + h; j += size) for (let i = x; i < x + w; i += size) c.drawImage(p, i, j, size, size); };
 // the ground each letter of a map's tiles lies on (maps.js TERRAIN), over the map's own bare ground (look.base)
-const LAY = [['d', 'dirt'], ['rpx', 'dirt'], ['kv', 'scorch'], ['fmjt', 'forest'], ['b', 'flag'], ['sw', 'bed'], ['l', 'lava']];
+const LAY = [['d', 'dirt'], ['rpx', 'dirt'], ['kv', 'scorch'], ['fmj', 'forest'], ['b', 'flag'], ['sw', 'bed'], ['l', 'lava']];
 
 // the table's picture: a tabletop battlefield of real ground with a faint grid, no chequer. The frame, the bare ground, each ground laid over it with soft edges, what is painted on a tile, the grid, then the light on it all; under it the swatches for what stands on the board
 function paint(map, canvas = document.createElement('canvas')) {
@@ -47,7 +47,7 @@ function paint(map, canvas = document.createElement('canvas')) {
   for (const [ks, k] of LAY) { const cells = []; each(ks, (px, py) => cells.push([px, py])); lay(cells, k, 'swl'.includes(ks[0]) ? 3 : 'rpx'.includes(ks[0]) ? 16 : 8); }
   c.restore();
   // what is painted on a tile
-  each('jt', (px, py) => { glowDot(c, px + PX / 2, py + PX / 2, 0.75 * PX, '8,26,6', 0.55); });
+  each('j', (px, py) => { glowDot(c, px + PX / 2, py + PX / 2, 0.75 * PX, '8,26,6', 0.55); });
   each('kv', (px, py) => { c.fillStyle = 'rgba(22,13,9,0.5)'; c.fillRect(px, py, PX, PX); });
   each('v', (px, py) => { const cx = px + PX / 2, cy = py + PX / 2, r = 0.2 * PX;
     c.save(); c.beginPath(); c.arc(cx, cy, r, 0, 7); c.fillStyle = '#0c0a09'; c.fill(); c.clip(); c.strokeStyle = 'rgba(96,90,84,0.95)'; c.lineWidth = 3;
@@ -62,18 +62,19 @@ function paint(map, canvas = document.createElement('canvas')) {
   each('l', (px, py, x, y) => clip(px, py, () => { c.fillStyle = 'rgba(40,12,4,0.18)'; c.fillRect(px, py, PX, PX); rim(px, py, x, y, 'lb', '10,6,5,0.8', 14); }));
   each('b', (px, py, x, y) => { for (const [dx, dy] of [[0, -1], [0, 1], [-1, 0], [1, 0]]) if ('lsw'.includes(at(x + dx, y + dy) || '-')) { const k = 9, bx = dx > 0 ? px + PX - k : px, by = dy > 0 ? py + PX - k : py;
     c.fillStyle = 'rgb(112,104,95)'; c.fillRect(bx, by, dx ? k : PX, dy ? k : PX); c.fillStyle = 'rgba(12,10,9,0.5)'; c.fillRect(dx ? (dx > 0 ? bx - 3 : bx + k) : px, dy ? (dy > 0 ? by - 3 : by + k) : py, dx ? 3 : PX, dy ? 3 : PX); } });
-  each('rpxft', (px, py, x, y) => { const cx = px + PX / 2, cy = py + PX / 2; if (at(x, y) === 'f') { for (const [sx, sy] of [[-1, -1], [1, -1], [-1, 1], [1, 1]]) glowDot(c, cx + sx * 0.33 * PX - 5, cy + sy * 0.33 * PX + 3, 0.24 * PX, '8,10,6', 0.55); return; }   // the shade under what stands there
+  each('rpxf', (px, py, x, y) => { const cx = px + PX / 2, cy = py + PX / 2; if (at(x, y) === 'f') { for (const [sx, sy] of [[-1, -1], [1, -1], [-1, 1], [1, 1]]) glowDot(c, cx + sx * 0.33 * PX - 5, cy + sy * 0.33 * PX + 3, 0.24 * PX, '8,10,6', 0.55); return; }   // the shade under what stands there
     glowDot(c, cx - 0.2 * PX, cy + 0.08 * PX, 0.62 * PX, '8,6,6', 0.6); glowDot(c, cx, cy, 0.52 * PX, '8,6,6', 0.5); });
   // the grid: a faint line between tiles, as on a battle mat
   c.strokeStyle = 'rgba(16,15,11,0.3)'; c.lineWidth = 1.5; c.beginPath();
   for (let x = 1; x < cols; x++) { c.moveTo(e + x * PX, e); c.lineTo(e + x * PX, e + bh); } for (let y = 1; y < rows; y++) { c.moveTo(e, e + y * PX); c.lineTo(e + bw, e + y * PX); } c.stroke();
   each('l', (px, py) => glowDot(c, px + PX / 2, py + PX / 2, 1.3 * PX, '255,120,48', 0.1));
-  for (const [x0, y0, x1, y1] of [[0, 0, 0, 1.3 * PX], [0, H, 0, H - 1.3 * PX], [0, 0, 1.3 * PX, 0], [W, 0, W - 1.3 * PX, 0]]) {   // the lava's glow, in from the moat on every side
+  const hall = (map.look && map.look.place) !== 'jungle';   // the hall's lava and embers light the table; a jungle's does not
+  if (hall) for (const [x0, y0, x1, y1] of [[0, 0, 0, 1.3 * PX], [0, H, 0, H - 1.3 * PX], [0, 0, 1.3 * PX, 0], [W, 0, W - 1.3 * PX, 0]]) {   // the lava's glow, in from the moat on every side
     const g = c.createLinearGradient(x0, y0, x1, y1); g.addColorStop(0, 'rgba(255,120,48,0.13)'); g.addColorStop(0.3, 'rgba(255,120,48,0.08)'); g.addColorStop(1, 'rgba(255,120,48,0)'); c.fillStyle = g; c.fillRect(0, 0, W, H); }
-  for (const [x, y] of [[0, 0], [W, 0], [0, H], [W, H]]) glowDot(c, x, y, 3.2 * PX, '255,170,96', 0.16);                    // the embers' warmth at the corners
+  if (hall) for (const [x, y] of [[0, 0], [W, 0], [0, H], [W, H]]) glowDot(c, x, y, 3.2 * PX, '255,170,96', 0.16);                    // the embers' warmth at the corners
   { const g = c.createRadialGradient(W / 2, H / 2, H * 0.2, W / 2, H / 2, H * 0.75); g.addColorStop(0, 'rgba(10,8,8,0)'); g.addColorStop(1, 'rgba(10,8,8,0.22)'); c.fillStyle = g; c.fillRect(0, 0, W, H); }
   { const g = c.createLinearGradient(0, 0, W, 0); g.addColorStop(0, 'rgba(8,8,12,0.1)'); g.addColorStop(1, 'rgba(255,236,210,0.05)'); c.fillStyle = g; c.fillRect(0, 0, W, H); }
-  { const g = c.createLinearGradient(0, H, 0, H + 64); g.addColorStop(0, 'rgba(255,110,40,0.12)'); g.addColorStop(1, 'rgba(255,110,40,0.5)'); c.fillStyle = g; c.fillRect(0, H, W, 64); }   // the slab's sides, lit from the lava below
+  { const g = c.createLinearGradient(0, H, 0, H + 64); g.addColorStop(0, hall ? 'rgba(255,110,40,0.12)' : 'rgba(40,60,30,0.1)'); g.addColorStop(1, hall ? 'rgba(255,110,40,0.5)' : 'rgba(20,34,16,0.5)'); c.fillStyle = g; c.fillRect(0, H, W, 64); }   // the slab's sides, lit from the lava below
   c.fillStyle = '#fff'; c.fillRect(W - 24, H + 36, 20, 20);
   ['rock', 'wall', 'grass'].forEach((k, i) => { spread(c, k, i * SW, H + 64, SW, SW, SW); if (k === 'grass') { c.fillStyle = 'rgba(14,34,10,0.45)'; c.fillRect(i * SW, H + 64, SW, SW); } });   // the swatches: rock, masonry, leaf
   return { canvas, W, H };
@@ -103,24 +104,23 @@ export function makeBoard(map, { id, renderer }) {
     for (let y = 0; y < rows; y++) for (let x = 0; x < cols; x++) { const t = map.tiles[y][x], cx = x - (cols - 1) / 2, cz = y - (rows - 1) / 2;
       if (t === 'p') { stand(new THREE.CylinderGeometry(0.3, 0.34, 0.62, 10).translate(cx, 0.31, cz), 1, cx, cz, 0.62, [1.05, 1.02, 0.98]); stand(new THREE.CylinderGeometry(0.4, 0.42, 0.1, 10).translate(cx, 0.05, cz), 1, cx, cz, 0.3, [0.95, 0.92, 0.88]); }
       else if (t === 'x') { stand(new THREE.BoxGeometry(0.92, 0.4, 0.46).translate(cx, 0.2, cz), 1, cx, cz, 0.4, [1, 0.97, 0.93]); stand(new THREE.BoxGeometry(0.4, 0.22, 0.46).translate(cx - 0.2, 0.51, cz), 1, cx, cz, 0.62, [1, 0.97, 0.93]); stand(lump(0.13, 1, 0.7, 1, cx + 0.3, 0.05, cz + 0.34), 0, cx, cz, 0.2, [1, 1, 1]); }
-      else if (t === 'r' || t === 'c') { stand(lump(0.4, 1, 0.75, 0.95, cx, 0.2, cz), 0, cx, cz, 0.5, [1, 1, 1]); stand(lump(0.17, 1, 0.8, 1, cx + 0.3, 0.07, cz + 0.28), 0, cx, cz, 0.2, [0.95, 0.95, 0.95]); }
+      else if (t === 'r' || t === 'c') { stand(lump(0.4, 1, 0.75, 0.95, cx, 0.2, cz), 0, cx, cz, 0.5, [0.74, 0.75, 0.68]); stand(lump(0.17, 1, 0.8, 1, cx + 0.3, 0.07, cz + 0.28), 0, cx, cz, 0.2, [0.7, 0.71, 0.65]); }
       else if (t === 'f') for (const [sx, sz] of [[-1, -1], [1, -1], [-1, 1], [1, 1]]) { const r = 0.13 + Q() * 0.05; stand(lump(r, 1, 0.9, 1, cx + sx * 0.34, r * 0.7, cz + sz * 0.34), 2, cx, cz, r * 1.6, [0.95, 1.1, 0.8]); } }
   }
-  // growth, on a map that has it: undergrowth to stand waist-deep in, vines on what stands there, great trees down the two sides (never before a seat); cards cut from the dungeon's leaf picture, one more draw, still
+  // growth, on a map that has it: undergrowth to stand waist-deep in, vines on what stands there; cards cut from the dungeon's leaf picture, one more draw, still
   let growth = null;
-  if (map.tiles && map.tiles.some(r => /[jt]/.test(r))) { const Q = rnd(71), cards = [], IVY = [[15, 525, 255, 770], [275, 530, 480, 755], [545, 535, 730, 755], [795, 530, 1025, 760]], TREE = [[1315, 0, 1650, 260], [1735, 0, 2048, 260], [1315, 270, 1650, 520], [1725, 270, 2040, 520]];
+  if (map.tiles && map.tiles.some(r => r.includes('j'))) { const Q = rnd(71), cards = [], IVY = [[15, 525, 255, 770], [275, 530, 480, 755], [545, 535, 730, 755], [795, 530, 1025, 760]];
     const card = ([x0, y0, x1, y1], cw, ch, x, y, z, ry, rx, k) => { const g = new THREE.PlaneGeometry(cw, ch).toNonIndexed(), U = g.attributes.uv, col = new Float32Array(U.count * 3);
       for (let i = 0; i < U.count; i++) { U.setXY(i, (x0 + U.getX(i) * (x1 - x0)) / 2048, 1 - (y1 - U.getY(i) * (y1 - y0)) / 1024); col[i * 3] = k * 0.8; col[i * 3 + 1] = k; col[i * 3 + 2] = k * 0.7; }
       g.setAttribute('color', new THREE.BufferAttribute(col, 3)); cards.push(g.rotateX(rx).rotateY(ry).translate(x, y, z)); };
     const ivy = (x, y, z, size, ry, rx) => card(IVY[Q() * 4 | 0], size, size, x, y, z, ry, rx, 0.5 + Q() * 0.4);
     for (let y = 0; y < rows; y++) for (let x = 0; x < cols; x++) { const t = map.tiles[y][x], cx = x - (cols - 1) / 2, cz = y - (rows - 1) / 2;
-      if (t === 'j' || t === 't') for (let i = 0; i < (t === 'j' ? 9 : 5); i++) ivy(cx + (Q() - 0.5) * 0.9, 0.05 + Q() * 0.24, cz + (Q() - 0.5) * 0.9, 0.42 + Q() * 0.3, Q() * 6, -Math.PI / 2 + (Q() - 0.5) * 0.9);
-      if (t === 't') { const a = Q() * 3; for (const r of [0, Math.PI / 2]) card(TREE[Q() * 4 | 0], 1.9, 1.6, cx, 0.8, cz, a + r, 0, 0.85 + Q() * 0.2); }
-      if (map.look && map.look.ivy && (t === 'p' || t === 'x')) for (let i = 0; i < 5; i++) { const a = Q() * 6.283, r = t === 'p' ? 0.36 : 0.3; ivy(cx + Math.sin(a) * r * (t === 'x' ? 1.4 : 1), 0.18 + Q() * 0.34, cz + Math.cos(a) * r, 0.4 + Q() * 0.2, a, (Q() - 0.5) * 0.5); } }
+      if (t === 'j') for (let i = 0; i < 9; i++) ivy(cx + (Q() - 0.5) * 0.9, 0.05 + Q() * 0.24, cz + (Q() - 0.5) * 0.9, 0.42 + Q() * 0.3, Q() * 6, -Math.PI / 2 + (Q() - 0.5) * 0.9);
+      if (map.look && map.look.ivy && 'pxr'.includes(t)) for (let i = 0; i < 5; i++) { const a = Q() * 6.283, r = t === 'p' ? 0.36 : 0.3; ivy(cx + Math.sin(a) * r * (t === 'x' ? 1.4 : 1), 0.18 + Q() * 0.34, cz + Math.cos(a) * r, 0.4 + Q() * 0.2, a, (Q() - 0.5) * 0.5); } }
     const lt = new THREE.TextureLoader().load('/chess-assets/dungeon/leaf.webp'); lt.colorSpace = THREE.SRGBColorSpace;
     growth = new THREE.Mesh(mergeGeometries(cards), new THREE.MeshBasicMaterial({ map: lt, vertexColors: true, alphaTest: 0.5, side: THREE.DoubleSide }));
     growth.raycast = () => {}; growth.matrixAutoUpdate = false; group.add(growth); }
-  const fires = [], glow = [];
+  const fires = [], glow = [], hall = (map.look && map.look.place) !== 'jungle';
   for (const [sx, sz] of [[-1, -1], [1, 1], [1, -1], [-1, 1]]) {   // the four pits of embers on the dungeon's bank (dungeon.js): their still glow in the air
     const x = sx * (Math.max(cols, 9) / 2 + 1.48), z = sz * (Math.max(rows, 11) / 2 + 1.28);
     fires.push(new THREE.Vector3(x, 0.5, z));
@@ -131,7 +131,7 @@ export function makeBoard(map, { id, renderer }) {
   // the embers' glow: soft still light in the air above each bowl, one mesh
   const gc = document.createElement('canvas'); gc.width = gc.height = 64; glowDot(gc.getContext('2d'), 32, 32, 32, '255,255,255', 1);
   const halo = new THREE.Mesh(mergeGeometries(glow), new THREE.MeshBasicMaterial({ map: new THREE.CanvasTexture(gc), color: 0xf08c44, transparent: true, opacity: 0.3, depthWrite: false, blending: THREE.AdditiveBlending, side: THREE.DoubleSide }));
-  halo.raycast = () => {}; halo.matrixAutoUpdate = false; halo.renderOrder = 6;
+  halo.raycast = () => {}; halo.matrixAutoUpdate = false; halo.renderOrder = 6; if (!hall) { halo.visible = false; fires.length = 0; }
   // what a pointer finds: one unseen sheet, a tile two of its triangles
   const pick = new THREE.Mesh(new THREE.PlaneGeometry(cols, rows, cols, rows).rotateX(-Math.PI / 2), new THREE.MeshBasicMaterial({ visible: false }));
   pick.userData.pickFace = f => ({ kind: 'tile', x: (f >> 1) % cols, y: Math.floor((f >> 1) / cols) }); pick.matrixAutoUpdate = false;

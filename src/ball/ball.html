@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
 <meta name="robots" content="noindex">
 <link rel="icon" href="data:,">
-<title>Jungle Court</title>
+<title>Ball</title>
 <style>
 body{margin:0}[hidden]{display:none!important}
 :root{
@@ -38,8 +38,6 @@ button.go{background:var(--rim);border-color:transparent}
 #xrnote{font-size:12px;color:var(--dim);background:var(--panel);border:1px solid var(--line);border-radius:6px;
   padding:8px 10px;text-align:right;line-height:1.35}
 #panel{display:flex;flex-direction:column;gap:8px;background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:10px;backdrop-filter:blur(6px);width:min(230px,46vw)}
-#sports{display:flex;flex-wrap:wrap;gap:6px}
-#sports button{flex:1 1 40%;text-align:center}
 #panel label{font-size:12px;color:var(--dim);display:flex;justify-content:space-between}
 #panel span{color:var(--amber);font-family:var(--num)}
 #panel input{width:100%;accent-color:var(--amber)}
@@ -47,6 +45,7 @@ button.go{background:var(--rim);border-color:transparent}
 #help{bottom:calc(14px + env(safe-area-inset-bottom,0px));left:max(16px,env(safe-area-inset-left,0px));
   font-size:12px;color:var(--dim);background:var(--panel);border:1px solid var(--line);border-radius:6px;
   padding:8px 12px;line-height:1.5;max-width:min(360px,60vw)}
+@media (max-width:640px){#help{max-width:calc(100vw - 236px)}}
 #help kbd{font:600 11px var(--ui);color:var(--fg);border:1px solid var(--line);border-radius:3px;padding:0 4px}
 #pad{bottom:calc(18px + env(safe-area-inset-bottom,0px));right:max(16px,env(safe-area-inset-right,0px));
   display:flex;gap:10px;align-items:flex-end;pointer-events:auto}
@@ -62,7 +61,7 @@ button.go{background:var(--rim);border-color:transparent}
 </style>
 </head>
 <body>
-<div id="stage"><canvas id="c" tabindex="0" aria-label="Jungle Court"></canvas></div>
+<div id="stage"><canvas id="c" tabindex="0" aria-label="Ball"></canvas></div>
 <div id="score" class="hud"><div><small>Points</small><b id="pts">0</b></div><div><small>Made / Shots</small><b id="fg">0 / 0</b></div><div><small>Game</small><b id="gm">free play</b></div></div>
 <div id="xr" class="hud">
   <button id="btnVR" class="go" hidden>Enter VR</button>
@@ -71,7 +70,7 @@ button.go{background:var(--rim);border-color:transparent}
   <div id="panel" hidden>
     <label for="tod">Time of day <span id="todV">22:00</span></label>
     <input id="tod" type="range" min="0" max="24" step="0.25" value="22">
-    <div id="sports"></div><button id="bGame">60 second game</button><button id="bWx">Weather</button><button id="bNet">Net</button><button id="bBall">Get ball</button>
+    <button id="bCourt">Court</button><button id="bGame">60 second game</button><button id="bWx">Weather</button><button id="bNet">Net</button><button id="bBall">Get ball</button>
   </div>
   <div id="xrnote" hidden></div>
 </div>

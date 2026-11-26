@@ -11,7 +11,7 @@ export const WEATHER = { CLEAR: { cloud: 0.12, rain: 0, snow: 0, mist: 0.04, win
 // where the sun stands and what it gives: [its direction, its colour, its strength, the air's colour, how much the towers' lamps are needed]
 export const HOURS = { DAY: [[0.35, 0.85, 0.3], 0xfff4e4, 3.1, 0x6fa8e8, 0], DUSK: [[0.9, 0.17, 0.32], 0xffa860, 2.2, 0xd8845a, 0.45], NIGHT: [[-0.5, 0.35, -0.6], 0x8fa6d8, 0.22, 0x1a2c58, 1] };
 const ss = (a, b, x) => { const t = Math.min(1, Math.max(0, (x - a) / (b - a))); return t * t * (3 - 2 * t); };
-const ADS = ['THE STRANGEST FLEA MARKET', 'RAMEN  ·  MARKET ST', 'THE LAST CHANCE', 'JUNGLE COURT', 'HALCYON GREENS', 'STADIUM JAM', 'THE CANTINA', 'SKY ACES', 'THE STRANGEST LANES', 'MIDNIGHT CRUMBS'];
+const ADS = ['THE STRANGEST FLEA MARKET', 'RAMEN  ·  MARKET ST', 'THE LAST CHANCE', 'BALL', 'HALCYON GREENS', 'STADIUM JAM', 'THE CANTINA', 'SKY ACES', 'THE STRANGEST LANES', 'MIDNIGHT CRUMBS'];
 const canvasTex = (w, h, draw) => { const c = document.createElement('canvas'); c.width = w; c.height = h; draw(c.getContext('2d'), w, h); const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = 4; return t; };
 
 // one bank of seats as real steps: rows of risers and treads from (off, y0) going out and up. Returned in a frame where +z is away from the field and x runs along it

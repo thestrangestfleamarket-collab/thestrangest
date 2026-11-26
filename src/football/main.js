@@ -94,7 +94,7 @@ function controls(dt) {
   if (G.aim && (I.r.trig || G.t - G.aim.t > 0.3)) { sim.throwTo(G.aim.id, G.t - G.aim.t < 0.22, handAt()); G.aim = null; }
   // a throw by hand: hold the grip, swing, let go
   const R = hand('right'); if (G.xr && R) { R.c.getWorldPosition(v1); G.hist.push({ x: v1.x, y: v1.y, z: v1.z, t: G.t }); if (G.hist.length > 14) G.hist.shift(); }
-  if (G.xr && G.mode === 'first' && canPass && I.r.rgrip && G.hist.length > 2) { const H = G.hist, end = H[H.length - 1].t; let wx = 0, wy = 0, wz = 0, top = 0;   // the hand's travel over 0.07 s, as JUNGLE COURT measures a throw; the fastest such moment of the last quarter second, so letting go a little late still throws
+  if (G.xr && G.mode === 'first' && canPass && I.r.rgrip && G.hist.length > 2) { const H = G.hist, end = H[H.length - 1].t; let wx = 0, wy = 0, wz = 0, top = 0;   // the hand's travel over 0.07 s, as BALL measures a throw; the fastest such moment of the last quarter second, so letting go a little late still throws
     for (let j = H.length - 1; j > 0 && end - H[j].t < 0.25; j--) { const b = H[j]; let a = b; for (let i = j; i >= 0; i--) { a = H[i]; if (b.t - a.t > 0.07) break; } const T = Math.max(b.t - a.t, 1 / 120), x = (b.x - a.x) / T, y = (b.y - a.y) / T, z = (b.z - a.z) / T, m = Math.hypot(x, y, z); if (m > top) { top = m; wx = x; wy = y; wz = z; } }
     if (top > 1.2) { const c = Math.cos(G.yaw), s = Math.sin(G.yaw), k = 2.6 / YD; if (sim.throwVel(handAt(), { vx: (wx * c - wz * s) * k, vy: wy * k, vz: (wx * s + wz * c) * k })) buzz('right', 0.8, 60); } }
   if (G.xr && G.mode === 'table') grab(I.b.lgrip, I.b.rgrip);

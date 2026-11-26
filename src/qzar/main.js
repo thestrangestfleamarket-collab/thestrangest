@@ -914,4 +914,5 @@ mrBtn.addEventListener('click',()=>enterXR('immersive-ar'));
   vrBtn.hidden=!vr;mrBtn.hidden=!mr;
   if(!vr&&!mr)note.textContent='VR and passthrough buttons appear when this page is opened directly in a headset browser over HTTPS.';
 })();
+if(new URLSearchParams(location.search).get('game')==='disc')setGame('disc');   // /vr's DISC ARENA entry opens on the disc game
 window.__qzar={setGame,jet,holst,throwDisc,ROOM,get game(){return game;},W,ALL,fired,flatHand,setHeld,spawn,V3,scene,camera,makeGun,makeShield,makeShot,you,foe,shots,net,get state(){return state;},get round(){return roundNo;},hurt};

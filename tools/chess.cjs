@@ -4,4 +4,6 @@ const js = es.buildSync({ entryPoints: ['src/chess/main.js'], bundle: true, form
 const html = fs.readFileSync('src/chess/chess.html', 'utf8').replace('__CHESS__', () => js.replace(/<\/script/gi, '<\\/script'));
 fs.mkdirSync('dist', { recursive: true }); fs.writeFileSync('dist/chess.html', html);
 fs.rmSync('dist/chess-assets', { recursive: true, force: true }); fs.cpSync('data/chess', 'dist/chess-assets', { recursive: true });
+fs.mkdirSync('dist/chess-assets/jungle', { recursive: true });   // the jungle's trees and rocks are HULL DOWN's own files
+for (const f of ['tree_willow', 'tree_beech', 'tree_elm', 'tree_willow_lo', 'tree_beech_lo', 'tree_elm_lo', 'rocks']) fs.copyFileSync(`data/tank/m/${f}.glb`, `dist/chess-assets/jungle/${f}.glb`);
 console.log('dist/chess.html', html.length, 'bytes, dist/chess-assets/ copied');

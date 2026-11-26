@@ -30,6 +30,7 @@ S = {
  'bodyfall': (USC + 'FIGHT/BODYFALL/FGHTBf_Body hit and crash_CS_USC.wav', ('event', 0, 1.1), 1, -20),
  'shimmer': (USC + 'MAGIC/SHIMMER/MAGShim_Genie appearing from and returning to a bottle_CS_USC.wav', ('event', 0, 1.5), 1, -24),
  'tone': (USC + 'WIND/GENERAL/WIND_Steady wind_CS_USC.wav', ('loop', 2, 10), 0.7, -30),   # the room: a steady wind slowed and muffled, its two ends folded together
+ 'jungle': (USC + 'AMBIENCE/TROPICAL/AMBTrop_Jungle background 1_CS_USC.wav', ('air', 4, 24), 1, -30),   # the Catacomb's jungle all round: birds and insects, its ends folded together
  'falls': (USC + 'WATER/FLOW/WATRFlow_River rapids_CS_USC.wav', ('loop', 4, 10), 0.85, -30),   # the Greyveil across the gorge: rapids, muffled by the distance, its ends folded together
  'cry0': (USC + 'BIRDS/BIRD OF PREY/BIRDPrey_Eagle squawks & calls_CS_USC.wav', ('event', 0, 1.3), 1, -28), 'cry1': (USC + 'BIRDS/BIRD OF PREY/BIRDPrey_Eagle squawks & calls_CS_USC.wav', ('event', 2, 1.3), 1, -28),   # a bird of prey, far off over the gorge
 }
@@ -56,10 +57,10 @@ def make(name):
         while j > 0 and i - j < 20 and e[j - 1] > pk * 0.08: j -= 1
         x = x[max(0, j * n - SR // 100):][:int(SR * cut[2] * rate)]
     else:
-        x = x[int(SR * cut[1]):][:int(SR * (cut[2] + (1.5 if cut[0] == 'loop' else 0)) * rate)]
+        x = x[int(SR * cut[1]):][:int(SR * (cut[2] + (1.5 if cut[0] in ('loop', 'air') else 0)) * rate)]
     if rate != 1: idx = np.arange(0, len(x) - 1, rate); x = np.interp(idx, np.arange(len(x)), x)
-    if cut and cut[0] == 'loop':
-        f = np.fft.rfft(x); hz = np.fft.rfftfreq(len(x), 1 / SR); f *= 1 / (1 + (hz / 380) ** 4); x = np.fft.irfft(f, len(x))   # muffled, as heard through stone
+    if cut and cut[0] in ('loop', 'air'):
+        if cut[0] == 'loop': f = np.fft.rfft(x); hz = np.fft.rfftfreq(len(x), 1 / SR); f *= 1 / (1 + (hz / 380) ** 4); x = np.fft.irfft(f, len(x))   # muffled, as heard through stone ('air': as it is)
         k = int(SR * 1.5); t = np.linspace(0, 1, k); x = np.concatenate([x[k:-k], x[-k:] * np.sqrt(1 - t) + x[:k] * np.sqrt(t)])
     else:
         a = min(len(x) // 8, SR // 200); x[:a] *= np.linspace(0, 1, a); b = max(SR // 50, int(len(x) * 0.3)); x[-b:] *= np.linspace(1, 0, b) ** 2

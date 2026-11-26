@@ -233,12 +233,13 @@ export function eff(s, u) {
 const piece = (id, type, owner, x, y, up) => { const u = { id, type, owner, x, y, facing: owner === 0 ? 'N' : 'S', hp: TYPES[type].hp, rec: 0, snare: 0 }; if (up) { u.up = up; u.hp = stats(u).hp; } return u; };
 // The standing line-up (it costs exactly the budget). It is written for the board; on a wider or deeper map it keeps its place in the middle of the last rows.
 export function defaultTeam(map, owner) {
-  const m = mapOf(map), ox = Math.floor((m.cols - COLS) / 2), oy = m.rows - ROWS;
-  return LAYOUT.map(([type, lx, ly]) => ({ type, x: owner === 0 ? lx + ox : m.cols - 1 - lx - ox, y: owner === 0 ? ly + oy : m.rows - 1 - ly - oy }));
+  const m = mapOf(map), ox = m.team ? 0 : Math.floor((m.cols - COLS) / 2), oy = m.team ? 0 : m.rows - ROWS;
+  return (m.team || LAYOUT).map(([type, lx, ly]) => ({ type, x: owner === 0 ? lx + ox : m.cols - 1 - lx - ox, y: owner === 0 ? ly + oy : m.rows - 1 - ly - oy }));
 }
 // A match starts in play with the standing line-ups; with setup, each side first picks and places its own (setTeam), then begin().
-export function newGame(map = 'board', { setup = false, budget = BUDGET } = {}) {
+export function newGame(map = 'board', { setup = false, budget } = {}) {
   if (!MAPS[map]) map = 'board';
+  budget ??= MAPS[map].budget ?? BUDGET;
   const m = MAPS[map], units = [];
   for (const owner of [0, 1]) defaultTeam(map, owner).forEach((u, i) => units.push(piece(owner * 100 + i + 1, u.type, owner, u.x, u.y)));
   return { map, cols: m.cols, rows: m.rows, phase: setup ? 'setup' : 'play', budget, units, turn: 0, turnNo: 1, active: null, passes: 0, winner: null };

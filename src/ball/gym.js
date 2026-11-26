@@ -1,5 +1,10 @@
 // BALL's indoor court: a school gym on the same floor plan, every fitting where a real one has it
 import * as THREE from 'three';
+// what stands beside every indoor court: the scoreboard, the control box and the ball rack
+export function courtside(K,g,sbY){ const {FX,blackSteel,galv,tube,V3,RACK,BALL_R}=K, face=t=>new THREE.MeshStandardMaterial({map:t,emissive:0xffffff,emissiveMap:t,emissiveIntensity:.6,roughness:.6}), put=(geo,mat,x,y,z)=>{ const m=new THREE.Mesh(geo,mat); m.position.set(x,y,z); g.add(m); };
+  put(new THREE.BoxGeometry(.08,1.2,2.4),[blackSteel,face(K.sbT),blackSteel,blackSteel,blackSteel,blackSteel],FX-.05,sbY,0); put(new THREE.BoxGeometry(.05,.8,.8),[blackSteel,face(K.boxT),blackSteel,blackSteel,blackSteel,blackSteel],FX-.1,K.BOXY-.4,K.BOXZ);
+  const z0=RACK.z-.25, z1=RACK.z+1.15, ry=RACK.y-BALL_R*.78; for(const dx of[-.085,.085]){ tube(new V3(RACK.x+dx,ry,z0),new V3(RACK.x+dx,ry,z1),.014,galv,g); for(const zz of[z0,z1]) tube(new V3(RACK.x+dx,0,zz),new V3(RACK.x+dx,ry+.25,zz),.016,galv,g); }
+  for(const zz of[z0,z1]) tube(new V3(RACK.x-.085,ry+.25,zz),new V3(RACK.x+.085,ry+.25,zz),.014,galv,g); }
 export function makeGym(K){ const {FX,FZ,HL,tex,cv,shadowOn,blackSteel,galv,tube,V3,RACK,BALL_R,BOARD_FACE,BOARD_W,BOARD_H,RIM_H}=K, g=new THREE.Group(), H=K.CEIL; K.scene.add(g);
   const std=o=>new THREE.MeshStandardMaterial({roughness:.9,metalness:0,...o}), rep=c=>{ const t=tex(c); t.wrapS=t.wrapT=THREE.RepeatWrapping; return t; };
   const put=(geo,mat,x,y,z,ry=0,par=g)=>{ const m=new THREE.Mesh(geo,mat); m.position.set(x,y,z); m.rotation.y=ry; par.add(m); return m; };
@@ -46,10 +51,7 @@ export function makeGym(K){ const {FX,FZ,HL,tex,cv,shadowOn,blackSteel,galv,tube
     const hand=(a,l,w)=>{ x.lineWidth=w; x.beginPath(); x.moveTo(128,128); x.lineTo(128+Math.sin(a)*l,128-Math.cos(a)*l); x.stroke(); }; hand((h%12)/12*6.2832,62,10); hand((h%1)*6.2832,96,6); ckT.needsUpdate=true; };
   // the scoreboard, the control box and the ball rack, as on the outdoor court
   const face=t=>new THREE.MeshStandardMaterial({map:t,emissive:0xffffff,emissiveMap:t,emissiveIntensity:.6,roughness:.6});
-  put(B(.08,1.2,2.4),[blackSteel,face(K.sbT),blackSteel,blackSteel,blackSteel,blackSteel],FX-.05,4.3,0);
-  put(B(.05,.8,.8),[blackSteel,face(K.boxT),blackSteel,blackSteel,blackSteel,blackSteel],FX-.1,K.BOXY-.4,K.BOXZ);
-  { const z0=RACK.z-.25, z1=RACK.z+1.15, ry=RACK.y-BALL_R*.78; for(const dx of[-.085,.085]){ tube(new V3(RACK.x+dx,ry,z0),new V3(RACK.x+dx,ry,z1),.014,galv,g); for(const zz of[z0,z1]) tube(new V3(RACK.x+dx,0,zz),new V3(RACK.x+dx,ry+.25,zz),.016,galv,g); }
-    for(const zz of[z0,z1]) tube(new V3(RACK.x-.085,ry+.25,zz),new V3(RACK.x+.085,ry+.25,zz),.014,galv,g); }
+  courtside(K,g,4.3);
   // the scorer's table at mid-court and the two team benches of folding chairs
   const chair=(x,z)=>{ shadowOn(put(B(.4,.03,.4),mBlue,x,.45,z)); shadowOn(put(B(.025,.34,.4),mBlue,x+.2,.8,z)); for(const dx of[-.18,.18]) for(const dz of[-.18,.18]) put(B(.02,dx>0?.96:.45,.02),mGrey,x+dx,dx>0?.48:.225,z+dz); };
   shadowOn(put(B(.62,.74,3.2),mBlue,FX-.95,.37,0)); shadowOn(put(B(.7,.035,3.26),mDark,FX-.95,.758,0)); put(B(.3,.1,.42),mDark,FX-.95,.83,-.5); put(B(.2,.16,.3),mGrey,FX-.95,.86,.6); for(const z of[-1,0,1]) chair(FX-.34,z);

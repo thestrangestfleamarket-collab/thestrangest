@@ -4,6 +4,7 @@ import { XRHandModelFactory } from 'three/addons/webxr/XRHandModelFactory.js';
 import { Hand } from '../cantina/hands.js';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import { makeGym } from './gym.js';
+import { makeCave } from './cave.js';
 import { makeMulti } from './multi.js';
 
 const $=id=>document.getElementById(id);
@@ -54,7 +55,7 @@ function grainCanvas(n){const c=cv(n,n),x=c.getContext('2d');x.fillStyle='#80808
 
 /* ---------- scanned surface textures (Poly Haven, CC0) ---------- */
 const IMG={};
-await Promise.all(['asphalt_d','asphalt_n','bark_d','bark_n','ground_d','ground_n','rust_d','rust_n','concrete_d','concrete_n','wood_d','wood_n','metal_d','metal_n','floor_d','floor_n','plaster_d','plaster_n','ceiling_d'].map(n=>new Promise(r=>{
+await Promise.all(['asphalt_d','asphalt_n','bark_d','bark_n','ground_d','ground_n','rust_d','rust_n','concrete_d','concrete_n','wood_d','wood_n','metal_d','metal_n','floor_d','floor_n','plaster_d','plaster_n','ceiling_d','rock_d','rock_n'].map(n=>new Promise(r=>{
   const i=new Image(); i.onload=()=>{IMG[n]=i;r()}; i.onerror=()=>r(); i.src='ball-assets/'+n+'.jpg'; })));
 function ptex(n,rx=1,ry=rx,srgb=true){ const i=IMG[n]; if(!i) return null; const t=new THREE.Texture(i); t.wrapS=t.wrapT=THREE.RepeatWrapping; t.repeat.set(rx,ry);
   if(srgb) t.colorSpace=THREE.SRGBColorSpace; t.anisotropy=MAXA; t.needsUpdate=true; return t; }
@@ -105,15 +106,16 @@ const dotT=radial(32,[[0,'rgba(255,255,255,1)'],[.35,'rgba(255,255,255,.7)'],[1,
 
 /* ---------- court surface ---------- */
 const grain=grainCanvas(512);
-function courtTexture(gym){
+function courtTexture(kind){ const gym=kind==='gym', cave=kind==='cave', LINE=cave?'#d9b86a':'#eeece4';
   const S=108, W=Math.round(SLAB_W*S), H=Math.round(SLAB_L*S), c=cv(W,H), x=c.getContext('2d');
-  x.fillStyle=gym?'#fbe6c0':'#2f5d43'; x.fillRect(0,0,W,H);           // green acrylic run-off; indoors maple boards
+  x.fillStyle=gym?'#fbe6c0':cave?'#aab2bd':'#2f5d43'; x.fillRect(0,0,W,H);
+  if(cave&&IMG.concrete_d){ x.globalCompositeOperation='multiply'; x.globalAlpha=.9; x.save(); x.scale(.8,.8); x.fillStyle=x.createPattern(IMG.concrete_d,'repeat'); x.fillRect(0,0,W*2,H*2); x.restore(); x.globalCompositeOperation='source-over'; x.globalAlpha=1; x.strokeStyle='rgba(0,0,0,.35)'; x.lineWidth=2; for(let px=0;px<W;px+=S*1.6){ x.beginPath(); x.moveTo(px,0); x.lineTo(px,H); x.stroke(); } for(let py=0;py<H;py+=S*1.6){ x.beginPath(); x.moveTo(0,py); x.lineTo(W,py); x.stroke(); } }   // flagstones           // green acrylic run-off; indoors maple boards
   if(gym&&IMG.floor_d){ x.globalCompositeOperation='multiply'; x.globalAlpha=.5; x.save(); x.scale(.5,.5); x.fillStyle=x.createPattern(IMG.floor_d,'repeat'); x.fillRect(0,0,W*2,H*2); x.restore(); x.globalCompositeOperation='source-over'; x.globalAlpha=1; }
   x.save(); x.translate(W/2,H/2); x.scale(S,S);
-  if(gym){ x.fillStyle='rgba(24,58,112,.9)'; x.fillRect(-HW-.6,-HL-.6,CW+1.2,.6); x.fillRect(-HW-.6,HL,CW+1.2,.6); x.fillRect(-HW-.6,-HL,.6,CL); x.fillRect(HW,-HL,.6,CL); } else { x.fillStyle='#35608c'; x.fillRect(-HW,-HL,CW,CL); }   // blue playing surface
+  if(cave){} else if(gym){ x.fillStyle='rgba(24,58,112,.9)'; x.fillRect(-HW-.6,-HL-.6,CW+1.2,.6); x.fillRect(-HW-.6,HL,CW+1.2,.6); x.fillRect(-HW-.6,-HL,.6,CL); x.fillRect(HW,-HL,.6,CL); } else { x.fillStyle='#35608c'; x.fillRect(-HW,-HL,CW,CL); }   // blue playing surface
   const half=()=>{ // drawn for hoop at -z
-    x.fillStyle=gym?'rgba(24,58,112,.88)':'#9c4a35'; x.fillRect(-2.438,-HL,4.877,5.791);      // 16 ft key, 19 ft deep
-    x.strokeStyle='#eeece4'; x.lineWidth=0.051; x.lineCap='butt';
+    x.fillStyle=gym?'rgba(24,58,112,.88)':cave?'rgba(16,62,70,.8)':'#9c4a35'; x.fillRect(-2.438,-HL,4.877,5.791);      // 16 ft key, 19 ft deep
+    x.strokeStyle=LINE; x.lineWidth=0.051; x.lineCap='butt';
     x.strokeRect(-2.438,-HL,4.877,5.791);
     x.beginPath(); x.arc(0,-HL+5.791,1.829,0,Math.PI); x.stroke();  // free-throw circle
     x.setLineDash([0.39,0.39]); x.beginPath(); x.arc(0,-HL+5.791,1.829,Math.PI,2*Math.PI); x.stroke(); x.setLineDash([]);
@@ -124,9 +126,10 @@ function courtTexture(gym){
     x.beginPath(); x.moveTo(-0.9,-HL+1.219); x.lineTo(0.9,-HL+1.219); x.stroke(); // backboard shadow line
   };
   half(); x.save(); x.scale(1,-1); half(); x.restore();
-  x.strokeStyle='#eeece4'; x.lineWidth=0.051; x.strokeRect(-HW,-HL,CW,CL);
+  x.strokeStyle=LINE; x.lineWidth=0.051; x.strokeRect(-HW,-HL,CW,CL);
   x.beginPath(); x.moveTo(-HW,0); x.lineTo(HW,0); x.stroke();
   x.beginPath(); x.arc(0,0,1.829,0,7); x.stroke(); x.beginPath(); x.arc(0,0,0.61,0,7); x.stroke();
+  if(cave){ x.fillStyle='rgba(16,62,70,.8)'; x.beginPath(); x.arc(0,0,1.8,0,7); x.fill(); x.strokeStyle=LINE; x.beginPath(); x.arc(0,0,1.829,0,7); x.stroke(); x.restore(); return c; }
   if(gym){ x.fillStyle='rgba(24,58,112,.88)'; x.beginPath(); x.arc(0,0,1.8,0,7); x.fill(); x.strokeStyle='#eeece4'; x.beginPath(); x.arc(0,0,1.829,0,7); x.stroke();
     x.strokeStyle='rgba(196,58,40,.9)'; x.lineWidth=.05; x.strokeRect(-4.5,-9,9,18); for(const z of[-3,0,3]){ x.beginPath(); x.moveTo(-4.5,z); x.lineTo(4.5,z); x.stroke(); }                       // the volleyball court, in its own colour
     x.strokeStyle='#eeece4'; for(const sx of[-1,1]) for(const z of[-8.53,8.53]){ x.beginPath(); x.moveTo(sx*HW,z); x.lineTo(sx*(HW+.6),z); x.stroke(); }                                   // coaching boxes
@@ -416,7 +419,7 @@ catcher.rotation.x=-Math.PI/2; catcher.position.set(0,.002,-RIM_Z+2); catcher.re
 
 /* ---------- audio (synthesised) ---------- */
 let AC=null,master,noiseBuf,revIn,amb=null,hvac=null,rainG=null; const lastSnd={};
-function setAmb(){ if(!amb) return; const g=venue==='gym'; if(hvac) hvac.gain.setTargetAtTime(g?1:0,AC.currentTime,.6); amb.gain.setTargetAtTime(g?.05:1,AC.currentTime,.4); revIn.gain.setTargetAtTime(g?.75:.3,AC.currentTime,.4); }
+function setAmb(){ if(!amb) return; const g=venue==='gym', cv2=venue==='cave'; if(hvac) hvac.gain.setTargetAtTime(g?1:0,AC.currentTime,.6); amb.gain.setTargetAtTime(g?.05:cv2?.02:1,AC.currentTime,.4); revIn.gain.setTargetAtTime(cv2?1.3:g?.75:.3,AC.currentTime,.4); }
 function setRain(v){ if(rainG) rainG.gain.setTargetAtTime(v*.11,AC.currentTime,.8); }
 function initAudio(){ if(AC){ if(AC.state!=='running') AC.resume(); return; }
   if(typeof K!=='undefined'){ for(const f of K.gesture.splice(0)) try{ f(); }catch(e){} }
@@ -442,7 +445,8 @@ function initAudio(){ if(AC){ if(AC.state!=='running') AC.resume(); return; }
     o.frequency.value=f; cg.gain.value=gv; l.type='square'; l.frequency.value=rate; lg.gain.value=gv; l.connect(lg); lg.connect(cg.gain);
     og.gain.value=.5; sl.frequency.value=.25+Math.random()*.45; sg.gain.value=.5; sl.connect(sg); sg.connect(og.gain); o.connect(cg); cg.connect(og); og.connect(amb); o.start(); l.start(); sl.start(); } // crickets
   for(const lp of lampPos){ const o=AC.createOscillator(); o.type='sawtooth'; o.frequency.value=120; const f=AC.createBiquadFilter(); f.type='bandpass'; f.frequency.value=480; f.Q.value=1.2; const g=AC.createGain(); g.gain.value=.05; o.connect(f); f.connect(g); g.connect(out(lp,1.2)); o.start(); } // ballast hum
-  const night=()=>{ if(AC.state==='running'&&venue!=='gym'){ const a=Math.random()*6.283,p=out(new V3(Math.cos(a)*(16+Math.random()*14),.5,Math.sin(a)*(20+Math.random()*14)));
+  const night=()=>{ if(AC.state==='running'&&venue==='cave'){ const p=out(new V3((Math.random()-.5)*16,.1,(Math.random()-.5)*28),3), f=1500+Math.random()*900; tone(p,'sine',f,f*.55,.35,.07); tone(p,'sine',f*1.5,f*.8,.12,.05,.06); }   // a drip, somewhere in the dark
+    else if(AC.state==='running'&&venue!=='gym'){ const a=Math.random()*6.283,p=out(new V3(Math.cos(a)*(16+Math.random()*14),.5,Math.sin(a)*(20+Math.random()*14)));
       if(Math.random()<.2){ p.positionY.value=12; for(const [dl,du] of [[0,.35],[.5,.18],[.75,.5]]){ const t0=AC.currentTime+dl,o=AC.createOscillator(),g=AC.createGain(); o.frequency.setValueAtTime(355,t0); o.frequency.linearRampToValueAtTime(330,t0+du);
           g.gain.setValueAtTime(0,t0); g.gain.linearRampToValueAtTime(.5,t0+.05); g.gain.linearRampToValueAtTime(0,t0+du); o.connect(g); g.connect(p); o.start(t0); o.stop(t0+du+.05); } } // owl
       else { const k=2+(Math.random()*3|0),f0=170+Math.random()*250; for(let i=0;i<k;i++){ tone(p,'sawtooth',f0,f0*.8,.5,.16,i*.32); tone(p,'square',f0*2.02,f0*1.7,.18,.12,i*.32); } } }
@@ -481,7 +485,7 @@ const _eul=new THREE.Euler(), rr2=(a,b)=>a+Math.random()*(b-a);
 let mode=null; // null = browser, 'vr', 'ar'
 let sport='hoops', venue='clearing', arPick='hoops'; const SPORTS={}, BND={cx:0,cz:0,x:FX-.4,z:FZ-.4}, SOLIDS=[];
 function headPos(){ return camera.getWorldPosition(_hp); }
-const world={hour:22,wx:'mist',net:'nylon',pref:0,court:'outdoor',lights:0}, CEIL=9, ROWS=8, LIGHTS=['on','half','off']; let GYM=null, MULTI=null;
+const world={hour:22,wx:'mist',net:'nylon',pref:0,court:'outdoor',lights:0,input:'auto'}, CEIL=9, CAVEH=14, ROWS=9, LIGHTS=['on','half','off'], COURTS=['outdoor','gym','cave'], CNAME={outdoor:'outdoor',gym:'indoor',cave:'cavern'}, INPUTS=['auto','hands','controllers']; let GYM=null, CAVE=null, MULTI=null, handRate=1;   // handRate: the hands' clock against the frame's, for a check whose frames are slow
 function seg(m,a,b){ _d.subVectors(b,a); const L=_d.length()||1e-4; m.position.copy(a); m.quaternion.setFromUnitVectors(UPV,_d.multiplyScalar(1/L)); m.scale.set(1,L,1); }
 
 /* ---------- balls: four kinds on a rack ---------- */
@@ -648,15 +652,15 @@ function step(b,dt){
     if(Math.abs(b.v.y)<.25){ const hs=Math.hypot(b.v.x,b.v.z);
       if(hs<.04&&b.w.lengthSq()<.2){ b.v.set(0,0,0); b.w.set(0,0,0); }
       else if(hs>0){ const k=Math.max(0,hs-.3*dt)/hs; b.v.x*=k; b.v.z*=k; b.w.y*=1-3*dt; b.w.x+=(b.v.z/BALL_R-b.w.x)*Math.min(1,8*dt); b.w.z+=(-b.v.x/BALL_R-b.w.z)*Math.min(1,8*dt); } } }
-  const gy=venue==='gym'; for(const o of boxes){ if(o.h&&!o.h.active) continue; if(mode==='ar'&&!o.h) continue; if(o.gym?!gy:gy&&!o.h&&!o.both) continue; _c.copy(b.p).clamp(o.min,o.max); _n.subVectors(b.p,_c); const d=_n.length(); if(d<BALL_R&&d>1e-6){ _n.multiplyScalar(1/d); hit(b,_n,BALL_R-d,o.e,.5,o.snd,o.h); } }
-  if(mode!=='ar'){ for(const c of cyls){ if(!c.gym===gy||b.p.y>c.h+BALL_R) continue; const dx=b.p.x-c.x,dz=b.p.z-c.z,d=Math.hypot(dx,dz); if(d<c.r+BALL_R&&d>1e-6) hit(b,_n.set(dx/d,0,dz/d),c.r+BALL_R-d,.5,.4,'rim'); }
+  const gy=venue==='gym', cv2=venue==='cave', ind=gy||cv2; for(const o of boxes){ if(o.h&&!o.h.active) continue; if(mode==='ar'&&!o.h) continue; if(o.gym?!gy:ind&&!o.h&&!o.both) continue; _c.copy(b.p).clamp(o.min,o.max); _n.subVectors(b.p,_c); const d=_n.length(); if(d<BALL_R&&d>1e-6){ _n.multiplyScalar(1/d); hit(b,_n,BALL_R-d,o.e,.5,o.snd,o.h); } }
+  if(mode!=='ar'){ for(const c of cyls){ if((c.gym?!gy:c.cave?!cv2:ind&&!(cv2&&c.hoop))||b.p.y>c.h+BALL_R) continue; const dx=b.p.x-c.x,dz=b.p.z-c.z,d=Math.hypot(dx,dz); if(d<c.r+BALL_R&&d>1e-6) hit(b,_n.set(dx/d,0,dz/d),c.r+BALL_R-d,.5,.4,'rim'); }
     if(b.cool<.3&&b.p.y<player.top+BALL_R){ const dx=b.p.x-player.x,dz=b.p.z-player.z,d=Math.hypot(dx,dz); if(d<.2+BALL_R&&d>1e-6) hit(b,_n.set(dx/d,0,dz/d),.2+BALL_R-d,.35,.6,'catch'); } }   // your own body
   for(const h of hoops){ if(!h.active) continue; const dx=b.p.x-h.rim.x,dz=b.p.z-h.rim.z,dh=Math.hypot(dx,dz),dy=b.p.y-RIM_H;
     if(Math.abs(dy)<BALL_R+RIM_TUBE+.01&&dh>1e-5){ const k=(RIM_R+RIM_TUBE)/dh; _n.set(dx-dx*k,dy,dz-dz*k); const d=_n.length();
       if(d<BALL_R+RIM_TUBE&&d>1e-6){ _n.multiplyScalar(1/d); hit(b,_n,BALL_R+RIM_TUBE-d,.56*(1-Math.min(.3,Math.abs(h.flexV)*.2)),.4,'rim',h); } }
     if(dh<RIM_R&&dy<0&&dy>-.45){ const k=1-(world.net==='chain'?8:5)*dt; b.v.x*=k; b.v.z*=k; b.v.y*=1-(world.net==='chain'?2.6:1.6)*dt; h.netS.quiet=0; }
     if(b.prevY>=RIM_H&&b.p.y<RIM_H&&dh<RIM_R-.02&&b.v.y<0&&!b.scored&&b.live){ b.scored=true; score(h,b,false); } }
-  if(mode!=='ar'&&venue==='gym'){ const lx=FX-BALL_R, lz=FZ-BALL_R; if(b.p.x>lx) hit(b,_n.set(-1,0,0),b.p.x-lx,.7,.5,'bounce'); if(b.p.x<-lx) hit(b,_n.set(1,0,0),-lx-b.p.x,.7,.5,'bounce'); if(b.p.z>lz) hit(b,_n.set(0,0,-1),b.p.z-lz,.6,.5,'bounce'); if(b.p.z<-lz) hit(b,_n.set(0,0,1),-lz-b.p.z,.6,.5,'bounce'); if(b.p.y>CEIL-BALL_R) hit(b,_n.set(0,-1,0),b.p.y-CEIL+BALL_R,.6,.5,'bounce'); }
+  if(mode!=='ar'&&ind){ const CEIL=gy?9:CAVEH-3.6, lx=FX-BALL_R, lz=FZ-BALL_R; if(b.p.x>lx) hit(b,_n.set(-1,0,0),b.p.x-lx,.7,.5,'bounce'); if(b.p.x<-lx) hit(b,_n.set(1,0,0),-lx-b.p.x,.7,.5,'bounce'); if(b.p.z>lz) hit(b,_n.set(0,0,-1),b.p.z-lz,.6,.5,'bounce'); if(b.p.z<-lz) hit(b,_n.set(0,0,1),-lz-b.p.z,.6,.5,'bounce'); if(b.p.y>CEIL-BALL_R) hit(b,_n.set(0,-1,0),b.p.y-CEIL+BALL_R,.6,.5,'bounce'); }
   else if(mode!=='ar'&&b.p.y<FENCE_H+BALL_R){ const lx=FX-BALL_R-.02, lz=FZ-BALL_R-.02;
     if(Math.abs(b.p.x)<FX+.3&&Math.abs(b.p.z)<FZ+.3){ const s0=b.v.length();
       if(b.p.x>lx){ bulge(3,-b.p.z,b.p.y,Math.max(0,b.v.x)); hit(b,_n.set(-1,0,0),b.p.x-lx,.3,.6,'fence'); } if(b.p.x<-lx){ bulge(2,-b.p.z,b.p.y,Math.max(0,-b.v.x)); hit(b,_n.set(1,0,0),-lx-b.p.x,.3,.6,'fence'); }
@@ -679,6 +683,7 @@ const FING=['thumb','index-finger','middle-finger','ring-finger','pinky-finger']
 FING.forEach((f,k)=>{ let prev=0; for(const sg of (k?['metacarpal','phalanx-proximal','phalanx-intermediate','phalanx-distal','tip']:['metacarpal','phalanx-proximal','phalanx-distal','tip'])){ JN.push(f+'-'+sg); BONES.push([prev,JN.length-1]); prev=JN.length-1; } });
 const TIPS=FING.map(f=>JN.indexOf(f+'-tip')), KN=FING.slice(1).map(f=>JN.indexOf(f+'-phalanx-proximal')), MIDK=KN[1];
 for(let k=0;k<3;k++) BONES.push([KN[k],KN[k+1]]);
+const FJ=FING.slice(1).map(f=>['metacarpal','phalanx-proximal','phalanx-intermediate','phalanx-distal','tip'].map(sg=>JN.indexOf(f+'-'+sg)));   // each finger's joints, knuckle to tip
 const skinM=new THREE.MeshStandardMaterial({color:0xc6957a,roughness:.6}), nailM=new THREE.MeshStandardMaterial({color:0xe6c4b6,roughness:.25});
 const boneG=new THREE.CylinderGeometry(1,1,1,10,1,true); boneG.translate(0,.5,0); const nailG=new THREE.SphereGeometry(1,10,6);
 const hands=[0,1].map(i=>{ const ctrl=renderer.xr.getController(i), grip=renderer.xr.getControllerGrip(i), handObj=renderer.xr.getHand(i); rig.add(ctrl,grip,handObj);
@@ -688,13 +693,17 @@ const hands=[0,1].map(i=>{ const ctrl=renderer.xr.getController(i), grip=rendere
   sph.frustumCulled=cyl.frustumCulled=false; sph.castShadow=cyl.castShadow=true; skin.add(sph,cyl); skin.visible=false; scene.add(skin); noBake.push(skin);
   const h={ctrl,grip,handObj,proxy,ray,skin,sph,cyl,src:null,hist:[],pressed:false,a:false,turned:false,pos:new V3(),vel:new V3(),angVel:new V3(),qPrev:new THREE.Quaternion(),
     jp:JN.map(()=>new V3()),jprev:JN.map(()=>new V3()),tv:TIPS.map(()=>new V3()),jr:new Float32Array(JN.length).fill(.009),isHand:false,wasHand:false,pinch:1,tpArm:0,anchor:grip,local:new V3(0,-.03,-.11),
-    ball:null,hang:null,hangP:new V3(),model:null,modelOK:false,nails:false,boxT:0,cHand:null,fp:new V3(),fd:new V3(),fon:false};
+    jv:JN.map(()=>new V3()),pn:new V3(0,-1,0),curl:0,grips:false,pk:0,pkV:new V3(),useV:false,regrab:0,ball:null,hang:null,hangP:new V3(),model:null,modelOK:false,nails:false,boxT:0,cHand:null,fp:new V3(),fd:new V3(),fon:false};
   ctrl.addEventListener('connected',e=>{ h.src=e.data; if(!e.data.hand&&!h.cHand&&e.data.handedness!=='none'){ const R=e.data.handedness==='right'; h.cHand=new Hand(R?'R':'L'); h.cHand.root.rotation.z=R?-1.35:1.35; h.cHand.root.position.set(0,-.015,.09); grip.add(h.cHand.root); } }); ctrl.addEventListener('disconnected',()=>{h.src=null; h.skin.visible=false; if(h.ball) drop(h); h.hang=null; if(tp.h===h) tpEnd();}); return h; });
 { const f=new XRHandModelFactory(); f.setPath('cantina-assets/hand/'); for(const h of hands){ h.model=f.createHandModel(h.handObj,'mesh'); h.handObj.add(h.model); } }
 function readHand(h,dt){ const J=h.handObj.joints; if(!h.src||!h.src.hand||!J||!J.wrist||!J.wrist.visible) return false;
   for(let k=0;k<JN.length;k++){ const j=J[JN[k]]; h.jprev[k].copy(h.jp[k]); if(j){ j.getWorldPosition(h.jp[k]); if(j.jointRadius) h.jr[k]=j.jointRadius; } }
   if(!h.wasHand) for(let k=0;k<JN.length;k++) h.jprev[k].copy(h.jp[k]);
   TIPS.forEach((k,i)=>{ _a.subVectors(h.jp[k],h.jprev[k]).multiplyScalar(1/dt); if(_a.lengthSq()>64) _a.setLength(8); h.tv[i].lerp(_a,.5); });
+  for(let k=0;k<JN.length;k++){ _a.subVectors(h.jp[k],h.jprev[k]).multiplyScalar(1/dt); if(_a.lengthSq()>64) _a.setLength(8); h.jv[k].lerp(_a,.5); }
+  // how far the fingers are bent, 0 flat to 1 a fist: the bend at each joint, added up; and which way the palm faces
+  { let th=0; for(const f of FJ){ let pv=null; for(let i=0;i<4;i++){ _b.subVectors(h.jp[f[i+1]],h.jp[f[i]]); const L=_b.length(); if(L<1e-5) continue; _b.multiplyScalar(1/L); if(pv) th+=Math.acos(THREE.MathUtils.clamp(pv.dot(_b),-1,1)); pv=(i%2?_e:_c).copy(_b); } }
+    h.curl+=(THREE.MathUtils.clamp(th/4/3.2,0,1)-h.curl)*.5; _b.subVectors(h.jp[FJ[0][1]],h.jp[0]); _c.subVectors(h.jp[FJ[3][1]],h.jp[0]); _a.crossVectors(_b,_c); if(_a.lengthSq()>1e-10){ _a.normalize().multiplyScalar(h.src.handedness==='left'?-1:1); h.pn.lerp(_a,.5).normalize(); } }
   if(!h.nails&&J[JN[TIPS[1]]]){ h.nails=true; for(const k of TIPS){ const n=new THREE.Mesh(nailG,nailM); n.scale.set(.0062,.0016,.0075); n.position.set(0,.0052,.009); J[JN[k]].add(n); } }
   if(h.model&&!h.modelOK){ h.model.traverse(o=>{ if(o.isSkinnedMesh){ h.modelOK=true; o.material=skinM; o.castShadow=true; o.frustumCulled=false; } }); }
   if(h.modelOK) return true;
@@ -703,14 +712,18 @@ function readHand(h,dt){ const J=h.handObj.joints; if(!h.src||!h.src.hand||!J||!
     const r=(h.jr[a]+h.jr[b])*.5; _m4.compose(h.jp[a],_q2,_s.set(r,len,r)); h.cyl.setMatrixAt(k,_m4); }
   h.sph.instanceMatrix.needsUpdate=h.cyl.instanceMatrix.needsUpdate=true; return true; }
 function buzz(h,s=.5,ms=40){ if(!h) return; try{ h.src?.gamepad?.hapticActuators?.[0]?.pulse(s,ms); }catch(e){} }
-function holdPoint(h,out){ if(h.isHand) return out.copy(h.pos); out.set(0,-.03,-.11); return h.grip.localToWorld(out); }
+function holdPoint(h,out){ if(h.isHand) return out.copy(h.pos).addScaledVector(h.pn,BALL_R+.015);   // in the palm, whichever way it is turned
+  out.set(0,-.03,-.11); return h.grip.localToWorld(out); }
 function setHold(h,b,near){ // where the ball sits relative to the hand while held
   if(h.isHand){ h.anchor=h.handObj.joints.wrist;
     if(near){ _a.subVectors(b.p,h.pos); const d=_a.length()||1; _a.multiplyScalar(Math.min(d,BALL_R+.045)/d).add(h.pos); }
     else { headPos(); _a.subVectors(h.pos,_hp).normalize().multiplyScalar(BALL_R+.03).add(h.pos); }
     h.anchor.updateWorldMatrix(true,false); h.local.copy(_a); h.anchor.worldToLocal(h.local); }
   else { h.anchor=h.grip; h.local.set(0,-.03,-.11); } }
-function take(b,h,near){ if(b.holder==='cam') camB=null; b.holder=h; b.holder2=null; h.ball=b; b.pull=!near; b.hover=0; b.rest=false; b.live=false; b.dunk=false; cur=b; setHold(h,b,near);
+// a hand closed a little round the ball takes it: the ball in front of the palm, within its reach
+function gripGrab(h,t){ if(t<h.regrab) return; let best=null,bd=.25; for(const b of balls){ if(b.off||b.cool>.25||b.holder==='cam'&&mode) continue; _a.subVectors(b.p,h.pos); const d=_a.length(); if(d<bd&&_a.dot(h.pn)>-.02){ bd=d; best=b; } }
+  if(!best) return; if(best.holder&&best.holder!==h){ if(!best.holder2&&best.holder!=='cam'){ best.holder2=h; h.ball=best; h.pk=0; buzz(h); } return; } take(best,h,true); }
+function take(b,h,near){ h.pk=0; if(b.holder==='cam') camB=null; b.holder=h; b.holder2=null; h.ball=b; b.pull=!near; b.hover=0; b.rest=false; b.live=false; b.dunk=false; cur=b; setHold(h,b,near);
   if(near){ buzz(h); snd('catch',b.p,3+b.v.length(),b.T.pitch); } }
 function tryGrab(h){ if(h.ball) return;
   if(mode==='vr') for(const hp of hoops){ if(!hp.active) continue; const dh=Math.hypot(h.pos.x-hp.rim.x,h.pos.z-hp.rim.z); if(Math.hypot(dh-RIM_R,h.pos.y-RIM_H)<.13){ h.hang=hp; h.hangP.copy(h.pos); fallV=0; buzz(h,.8,60); snd('rim',hp.rim,2.5); return; } }  // grab the rim and hang
@@ -727,7 +740,7 @@ function release(h,t){ const b=h.ball; if(!b) return; h.ball=null;
   if(b.holder2===h){ b.holder2=null; setHold(b.holder,b,true); b.twoT=t; throwVel(h,b.twoV); return; }
   if(b.holder2){ const o=b.holder2; b.holder=o; b.holder2=null; setHold(o,b,true); b.twoT=t; throwVel(h,b.twoV); return; }   // other hand carries on; remember this hand's push
   b.holder=null; if(b.pull){ b.pull=false; b.v.set(0,0,0); return; }
-  throwVel(h,b.v); if(t-b.twoT<.14) b.v.add(b.twoV).multiplyScalar(.5);                                                      // two-handed shot: both hands contribute
+  if(h.useV) b.v.copy(h.pkV); else throwVel(h,b.v); h.useV=false; if(t-b.twoT<.14) b.v.add(b.twoV).multiplyScalar(.5);                                                      // two-handed shot: both hands contribute
   _a.set(b.v.x,0,b.v.z); const hs=_a.length(); if(hs>.3){ _a.multiplyScalar(1/hs); b.w.crossVectors(_a,UPV).multiplyScalar(Math.min(b.v.length(),8)*1.1); } else b.w.set(0,0,0);
   if(h.isHand){ _c.set(0,0,0); _e.set(0,0,0); TIPS.forEach((k,i)=>{ if(i){ _c.add(h.jp[k]); _e.add(h.tv[i]); } }); _c.multiplyScalar(.25).sub(b.p); _e.multiplyScalar(.25).sub(h.vel);
     _a.crossVectors(_c,_e).multiplyScalar(1/Math.max(_c.lengthSq(),.006)); if(_a.length()>45) _a.setLength(45); b.w.add(_a); }                                               // spin rolled off the fingertips
@@ -763,10 +776,15 @@ const WXP={clear:{fog:.45,wet:.15,rain:0,wind:.35,cloud:.3},mist:{fog:1.35,wet:.
 const fogBase=new THREE.Color(), bodyDir=skyU.bodyDir.value; let bakeAt=.01, nextBolt=8;
 function sampleTK(hr){ let i=0; while(i<TK.length-2&&TK[i+1].h<=hr) i++; const a=TK[i],b=TK[i+1],f=THREE.MathUtils.clamp((hr-a.h)/(b.h-a.h),0,1), o={};
   for(const k in a){ o[k]=Array.isArray(a[k])?a[k].map((v,j)=>v+(b[k][j]-v)*f):a[k]+(b[k]-a[k])*f; } return o; }
-function labels(){ const g=venue==='gym'; $('bWx').textContent=g?'Weather: indoors':'Weather: '+world.wx; $('bWx').disabled=g; $('bCourt').textContent='Court: '+(g?'indoor':'outdoor'); $('bLights').textContent='Lights: '+(g?LIGHTS[world.lights]:'by the hour'); $('bLights').disabled=!g; $('bHorse').textContent='HORSE: '+(MULTI?MULTI.status():'—'); $('bNet').textContent='Net: '+world.net; $('bBall').textContent='Get ball: '+BT[world.pref].name; $('bGame').textContent=game.on?'Stop the game':'60 second game'; $('todV').textContent=hh(world.hour); }
-function applyWorld(){ env.visible=venue==='clearing'&&mode!=='ar'; if(GYM) GYM.g.visible=venue==='gym'&&mode!=='ar';
+function labels(){ const g=venue!=='clearing'; $('bWx').textContent=g?'Weather: indoors':'Weather: '+world.wx; $('bWx').disabled=g; $('bCourt').textContent='Court: '+CNAME[world.court]; $('bLights').textContent='Lights: '+(g?LIGHTS[world.lights]:'by the hour'); $('bLights').disabled=!g; $('bHorse').textContent='HORSE: '+(MULTI?MULTI.status():'—'); $('bNet').textContent='Net: '+world.net; $('bBall').textContent='Get ball: '+BT[world.pref].name; $('bGame').textContent=game.on?'Stop the game':'60 second game'; $('todV').textContent=hh(world.hour); }
+function applyWorld(){ env.visible=venue==='clearing'&&mode!=='ar'; if(GYM) GYM.g.visible=venue==='gym'&&mode!=='ar'; if(CAVE) CAVE.g.visible=venue==='cave'&&mode!=='ar';
   { const gy=venue==='gym'&&mode!=='ar'&&!!GYM; for(const h of hoops){ for(const o of h.outParts) o.visible=!gy; if(h.gymG) h.gymG.visible=gy; } }
   if(mode==='ar'){ scene.fog=null; sun.position.copy(sunDir).multiplyScalar(70).add(rig.position); sun.target.position.copy(rig.position); sun.color.set(0xfff0dc); sun.intensity=3.3; sun.visible=sun.castShadow=true; arHemi.visible=true; U.lampK.value=0; renderer.toneMappingExposure=1; rain.visible=false; W.rain=0; W.wet=0; if(typeof setRain==='function') setRain(0); catcher.position.set(rig.position.x,.002,rig.position.z-2); drawBox(); return; }
+  if(venue==='cave'&&CAVE){ const L=[1,.5,0][world.lights], a=(world.hour-6)/12*Math.PI, up=Math.sin(a), day=up>.03, sk=day?THREE.MathUtils.clamp(up*4,0,1):.35; arHemi.visible=false;   // by day the sun down the opening, by night the moon
+    _f.set(Math.cos(a)*.16+.05,1,.1).normalize(); if(day) _c.set(1,.9,.76); else _c.set(.62,.74,1); sun.position.set(-_f.x,_f.y,-_f.z).multiplyScalar(70); sun.target.position.set(0,0,0); sun.color.setRGB(_c.x,_c.y,_c.z); sun.intensity=(day?4.2:1.5)*sk; sun.visible=sun.castShadow=true;
+    CAVE.sunIn(_f,sk,sun.color); CAVE.sky.color.setRGB(day?.62+.3*sk:.05,day?.77+.2*sk:.07,day?1:.14); for(const l of CAVE.fires) l.intensity=70*L; CAVE.bounce.color.copy(sun.color); CAVE.bounce.intensity=(day?60:16)*sk; CAVE.fireM.color.setRGB(.12+.88*L,.06+.57*L,.03+.26*L); CAVE.hemi.intensity=.42+.3*sk+.14*L;
+    FOGC.setRGB(.045,.055,.075); fog.density=.007; scene.fog=fog; W.lampOn=false; W.night=0; W.wet=0; W.rain=0; U.lampK.value=0; U.wind.value=0; renderer.toneMappingExposure=1.4; rain.visible=false; if(typeof setRain==='function') setRain(0);
+    for(const b of balls) b.mesh.material.roughness=Math.min(1,b.T.rough+.12); setShadows(); bakeAt=last+.3; drawBox(); labels(); return; }
   if(venue==='gym'&&GYM){ const L=[1,.5,0][world.lights], a=(world.hour-6)/12*Math.PI, up=Math.sin(a), sk=THREE.MathUtils.clamp(up*4,0,1), useSun=sk>.05; scene.fog=null; arHemi.visible=false;
     _f.set(.3+.55*Math.abs(Math.cos(a)),Math.max(.05,up),-Math.cos(a)*.6).normalize(); _c.set(1,.5+.45*Math.min(1,up*1.6),.22+.63*Math.min(1,up*1.6));           // the windows face the sun's side of the sky; _f is the way its light travels, turned upright
     sun.visible=sun.castShadow=useSun; if(useSun){ sun.position.set(-_f.x,_f.y,-_f.z).multiplyScalar(70); sun.target.position.set(0,0,0); sun.color.setRGB(_c.x,_c.y,_c.z); sun.intensity=3.2*sk; }
@@ -803,11 +821,12 @@ const boxC=cv(512,512), boxT=tex(boxC), BOXZ=3.7, BOXY=1.75;
 { const m=shadowOn(new THREE.Mesh(new THREE.BoxGeometry(.05,.8,.8),[blackSteel,new THREE.MeshStandardMaterial({map:boxT,emissive:0xffffff,emissiveMap:boxT,emissiveIntensity:.5,roughness:.5}),blackSteel,blackSteel,blackSteel,blackSteel])); m.position.set(FX-.1,BOXY-.4,BOXZ); env.add(m); }
 const TODS=[22,6.2,12,19.2];
 function drawBox(){ const x=boxC.getContext('2d'); x.fillStyle='#0b0e10'; x.fillRect(0,0,512,512); x.textAlign='center';
-  const ar=mode==='ar', gy=venue==='gym'; [['WEATHER',ar||gy?'—':world.wx],['TIME',ar?'—':hh(world.hour)],['NET',world.net],['GET BALL',BT[world.pref].name],['60 SECOND GAME',game.on?'stop':'start'],['COURT',ar?'—':gy?'indoor':'outdoor'],['LIGHTS',gy&&!ar?LIGHTS[world.lights]:'—'],['HORSE',MULTI?MULTI.status():'—']].forEach(([a,b],i)=>{ x.fillStyle='#1b2a2e'; x.fillRect(14,i*63+6,484,55); x.fillStyle='#8fa3a8'; x.font='700 15px Arial'; x.fillText(a,256,i*63+23); x.fillStyle='#ffb629'; x.font='700 27px Arial'; x.fillText(String(b).toUpperCase(),256,i*63+52); }); boxT.needsUpdate=true; }
-function setCourt(v){ if(mode==='ar') return; world.court=v==='gym'?'gym':'outdoor'; venue=v==='gym'?'gym':'clearing'; if(venue==='gym'&&!GYM){ K.gymMap=tex(courtTexture(true)); GYM=makeGym(K); mergeStill(GYM.g); GYM.g.traverse(o=>{ const m=o.material; if(Array.isArray(m)) m.forEach(patchMat); else patchMat(m); }); }
-  try{ localStorage.setItem('ball-court',world.court); }catch(e){} setAmb(); applyWorld(); flash(venue==='gym'?'INDOOR COURT':'OUTDOOR COURT'); }
+  const ar=mode==='ar', gy=venue!=='clearing'; [['WEATHER',ar||gy?'—':world.wx],['TIME',ar?'—':hh(world.hour)],['NET',world.net],['GET BALL',BT[world.pref].name],['60 SECOND GAME',game.on?'stop':'start'],['COURT',ar?'—':CNAME[world.court]],['LIGHTS',gy&&!ar?LIGHTS[world.lights]:'—'],['HORSE',MULTI?MULTI.status():'—'],['HANDS OR CONTROLLERS',world.input]].forEach(([a,b],i)=>{ x.fillStyle='#1b2a2e'; x.fillRect(14,i*56+5,484,49); x.fillStyle='#8fa3a8'; x.font='700 13px Arial'; x.fillText(a,256,i*56+20); x.fillStyle='#ffb629'; x.font='700 24px Arial'; x.fillText(String(b).toUpperCase(),256,i*56+46); }); boxT.needsUpdate=true; }
+function setCourt(v){ if(mode==='ar') return; world.court=COURTS.includes(v)?v:'outdoor'; venue=world.court==='outdoor'?'clearing':world.court; const fit=G=>{ mergeStill(G.g); G.g.traverse(o=>{ const m=o.material; if(Array.isArray(m)) m.forEach(patchMat); else patchMat(m); }); };
+  if(venue==='gym'&&!GYM){ K.gymMap=tex(courtTexture('gym')); GYM=makeGym(K); fit(GYM); } if(venue==='cave'&&!CAVE){ K.caveMap=tex(courtTexture('cave')); CAVE=makeCave(K); fit(CAVE); }
+  try{ localStorage.setItem('ball-court',world.court); }catch(e){} setAmb(); applyWorld(); flash(CNAME[world.court].toUpperCase()+(venue==='cave'?'':' COURT')); }
 function setWorld(o){ world.hour=o.hour; world.wx=o.wx; world.lights=o.lights; $('tod').value=world.hour; if(world.net!==o.net){ world.net=o.net; for(const h of hoops){ h.netS.mesh.material=netMats[world.net]; h.netS.quiet=0; } } if(o.court!==world.court&&mode!=='ar') setCourt(o.court); else applyWorld(); }   // the court as the room has it
-function boxAct(i){ if(i===7&&MULTI) MULTI.toggle(); if(i===4&&MULTI&&MULTI.g&&MULTI.g.on){ flash('HORSE IS IN PLAY'); return; } if(i===6&&venue==='gym'&&mode!=='ar') world.lights=(world.lights+1)%3; if(i===5) setCourt(world.court==='gym'?'outdoor':'gym'); if(i===0&&venue!=='gym') world.wx=Object.keys(WXP)[(Object.keys(WXP).indexOf(world.wx)+1)%4]; if(i===1){ const k=TODS.findIndex(v=>Math.abs(v-world.hour)<.3); world.hour=TODS[(k+1)%4]; $('tod').value=world.hour; }
+function boxAct(i){ if(i===7&&MULTI) MULTI.toggle(); if(i===4&&MULTI&&MULTI.g&&MULTI.g.on){ flash('HORSE IS IN PLAY'); return; } if(i===8){ world.input=INPUTS[(INPUTS.indexOf(world.input)+1)%3]; try{ localStorage.setItem('ball-input',world.input); }catch(e){} } if(i===6&&venue!=='clearing'&&mode!=='ar') world.lights=(world.lights+1)%3; if(i===5) setCourt(COURTS[(COURTS.indexOf(world.court)+1)%3]); if(i===0&&venue!=='gym') world.wx=Object.keys(WXP)[(Object.keys(WXP).indexOf(world.wx)+1)%4]; if(i===1){ const k=TODS.findIndex(v=>Math.abs(v-world.hour)<.3); world.hour=TODS[(k+1)%4]; $('tod').value=world.hour; }
   if(i===2){ world.net=world.net==='nylon'?'chain':'nylon'; for(const h of hoops){ h.netS.mesh.material=netMats[world.net]; h.netS.quiet=0; } } if(i===3) world.pref=(world.pref+1)%BT.length; if(i===4){ if(game.on) endGame(); else startGame(); } snd('catch',menu.visible?menu.position:_a.set(FX-.1,1.4,BOXZ),4); applyWorld(); }
 function boxTouch(h,p,t){ const i=Math.floor((BOXY-p.y)/(.8/ROWS)), inn=mode!=='ar'&&p.x>=FX-.24&&Math.abs(p.z-BOXZ)<=.38&&i>=0&&i<ROWS, was=h.bIn; h.bIn=inn; if(!inn||was||t<h.boxT) return; h.boxT=t+.25; buzz(h,.7,40); boxAct(i); }
 
@@ -861,7 +880,7 @@ function applyMode(){ const ar=mode==='ar'; catcher.visible=ar;
 function hoopsShow(on){ const ar=mode==='ar'; hoops.forEach((h,i)=>{ const v=on&&(!ar||i===0); h.g.visible=v; h.active=v; h.netS.mesh.visible=v; }); W.rack.visible=on;
   if(!on){ if(game.on) endGame(); camB=null; for(const h of hands) h.ball=null; balls.forEach(b=>{ b.off=true; b.G.visible=false; b.blob.visible=false; b.holder=b.holder2=null; }); } }
 SPORTS.hoops={ name:'Basketball', help:'hold click or <kbd>Space</kbd> to set power, release to shoot · <kbd>R</kbd> get ball',
-  enter(){ const ar=mode==='ar'; venue=world.court==='gym'&&GYM?'gym':'clearing'; hoopsShow(true); courtMat.map=courtMap; BND.cx=BND.cz=0; BND.x=FX-.4; BND.z=FZ-.4; rig.position.set(0,0,ar?-RIM_Z+3.2:-RIM_Z+4.6);
+  enter(){ const ar=mode==='ar'; venue=world.court==='gym'&&GYM?'gym':world.court==='cave'&&CAVE?'cave':'clearing'; hoopsShow(true); courtMat.map=courtMap; BND.cx=BND.cz=0; BND.x=FX-.4; BND.z=FZ-.4; rig.position.set(0,0,ar?-RIM_Z+3.2:-RIM_Z+4.6);
     balls.forEach((b,i)=>{ b.holder=b.holder2=null; b.v.set(0,0,0); b.w.set(0,0,0); b.live=false; b.off=ar&&i>0; b.G.visible=!b.off; b.blob.visible=false; if(i){ b.p.copy(b.home); b.rest=true; } });
     const b=balls[0]; cur=b; b.rest=false; if(mode){ b.p.set(.25,1.15,rig.position.z-.6); b.hover=30; } else { b.holder='cam'; camB=b; b.hover=0; } gameLine(); },
   leave(){ hoopsShow(false); } };
@@ -926,29 +945,33 @@ function frame(ms){ const t=ms/1000, raw=t-last||.016, dt=Math.min(.05,raw); las
       else { h.fon=false; h.grip.getWorldPosition(h.pos); h.grip.getWorldQuaternion(_q); _q2.copy(h.qPrev).invert().premultiply(_q); h.qPrev.copy(_q); const ang=2*Math.acos(Math.min(1,Math.abs(_q2.w))), sn=Math.sqrt(1-_q2.w*_q2.w)||1;
         _a.set(_q2.x,_q2.y,_q2.z).multiplyScalar((_q2.w<0?-1:1)*ang/(sn*dt)); if(_a.length()>40) _a.setLength(40); h.angVel.lerp(_a,.4); }
       h.wasHand=h.isHand;
-      const o=h.hist.length<12?{t:0,p:new V3()}:h.hist.shift(); o.t=t; o.p.copy(h.pos); h.hist.push(o);
-      let old=o; for(let i=h.hist.length-1;i>=0;i--){ old=h.hist[i]; if(t-old.t>.045) break; }
-      if(old!==o) h.vel.subVectors(o.p,old.p).multiplyScalar(1/Math.max(t-old.t,.005));
+      const o=h.hist.length<12?{t:0,p:new V3()}:h.hist.shift(); o.t=t*handRate; o.p.copy(h.pos); h.hist.push(o);
+      let old=o; for(let i=h.hist.length-1;i>=0;i--){ old=h.hist[i]; if(o.t-old.t>.045) break; }
+      if(old!==o) h.vel.subVectors(o.p,old.p).multiplyScalar(1/Math.max(o.t-old.t,.005));
       let g=false,a=false; const gp=h.src.gamepad;
-      if(h.isHand){ h.pinch=h.jp[TIPS[0]].distanceTo(h.jp[TIPS[1]]); let curl=0; for(let k=1;k<5;k++) curl+=h.jp[TIPS[k]].distanceTo(h.jp[0]); curl/=4;
-        g=h.pressed?(h.pinch<.045||curl<.15):(h.pinch<.022||curl<.12); }
+      if(h.isHand){ h.pinch=h.jp[TIPS[0]].distanceTo(h.jp[TIPS[1]]); g=h.pressed?(h.pinch<.045||h.curl>.5):(h.pinch<.022||h.curl>.62);   // a pinch or a fist: the far pull, the rim, the teleport
+        h.grips=h.curl>(h.ball?.17:.28)||h.pinch<(h.ball?.045:.022); }                                                                            // a hand closed a little, as round a ball: it holds until it opens
       else if(gp){ g=!!(gp.buttons[0]?.pressed||gp.buttons[1]?.pressed); a=!!gp.buttons[4]?.pressed; }
       else continue;
       if(menu.visible&&!h.ball){ const tr=!h.isHand&&!!gp?.buttons[0]?.pressed; if(menuHand(h,t,tr&&!h.trP)) g=false; h.trP=tr; }
       if(!h.isHand&&gp){ const sc=!!gp.buttons[3]?.pressed; if(sc&&!h.sc) menuToggle(); h.sc=sc; }
+      { const isH=!!h.src.hand; if(isH&&world.input==='controllers'||!isH&&world.input==='hands'){ if(h.ball) drop(h); if(h.hang){ h.hang.flexT=0; h.hang=null; } if(tp.h===h) tpEnd(); h.pressed=false; h.ray.visible=false; continue; } }   // the other kind of input is switched off; it still works the menu
       if(g&&!h.pressed){ tryGrab(h); if(h.isHand&&!h.ball&&!h.hang&&h.pinch<.03) h.tpArm=t; }
-      if(!g&&h.pressed){ if(h.ball) release(h,t); if(h.hang){ h.hang.flexT=0; h.hang=null; } if(h.isHand&&tp.h===h) tpGo(); h.tpArm=0; }
+      if(!g&&h.pressed){ if(h.ball&&!h.isHand) release(h,t); if(h.hang){ h.hang.flexT=0; h.hang=null; } if(h.isHand&&tp.h===h) tpGo(); h.tpArm=0; }
       if(h.isHand&&g&&h.tpArm&&!h.ball&&!tp.h&&t-h.tpArm>.35) tp.h=h;
+      if(h.isHand){ if(!h.ball&&!h.hang&&h.grips&&tp.h!==h&&!(menu.visible&&menuHi.visible)) gripGrab(h,t);
+        else if(h.ball){ const sp=h.vel.length(); if(sp>h.pk){ h.pk=sp; throwVel(h,h.pkV); } else if(sp<1) h.pk=0;
+          const swung=h.pk>2.6&&sp<h.pk*.6; if(swung||!h.grips&&!g){ h.useV=swung; release(h,t); h.pk=0; h.regrab=t+.35; } } }   // let go at the end of the swing, or when the hand opens
       if(tp.h===h) tpAim(h);
       if(h.hang){ _a.subVectors(h.hangP,h.pos); rig.position.x+=_a.x; rig.position.z+=_a.z; yExtra=Math.max(0,yExtra+_a.y); h.hang.flexT=.075; vel.set(0,0,0); }   // hanging on the rim: the world stays put around your hand
       h.pressed=g; if(a&&!h.a) summon(h); h.a=a;
-      if(h.isHand){ TIPS.forEach((k,i)=>touch(h,h.jp[k],_b.copy(h.tv[i]),.011)); touch(h,h.pos,_b.copy(h.vel),.034); boxTouch(h,h.jp[TIPS[1]],t); }
+      if(h.isHand){ if(!h.ball){ for(const f of FJ) for(let i=1;i<5;i++) touch(h,h.jp[f[i]],_b.copy(h.jv[f[i]]),i===4?.011:.013); touch(h,h.jp[TIPS[0]],_b.copy(h.tv[0]),.012); touch(h,h.pos,_b.copy(h.vel),.036); } boxTouch(h,h.jp[TIPS[1]],t); }   // every knuckle and fingertip and the palm push the ball: a dribble
       else { if(!h.ball) touch(h,h.pos,_b.copy(h.vel),.055); boxTouch(h,h.pos,t); }
       h.ray.visible=!h.ball&&tp.h!==h; }
     { const L=hands.find(h=>h.src&&h.isHand&&h.src.handedness==='left'), Rh=hands.find(h=>h.src&&h.isHand&&h.src.handedness==='right'); wristTab.visible=!!L; if(L){ wristTab.position.copy(L.jp[0]); wristTab.position.y+=.05; if(Rh){ const d=Rh.jp[TIPS[1]].distanceTo(wristTab.position); if(d<.035&&!tabT){ tabT=1; buzz(Rh,.7,40); menuToggle(); } else if(d>.07) tabT=0; } } }
     for(const b of balls){ const h=b.holder; if(!h||h==='cam') continue; b.prevY=b.p.y;
       if(b.holder2){ holdPoint(h,_a); holdPoint(b.holder2,_b); if(_a.distanceTo(_b)>.6){ b.holder2.ball=null; b.holder2=null; setHold(h,b,true); } else b.p.addVectors(_a,_b).multiplyScalar(.5); b.pull=false; }
-      else { _a.copy(h.local); h.anchor.localToWorld(_a); if(b.pull){ b.p.lerp(_a,1-Math.exp(-11*dt)); if(b.p.distanceTo(_a)<.1){ b.pull=false; buzz(h); snd('catch',b.p,5,b.T.pitch); } } else b.p.copy(_a); }
+      else { if(h.isHand) holdPoint(h,_a); else { _a.copy(h.local); h.anchor.localToWorld(_a); } if(b.pull){ b.p.lerp(_a,1-Math.exp(-11*dt)); if(b.p.distanceTo(_a)<.1){ b.pull=false; buzz(h); snd('catch',b.p,5,b.T.pitch); } } else if(h.isHand) b.p.lerp(_a,1-Math.exp(-40*dt)); else b.p.copy(_a); }
       b.v.copy(h.vel); b.w.multiplyScalar(.9);
       for(const hp of hoops){ if(!hp.active) continue; const dh=Math.hypot(b.p.x-hp.rim.x,b.p.z-hp.rim.z);                                // dunk: carry the ball down through the rim
         if(!b.dunk&&b.prevY>=RIM_H&&b.p.y<RIM_H&&dh<RIM_R-.02){ b.dunk=true; hp.flexV+=2.2; hp.shake=1.2; score(hp,b,true); snd('rim',hp.rim,6); } if(b.p.y>RIM_H+.2) b.dunk=false; } }
@@ -1012,12 +1035,12 @@ scene.traverse(o=>{ const m=o.material; if(Array.isArray(m)) m.forEach(patchMat)
 
 // what the other sports' files are handed
 const K={THREE,V3,scene,env,camera,rig,renderer,hands,BND,W,cv,tex,ptex,radial,shadowOn,galv,blackSteel,wood,tube,noBake,patchMat,snd:(...a)=>snd(...a),flash,buzz,headPos:()=>headPos(),setSport:id=>setSport(id),
-  courtMat,courtMap,FX,FZ,HL,CEIL,RACK,BALL_R,BOARD_FACE,BOARD_W,BOARD_H,RIM_H,hoops,boxes,cyls,scT,sbT,boxT,BOXY,BOXZ,stats,drawScore,board:null,racketHand:'right',get mode(){return mode},get t(){return last},get sport(){return sport},set venue(v){venue=v},get coarse(){return coarse},vel,solids:SOLIDS,gesture:[],get arPick(){return arPick},set arPick(v){arPick=v}};
+  courtMat,courtMap,FX,FZ,HL,CEIL,CAVEH,RACK,BALL_R,BOARD_FACE,BOARD_W,BOARD_H,RIM_H,hoops,boxes,cyls,scT,sbT,boxT,BOXY,BOXZ,stats,drawScore,board:null,racketHand:'right',get mode(){return mode},get t(){return last},get sport(){return sport},set venue(v){venue=v},get coarse(){return coarse},vel,solids:SOLIDS,gesture:[],get arPick(){return arPick},set arPick(v){arPick=v}};
 K.board=lines=>{ const x=sbC.getContext('2d'); x.fillStyle='#07090a'; x.fillRect(0,0,512,256); x.strokeStyle='#3a3d40'; x.lineWidth=8; x.strokeRect(4,4,504,248); x.textAlign='center';
   lines.forEach((l,i)=>{ x.fillStyle=i%2?'#ffb629':'#d8d6cc'; x.font=i%2?'700 62px "Courier New",monospace':'700 24px Arial'; x.fillText(l,256,i%2?46+i*52:22+i*56); }); sbT.needsUpdate=true; };
 scene.traverse(o=>{ const m=o.material; if(Array.isArray(m)) m.forEach(patchMat); else patchMat(m); });
-applyMode(); try{ if(localStorage.getItem('ball-court')==='gym') setCourt('gym'); }catch(e){}
+applyMode(); try{ const c=localStorage.getItem('ball-court'), i=localStorage.getItem('ball-input'); if(INPUTS.includes(i)) world.input=i; if(c==='gym'||c==='cave') setCourt(c); }catch(e){}
 Object.assign(K,{seg,gameLine,endGame,game,drawBox:()=>{ drawBox(); labels(); },setWorld,balls,world}); Object.defineProperty(K,'ball',{get:()=>cur}); MULTI=makeMulti(K);
-window.__ball={get multi(){return MULTI},ROWS,TIPS,setCourt,menu,menuToggle,boxAct,get venue(){return venue},get gym(){return GYM},setSport,SPORTS,K,env,get sport(){return sport},get ball(){return cur},balls,simulate,game,startGame,endGame,hands,tp,vig,get mode(){return mode},get t(){return last},get yExtra(){return yExtra},rig,stats,camera,renderer,scene,world,applyWorld,hoops,set(y,p){yaw=yawT=y;pitch=pitchT=p},get q(){return qLevel},set q(v){qLevel=v;applyQuality()},launched,THREE,
+window.__ball={set handRate(v){handRate=v},get multi(){return MULTI},get cave(){return CAVE},ROWS,TIPS,setCourt,menu,menuToggle,boxAct,get venue(){return venue},get gym(){return GYM},setSport,SPORTS,K,env,get sport(){return sport},get ball(){return cur},balls,simulate,game,startGame,endGame,hands,tp,vig,get mode(){return mode},get t(){return last},get yExtra(){return yExtra},rig,stats,camera,renderer,scene,world,applyWorld,hoops,set(y,p){yaw=yawT=y;pitch=pitchT=p},get q(){return qLevel},set q(v){qLevel=v;applyQuality()},launched,THREE,
   free(b){ if(camB===b) camB=null; b.holder=null; b.hover=0; b.rest=false; }};
 renderer.setAnimationLoop(frame);

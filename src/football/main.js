@@ -1,6 +1,6 @@
 // FOURTH & LONG's page: the headset (passthrough or a stadium), the controllers, the table view of the whole game and the life-size view from inside a player, the pointer that picks plays and gives orders, the throw
 import * as THREE from 'three';
-import { Game, Remote, FIELD } from './sim.js';
+import { Game, Remote, FIELD, LEVELS } from './sim.js';
 import { Net } from './net.js';
 import { OFFENSE, DEFENSE } from './plays.js';
 import { View } from './view.js';
@@ -12,7 +12,8 @@ const qs = new URLSearchParams(location.search), $ = (id) => document.getElement
 const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true }); renderer.setPixelRatio(Math.min(devicePixelRatio, 2)); renderer.setSize(innerWidth, innerHeight); renderer.xr.enabled = true; renderer.xr.setReferenceSpaceType('local-floor'); document.body.appendChild(renderer.domElement);
 const scene = new THREE.Scene(), camera = new THREE.PerspectiveCamera(62, innerWidth / innerHeight, 0.03, 9000), view = new View(scene), W = view.W, panel = new Panel(), snd = new Sound(), LEAN = /OculusBrowser|Quest|Pico/i.test(navigator.userAgent) || qs.has('lean'), world = buildWorld(scene, W, { lean: LEAN }); scene.add(panel.mesh);
 addEventListener('resize', () => { if (renderer.xr.isPresenting) return; camera.aspect = innerWidth / innerHeight; camera.updateProjectionMatrix(); renderer.setSize(innerWidth, innerHeight); });
-let sim = new Game({ seed: +(qs.get('seed') || (Date.now() % 1e6)), qlen: +(qs.get('q') || 180) });
+const OPT = { lvl: Math.min(2, Math.max(0, +(qs.get('lvl') ?? 1))), mode: ['game', 'drill', 'practice'].includes(qs.get('mode')) ? qs.get('mode') : 'game', qlen: +(qs.get('q') || 180) }, make = (seed, more = {}) => new Game({ seed, qlen: OPT.qlen, lvl: OPT.lvl, mode: OPT.mode, ...(qs.has('noko') ? { ko: false } : {}), ...more });
+let sim = make(+(qs.get('seed') || (Date.now() % 1e6)));
 const G = { mode: 'table', xr: false, room: !qs.has('stadium'), auto: true, tab: 'RUN', sel: -1, hover: -1, spot: null, body: -1, started: false, tpos: new THREE.Vector3(0, 0.75, -0.85), tyaw: 0, tscale: 0.016, anchor: new THREE.Vector3(), fwd: new THREE.Vector3(0, 0, -1), yaw: 0, look: { x: 0, y: 0 }, aim: null, hist: [], t: 0 };
 const v1 = new THREE.Vector3(), v2 = new THREE.Vector3(), v3 = new THREE.Vector3(), q1 = new THREE.Quaternion(), m1 = new THREE.Matrix4(), ray = new THREE.Raycaster();
 
@@ -37,7 +38,7 @@ function readInput() {
 // ---- where the field is: a table in front of you, or life size around the player you are ----
 function headPose(pos, fwd) { const c = renderer.xr.isPresenting ? renderer.xr.getCamera() : camera; c.getWorldPosition(pos); c.getWorldDirection(fwd); fwd.y = 0; if (fwd.lengthSq() < 1e-4) fwd.set(0, 0, -1); fwd.normalize(); }
 function place() {
-  if (G.mode === 'table') { W.position.copy(G.tpos); W.rotation.y = G.tyaw; W.scale.setScalar(G.tscale); panel.mesh.position.set(0, 0.72, -0.62).applyAxisAngle(v1.set(0, 1, 0), G.tyaw).add(G.tpos); panel.mesh.rotation.set(0, G.tyaw, 0); }
+  if (G.mode === 'table') { W.position.copy(G.tpos); W.rotation.y = G.tyaw; W.scale.setScalar(G.tscale); panel.mesh.position.set(0, 0.72, -0.62).applyAxisAngle(v1.set(0, 1, 0), G.tyaw).add(G.tpos); panel.mesh.rotation.set(0, G.tyaw, 0); if (!G.xr) { panel.mesh.scale.setScalar(1.55); panel.mesh.position.y += 0.2; } else panel.mesh.scale.setScalar(1); }
   else { const p = sim.P[G.body] || sim.P[sim.qb] || sim.P[0]; W.scale.setScalar(YD); W.rotation.y = G.yaw; W.position.set(0, 0, 0); W.updateMatrix(); v1.set(p.x, 0, p.z).applyMatrix4(W.matrix); W.position.set(G.anchor.x - v1.x, 0, G.anchor.z - v1.z);
     panel.mesh.position.copy(G.anchor).addScaledVector(G.fwd, 1.5); panel.mesh.position.y = 1.25; panel.mesh.rotation.set(0, Math.atan2(-G.fwd.x, -G.fwd.z), 0); }
   W.updateMatrixWorld(true);
@@ -73,9 +74,10 @@ function click(id) {
   const [k, a] = id.split(':'); snd.start();
   if (k === 'tab') G.tab = a; else if (k === 'play') { sim.pick(USER, +a); } else if (k === 'auto') G.auto = !G.auto; else if (k === 'room') { G.room = !G.room; env(); } else if (k === 'wx') { const K = Object.keys(WEATHER); sky(K[(K.indexOf(world.kind) + 1) % K.length], world.hour); } else if (k === 'hour') { const K = Object.keys(HOURS); sky(world.kind, K[(K.indexOf(world.hour) + 1) % K.length]); }
   else if (k === 'view') setMode(G.mode === 'table' ? 'first' : 'table'); else if (k === 'again') newGame(); else if (k === 'snap') sim.snap(); else if (k === 'audible') { sim.audible(); view.showRoutes(sim, false); }
+  else if (k === 'menu') G.menu = !G.menu; else if (k === 'timeout') { if (sim.timeout(USER)) snd.whistle(); } else if (k === 'lvl') { OPT.lvl = (OPT.lvl + 1) % LEVELS.length; sim.lvl = OPT.lvl; sim.K = LEVELS[OPT.lvl]; } else if ((k === 'gmode' || k === 'qlen') && VS.role !== 'solo') snd.tone(220, 0.1); else if (k === 'gmode') { OPT.mode = { game: 'drill', drill: 'practice', practice: 'game' }[OPT.mode]; newGame(); G.menu = true; } else if (k === 'qlen') { OPT.qlen = { 60: 180, 180: 300, 300: 60 }[OPT.qlen] || 180; newGame(); G.menu = true; }
   else if (k === 'hot' && G.sel >= 0) { sim.order(G.sel, { route: a }); view.showRoutes(sim, true); }
 }
-function newGame() { if (VS.role === 'guest') return; sim = new Game({ seed: Date.now() % 1e6, qlen: +(qs.get('q') || 180), ...(VS.role === 'host' ? { human: [true, true], names: ['YOU', 'RIVAL'] } : {}) }); fresh(); }
+function newGame() { if (VS.role === 'guest') return; sim = make(Date.now() % 1e6, VS.role === 'host' ? { human: [true, true], names: ['YOU', 'RIVAL'], mode: 'game' } : {}); G.menu = false; fresh(); }
 function fresh() { VS.ev.length = 0; VS.ph = ''; env(); G.sel = -1; G.mode = ''; setMode('table'); view.showRoutes(sim, false); }
 
 // ---- 1 v 1: everyone at /football is in its one public room; the first in runs the game, the second takes the other side; alone, or when the other leaves, you play the computer ----
@@ -115,9 +117,10 @@ function controls(dt) {
     if (top > 1.2) { const c = Math.cos(G.yaw), s = Math.sin(G.yaw), k = 2.6 / YD; if (sim.throwVel(handAt(), { vx: (wx * c - wz * s) * k, vy: wy * k, vz: (wx * s + wz * c) * k })) buzz('right', 0.8, 60); } }
   if (G.xr && G.mode === 'table') grab(I.b.lgrip, I.b.rgrip);
   if (P.rclick) setMode(G.mode === 'table' ? 'first' : 'table'); if (P.lclick) { G.room = !G.room; env(); }
-  if (ph === 'pre') { if (P.a && off) sim.snap(); if (P.b) { if (off) { sim.audible(); view.showRoutes(sim, false); } else sim.switchCtl(); } }
+  if (ph === 'pre') { if (P.a) off ? sim.snap() : sim.hurry(); if (P.b) { if (off) { sim.audible(); view.showRoutes(sim, false); } else sim.switchCtl(); } }
   else if (ph === 'dead') { if (P.a) sim.skip(); }
   else if (ph === 'live' && me) {
+    if (canPass && P.b) sim.throwAway();
     if (car && !(me.id === sim.qb && sim.canThrow() && !sim.past)) { let near = null, nd = 99; for (const q of sim.team(1 - USER)) { const e = Math.hypot(q.x - me.x, q.z - me.z); if (q.st === 'up' && e < nd) { nd = e; near = q; } }
       if (P.a) sim.act(near ? (juke(me, [near.x - me.x, near.z - me.z]) === 'jukeL' ? 'jukeR' : 'jukeL') : 'jukeL'); if (P.b || P.fd) sim.act('spin'); if (P.x) sim.act('dive'); if (P.y) sim.act('hurdle'); if (P.fu) sim.act('stiff');
       if (P.fl || P.fr) sim.act(juke(me, simDir(P.fl ? -1 : 1, 0))); }
@@ -139,28 +142,29 @@ function grab(l, r) {
 
 function events() {
   for (const e of sim.ev) { const off = sim.poss === USER;
-    if (e.t === 'lineup') { G.sel = -1; view.showRoutes(sim, off); }
+    if (e.t === 'lineup') { G.sel = -1; view.showRoutes(sim, off && !sim.isKO); }
     else if (e.t === 'snap') { snd.snap(); view.showRoutes(sim, false); G.sel = -1; if (G.auto && off && !sim.run && !sim.play.sneak) setMode('first'); }
     else if (e.t === 'throw') { snd.swish(); if (G.auto) setMode('table'); } else if (e.t === 'handoff') { if (G.auto) setMode('table'); }
-    else if (e.t === 'catch') { snd.catch(); snd.cheer(0.12, 1); world.cheer(0.25); } else if (e.t === 'tackle' || e.t === 'miss') { snd.hit(); if (e.t === 'tackle' || e.id === sim.ctl) buzz('', e.t === 'tackle' ? 1 : 0.5, 120); } else if (e.t === 'kick') { snd.kick(); view.showRoutes(sim, false); } else if (e.t === 'int' || e.t === 'swat') snd.catch();
+    else if (e.t === 'catch') { snd.catch(); snd.cheer(0.12, 1); world.cheer(0.25); if (off) buzz('', 0.5, 50); } else if (e.t === 'tackle' || e.t === 'miss') { snd.hit(); if (e.t === 'tackle' || e.id === sim.ctl) buzz('', e.t === 'tackle' ? 1 : 0.5, 120); } else if (e.t === 'kick' || e.t === 'kickoff') { snd.kick(); view.showRoutes(sim, false); if (e.t === 'kickoff') world.cheer(0.4); } else if (e.t === 'flag' || e.t === 'timeout') snd.whistle(); else if (e.t === 'int' || e.t === 'swat') snd.catch();
     else if (e.t === 'td' || e.t === 'fgood') { snd.cheer(0.5, 4); world.cheer(1); } else if (e.t === 'first') { snd.cheer(0.2, 1.5); world.cheer(0.45); } else if (e.t === 'int') { world.cheer(0.6); snd.cheer(0.3, 2); } else if (e.t === 'whistle') { snd.whistle(); if (G.auto) setMode('table'); } }
   if (VS.role === 'host') VS.ev.push(...sim.ev); sim.ev.length = 0;
 }
-let acc = 0, last = 0;
+let acc = 0, last = 0; const FRUST = new THREE.Frustum(), COST = { n: 0, ms: 0 };
 function advance(dt) { acc += dt; let n = 0; while (acc >= 1 / 60 && n++ < 6) { sim.step(1 / 60); acc -= 1 / 60; events(); } if (n > 5) acc = 0; }
 function frame(ms) {
   const dt = Math.min(0.05, (ms - last) / 1000 || 0.016); last = ms; G.t += dt; if (!G.started) { place(); renderer.render(scene, camera); return; }
-  place(); readInput(); if (sim.phase === 'call') tabFix(); controls(dt); advance(dt); versus(dt); place();
-  const first = G.mode === 'first', mine = sim.P[G.body], hold = first && G.xr && mine && mine.id === sim.carrier ? handAt() : null;
-  view.update(sim, dt, { hide: first ? G.body : -1, sel: G.sel, hover: G.hover, spot: G.spot, targets: sim.poss === USER && sim.canThrow() && sim.ctl === sim.qb, far: first && mine ? mine : null, ballAt: hold ? v3.set(hold.x, hold.y, hold.z) : null });
+  const t0 = performance.now(); place(); readInput(); if (sim.phase === 'call') tabFix(); controls(dt); advance(dt); versus(dt); place();
+  const first = G.mode === 'first', mine = sim.P[G.body]; if (first) { const c = renderer.xr.isPresenting ? renderer.xr.getCamera() : camera; c.updateMatrixWorld(); m1.multiplyMatrices(c.projectionMatrix, c.matrixWorldInverse); FRUST.setFromProjectionMatrix(m1); }
+  const hold = first && G.xr && mine && mine.id === sim.carrier ? handAt() : null;
+  view.update(sim, dt, { hide: first ? G.body : -1, sel: G.sel, hover: G.hover, spot: G.spot, targets: sim.poss === USER && sim.canThrow() && sim.ctl === sim.qb, far: first && mine ? mine : null, frustum: first && !G.free ? FRUST : null, ballAt: hold ? v3.set(hold.x, hold.y, hold.z) : null });
   { const c = renderer.xr.isPresenting ? renderer.xr.getCamera() : camera; c.getWorldPosition(v1); world.update(dt, v1, !G.room, G.mode === 'table', mine || sim.ball); }
-  panel.mesh.visible = sim.phase !== 'live'; panel.draw({ sim, user: USER, wx: world.kind, hour: world.hour, tab: G.tab, sel: G.sel, selRoute: G.sel >= 0 && sim.P[G.sel].elig && sim.P[G.sel].team === sim.poss, auto: G.auto, room: G.room, xr: G.xr, mode: G.mode });
+  panel.mesh.visible = sim.phase !== 'live'; panel.draw({ sim, user: USER, wx: world.kind, hour: world.hour, menu: G.menu, lvlName: LEVELS[OPT.lvl].name, qlen: OPT.qlen, tab: G.tab, sel: G.sel, selRoute: G.sel >= 0 && sim.P[G.sel].elig && sim.P[G.sel].team === sim.poss, auto: G.auto, room: G.room, xr: G.xr, mode: G.mode });
   if ($('hint')) $('hint').textContent = hint();
-  renderer.render(scene, camera);
+  COST.ms += performance.now() - t0; COST.n++; renderer.render(scene, camera);
 }
 function hint() { if (G.xr) return ''; const ph = sim.phase, off = sim.poss === USER, me = sim.ctl >= 0 ? sim.P[sim.ctl] : null;
   if (ph === 'call') return 'Click a play.  V: table / field view'; if (ph === 'pre') return off ? 'SPACE snap   E other play   click a player, then a spot, a defender or a route' : 'E switch player   WASD move   click a player, then a spot or an opponent';
-  if (ph !== 'live' || !me) return ''; if (me.id === sim.qb && sim.canThrow()) return 'Click a receiver to throw (hold for a bullet)   WASD move   SHIFT sprint   V view';
+  if (ph !== 'live' || !me) return ''; if (me.id === sim.qb && sim.canThrow()) return 'Click a receiver to throw (hold for a bullet)   E throw it away   WASD move   SHIFT sprint   V view';
   return me.id === sim.carrier ? 'WASD run   SHIFT sprint   SPACE juke   E spin   Q dive   R hurdle   arrows: juke left/right, up stiff arm' : 'WASD move   SHIFT sprint   SPACE dive tackle   Q hit   R jump   E switch player'; }
 
 // ---- starting ----
@@ -175,7 +179,7 @@ sky(qs.get('wx') in WEATHER ? qs.get('wx') : 'CLEAR', qs.get('hour') in HOURS ? 
 $('screen').onclick = () => { snd.start(); begin(); };
 (async () => { const ok = navigator.xr && ((await navigator.xr.isSessionSupported('immersive-ar').catch(() => false)) || (await navigator.xr.isSessionSupported('immersive-vr').catch(() => false))); const b = $('enter'); b.disabled = !ok; b.textContent = ok ? 'ENTER HEADSET' : 'No headset found'; if (ok) b.onclick = enter; if (qs.has('screen')) begin(); })();
 if (qs.has('local')) net.connect({ local: true, slot: +(qs.get('slot') || 0) }); else if (!qs.has('solo') && location.protocol !== 'file:') net.connect();
-window.__fb = { VS, net, get user() { return USER; }, pointer, mouse, world, sky, get sim() { return sim; }, G, view, W, camera, scene, renderer, panel, hands, THREE, OFFENSE, DEFENSE, setMode, click, enter,
+window.__fb = { VS, net, get user() { return USER; }, pointer, mouse, world, sky, COST, OPT, get sim() { return sim; }, G, view, W, camera, scene, renderer, panel, hands, THREE, OFFENSE, DEFENSE, setMode, click, enter,
   simulate(s) { for (let i = 0, n = Math.round(s * 60); i < n; i++) { sim.step(1 / 60); events(); } }, tap(...n) { virt.tap = n; }, hold(n, on) { (virt.hold ||= {})[n] = on; }, stick(x, y) { virt.stick = x || y ? [x, y] : null; }, point(id) { virt.point = id; },
-  spot(id) { panel.draw({ sim, user: USER, tab: G.tab, sel: G.sel, selRoute: false, auto: G.auto, room: G.room, xr: G.xr, mode: G.mode }); const b = panel.btns.find(b => b.id === id); return b ? panel.mesh.localToWorld(new THREE.Vector3(((b.x + b.w / 2) / 1024 - 0.5) * 0.9, (0.5 - (b.y + b.h / 2) / 640) * 0.5625, 0)) : null; },
+  spot(id) { panel.draw({ sim, user: USER, wx: world.kind, hour: world.hour, menu: G.menu, lvlName: LEVELS[OPT.lvl].name, qlen: OPT.qlen, tab: G.tab, sel: G.sel, selRoute: false, auto: G.auto, room: G.room, xr: G.xr, mode: G.mode }); const b = panel.btns.find(b => b.id === id); return b ? panel.mesh.localToWorld(new THREE.Vector3(((b.x + b.w / 2) / 1024 - 0.5) * 0.9, (0.5 - (b.y + b.h / 2) / 640) * 0.5625, 0)) : null; },
   screenOf(id) { const p = sim.P[id]; v1.set(p.x, 1.2, p.z); W.localToWorld(v1).project(camera); return [(v1.x + 1) / 2 * innerWidth, (1 - v1.y) / 2 * innerHeight]; } };

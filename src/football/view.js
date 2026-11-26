@@ -4,7 +4,7 @@ import { FIELD } from './sim.js';
 import { KIT, loadPlayers, makePlayer } from './players.js';
 
 const TEAM = KIT, NUMS = [55, 66, 67, 72, 76, 12, 81, 84, 88, 44, 23], LINEMEN = /^(C|LG|RG|LT|RT|DE|DT)$/;
-const M = new THREE.Matrix4(), B = new THREE.Matrix4(), T1 = new THREE.Matrix4(), R1 = new THREE.Matrix4(), Q = new THREE.Quaternion(), E = new THREE.Euler(), V = new THREE.Vector3(), SC = new THREE.Vector3(), C = new THREE.Color();
+const M = new THREE.Matrix4(), B = new THREE.Matrix4(), T1 = new THREE.Matrix4(), R1 = new THREE.Matrix4(), Q = new THREE.Quaternion(), E = new THREE.Euler(), V = new THREE.Vector3(), SC = new THREE.Vector3(), SP = new THREE.Sphere(), C = new THREE.Color();
 
 function fieldTexture() {
   const K = /OculusBrowser|Quest|Pico/i.test(navigator.userAgent) ? 1 : 2, c = document.createElement('canvas'); c.width = 2048 * K; c.height = 912 * K; const g = c.getContext('2d'), px = c.width / 120,   // twice as fine on a screen
@@ -74,11 +74,12 @@ export class View {
     for (const p of sim.team(sim.poss)) { if (!p.way || !p.way.length) continue; const pts = [new THREE.Vector3(p.hx, 0.12, p.hz), ...p.way.map(w => new THREE.Vector3(w.x, 0.12, w.z))]; R.add(new THREE.Line(new THREE.BufferGeometry().setFromPoints(pts), this.routeMat[p.job === 'runner' ? 1 : 0])); }
   }
   update(sim, dt, o) {
-    const big = this.table ? 1.7 : 1; let n = 0; this.boards[0].visible = this.table; this.boards[1].visible = this.boards[2].visible = !this.table;
+    const big = this.table ? 1.7 : 1; let n = 0; this.tick = (this.tick || 0) + 1; this.boards[0].visible = this.table; this.boards[1].visible = this.boards[2].visible = !this.table;
     for (const p of sim.P) {
+      // life size, a player out of sight is neither posed nor drawn; on the table each body is posed every other frame, half of them a frame
       if (this.fig) { const f = this.fig[p.id], sp = Math.hypot(p.vx, p.vz), down = p.st === 'down', g = f.g; g.visible = o.hide !== p.id; g.position.set(p.x, p.y + (down ? 0.25 : 0), p.z); g.scale.setScalar(big);
         g.rotation.y = Math.atan2(Math.cos(p.face), Math.sin(p.face)) - (p.mv === 'spin' ? (0.45 - p.mvT) * 14 : 0); const want = down ? 1.45 : p.mv === 'dive' || p.mv === 'hit' ? 1.15 : Math.min(0.2, sp * 0.02); g.rotation.x += (want - g.rotation.x) * Math.min(1, dt * 12);
-        if (g.visible) f.update(dt, down ? 0 : sp, sim.phase === 'pre' && LINEMEN.test(p.role), down); M.makeTranslation(p.x, 0.04, p.z); if (!g.visible) M.scale(V.set(0, 0, 0)); this.shade.setMatrixAt(n++, M); continue; }
+        if (g.visible && o.frustum) { SP.center.set(p.x, 1, p.z).applyMatrix4(this.W.matrixWorld); SP.radius = 1.6; g.visible = o.frustum.intersectsSphere(SP); } if (g.visible && (!this.table || ((this.tick + p.id) & 1))) f.update(this.table ? dt * 2 : dt, down ? 0 : sp, sim.phase === 'pre' && !sim.isKO && LINEMEN.test(p.role), down); M.makeTranslation(p.x, 0.04, p.z); if (!g.visible) M.scale(V.set(0, 0, 0)); this.shade.setMatrixAt(n++, M); continue; }
       const i = p.id, sp = Math.hypot(p.vx, p.vz), down = p.st === 'down', hide = o.hide === i; this.phase[i] += dt * sp * 1.9; const sw = down ? 0.3 : Math.sin(this.phase[i]) * Math.min(1, sp / 5) * 0.9;
       let tilt = down ? -1.45 : p.mv === 'dive' || p.mv === 'hit' ? -1.15 : -Math.min(0.3, sp * 0.03), spin = p.mv === 'spin' ? (0.45 - p.mvT) * 14 : 0;
       E.set(0, -p.face - spin, tilt, 'YZX'); Q.setFromEuler(E); V.set(p.x, (down ? 0.25 : 0) + p.y, p.z); B.compose(V, Q, hide ? SC.set(0, 0, 0) : SC.set(big, big, big));

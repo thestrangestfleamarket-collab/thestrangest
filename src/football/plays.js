@@ -22,10 +22,10 @@ export const formation = (name) => { const F = FORM[name]; return [...OL, ['QB',
 //   a route name, 'block', or { run: legs from where he stands, ho: seconds until the handoff }
 const B = 'block';
 export const OFFENSE = [
-  { name: 'HB DIVE', cat: 'RUN', form: 'iform', sk: [B, B, B, B, { run: [[8, 1]], ho: 0.75 }] },
-  { name: 'OFF TACKLE', cat: 'RUN', form: 'iform', sk: [B, B, B, B, { run: [[5, 6.5], [10, 7]], ho: 0.8 }] },
-  { name: 'TOSS SWEEP', cat: 'RUN', form: 'single', sk: [B, B, B, B, { run: [[1, 10], [7, 17]], ho: 0.45 }] },
-  { name: 'DRAW', cat: 'RUN', form: 'gun', drop: 7, sk: ['go', 'go', 'out', 'out', { run: [[7, -2]], ho: 1.3 }] },
+  { name: 'HB DIVE', cat: 'RUN', form: 'iform', sk: [B, B, B, B, { run: [[8, 1]], ho: 0.5 }] },
+  { name: 'OFF TACKLE', cat: 'RUN', form: 'iform', sk: [B, B, B, B, { run: [[5, 6.5], [10, 7]], ho: 0.55 }] },
+  { name: 'TOSS SWEEP', cat: 'RUN', form: 'single', sk: [B, B, B, B, { run: [[1, 10], [7, 17]], ho: 0.32 }] },
+  { name: 'DRAW', cat: 'RUN', form: 'gun', drop: 7, sk: ['go', 'go', 'out', 'out', { run: [[7, -2]], ho: 1.05 }] },
   { name: 'QB SNEAK', cat: 'RUN', form: 'goal', sneak: 1, sk: [B, B, B, B, B] },
   { name: 'SLANTS', cat: 'SHORT', form: 'gun', drop: 6.5, sk: ['slant', 'slant', 'flat', 'slant', B] },
   { name: 'CURLS', cat: 'SHORT', form: 'single', drop: 5, sk: ['curl', 'curl', 'in', 'hitch', 'swing'] },
@@ -38,6 +38,8 @@ export const OFFENSE = [
   { name: 'FLOOD', cat: 'DEEP', form: 'single', drop: 7, sk: ['post', 'corner', 'drag', 'out', 'flat'] },
   { name: 'PUNT', cat: 'KICK', form: 'kick', kick: 'punt', sk: [B, B, B, B, B] },
   { name: 'FIELD GOAL', cat: 'KICK', form: 'kick', kick: 'fg', sk: [B, B, B, B, B] },
+  { name: 'KNEEL', cat: 'KICK', form: 'goal', kneel: 1, sk: [B, B, B, B, B] },
+  { name: 'SPIKE', cat: 'KICK', form: 'gun', spike: 1, sk: [B, B, B, B, B] },
 ];
 export const OCATS = ['RUN', 'SHORT', 'DEEP', 'KICK'];
 

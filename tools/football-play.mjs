@@ -1,0 +1,24 @@
+// FOURTH & LONG played by a stand-in for a person, through the same calls the page makes: node tools/football-play.mjs [skill 0..1] [games] ['{"lvl":2}'] prints the games' scores and what the passing and running came to
+import { Game } from '../src/football/sim.js';
+import { OFFENSE, DEFENSE } from '../src/football/plays.js';
+const hyp = Math.hypot, skill = +(process.argv[2] || 1), N = +(process.argv[3] || 8), opt = JSON.parse(process.argv[4] || '{}');
+const T = { games: 0, pts: [0, 0], plays: 0, att: 0, comp: 0, pyd: 0, int: 0, sack: 0, rush: 0, ryd: 0, td: 0, stuck: 0, long: 0, cpuAtt: 0, cpuComp: 0, cpuPyd: 0, cpuRush: 0, cpuRyd: 0, cpuSack: 0, cpuInt: 0, first: 0, punts: 0, fg: 0, dur: 0, w: 0, l: 0 };
+for (let s = 1; s <= N; s++) { const g = new Game({ seed: s * 7, ...opt }); let n = 0, liveT = 0, pass = false, rnd = (() => { let x = s * 99991; return () => (x = (x * 16807) % 2147483647) / 2147483647; })(), react = 0;
+  while (g.phase !== 'over' && n++ < 2e6) { const off = g.poss === 0;
+    if (g.phase === 'call') { if (off) { const sug = g.cpuOff(); g.pick(0, sug); } else g.pick(0, Math.floor(rnd() * DEFENSE.length)); liveT = 0; pass = false; react = 0; }
+    else if (g.phase === 'pre') { if (off && g.pre > 1.2) g.snap(); }
+    else if (g.phase === 'live') { liveT += 1 / 60; if (liveT > 25) { T.long++; g.end && 0; }
+      const me = g.ctl >= 0 ? g.P[g.ctl] : null, d = 1;
+      if (me && me.id === g.carrier) { if (me.id === g.qb && g.canThrow() && !g.past) { g.in.x = g.in.z = 0; g.in.sprint = false; if (g.t > 1.5 + (1 - skill) * 1.5 && g.t > react) { react = g.t + 0.3; let best = null, bs = g.t > 3.2 ? 1.2 : 3; for (const r of g.team(0)) { if (!r.elig || r.job !== 'route') continue; const o = g.open(r, 0.6); if (o > bs) { bs = o; best = r; } } if (best && rnd() < 0.5 + 0.5 * skill) g.throwTo(best.id, hyp(best.x - me.x, best.z - me.z) > 28); else if (g.t > 4.5) { g.in.x = 1; g.in.z = 0.4; g.in.sprint = true; } } }
+          else { let az = 0, near = 9; for (const q of g.team(1)) { if (q.st !== 'up') continue; const dx = q.x - me.x, dz = q.z - me.z, r = hyp(dx, dz); if (dx > -1 && r < 7) { az -= Math.sign(dz || 1) / (r + 0.5) * skill; near = Math.min(near, r); } } if (Math.abs(me.z) > 23) az -= Math.sign(me.z); const l = hyp(1, az); g.in.x = 1 / l; g.in.z = az / l; g.in.sprint = true; if (near < 2 && rnd() < 0.08 * skill) g.act(rnd() < 0.5 ? 'jukeL' : 'spin'); } }
+      else if (me && me.team !== g.carrierTeam() && skill > 0.5 && opt.chase) { const c = g.carrier >= 0 ? g.P[g.carrier] : null; if (c) { const dx = c.x - me.x, dz = c.z - me.z, l = hyp(dx, dz) || 1; g.in.x = dx / l; g.in.z = dz / l; g.in.sprint = true; if (l < 2.2) g.act('dive'); } }
+      else { g.in.x = g.in.z = 0; } }
+    const ph = g.phase; g.step(1 / 60);
+    for (const e of g.ev) { if (e.t === 'whistle' && g.result && g.play) { T.plays++; const r = g.result, mine = g.lastOff === 0, p = g.play; if (!p.kick) { if (g.lastPass) { if (mine) { T.att++; if (r.k !== 'inc' && !r.msg.includes('INTERCEPT') && !r.msg.includes('SACK')) { T.comp++; T.pyd += r.gain; } } else { T.cpuAtt++; if (r.k !== 'inc' && !r.msg.includes('INTERCEPT') && !r.msg.includes('SACK')) { T.cpuComp++; T.cpuPyd += r.gain; } } } else if (!r.msg.includes('SACK')) { if (mine) { T.rush++; T.ryd += r.gain; } else { T.cpuRush++; T.cpuRyd += r.gain; } } if (r.msg.includes('SACK')) mine ? T.sack++ : T.cpuSack++; if (r.msg.includes('INTERCEPT')) mine ? T.int++ : T.cpuInt++; } else if (p.kick === 'punt') T.punts++; else T.fg++; if (r.msg.includes('FIRST')) T.first++; }
+      if (e.t === 'snap' || e.t === 'kick') { g.lastOff = g.poss; g.lastPass = false; } if (e.t === 'throw') g.lastPass = true; if (e.t === 'td') T.td++; } g.ev.length = 0; if (g.phase === 'live' && g.carrier === g.qb && g.t > 0.1 && !g.run && !g.play.sneak && !g.play.kick) g.lastPass = g.lastPass || g.t > 0.5 && !g.handed; }
+  if (g.phase !== 'over') T.stuck++; T.games++; T.pts[0] += g.score[0]; T.pts[1] += g.score[1]; T.dur += n / 60; if (g.score[0] > g.score[1]) T.w++; else if (g.score[0] < g.score[1]) T.l++; }
+const f = (a, b, k = 1) => b ? (a / b).toFixed(k) : '-';
+console.log(`skill ${skill} games ${T.games} stuck ${T.stuck} W-L ${T.w}-${T.l} avg score YOU ${f(T.pts[0], T.games)} CPU ${f(T.pts[1], T.games)} plays/game ${f(T.plays, T.games)} min/game ${f(T.dur / 60, T.games)}
+ YOU pass ${T.comp}/${T.att} ${f(100 * T.comp, T.att)}% ypa ${f(T.pyd, T.att)} int ${f(100 * T.int, T.att)}% sack ${f(100 * T.sack, T.att + T.sack)}% | rush ${T.rush} ypc ${f(T.ryd, T.rush)}
+ CPU pass ${T.cpuComp}/${T.cpuAtt} ${f(100 * T.cpuComp, T.cpuAtt)}% ypa ${f(T.cpuPyd, T.cpuAtt)} int ${f(100 * T.cpuInt, T.cpuAtt)}% sack ${f(100 * T.cpuSack, T.cpuAtt + T.cpuSack)}% | rush ${T.cpuRush} ypc ${f(T.cpuRyd, T.cpuRush)}
+ TD ${T.td} punts ${T.punts} FG ${T.fg} firsts ${T.first}`);

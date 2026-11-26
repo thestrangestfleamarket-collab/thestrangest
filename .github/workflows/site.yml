@@ -64,7 +64,7 @@ jobs:
           k asylum  'src/asylum/|tools/asylum\.cjs|tests/asylum\.cjs'
           k skyaces 'src/fly/|data/fly/|tools/fly\.cjs|tests/skyaces\.cjs'
           k golf    'src/golf/|data/golf/|tools/golf\.cjs|tests/golf\.cjs'
-          k ball    'src/ball/|data/ball/|tools/ball\.cjs|tests/ball\.cjs|src/cantina/hands\.js|src/146yz-skee|src/saloon/pool\.js|worker/lanes\.js|data/bookstore\.json|data/bar\.json|data/tv\.json'
+          k ball    'src/ball/|data/ball/|tools/ball\.cjs|tests/ball\.cjs|src/cantina/hands\.js'
           k cantina 'src/cantina/|data/cantina/|tools/cantina\.cjs|tests/cantina\.cjs|worker/cantina'
           k sushi   'src/sushi/|data/sushi/|tools/sushi\.cjs|tests/sushi\.cjs|worker/sushi'
           k saloon  'src/saloon/|data/saloon/|tools/saloon\.cjs|tests/saloon\.cjs|worker/saloon|src/sushi/(ctx|input|items|physics|fx|pf)\.js'
@@ -297,7 +297,7 @@ jobs:
         timeout-minutes: 30
         if: contains(steps.f.outputs.run, ' skyaces')
         run: node tests/skyaces.cjs dist/fly.html
-      - name: Jungle Court (sports at /ball; a point of each game in the clubhouse and on the courts, then an emulated Quest 3)
+      - name: Ball (basketball at /ball; a free throw, the bounce, the 60 second game, then an emulated Quest 3)
         timeout-minutes: 20
         if: contains(steps.f.outputs.run, ' ball')
         run: node tests/ball.cjs dist/ball.html

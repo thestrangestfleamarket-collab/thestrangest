@@ -162,7 +162,7 @@ export default {
     // SENSOR TAG (src/tag/): its own page at /tag, to anyone with the link; its one public room is the Tag Durable Object
     if ((request.method === "GET" || request.method === "HEAD") && p === "/tag") return page(env, url, "/tag", request, "no-cache");
     if (p === "/tag/") return Response.redirect(url.origin + "/tag" + url.search, 301);
-    // JUNGLE COURT (src/ball/): its own page at /ball, to anyone with the link; its surfaces under /ball-assets/
+    // BALL (src/ball/): its own page at /ball, to anyone with the link; its surfaces under /ball-assets/
     if ((request.method === "GET" || request.method === "HEAD") && p === "/ball") return page(env, url, "/ball", request, "no-cache");
     if (p === "/ball/") return Response.redirect(url.origin + "/ball" + url.search, 301);
     // AR DUEL (src/duel/): its own page at /duel, to anyone with the link; its pictures under /duel-assets/

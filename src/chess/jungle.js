@@ -86,5 +86,5 @@ export function makeJungle(renderer) {
     still(new THREE.Mesh(mergeGeometries(rs), new THREE.MeshBasicMaterial({ map: rocks.material.map, vertexColors: true })));
   }).catch(err => console.warn('The jungle\'s trees did not load', err));
 
-  return { group, ready, hi, lo, quality(xr) { hi.visible = deep.visible = !xr; lo.visible = xr; } };
+  return { group, ready, hi, lo, haze: JHAZE, quality(xr) { hi.visible = deep.visible = !xr; lo.visible = xr; } };
 }

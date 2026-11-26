@@ -38,7 +38,7 @@ export const POOLS = {
 // and anything that works at range reaches one tile further at targets below it.
 export const CLIMB = 1, REACH = 1;
 
-// A map's `look.base` is its bare ground ('grass' where not given, or 'flag'), `grow` how overgrown its stone is `ivy` whether vines hang on what stands there, `place` what is round the table (the hall where not given, or 'jungle': jungle.js); `budget` and `team` are a small table's own points and standing line-up.
+// A map's `look.base` is its bare ground ('grass' where not given, 'flag' or 'cave'), `grow` how overgrown its stone is `ivy` whether vines hang on what stands there, `place` what is round the table (the hall where not given, 'jungle': jungle.js, or 'cavern': cavern.js); `budget` and `team` are a small table's own points and standing line-up.
 export const MAPS = {
   board: {
     name: 'The Green', info: 'Open grass: no ground rules, nine by eleven.',
@@ -63,6 +63,11 @@ export const MAPS = {
     name: 'The Vinefall Catacomb', info: 'A sunken temple the jungle has taken back: great trees all round, thick growth to push through, vine-hung pillars, walls and rocks round a flooded stair.',
     cols: 9, rows: 11, zone: 3, look: { base: 'flag', grow: 5, ivy: true, place: 'jungle', foot: { '.': 'stone' } },
     tiles: ['r.......r', 'j.......j', 'rj.....jr', 'jx.j.j.xj', 'rj.p.p.jr', 'xj.sss.jx', 'rj.p.p.jr', 'jx.j.j.xj', 'rj.....jr', 'j.......j', 'r.......r'],
+  },
+  deep: {
+    name: 'Blackwater Deep', info: 'A shelf of rock far underground: boulders, crystals that stop the axe, black water to wade on both flanks, fungus for cover.',
+    cols: 9, rows: 11, zone: 3, look: { base: 'cave', place: 'cavern', foot: { '.': 'stone' } },
+    tiles: ['.........', '.........', 'r.......r', '.m.c.c.m.', '..r...r..', 'sss.c.sss', '..r...r..', '.m.c.c.m.', 'r.......r', '.........', '.........'],
   },
   pit: {
     name: 'The Pit', info: 'A small table for a short match: seven by seven, twenty points, a fire pit in the middle.',

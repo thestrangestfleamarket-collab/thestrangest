@@ -7,15 +7,15 @@ const PX = 96, EDGE = 0.35, DEEP = 0.34, SW = 240;   // the picture's dots to a 
 const MARK = { sel: ['rgba(226,190,116,0.42)', 'rgba(236,206,140,0.7)'], hit: ['rgba(204,104,92,0.36)', 'rgba(214,122,108,0.66)'], heal: ['rgba(112,186,140,0.34)', 'rgba(132,200,158,0.62)'], move: ['rgba(112,150,206,0.3)', 'rgba(134,168,216,0.58)'] };
 // the photographed grounds the table is painted from (data/chess/, Poly Haven and ambientCG, CC0); a board made before they arrive is painted again when they do
 const PICS = {}, waiting = new Set(); let soon = 0;
-for (const [k, f] of Object.entries({ flag: 'dungeon/flag', lava: 'dungeon/lava', grass: 'board/grass', dirt: 'board/dirt', forest: 'board/forest', rock: 'board/rock', bed: 'board/bed', wall: 'board/wall', scorch: 'board/scorch' })) {
+for (const [k, f] of Object.entries({ flag: 'dungeon/flag', lava: 'dungeon/lava', grass: 'board/grass', dirt: 'board/dirt', forest: 'board/forest', rock: 'board/rock', bed: 'board/bed', wall: 'board/wall', scorch: 'board/scorch', cave: 'board/rock' })) {
   const i = new Image(); i.onload = () => { PICS[k] = i; clearTimeout(soon); soon = setTimeout(() => { for (const f of waiting) f(); }, 250); }; i.src = `/chess-assets/${f}.jpg`; }
-const FLAT = { flag: '#6f6a63', lava: '#a8481c', grass: '#58683a', dirt: '#6e5a42', forest: '#4a4a30', rock: '#77736c', bed: '#5c5a4c', wall: '#7a746a', scorch: '#3a322c' };
+const FLAT = { flag: '#6f6a63', lava: '#a8481c', grass: '#58683a', dirt: '#6e5a42', forest: '#4a4a30', rock: '#77736c', bed: '#5c5a4c', wall: '#7a746a', scorch: '#3a322c', cave: '#4a4640' };
 const rnd = seed => () => { seed = (seed * 1664525 + 1013904223) >>> 0; return seed / 4294967296; };
 const picture = (canvas, renderer) => { const t = new THREE.CanvasTexture(canvas); t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = Math.min(8, renderer.capabilities.getMaxAnisotropy()); return t; };
 const glowDot = (c, x, y, r, col, a) => { const g = c.createRadialGradient(x, y, 0, x, y, r); g.addColorStop(0, `rgba(${col},${a})`); g.addColorStop(1, `rgba(${col},0)`); c.fillStyle = g; c.fillRect(x - r, y - r, 2 * r, 2 * r); };
 const spread = (c, k, x, y, w, h, size = 256) => { const p = PICS[k]; if (!p) { c.fillStyle = FLAT[k]; c.fillRect(x, y, w, h); return; } for (let j = y; j < y + h; j += size) for (let i = x; i < x + w; i += size) c.drawImage(p, i, j, size, size); };
 // the ground each letter of a map's tiles lies on (maps.js TERRAIN), over the map's own bare ground (look.base)
-const LAY = [['d', 'dirt'], ['rpx', 'dirt'], ['kv', 'scorch'], ['fmj', 'forest'], ['b', 'flag'], ['sw', 'bed'], ['l', 'lava']];
+const LAY = [['d', 'dirt'], ['rpxc', 'dirt'], ['kv', 'scorch'], ['fmj', 'forest'], ['b', 'flag'], ['sw', 'bed'], ['l', 'lava']];
 
 // the table's picture: a tabletop battlefield of real ground with a faint grid, no chequer. The frame, the bare ground, each ground laid over it with soft edges, what is painted on a tile, the grid, then the light on it all; under it the swatches for what stands on the board
 function paint(map, canvas = document.createElement('canvas')) {
@@ -36,14 +36,14 @@ function paint(map, canvas = document.createElement('canvas')) {
   if (base === 'flag') { for (let y = 0; y < rows; y++) for (let x = 0; x < cols; x++) { const px = e + x * PX + 1.5, py = e + y * PX + 1.5, s = PX - 3, st = PICS.flag;   // flagstones: each tile its own piece of the stone
       if (st) c.drawImage(st, R() * (st.width - 150), R() * (st.height - 150), 150, 150, px, py, s, s); else { c.fillStyle = FLAT.flag; c.fillRect(px, py, s, s); }
       c.fillStyle = `rgba(18,16,15,${0.16 + R() * 0.14})`; c.fillRect(px, py, s, s); } }
-  else { spread(c, base, e, e, bw, bh); c.fillStyle = 'rgba(52,96,26,0.26)'; c.fillRect(e, e, bw, bh); }
+  else { spread(c, base, e, e, bw, bh); c.fillStyle = base === 'grass' ? 'rgba(52,96,26,0.26)' : 'rgba(8,10,14,0.5)'; c.fillRect(e, e, bw, bh); }
   // each ground over it, its edges soft and uneven
   const mc = document.createElement('canvas'); mc.width = W; mc.height = H; const m = mc.getContext('2d'), Q = rnd(31);
   const lay = (cells, k, soft) => { if (!cells.length) return; m.globalCompositeOperation = 'source-over'; m.clearRect(0, 0, W, H); m.filter = `blur(${soft}px)`; m.fillStyle = '#000';
     for (const [x, y, r] of cells) { if (r) { m.beginPath(); m.ellipse(x, y, r, r * 0.7, Q() * 3, 0, 7); m.fill(); } else m.fillRect(x - 2, y - 2, PX + 4, PX + 4); }
     m.filter = 'none'; m.globalCompositeOperation = 'source-atop'; spread(m, k, 0, 0, W, H); c.drawImage(mc, 0, 0); };
   if (base === 'grass') { const worn = []; for (let i = 0; i < cols * rows / 7; i++) worn.push([e + Q() * bw, e + Q() * bh, 16 + Q() * 30]); lay(worn, 'dirt', 12); }   // bare patches in the grass
-  else { const moss = []; for (let i = 0; i < cols * rows / 6 * ((map.look && map.look.grow) || 1); i++) moss.push([e + Q() * bw, e + Q() * bh, 12 + Q() * 26]); lay(moss, 'grass', 10); }                      // grass through the flagstones
+  else if (base === 'flag') { const moss = []; for (let i = 0; i < cols * rows / 6 * ((map.look && map.look.grow) || 1); i++) moss.push([e + Q() * bw, e + Q() * bh, 12 + Q() * 26]); lay(moss, 'grass', 10); }                      // grass through the flagstones
   for (const [ks, k] of LAY) { const cells = []; each(ks, (px, py) => cells.push([px, py])); lay(cells, k, 'swl'.includes(ks[0]) ? 3 : 'rpx'.includes(ks[0]) ? 16 : 8); }
   c.restore();
   // what is painted on a tile
@@ -62,19 +62,20 @@ function paint(map, canvas = document.createElement('canvas')) {
   each('l', (px, py, x, y) => clip(px, py, () => { c.fillStyle = 'rgba(40,12,4,0.18)'; c.fillRect(px, py, PX, PX); rim(px, py, x, y, 'lb', '10,6,5,0.8', 14); }));
   each('b', (px, py, x, y) => { for (const [dx, dy] of [[0, -1], [0, 1], [-1, 0], [1, 0]]) if ('lsw'.includes(at(x + dx, y + dy) || '-')) { const k = 9, bx = dx > 0 ? px + PX - k : px, by = dy > 0 ? py + PX - k : py;
     c.fillStyle = 'rgb(112,104,95)'; c.fillRect(bx, by, dx ? k : PX, dy ? k : PX); c.fillStyle = 'rgba(12,10,9,0.5)'; c.fillRect(dx ? (dx > 0 ? bx - 3 : bx + k) : px, dy ? (dy > 0 ? by - 3 : by + k) : py, dx ? 3 : PX, dy ? 3 : PX); } });
-  each('rpxf', (px, py, x, y) => { const cx = px + PX / 2, cy = py + PX / 2; if (at(x, y) === 'f') { for (const [sx, sy] of [[-1, -1], [1, -1], [-1, 1], [1, 1]]) glowDot(c, cx + sx * 0.33 * PX - 5, cy + sy * 0.33 * PX + 3, 0.24 * PX, '8,10,6', 0.55); return; }   // the shade under what stands there
+  each('c', (px, py) => glowDot(c, px + PX / 2, py + PX / 2, 1.1 * PX, '90,220,255', 0.16));
+  each('rpxfc', (px, py, x, y) => { const cx = px + PX / 2, cy = py + PX / 2; if (at(x, y) === 'f') { for (const [sx, sy] of [[-1, -1], [1, -1], [-1, 1], [1, 1]]) glowDot(c, cx + sx * 0.33 * PX - 5, cy + sy * 0.33 * PX + 3, 0.24 * PX, '8,10,6', 0.55); return; }   // the shade under what stands there
     glowDot(c, cx - 0.2 * PX, cy + 0.08 * PX, 0.62 * PX, '8,6,6', 0.6); glowDot(c, cx, cy, 0.52 * PX, '8,6,6', 0.5); });
   // the grid: a faint line between tiles, as on a battle mat
   c.strokeStyle = 'rgba(16,15,11,0.3)'; c.lineWidth = 1.5; c.beginPath();
   for (let x = 1; x < cols; x++) { c.moveTo(e + x * PX, e); c.lineTo(e + x * PX, e + bh); } for (let y = 1; y < rows; y++) { c.moveTo(e, e + y * PX); c.lineTo(e + bw, e + y * PX); } c.stroke();
   each('l', (px, py) => glowDot(c, px + PX / 2, py + PX / 2, 1.3 * PX, '255,120,48', 0.1));
-  const hall = (map.look && map.look.place) !== 'jungle';   // the hall's lava and embers light the table; a jungle's does not
+  const hall = !(map.look && map.look.place);   // the hall's lava and embers light the table; another place's do not
   if (hall) for (const [x0, y0, x1, y1] of [[0, 0, 0, 1.3 * PX], [0, H, 0, H - 1.3 * PX], [0, 0, 1.3 * PX, 0], [W, 0, W - 1.3 * PX, 0]]) {   // the lava's glow, in from the moat on every side
     const g = c.createLinearGradient(x0, y0, x1, y1); g.addColorStop(0, 'rgba(255,120,48,0.13)'); g.addColorStop(0.3, 'rgba(255,120,48,0.08)'); g.addColorStop(1, 'rgba(255,120,48,0)'); c.fillStyle = g; c.fillRect(0, 0, W, H); }
   if (hall) for (const [x, y] of [[0, 0], [W, 0], [0, H], [W, H]]) glowDot(c, x, y, 3.2 * PX, '255,170,96', 0.16);                    // the embers' warmth at the corners
   { const g = c.createRadialGradient(W / 2, H / 2, H * 0.2, W / 2, H / 2, H * 0.75); g.addColorStop(0, 'rgba(10,8,8,0)'); g.addColorStop(1, 'rgba(10,8,8,0.22)'); c.fillStyle = g; c.fillRect(0, 0, W, H); }
   { const g = c.createLinearGradient(0, 0, W, 0); g.addColorStop(0, 'rgba(8,8,12,0.1)'); g.addColorStop(1, 'rgba(255,236,210,0.05)'); c.fillStyle = g; c.fillRect(0, 0, W, H); }
-  { const g = c.createLinearGradient(0, H, 0, H + 64); g.addColorStop(0, hall ? 'rgba(255,110,40,0.12)' : 'rgba(40,60,30,0.1)'); g.addColorStop(1, hall ? 'rgba(255,110,40,0.5)' : 'rgba(20,34,16,0.5)'); c.fillStyle = g; c.fillRect(0, H, W, 64); }   // the slab's sides, lit from the lava below
+  { const g = c.createLinearGradient(0, H, 0, H + 64); g.addColorStop(0, hall ? 'rgba(255,110,40,0.12)' : 'rgba(20,26,22,0.1)'); g.addColorStop(1, hall ? 'rgba(255,110,40,0.5)' : 'rgba(10,14,12,0.6)'); c.fillStyle = g; c.fillRect(0, H, W, 64); }   // the slab's sides, lit from the lava below
   c.fillStyle = '#fff'; c.fillRect(W - 24, H + 36, 20, 20);
   ['rock', 'wall', 'grass'].forEach((k, i) => { spread(c, k, i * SW, H + 64, SW, SW, SW); if (k === 'grass') { c.fillStyle = 'rgba(14,34,10,0.45)'; c.fillRect(i * SW, H + 64, SW, SW); } });   // the swatches: rock, masonry, leaf
   return { canvas, W, H };
@@ -104,7 +105,8 @@ export function makeBoard(map, { id, renderer }) {
     for (let y = 0; y < rows; y++) for (let x = 0; x < cols; x++) { const t = map.tiles[y][x], cx = x - (cols - 1) / 2, cz = y - (rows - 1) / 2;
       if (t === 'p') { stand(new THREE.CylinderGeometry(0.3, 0.34, 0.62, 10).translate(cx, 0.31, cz), 1, cx, cz, 0.62, [1.05, 1.02, 0.98]); stand(new THREE.CylinderGeometry(0.4, 0.42, 0.1, 10).translate(cx, 0.05, cz), 1, cx, cz, 0.3, [0.95, 0.92, 0.88]); }
       else if (t === 'x') { stand(new THREE.BoxGeometry(0.92, 0.4, 0.46).translate(cx, 0.2, cz), 1, cx, cz, 0.4, [1, 0.97, 0.93]); stand(new THREE.BoxGeometry(0.4, 0.22, 0.46).translate(cx - 0.2, 0.51, cz), 1, cx, cz, 0.62, [1, 0.97, 0.93]); stand(lump(0.13, 1, 0.7, 1, cx + 0.3, 0.05, cz + 0.34), 0, cx, cz, 0.2, [1, 1, 1]); }
-      else if (t === 'r' || t === 'c') { stand(lump(0.4, 1, 0.75, 0.95, cx, 0.2, cz), 0, cx, cz, 0.5, [0.74, 0.75, 0.68]); stand(lump(0.17, 1, 0.8, 1, cx + 0.3, 0.07, cz + 0.28), 0, cx, cz, 0.2, [0.7, 0.71, 0.65]); }
+      else if (t === 'c') for (let i = 0; i < 4; i++) { const h = 0.3 + Q() * 0.45; stand(new THREE.ConeGeometry(0.1 + h * 0.12, h, 5).translate(0, h / 2, 0).rotateX((Q() - 0.5) * 0.8).rotateZ((Q() - 0.5) * 0.8).translate(cx + (Q() - 0.5) * 0.4, 0, cz + (Q() - 0.5) * 0.4), 0, cx, cz, h, [0.55, 1.5, 1.8]); }
+      else if (t === 'r') { stand(lump(0.4, 1, 0.75, 0.95, cx, 0.2, cz), 0, cx, cz, 0.5, [0.74, 0.75, 0.68]); stand(lump(0.17, 1, 0.8, 1, cx + 0.3, 0.07, cz + 0.28), 0, cx, cz, 0.2, [0.7, 0.71, 0.65]); }
       else if (t === 'f') for (const [sx, sz] of [[-1, -1], [1, -1], [-1, 1], [1, 1]]) { const r = 0.13 + Q() * 0.05; stand(lump(r, 1, 0.9, 1, cx + sx * 0.34, r * 0.7, cz + sz * 0.34), 2, cx, cz, r * 1.6, [0.95, 1.1, 0.8]); } }
   }
   // growth, on a map that has it: undergrowth to stand waist-deep in, vines on what stands there; cards cut from the dungeon's leaf picture, one more draw, still
@@ -120,7 +122,7 @@ export function makeBoard(map, { id, renderer }) {
     const lt = new THREE.TextureLoader().load('/chess-assets/dungeon/leaf.webp'); lt.colorSpace = THREE.SRGBColorSpace;
     growth = new THREE.Mesh(mergeGeometries(cards), new THREE.MeshBasicMaterial({ map: lt, vertexColors: true, alphaTest: 0.5, side: THREE.DoubleSide }));
     growth.raycast = () => {}; growth.matrixAutoUpdate = false; group.add(growth); }
-  const fires = [], glow = [], hall = (map.look && map.look.place) !== 'jungle';
+  const fires = [], glow = [], hall = !(map.look && map.look.place);
   for (const [sx, sz] of [[-1, -1], [1, 1], [1, -1], [-1, 1]]) {   // the four pits of embers on the dungeon's bank (dungeon.js): their still glow in the air
     const x = sx * (Math.max(cols, 9) / 2 + 1.48), z = sz * (Math.max(rows, 11) / 2 + 1.28);
     fires.push(new THREE.Vector3(x, 0.5, z));

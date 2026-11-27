@@ -54,6 +54,7 @@ export class View {
     const sc = this.sc = document.createElement('canvas'); sc.width = 1024; sc.height = 384; this.scTex = new THREE.CanvasTexture(sc); this.scTex.colorSpace = THREE.SRGBColorSpace; const sm = new THREE.MeshBasicMaterial({ map: this.scTex, fog: false });
     this.boards = [[0, 15, -34, 0, 30], [100, 30, 0, -Math.PI / 2, 44], [-100, 30, 0, Math.PI / 2, 44]].map(([x, y, z, ry, w]) => { const m = new THREE.Mesh(new THREE.PlaneGeometry(w, w * 0.375), sm); m.position.set(x, y, z); m.rotation.y = ry; W.add(m); return m; }); this.scKey = '';
   }
+  event(e, sim) { if (!this.fig) return; const f = e.t === 'throw' ? this.fig[sim.qb] : e.t === 'windup' ? this.fig[e.id] : null; if (!f) return; if (e.t === 'throw') { f.throw(); f.throwing = true; setTimeout(() => { f.throwing = false; }, 400); } else f.wind(); }
   // the players' bodies: until they arrive, and if they never do, the players are drawn as blocks
   async people() {
     try { await loadPlayers(); } catch (e) { return false; }
@@ -79,7 +80,8 @@ export class View {
       // life size, a player out of sight is neither posed nor drawn; on the table each body is posed every other frame, half of them a frame
       if (this.fig) { const f = this.fig[p.id], sp = Math.hypot(p.vx, p.vz), down = p.st === 'down', g = f.g; g.visible = o.hide !== p.id; g.position.set(p.x, p.y + (down ? 0.25 : 0), p.z); g.scale.setScalar(big);
         g.rotation.y = Math.atan2(Math.cos(p.face), Math.sin(p.face)) - (p.mv === 'spin' ? (0.45 - p.mvT) * 14 : 0); const want = down ? 1.45 : p.mv === 'dive' || p.mv === 'hit' ? 1.15 : Math.min(0.2, sp * 0.02); g.rotation.x += (want - g.rotation.x) * Math.min(1, dt * 12);
-        if (g.visible && o.frustum) { SP.center.set(p.x, 1, p.z).applyMatrix4(this.W.matrixWorld); SP.radius = 1.6; g.visible = o.frustum.intersectsSphere(SP); } if (g.visible && (!this.table || ((this.tick + p.id) & 1))) f.update(this.table ? dt * 2 : dt, down ? 0 : sp, sim.phase === 'pre' && !sim.isKO && LINEMEN.test(p.role), down); M.makeTranslation(p.x, 0.04, p.z); if (!g.visible) M.scale(V.set(0, 0, 0)); this.shade.setMatrixAt(n++, M); continue; }
+        if (g.visible && o.frustum) { SP.center.set(p.x, 1, p.z).applyMatrix4(this.W.matrixWorld); SP.radius = 1.6; g.visible = o.frustum.intersectsSphere(SP); } if (g.visible && o.eye) { SP.center.set(p.x, 1, p.z).applyMatrix4(this.W.matrixWorld); f.lod(this.W.scale.x * big * 2 / Math.max(0.01, SP.center.distanceTo(o.eye)) < 0.085); }
+        const aim = o.wind === p.id; if (aim) f.wind(); else f.relax(); if (g.visible && (!this.table || aim || f.throwing || ((this.tick + p.id) & 1))) f.update(this.table && !aim && !f.throwing ? dt * 2 : dt, down ? 0 : sp, sim.phase === 'pre' && !sim.isKO && LINEMEN.test(p.role), down); M.makeTranslation(p.x, 0.04, p.z); if (!g.visible) M.scale(V.set(0, 0, 0)); this.shade.setMatrixAt(n++, M); continue; }
       const i = p.id, sp = Math.hypot(p.vx, p.vz), down = p.st === 'down', hide = o.hide === i; this.phase[i] += dt * sp * 1.9; const sw = down ? 0.3 : Math.sin(this.phase[i]) * Math.min(1, sp / 5) * 0.9;
       let tilt = down ? -1.45 : p.mv === 'dive' || p.mv === 'hit' ? -1.15 : -Math.min(0.3, sp * 0.03), spin = p.mv === 'spin' ? (0.45 - p.mvT) * 14 : 0;
       E.set(0, -p.face - spin, tilt, 'YZX'); Q.setFromEuler(E); V.set(p.x, (down ? 0.25 : 0) + p.y, p.z); B.compose(V, Q, hide ? SC.set(0, 0, 0) : SC.set(big, big, big));
